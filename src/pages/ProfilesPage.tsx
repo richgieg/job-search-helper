@@ -80,9 +80,11 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
 }
 
 export const ProfilesPage = () => {
-  const profiles = useAppStore((state) => Object.values(state.data.profiles))
+  const profilesById = useAppStore((state) => state.data.profiles)
   const createBaseProfile = useAppStore((state) => state.actions.createBaseProfile)
   const [name, setName] = useState('')
+
+  const profiles = useMemo(() => Object.values(profilesById), [profilesById])
 
   const sortedProfiles = useMemo(
     () => [...profiles].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)),

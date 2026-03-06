@@ -4,12 +4,13 @@ import { useAppStore } from '../store/app-store'
 
 const JobListItem = ({ jobId }: { jobId: string }) => {
   const job = useAppStore((state) => state.data.jobs[jobId])
-  const profiles = useAppStore((state) => Object.values(state.data.profiles))
+  const profilesById = useAppStore((state) => state.data.profiles)
   const updateJob = useAppStore((state) => state.actions.updateJob)
   const deleteJob = useAppStore((state) => state.actions.deleteJob)
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
   const [companyName, setCompanyName] = useState(job?.companyName ?? '')
   const [jobTitle, setJobTitle] = useState(job?.jobTitle ?? '')
+  const profiles = useMemo(() => Object.values(profilesById), [profilesById])
   const baseProfiles = useMemo(() => profiles.filter((profile) => profile.jobId === null), [profiles])
   const jobProfileCount = useMemo(() => profiles.filter((profile) => profile.jobId === jobId).length, [jobId, profiles])
   const [selectedBaseProfileId, setSelectedBaseProfileId] = useState(baseProfiles[0]?.id ?? '')
@@ -129,10 +130,12 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
 }
 
 export const JobsPage = () => {
-  const jobs = useAppStore((state) => Object.values(state.data.jobs))
+  const jobsById = useAppStore((state) => state.data.jobs)
   const createJob = useAppStore((state) => state.actions.createJob)
   const [companyName, setCompanyName] = useState('')
   const [jobTitle, setJobTitle] = useState('')
+
+  const jobs = useMemo(() => Object.values(jobsById), [jobsById])
 
   const sortedJobs = useMemo(
     () => [...jobs].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)),
