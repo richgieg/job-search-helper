@@ -245,6 +245,8 @@ The copied related records include:
 - company
 - title
 - location
+- work_arrangement
+- employment_type
 - start_date
 - end_date
 - is_current

@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { useAppStore } from '../../store/app-store'
-import type { ReferenceType } from '../../types/state'
+import type { EmploymentType, ReferenceType, WorkArrangement } from '../../types/state'
 
 const Section = ({
   title,
@@ -82,6 +82,49 @@ const TextAreaField = ({
     />
   </label>
 )
+
+const SelectField = <T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string
+  value: T
+  onChange: (value: T) => void
+  options: Array<{ value: T; label: string }>
+}) => (
+  <label className="flex flex-col gap-2 text-sm text-slate-700">
+    <span className="font-medium">{label}</span>
+    <select
+      className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+      value={value}
+      onChange={(event) => onChange(event.target.value as T)}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  </label>
+)
+
+const workArrangementOptions: Array<{ value: WorkArrangement; label: string }> = [
+  { value: 'unknown', label: 'Unknown' },
+  { value: 'onsite', label: 'On-site' },
+  { value: 'hybrid', label: 'Hybrid' },
+  { value: 'remote', label: 'Remote' },
+]
+
+const employmentTypeOptions: Array<{ value: EmploymentType; label: string }> = [
+  { value: 'full_time', label: 'Full-time' },
+  { value: 'part_time', label: 'Part-time' },
+  { value: 'contract', label: 'Contract' },
+  { value: 'internship', label: 'Internship' },
+  { value: 'temporary', label: 'Temporary' },
+  { value: 'other', label: 'Other' },
+]
 
 const ToggleField = ({
   label,
@@ -263,6 +306,8 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
         <TextField label="Company" value={draft.company} onChange={(value) => setDraft({ ...draft, company: value })} />
         <TextField label="Title" value={draft.title} onChange={(value) => setDraft({ ...draft, title: value })} />
         <TextField label="Location" value={draft.location} onChange={(value) => setDraft({ ...draft, location: value })} />
+        <SelectField label="Work arrangement" value={draft.workArrangement} onChange={(value) => setDraft({ ...draft, workArrangement: value })} options={workArrangementOptions} />
+        <SelectField label="Employment type" value={draft.employmentType} onChange={(value) => setDraft({ ...draft, employmentType: value })} options={employmentTypeOptions} />
         <TextField label="Start date" type="date" value={draft.startDate ?? ''} onChange={(value) => setDraft({ ...draft, startDate: value || null })} />
         <TextField label="End date" type="date" value={draft.endDate ?? ''} onChange={(value) => setDraft({ ...draft, endDate: value || null })} />
         <ToggleField checked={draft.isCurrent} label="Current role" onChange={(value) => setDraft({ ...draft, isCurrent: value })} />

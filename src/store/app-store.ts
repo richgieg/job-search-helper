@@ -663,6 +663,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         company: '',
         title: '',
         location: '',
+        workArrangement: 'unknown',
+        employmentType: 'other',
         startDate: null,
         endDate: null,
         isCurrent: false,

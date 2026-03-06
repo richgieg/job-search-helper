@@ -109,6 +109,8 @@ export interface ExperienceEntry {
   company: string
   title: string
   location: string
+  workArrangement: WorkArrangement
+  employmentType: EmploymentType
   startDate: IsoDate | null
   endDate: IsoDate | null
   isCurrent: boolean

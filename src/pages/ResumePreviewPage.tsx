@@ -5,6 +5,18 @@ import { DocumentPageLayout, PreviewNotFound } from '../features/documents/Docum
 import { formatAddressLines, formatDateRange, formatLocationLine, selectProfilePreviewData } from '../features/documents/preview-data'
 import { useAppStore } from '../store/app-store'
 
+const formatExperienceMeta = (input: {
+  company: string
+  location: string
+  workArrangement: string
+  employmentType: string
+}) => {
+  const workArrangement = input.workArrangement !== 'unknown' ? input.workArrangement.replace('_', ' ') : ''
+  const employmentType = input.employmentType !== 'other' ? input.employmentType.replace('_', ' ') : ''
+
+  return [input.company, input.location, workArrangement, employmentType].filter(Boolean).join(' · ')
+}
+
 export const ResumePreviewPage = () => {
   const { profileId = '' } = useParams()
   const data = useAppStore((state) => state.data)
@@ -92,7 +104,14 @@ export const ResumePreviewPage = () => {
                   <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                     <div>
                       <h4 className="text-base font-semibold text-slate-950">{entry.entry.title || 'Untitled role'}</h4>
-                      <p className="text-sm text-slate-700">{[entry.entry.company, entry.entry.location].filter(Boolean).join(' · ')}</p>
+                      <p className="text-sm text-slate-700">
+                        {formatExperienceMeta({
+                          company: entry.entry.company,
+                          location: entry.entry.location,
+                          workArrangement: entry.entry.workArrangement,
+                          employmentType: entry.entry.employmentType,
+                        })}
+                      </p>
                     </div>
                     <p className="text-sm text-slate-500">{formatDateRange(entry.entry.startDate, entry.entry.endDate, entry.entry.isCurrent)}</p>
                   </div>
