@@ -10,7 +10,9 @@ import type {
   ExperienceEntry,
   Id,
   Job,
+  PersonalDetails,
   Profile,
+  ProfileLinks,
   Reference,
   Skill,
   SkillCategory,
@@ -24,6 +26,8 @@ interface AppStoreState {
     updateProfile: (input: {
       profileId: Id
       changes: Partial<Pick<Profile, 'name' | 'summary' | 'coverLetter'>>
+      personalDetails?: Partial<PersonalDetails>
+      links?: Partial<ProfileLinks>
     }) => void
     duplicateProfile: (input: { sourceProfileId: Id; targetJobId?: Id | null; name?: string }) => Id | null
     deleteProfile: (profileId: Id) => void
@@ -253,7 +257,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         },
       }))
     },
-    updateProfile: ({ profileId, changes }) => {
+    updateProfile: ({ profileId, changes, personalDetails, links }) => {
       const existingProfile = get().data.profiles[profileId]
 
       if (!existingProfile) {
@@ -268,6 +272,14 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
             [profileId]: {
               ...existingProfile,
               ...changes,
+              personalDetails: {
+                ...existingProfile.personalDetails,
+                ...personalDetails,
+              },
+              links: {
+                ...existingProfile.links,
+                ...links,
+              },
               updatedAt: now(),
             },
           },
