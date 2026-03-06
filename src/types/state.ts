@@ -114,6 +114,8 @@ export interface ExperienceEntry {
   startDate: IsoDate | null
   endDate: IsoDate | null
   isCurrent: boolean
+  reasonForLeavingShort: string
+  reasonForLeavingDetails: string
   supervisor: ExperienceSupervisor
   enabled: boolean
   sortOrder: number

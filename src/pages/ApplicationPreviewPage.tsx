@@ -32,6 +32,15 @@ export const ApplicationPreviewPage = () => {
   ])
   const locationLine = formatLocationLine(personalDetails.city, personalDetails.state, personalDetails.postalCode)
   const highlightBullets = preview.experienceEntries.flatMap((entry) => entry.bullets.map((bullet) => bullet.content)).slice(0, 4)
+  const experienceReasons = preview.experienceEntries
+    .map(({ entry }) => ({
+      id: entry.id,
+      title: entry.title,
+      company: entry.company,
+      shortReason: entry.reasonForLeavingShort.trim(),
+      detailedReason: entry.reasonForLeavingDetails.trim(),
+    }))
+    .filter((item) => item.shortReason || item.detailedReason)
 
   return (
     <DocumentPageLayout
@@ -71,6 +80,23 @@ export const ApplicationPreviewPage = () => {
                   <li key={`${preview.profile.id}-${index}`}>{bullet}</li>
                 ))}
               </ul>
+            )}
+          </div>
+
+          <div className="mt-8">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Reasons for leaving</h3>
+            {experienceReasons.length === 0 ? (
+              <p className="mt-3 text-sm text-slate-500">No reason-for-leaving details have been entered yet.</p>
+            ) : (
+              <div className="mt-3 space-y-4">
+                {experienceReasons.map((item) => (
+                  <div key={item.id} className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
+                    <p className="font-semibold text-slate-900">{[item.title, item.company].filter(Boolean).join(' · ') || 'Experience entry'}</p>
+                    {item.shortReason ? <p className="mt-2"><span className="font-medium text-slate-900">Short:</span> {item.shortReason}</p> : null}
+                    {item.detailedReason ? <p className="mt-2 whitespace-pre-wrap"><span className="font-medium text-slate-900">Details:</span> {item.detailedReason}</p> : null}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </section>

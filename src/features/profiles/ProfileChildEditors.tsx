@@ -311,6 +311,19 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
         <TextField label="Start date" type="date" value={draft.startDate ?? ''} onChange={(value) => setDraft({ ...draft, startDate: value || null })} />
         <TextField label="End date" type="date" value={draft.endDate ?? ''} onChange={(value) => setDraft({ ...draft, endDate: value || null })} />
         <ToggleField checked={draft.isCurrent} label="Current role" onChange={(value) => setDraft({ ...draft, isCurrent: value })} />
+        <TextField
+          label="Reason for leaving (short)"
+          value={draft.reasonForLeavingShort}
+          onChange={(value) => setDraft({ ...draft, reasonForLeavingShort: value })}
+        />
+        <div className="xl:col-span-3">
+          <TextAreaField
+            label="Reason for leaving (details)"
+            placeholder="Optional application-only context"
+            value={draft.reasonForLeavingDetails}
+            onChange={(value) => setDraft({ ...draft, reasonForLeavingDetails: value })}
+          />
+        </div>
         <div className="xl:col-span-3">
           <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Supervisor</h4>
           <div className="mt-3 grid gap-4 xl:grid-cols-3">

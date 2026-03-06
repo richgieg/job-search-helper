@@ -250,6 +250,8 @@ The copied related records include:
 - start_date
 - end_date
 - is_current
+- reason_for_leaving_short
+- reason_for_leaving_details
 - supervisor_name
 - supervisor_title
 - supervisor_phone

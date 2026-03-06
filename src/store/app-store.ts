@@ -668,6 +668,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         startDate: null,
         endDate: null,
         isCurrent: false,
+        reasonForLeavingShort: '',
+        reasonForLeavingDetails: '',
         supervisor: {
           name: '',
           title: '',
