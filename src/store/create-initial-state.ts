@@ -9,9 +9,8 @@ const createEmptyPersonalDetails = (): PersonalDetails => ({
   addressLine3: '',
   addressLine4: '',
   city: '',
-  region: '',
+  state: '',
   postalCode: '',
-  country: '',
 })
 
 const createEmptyProfileLinks = (): ProfileLinks => ({

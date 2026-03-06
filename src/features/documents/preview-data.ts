@@ -38,9 +38,9 @@ const compact = (values: Array<string | null | undefined>) => values.map((value)
 
 export const formatAddressLines = (values: Array<string | null | undefined>) => compact(values)
 
-export const formatLocationLine = (city: string, region: string, postalCode: string, country: string) => {
-  const cityRegionPostal = [city, region, postalCode].map((value) => value.trim()).filter(Boolean).join(', ')
-  return compact([cityRegionPostal, country]).join(' · ')
+export const formatLocationLine = (city: string, state: string, postalCode: string) => {
+  const cityStatePostal = [city, state, postalCode].map((value) => value.trim()).filter(Boolean).join(', ')
+  return compact([cityStatePostal]).join(' · ')
 }
 
 export const formatDateRange = (startDate: string | null, endDate: string | null, isCurrent?: boolean) => {

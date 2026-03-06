@@ -23,9 +23,8 @@ export const ResumePreviewPage = () => {
   ])
   const locationLine = formatLocationLine(
     preview.profile.personalDetails.city,
-    preview.profile.personalDetails.region,
+    preview.profile.personalDetails.state,
     preview.profile.personalDetails.postalCode,
-    preview.profile.personalDetails.country,
   )
   const links = [
     preview.profile.links.linkedinUrl,

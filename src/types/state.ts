@@ -56,9 +56,8 @@ export interface PersonalDetails {
   addressLine3: string
   addressLine4: string
   city: string
-  region: string
+  state: string
   postalCode: string
-  country: string
 }
 
 export interface ProfileLinks {
