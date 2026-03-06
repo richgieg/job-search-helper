@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 
+import { ProfileChildEditors } from '../features/profiles/ProfileChildEditors'
 import { useAppStore } from '../store/app-store'
 import type { PersonalDetails, ProfileLinks } from '../types/state'
 
@@ -215,6 +216,8 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
           </button>
         </div>
       </div>
+
+      <ProfileChildEditors profileId={profile.id} />
     </li>
   )
 }

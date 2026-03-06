@@ -1,19 +1,42 @@
-import { FormEvent, useMemo, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useState } from 'react'
 
+import { JobChildEditors, getJobComputedStatus } from '../features/jobs/JobChildEditors'
 import { useAppStore } from '../store/app-store'
 
 const JobListItem = ({ jobId }: { jobId: string }) => {
   const job = useAppStore((state) => state.data.jobs[jobId])
   const profilesById = useAppStore((state) => state.data.profiles)
+  const jobEventsById = useAppStore((state) => state.data.jobEvents)
   const updateJob = useAppStore((state) => state.actions.updateJob)
   const deleteJob = useAppStore((state) => state.actions.deleteJob)
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
   const [companyName, setCompanyName] = useState(job?.companyName ?? '')
   const [jobTitle, setJobTitle] = useState(job?.jobTitle ?? '')
   const profiles = useMemo(() => Object.values(profilesById), [profilesById])
+  const jobEvents = useMemo(() => Object.values(jobEventsById).filter((event) => event.jobId === jobId), [jobEventsById, jobId])
   const baseProfiles = useMemo(() => profiles.filter((profile) => profile.jobId === null), [profiles])
   const jobProfileCount = useMemo(() => profiles.filter((profile) => profile.jobId === jobId).length, [jobId, profiles])
   const [selectedBaseProfileId, setSelectedBaseProfileId] = useState(baseProfiles[0]?.id ?? '')
+  const computedStatus = useMemo(() => getJobComputedStatus(jobEvents.map((event) => event.eventType)), [jobEvents])
+
+  useEffect(() => {
+    if (!job) {
+      return
+    }
+
+    setCompanyName(job.companyName)
+    setJobTitle(job.jobTitle)
+  }, [job])
+
+  useEffect(() => {
+    setSelectedBaseProfileId((current) => {
+      if (current && baseProfiles.some((profile) => profile.id === current)) {
+        return current
+      }
+
+      return baseProfiles[0]?.id ?? ''
+    })
+  }, [baseProfiles])
 
   if (!job) {
     return null
@@ -83,6 +106,9 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium capitalize text-sky-700">
+              {computedStatus}
+            </span>
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
               {jobProfileCount} attached profiles
             </span>
@@ -123,6 +149,8 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
             </div>
           )}
         </div>
+
+        <JobChildEditors jobId={job.id} />
       </div>
     </li>
   )

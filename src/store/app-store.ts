@@ -6,10 +6,15 @@ import type {
   AppExportFile,
   AppUiState,
   Certification,
+  ContactRelationshipType,
   EducationEntry,
   ExperienceEntry,
   Id,
   Job,
+  JobContact,
+  JobEvent,
+  JobEventType,
+  JobPostingSource,
   PersonalDetails,
   Profile,
   ProfileLinks,
@@ -31,9 +36,54 @@ interface AppStoreState {
     }) => void
     duplicateProfile: (input: { sourceProfileId: Id; targetJobId?: Id | null; name?: string }) => Id | null
     deleteProfile: (profileId: Id) => void
+    createSkillCategory: (profileId: Id) => void
+    updateSkillCategory: (input: {
+      skillCategoryId: Id
+      changes: Partial<Pick<SkillCategory, 'name' | 'enabled' | 'sortOrder'>>
+    }) => void
+    deleteSkillCategory: (skillCategoryId: Id) => void
+    createSkill: (skillCategoryId: Id) => void
+    updateSkill: (input: { skillId: Id; changes: Partial<Pick<Skill, 'name' | 'enabled' | 'sortOrder'>> }) => void
+    deleteSkill: (skillId: Id) => void
+    createExperienceEntry: (profileId: Id) => void
+    updateExperienceEntry: (input: {
+      experienceEntryId: Id
+      changes: Partial<Omit<ExperienceEntry, 'id' | 'profileId'>>
+    }) => void
+    deleteExperienceEntry: (experienceEntryId: Id) => void
+    createEducationEntry: (profileId: Id) => void
+    updateEducationEntry: (input: {
+      educationEntryId: Id
+      changes: Partial<Omit<EducationEntry, 'id' | 'profileId'>>
+    }) => void
+    deleteEducationEntry: (educationEntryId: Id) => void
+    createCertification: (profileId: Id) => void
+    updateCertification: (input: {
+      certificationId: Id
+      changes: Partial<Omit<Certification, 'id' | 'profileId'>>
+    }) => void
+    deleteCertification: (certificationId: Id) => void
+    createReference: (profileId: Id) => void
+    updateReference: (input: {
+      referenceId: Id
+      changes: Partial<Omit<Reference, 'id' | 'profileId'>>
+    }) => void
+    deleteReference: (referenceId: Id) => void
     createJob: (input: Pick<Job, 'companyName' | 'jobTitle'> & Partial<Job>) => void
     updateJob: (input: { jobId: Id; changes: Partial<Omit<Job, 'id' | 'createdAt' | 'updatedAt'>> }) => void
     deleteJob: (jobId: Id) => void
+    createJobPostingSource: (jobId: Id) => void
+    updateJobPostingSource: (input: {
+      jobPostingSourceId: Id
+      changes: Partial<Omit<JobPostingSource, 'id' | 'jobId' | 'createdAt'>>
+    }) => void
+    deleteJobPostingSource: (jobPostingSourceId: Id) => void
+    createJobContact: (jobId: Id) => void
+    updateJobContact: (input: { jobContactId: Id; changes: Partial<Omit<JobContact, 'id' | 'jobId'>> }) => void
+    deleteJobContact: (jobContactId: Id) => void
+    createJobEvent: (input: { jobId: Id; eventType?: JobEventType }) => void
+    updateJobEvent: (input: { jobEventId: Id; changes: Partial<Omit<JobEvent, 'id' | 'jobId' | 'createdAt'>> }) => void
+    deleteJobEvent: (jobEventId: Id) => void
     importAppData: (file: AppExportFile) => void
     exportAppData: () => AppExportFile
     resetUiState: () => void
@@ -44,6 +94,14 @@ interface AppStoreState {
 
 const now = () => new Date().toISOString()
 const createId = () => crypto.randomUUID()
+
+const getNextSortOrder = (sortOrders: number[]) => {
+  if (sortOrders.length === 0) {
+    return 1
+  }
+
+  return Math.max(...sortOrders) + 1
+}
 
 const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: string): AppDataState => {
   const profile = data.profiles[profileId]
@@ -58,6 +116,25 @@ const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: strin
       ...data.profiles,
       [profileId]: {
         ...profile,
+        updatedAt: timestamp,
+      },
+    },
+  }
+}
+
+const stampUpdatedJob = (data: AppDataState, jobId: Id, timestamp: string): AppDataState => {
+  const job = data.jobs[jobId]
+
+  if (!job) {
+    return data
+  }
+
+  return {
+    ...data,
+    jobs: {
+      ...data.jobs,
+      [jobId]: {
+        ...job,
         updatedAt: timestamp,
       },
     },
@@ -222,6 +299,25 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
   }
 }
 
+const deleteSkillCategoryCascade = (data: AppDataState, skillCategoryId: Id): AppDataState => {
+  const nextSkillCategories = { ...data.skillCategories }
+  const nextSkills = { ...data.skills }
+
+  delete nextSkillCategories[skillCategoryId]
+
+  Object.values(data.skills).forEach((item) => {
+    if (item.skillCategoryId === skillCategoryId) {
+      delete nextSkills[item.id]
+    }
+  })
+
+  return {
+    ...data,
+    skillCategories: nextSkillCategories,
+    skills: nextSkills,
+  }
+}
+
 const createProfileRecord = (name: string): Profile => {
   const timestamp = now()
 
@@ -342,6 +438,507 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         },
       }))
     },
+    createSkillCategory: (profileId) => {
+      const profile = get().data.profiles[profileId]
+
+      if (!profile) {
+        return
+      }
+
+      const skillCategory: SkillCategory = {
+        id: createId(),
+        profileId,
+        name: 'New skill category',
+        enabled: true,
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.skillCategories)
+            .filter((item) => item.profileId === profileId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            skillCategories: {
+              ...state.data.skillCategories,
+              [skillCategory.id]: skillCategory,
+            },
+          },
+          profileId,
+          now(),
+        ),
+      }))
+    },
+    updateSkillCategory: ({ skillCategoryId, changes }) => {
+      const existing = get().data.skillCategories[skillCategoryId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            skillCategories: {
+              ...state.data.skillCategories,
+              [skillCategoryId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          existing.profileId,
+          now(),
+        ),
+      }))
+    },
+    deleteSkillCategory: (skillCategoryId) => {
+      const existing = get().data.skillCategories[skillCategoryId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(deleteSkillCategoryCascade(state.data, skillCategoryId), existing.profileId, now()),
+      }))
+    },
+    createSkill: (skillCategoryId) => {
+      const category = get().data.skillCategories[skillCategoryId]
+
+      if (!category) {
+        return
+      }
+
+      const skill: Skill = {
+        id: createId(),
+        skillCategoryId,
+        name: 'New skill',
+        enabled: true,
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.skills)
+            .filter((item) => item.skillCategoryId === skillCategoryId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            skills: {
+              ...state.data.skills,
+              [skill.id]: skill,
+            },
+          },
+          category.profileId,
+          now(),
+        ),
+      }))
+    },
+    updateSkill: ({ skillId, changes }) => {
+      const existing = get().data.skills[skillId]
+
+      if (!existing) {
+        return
+      }
+
+      const category = get().data.skillCategories[existing.skillCategoryId]
+      if (!category) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            skills: {
+              ...state.data.skills,
+              [skillId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          category.profileId,
+          now(),
+        ),
+      }))
+    },
+    deleteSkill: (skillId) => {
+      const existing = get().data.skills[skillId]
+
+      if (!existing) {
+        return
+      }
+
+      const category = get().data.skillCategories[existing.skillCategoryId]
+      if (!category) {
+        return
+      }
+
+      set((state) => {
+        const nextSkills = { ...state.data.skills }
+        delete nextSkills[skillId]
+
+        return {
+          data: stampUpdatedProfile(
+            {
+              ...state.data,
+              skills: nextSkills,
+            },
+            category.profileId,
+            now(),
+          ),
+        }
+      })
+    },
+    createExperienceEntry: (profileId) => {
+      const profile = get().data.profiles[profileId]
+
+      if (!profile) {
+        return
+      }
+
+      const experienceEntry: ExperienceEntry = {
+        id: createId(),
+        profileId,
+        company: '',
+        title: '',
+        location: '',
+        startDate: null,
+        endDate: null,
+        isCurrent: false,
+        description: '',
+        bullets: [],
+        enabled: true,
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.experienceEntries)
+            .filter((item) => item.profileId === profileId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            experienceEntries: {
+              ...state.data.experienceEntries,
+              [experienceEntry.id]: experienceEntry,
+            },
+          },
+          profileId,
+          now(),
+        ),
+      }))
+    },
+    updateExperienceEntry: ({ experienceEntryId, changes }) => {
+      const existing = get().data.experienceEntries[experienceEntryId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            experienceEntries: {
+              ...state.data.experienceEntries,
+              [experienceEntryId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          existing.profileId,
+          now(),
+        ),
+      }))
+    },
+    deleteExperienceEntry: (experienceEntryId) => {
+      const existing = get().data.experienceEntries[experienceEntryId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => {
+        const nextExperienceEntries = { ...state.data.experienceEntries }
+        delete nextExperienceEntries[experienceEntryId]
+
+        return {
+          data: stampUpdatedProfile(
+            {
+              ...state.data,
+              experienceEntries: nextExperienceEntries,
+            },
+            existing.profileId,
+            now(),
+          ),
+        }
+      })
+    },
+    createEducationEntry: (profileId) => {
+      const profile = get().data.profiles[profileId]
+
+      if (!profile) {
+        return
+      }
+
+      const educationEntry: EducationEntry = {
+        id: createId(),
+        profileId,
+        school: '',
+        degree: '',
+        fieldOfStudy: '',
+        graduationDate: null,
+        description: '',
+        enabled: true,
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.educationEntries)
+            .filter((item) => item.profileId === profileId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            educationEntries: {
+              ...state.data.educationEntries,
+              [educationEntry.id]: educationEntry,
+            },
+          },
+          profileId,
+          now(),
+        ),
+      }))
+    },
+    updateEducationEntry: ({ educationEntryId, changes }) => {
+      const existing = get().data.educationEntries[educationEntryId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            educationEntries: {
+              ...state.data.educationEntries,
+              [educationEntryId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          existing.profileId,
+          now(),
+        ),
+      }))
+    },
+    deleteEducationEntry: (educationEntryId) => {
+      const existing = get().data.educationEntries[educationEntryId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => {
+        const nextEducationEntries = { ...state.data.educationEntries }
+        delete nextEducationEntries[educationEntryId]
+
+        return {
+          data: stampUpdatedProfile(
+            {
+              ...state.data,
+              educationEntries: nextEducationEntries,
+            },
+            existing.profileId,
+            now(),
+          ),
+        }
+      })
+    },
+    createCertification: (profileId) => {
+      const profile = get().data.profiles[profileId]
+
+      if (!profile) {
+        return
+      }
+
+      const certification: Certification = {
+        id: createId(),
+        profileId,
+        name: '',
+        issuer: '',
+        issueDate: null,
+        expiryDate: null,
+        credentialId: '',
+        credentialUrl: '',
+        enabled: true,
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.certifications)
+            .filter((item) => item.profileId === profileId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            certifications: {
+              ...state.data.certifications,
+              [certification.id]: certification,
+            },
+          },
+          profileId,
+          now(),
+        ),
+      }))
+    },
+    updateCertification: ({ certificationId, changes }) => {
+      const existing = get().data.certifications[certificationId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            certifications: {
+              ...state.data.certifications,
+              [certificationId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          existing.profileId,
+          now(),
+        ),
+      }))
+    },
+    deleteCertification: (certificationId) => {
+      const existing = get().data.certifications[certificationId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => {
+        const nextCertifications = { ...state.data.certifications }
+        delete nextCertifications[certificationId]
+
+        return {
+          data: stampUpdatedProfile(
+            {
+              ...state.data,
+              certifications: nextCertifications,
+            },
+            existing.profileId,
+            now(),
+          ),
+        }
+      })
+    },
+    createReference: (profileId) => {
+      const profile = get().data.profiles[profileId]
+
+      if (!profile) {
+        return
+      }
+
+      const reference: Reference = {
+        id: createId(),
+        profileId,
+        type: 'professional',
+        name: '',
+        relationship: '',
+        company: '',
+        title: '',
+        email: '',
+        phone: '',
+        notes: '',
+        enabled: true,
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.references)
+            .filter((item) => item.profileId === profileId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            references: {
+              ...state.data.references,
+              [reference.id]: reference,
+            },
+          },
+          profileId,
+          now(),
+        ),
+      }))
+    },
+    updateReference: ({ referenceId, changes }) => {
+      const existing = get().data.references[referenceId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            references: {
+              ...state.data.references,
+              [referenceId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          existing.profileId,
+          now(),
+        ),
+      }))
+    },
+    deleteReference: (referenceId) => {
+      const existing = get().data.references[referenceId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => {
+        const nextReferences = { ...state.data.references }
+        delete nextReferences[referenceId]
+
+        return {
+          data: stampUpdatedProfile(
+            {
+              ...state.data,
+              references: nextReferences,
+            },
+            existing.profileId,
+            now(),
+          ),
+        }
+      })
+    },
     createJob: (input) => {
       const timestamp = now()
       const job: Job = {
@@ -447,6 +1044,258 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
                 ? null
                 : state.ui.selectedProfileId,
           },
+        }
+      })
+    },
+    createJobPostingSource: (jobId) => {
+      const job = get().data.jobs[jobId]
+
+      if (!job) {
+        return
+      }
+
+      const jobPostingSource: JobPostingSource = {
+        id: createId(),
+        jobId,
+        sourceType: 'other',
+        url: '',
+        label: '',
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.jobPostingSources)
+            .filter((item) => item.jobId === jobId)
+            .map((item) => item.sortOrder),
+        ),
+        createdAt: now(),
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            jobPostingSources: {
+              ...state.data.jobPostingSources,
+              [jobPostingSource.id]: jobPostingSource,
+            },
+          },
+          jobId,
+          now(),
+        ),
+      }))
+    },
+    updateJobPostingSource: ({ jobPostingSourceId, changes }) => {
+      const existing = get().data.jobPostingSources[jobPostingSourceId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            jobPostingSources: {
+              ...state.data.jobPostingSources,
+              [jobPostingSourceId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          existing.jobId,
+          now(),
+        ),
+      }))
+    },
+    deleteJobPostingSource: (jobPostingSourceId) => {
+      const existing = get().data.jobPostingSources[jobPostingSourceId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => {
+        const nextJobPostingSources = { ...state.data.jobPostingSources }
+        delete nextJobPostingSources[jobPostingSourceId]
+
+        return {
+          data: stampUpdatedJob(
+            {
+              ...state.data,
+              jobPostingSources: nextJobPostingSources,
+            },
+            existing.jobId,
+            now(),
+          ),
+        }
+      })
+    },
+    createJobContact: (jobId) => {
+      const job = get().data.jobs[jobId]
+
+      if (!job) {
+        return
+      }
+
+      const jobContact: JobContact = {
+        id: createId(),
+        jobId,
+        name: '',
+        title: '',
+        company: job.companyName,
+        addressLine1: '',
+        addressLine2: '',
+        addressLine3: '',
+        addressLine4: '',
+        email: '',
+        phone: '',
+        linkedinUrl: '',
+        relationshipType: 'recruiter' satisfies ContactRelationshipType,
+        notes: '',
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.jobContacts)
+            .filter((item) => item.jobId === jobId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            jobContacts: {
+              ...state.data.jobContacts,
+              [jobContact.id]: jobContact,
+            },
+          },
+          jobId,
+          now(),
+        ),
+      }))
+    },
+    updateJobContact: ({ jobContactId, changes }) => {
+      const existing = get().data.jobContacts[jobContactId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            jobContacts: {
+              ...state.data.jobContacts,
+              [jobContactId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          existing.jobId,
+          now(),
+        ),
+      }))
+    },
+    deleteJobContact: (jobContactId) => {
+      const existing = get().data.jobContacts[jobContactId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => {
+        const nextJobContacts = { ...state.data.jobContacts }
+        delete nextJobContacts[jobContactId]
+
+        return {
+          data: stampUpdatedJob(
+            {
+              ...state.data,
+              jobContacts: nextJobContacts,
+            },
+            existing.jobId,
+            now(),
+          ),
+        }
+      })
+    },
+    createJobEvent: ({ jobId, eventType = 'job_saved' }) => {
+      const job = get().data.jobs[jobId]
+
+      if (!job) {
+        return
+      }
+
+      const timestamp = now()
+      const jobEvent: JobEvent = {
+        id: createId(),
+        jobId,
+        eventType,
+        occurredAt: timestamp,
+        scheduledFor: null,
+        notes: '',
+        metadata: {},
+        createdAt: timestamp,
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            jobEvents: {
+              ...state.data.jobEvents,
+              [jobEvent.id]: jobEvent,
+            },
+          },
+          jobId,
+          timestamp,
+        ),
+      }))
+    },
+    updateJobEvent: ({ jobEventId, changes }) => {
+      const existing = get().data.jobEvents[jobEventId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            jobEvents: {
+              ...state.data.jobEvents,
+              [jobEventId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          existing.jobId,
+          now(),
+        ),
+      }))
+    },
+    deleteJobEvent: (jobEventId) => {
+      const existing = get().data.jobEvents[jobEventId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => {
+        const nextJobEvents = { ...state.data.jobEvents }
+        delete nextJobEvents[jobEventId]
+
+        return {
+          data: stampUpdatedJob(
+            {
+              ...state.data,
+              jobEvents: nextJobEvents,
+            },
+            existing.jobId,
+            now(),
+          ),
         }
       })
     },
