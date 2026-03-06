@@ -1,6 +1,8 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 
-import { JobChildEditors, getJobComputedStatus } from '../features/jobs/JobChildEditors'
+import { JobChildEditors } from '../features/jobs/JobChildEditors'
+import { getJobComputedStatus } from '../features/jobs/job-status'
 import { useAppStore } from '../store/app-store'
 
 const JobListItem = ({ jobId }: { jobId: string }) => {
@@ -106,6 +108,14 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {jobProfileCount > 0 ? (
+              <Link
+                className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                to={`/previews/resume/${profiles.find((profile) => profile.jobId === job.id)?.id}`}
+              >
+                Open a preview
+              </Link>
+            ) : null}
             <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium capitalize text-sky-700">
               {computedStatus}
             </span>

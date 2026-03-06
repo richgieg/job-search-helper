@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { ProfileChildEditors } from '../features/profiles/ProfileChildEditors'
 import { useAppStore } from '../store/app-store'
@@ -137,6 +138,24 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
         </div>
 
         <div className="flex flex-wrap gap-2">
+          <Link
+            className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            to={`/previews/resume/${profile.id}`}
+          >
+            Resume
+          </Link>
+          <Link
+            className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            to={`/previews/application/${profile.id}`}
+          >
+            Application
+          </Link>
+          <Link
+            className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            to={`/previews/cover-letter/${profile.id}`}
+          >
+            Cover letter
+          </Link>
           <button
             className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
             onClick={handleDuplicate}

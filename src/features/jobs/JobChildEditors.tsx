@@ -1,7 +1,9 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 
+import { getJobComputedStatus } from './job-status'
 import { useAppStore } from '../../store/app-store'
-import type { ContactRelationshipType, JobComputedStatus, JobEventType, JobPostingSourceType } from '../../types/state'
+import type { ContactRelationshipType, JobEventType, JobPostingSourceType } from '../../types/state'
 
 const Section = ({
   title,
@@ -106,28 +108,6 @@ const toDateTimeLocal = (value: string | null) => {
 }
 
 const fromDateTimeLocal = (value: string) => (value ? new Date(value).toISOString() : null)
-
-const getComputedStatus = (eventTypes: JobEventType[]): JobComputedStatus => {
-  if (eventTypes.includes('withdrew')) {
-    return 'withdrew'
-  }
-  if (eventTypes.includes('rejected')) {
-    return 'rejected'
-  }
-  if (eventTypes.includes('offer_received')) {
-    return 'offer'
-  }
-  if (eventTypes.includes('interview_scheduled') || eventTypes.includes('interview_completed')) {
-    return 'interview'
-  }
-  if (eventTypes.includes('applied')) {
-    return 'applied'
-  }
-
-  return 'interested'
-}
-
-export const getJobComputedStatus = getComputedStatus
 
 const JobPostingSourceCard = ({ jobPostingSourceId }: { jobPostingSourceId: string }) => {
   const source = useAppStore((state) => state.data.jobPostingSources[jobPostingSourceId])
@@ -353,7 +333,7 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
     [jobEventsById, jobId],
   )
 
-  const status = useMemo(() => getComputedStatus(jobEvents.map((item) => item.eventType)), [jobEvents])
+  const status = useMemo(() => getJobComputedStatus(jobEvents.map((item) => item.eventType)), [jobEvents])
 
   return (
     <div className="mt-6">
@@ -374,13 +354,33 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
                   <p className="font-medium text-slate-900">{profile.name}</p>
                   <p className="mt-1 text-sm text-slate-500">Updated {new Date(profile.updatedAt).toLocaleString()}</p>
                 </div>
-                <button
-                  className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  onClick={() => duplicateProfile({ sourceProfileId: profile.id })}
-                  type="button"
-                >
-                  Duplicate profile
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    to={`/previews/resume/${profile.id}`}
+                  >
+                    Resume
+                  </Link>
+                  <Link
+                    className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    to={`/previews/application/${profile.id}`}
+                  >
+                    Application
+                  </Link>
+                  <Link
+                    className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    to={`/previews/cover-letter/${profile.id}`}
+                  >
+                    Cover letter
+                  </Link>
+                  <button
+                    className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    onClick={() => duplicateProfile({ sourceProfileId: profile.id })}
+                    type="button"
+                  >
+                    Duplicate profile
+                  </button>
+                </div>
               </div>
             ))
           )}
