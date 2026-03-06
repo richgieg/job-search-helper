@@ -134,7 +134,6 @@ export interface EducationEntry {
   profileId: Id
   school: string
   degree: string
-  fieldOfStudy: string
   graduationDate: IsoDate | null
   enabled: boolean
   sortOrder: number

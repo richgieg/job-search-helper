@@ -401,7 +401,6 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
       <div className="grid gap-4 xl:grid-cols-3">
         <TextField label="School" value={draft.school} onChange={(value) => setDraft({ ...draft, school: value })} />
         <TextField label="Degree" value={draft.degree} onChange={(value) => setDraft({ ...draft, degree: value })} />
-        <TextField label="Field of study" value={draft.fieldOfStudy} onChange={(value) => setDraft({ ...draft, fieldOfStudy: value })} />
         <TextField label="Graduation date" type="date" value={draft.graduationDate ?? ''} onChange={(value) => setDraft({ ...draft, graduationDate: value || null })} />
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
           <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />

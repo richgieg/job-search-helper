@@ -271,7 +271,6 @@ The copied related records include:
 - profile_id
 - school
 - degree
-- field_of_study
 - graduation_date
 - enabled
 - sort_order

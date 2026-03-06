@@ -139,7 +139,7 @@ export const ResumePreviewPage = () => {
                   preview.educationEntries.map((entry) => (
                     <div key={entry.id}>
                       <p className="font-semibold text-slate-900">{entry.school || 'School'}</p>
-                      <p>{[entry.degree, entry.fieldOfStudy].filter(Boolean).join(' · ')}</p>
+                      <p>{entry.degree || 'Degree not set'}</p>
                       <p className="text-slate-500">{entry.graduationDate || 'Date not set'}</p>
                     </div>
                   ))

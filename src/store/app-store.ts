@@ -837,7 +837,6 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         profileId,
         school: '',
         degree: '',
-        fieldOfStudy: '',
         graduationDate: null,
         enabled: true,
         sortOrder: getNextSortOrder(
