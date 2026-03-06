@@ -220,9 +220,6 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
         <TextField label="End date" type="date" value={draft.endDate ?? ''} onChange={(value) => setDraft({ ...draft, endDate: value || null })} />
         <ToggleField checked={draft.isCurrent} label="Current role" onChange={(value) => setDraft({ ...draft, isCurrent: value })} />
         <div className="xl:col-span-3">
-          <TextAreaField label="Description" value={draft.description} onChange={(value) => setDraft({ ...draft, description: value })} />
-        </div>
-        <div className="xl:col-span-3">
           <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Supervisor</h4>
           <div className="mt-3 grid gap-4 xl:grid-cols-3">
             <TextField
@@ -282,9 +279,6 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
         <TextField label="Degree" value={draft.degree} onChange={(value) => setDraft({ ...draft, degree: value })} />
         <TextField label="Field of study" value={draft.fieldOfStudy} onChange={(value) => setDraft({ ...draft, fieldOfStudy: value })} />
         <TextField label="Graduation date" type="date" value={draft.graduationDate ?? ''} onChange={(value) => setDraft({ ...draft, graduationDate: value || null })} />
-        <div className="xl:col-span-2">
-          <TextAreaField label="Description" value={draft.description} onChange={(value) => setDraft({ ...draft, description: value })} />
-        </div>
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
           <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
           <ItemActions

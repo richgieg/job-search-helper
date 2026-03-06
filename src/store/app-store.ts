@@ -612,7 +612,6 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         startDate: null,
         endDate: null,
         isCurrent: false,
-        description: '',
         bullets: [],
         supervisor: {
           name: '',
@@ -703,7 +702,6 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         degree: '',
         fieldOfStudy: '',
         graduationDate: null,
-        description: '',
         enabled: true,
         sortOrder: getNextSortOrder(
           Object.values(get().data.educationEntries)

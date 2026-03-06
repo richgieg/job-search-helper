@@ -239,7 +239,6 @@ interface ExperienceEntry {
   startDate: IsoDate | null;
   endDate: IsoDate | null;
   isCurrent: boolean;
-  description: string;
   bullets: string[];
   supervisor: ExperienceSupervisor;
   enabled: boolean;
@@ -264,7 +263,6 @@ interface EducationEntry {
   degree: string;
   fieldOfStudy: string;
   graduationDate: IsoDate | null;
-  description: string;
   enabled: boolean;
   sortOrder: number;
 }

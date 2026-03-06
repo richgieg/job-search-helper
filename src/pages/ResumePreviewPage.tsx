@@ -88,7 +88,6 @@ export const ResumePreviewPage = () => {
                     </div>
                     <p className="text-sm text-slate-500">{formatDateRange(entry.startDate, entry.endDate, entry.isCurrent)}</p>
                   </div>
-                  {entry.description.trim() ? <p className="mt-3 text-sm leading-7 text-slate-700">{entry.description}</p> : null}
                   {entry.bullets.length > 0 ? (
                     <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-slate-700">
                       {entry.bullets.filter((bullet) => bullet.trim()).map((bullet, index) => (

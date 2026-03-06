@@ -247,7 +247,6 @@ The copied related records include:
 - start_date
 - end_date
 - is_current
-- description
 - bullets_json
 - supervisor_name
 - supervisor_title
@@ -263,7 +262,6 @@ The copied related records include:
 - degree
 - field_of_study
 - graduation_date
-- description
 - enabled
 - sort_order
 
