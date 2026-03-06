@@ -59,7 +59,6 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
     duplicateProfile({
       sourceProfileId: selectedBaseProfileId,
       targetJobId: job.id,
-      name: `${job.jobTitle} · ${job.companyName}`,
     })
   }
 

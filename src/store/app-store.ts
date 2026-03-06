@@ -282,10 +282,16 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       }
 
       const timestamp = now()
+      const nextName = name?.trim()
+        ? name.trim()
+        : sourceProfile.jobId === null && targetJobId !== undefined && targetJobId !== null
+          ? sourceProfile.name
+          : `${sourceProfile.name} Copy`
+
       const clonedProfile: Profile = {
         ...sourceProfile,
         id: createId(),
-        name: name?.trim() || `${sourceProfile.name} Copy`,
+        name: nextName,
         jobId: targetJobId === undefined ? sourceProfile.jobId : targetJobId,
         clonedFromProfileId: sourceProfileId,
         createdAt: timestamp,
