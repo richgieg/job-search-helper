@@ -114,6 +114,7 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
   const updateExperienceBullet = useAppStore((state) => state.actions.updateExperienceBullet)
   const deleteExperienceBullet = useAppStore((state) => state.actions.deleteExperienceBullet)
   const [content, setContent] = useState(bullet?.content ?? '')
+  const [enabled, setEnabled] = useState(bullet?.enabled ?? true)
 
   useEffect(() => {
     if (!bullet) {
@@ -121,6 +122,7 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
     }
 
     setContent(bullet.content)
+    setEnabled(bullet.enabled)
   }, [bullet])
 
   if (!bullet) {
@@ -131,10 +133,13 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
     <div className="rounded-xl border border-slate-200 p-3">
       <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
         <TextAreaField label="Bullet" placeholder="Describe an accomplishment or responsibility" value={content} onChange={setContent} />
-        <ItemActions
-          onDelete={() => deleteExperienceBullet(bullet.id)}
-          onSave={() => updateExperienceBullet({ experienceBulletId: bullet.id, changes: { content } })}
-        />
+        <div className="flex flex-wrap items-center justify-between gap-3 md:flex-col md:items-end">
+          <ToggleField checked={enabled} label="Enabled" onChange={setEnabled} />
+          <ItemActions
+            onDelete={() => deleteExperienceBullet(bullet.id)}
+            onSave={() => updateExperienceBullet({ experienceBulletId: bullet.id, changes: { content, enabled } })}
+          />
+        </div>
       </div>
     </div>
   )

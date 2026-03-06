@@ -55,7 +55,7 @@ interface AppStoreState {
     createExperienceBullet: (experienceEntryId: Id) => void
     updateExperienceBullet: (input: {
       experienceBulletId: Id
-      changes: Partial<Pick<ExperienceBullet, 'content' | 'sortOrder'>>
+      changes: Partial<Pick<ExperienceBullet, 'content' | 'enabled' | 'sortOrder'>>
     }) => void
     deleteExperienceBullet: (experienceBulletId: Id) => void
     createEducationEntry: (profileId: Id) => void
@@ -740,6 +740,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         id: createId(),
         experienceEntryId,
         content: '',
+        enabled: true,
         sortOrder: getNextSortOrder(
           Object.values(get().data.experienceBullets)
             .filter((item) => item.experienceEntryId === experienceEntryId)

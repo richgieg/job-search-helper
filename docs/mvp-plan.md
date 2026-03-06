@@ -259,6 +259,7 @@ The copied related records include:
 - id
 - experience_entry_id
 - content
+- enabled
 - sort_order
 
 ### EducationEntry

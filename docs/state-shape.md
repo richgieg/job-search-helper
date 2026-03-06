@@ -249,6 +249,7 @@ interface ExperienceBullet {
   id: Id;
   experienceEntryId: Id;
   content: string;
+  enabled: boolean;
   sortOrder: number;
 }
 

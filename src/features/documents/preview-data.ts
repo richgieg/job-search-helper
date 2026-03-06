@@ -118,7 +118,7 @@ export const selectProfilePreviewData = (data: AppDataState, profileId: Id): Pro
     .map((entry) => ({
       entry,
       bullets: Object.values(data.experienceBullets)
-        .filter((bullet) => bullet.experienceEntryId === entry.id && bullet.content.trim())
+        .filter((bullet) => bullet.experienceEntryId === entry.id && bullet.enabled && bullet.content.trim())
         .sort(compareSortOrder),
     }))
 
