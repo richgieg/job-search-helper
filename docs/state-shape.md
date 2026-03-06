@@ -50,6 +50,7 @@ interface AppDataState {
   skillCategories: Record<Id, SkillCategory>;
   skills: Record<Id, Skill>;
   experienceEntries: Record<Id, ExperienceEntry>;
+  experienceBullets: Record<Id, ExperienceBullet>;
   educationEntries: Record<Id, EducationEntry>;
   certifications: Record<Id, Certification>;
   references: Record<Id, Reference>;
@@ -239,9 +240,15 @@ interface ExperienceEntry {
   startDate: IsoDate | null;
   endDate: IsoDate | null;
   isCurrent: boolean;
-  bullets: string[];
   supervisor: ExperienceSupervisor;
   enabled: boolean;
+  sortOrder: number;
+}
+
+interface ExperienceBullet {
+  id: Id;
+  experienceEntryId: Id;
+  content: string;
   sortOrder: number;
 }
 
@@ -392,6 +399,7 @@ The following relationships should be enforced during normal app operations and 
 - `SkillCategory.profileId` points to an existing `Profile`.
 - `Skill.skillCategoryId` points to an existing `SkillCategory`.
 - `ExperienceEntry.profileId` points to an existing `Profile`.
+- `ExperienceBullet.experienceEntryId` points to an existing `ExperienceEntry`.
 - `EducationEntry.profileId` points to an existing `Profile`.
 - `Certification.profileId` points to an existing `Profile`.
 - `Reference.profileId` points to an existing `Profile`.
@@ -409,6 +417,7 @@ When duplicating a profile, create a new `Profile` and duplicate all profile-own
 - `SkillCategory`
 - `Skill`
 - `ExperienceEntry`
+- `ExperienceBullet`
 - `EducationEntry`
 - `Certification`
 - `Reference`
@@ -420,6 +429,10 @@ Rules:
 3. All duplicated child records get new ids.
 4. All duplicated child records point to the new profile or newly duplicated parent records.
 5. `createdAt` and `updatedAt` should be refreshed for the new records.
+
+Additional duplication rule for experience bullets:
+
+- when duplicating an `ExperienceEntry`, duplicate all of its `ExperienceBullet` records and re-point them to the new experience entry
 
 ## Deletion rules
 
@@ -442,6 +455,7 @@ Cascade delete these records:
 - `SkillCategory`
 - `Skill`
 - `ExperienceEntry`
+- `ExperienceBullet`
 - `EducationEntry`
 - `Certification`
 - `Reference`
@@ -479,6 +493,7 @@ Rules:
 The following records can be hard deleted directly:
 
 - `ExperienceEntry`
+- `ExperienceBullet`
 - `EducationEntry`
 - `Certification`
 - `Reference`
@@ -489,6 +504,7 @@ The following records can be hard deleted directly:
 Additional rule:
 
 - deleting a `SkillCategory` should also delete all `Skill` records that belong to that category
+- deleting an `ExperienceEntry` should also delete all `ExperienceBullet` records that belong to that entry
 
 ### Generated outputs and deletion
 
@@ -532,6 +548,7 @@ These values should be computed, not stored.
 - `getOrderedSkillCategories(profileId)`
 - `getOrderedSkills(skillCategoryId)`
 - `getOrderedExperienceEntries(profileId)`
+- `getOrderedExperienceBullets(experienceEntryId)`
 - `getOrderedEducationEntries(profileId)`
 - `getOrderedCertifications(profileId)`
 - `getOrderedReferences(profileId)`
@@ -557,13 +574,13 @@ Recommended precedence for computed status:
 
 ## Notes on naming
 
-The MVP plan used names like `personal_details_json`, `links_json`, `bullets_json`, and `metadata_json` to communicate structured data.
+The MVP plan used names like `personal_details_json`, `links_json`, and `metadata_json` to communicate structured data.
 
 In TypeScript application state, prefer typed objects and arrays instead:
 
 - `personalDetails` instead of `personal_details_json`
 - `links` instead of `links_json`
-- `bullets: string[]` instead of `bullets_json`
+- `ExperienceBullet.content` instead of embedding `bullets_json` on `ExperienceEntry`
 - `metadata: Record<string, unknown>` instead of `metadata_json`
 
 This provides stronger type-safety and simpler component code.

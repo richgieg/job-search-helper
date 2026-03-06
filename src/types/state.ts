@@ -112,9 +112,15 @@ export interface ExperienceEntry {
   startDate: IsoDate | null
   endDate: IsoDate | null
   isCurrent: boolean
-  bullets: string[]
   supervisor: ExperienceSupervisor
   enabled: boolean
+  sortOrder: number
+}
+
+export interface ExperienceBullet {
+  id: Id
+  experienceEntryId: Id
+  content: string
   sortOrder: number
 }
 
@@ -220,6 +226,7 @@ export interface AppDataState {
   skillCategories: Record<Id, SkillCategory>
   skills: Record<Id, Skill>
   experienceEntries: Record<Id, ExperienceEntry>
+  experienceBullets: Record<Id, ExperienceBullet>
   educationEntries: Record<Id, EducationEntry>
   certifications: Record<Id, Certification>
   references: Record<Id, Reference>

@@ -8,6 +8,7 @@ import type {
   Certification,
   ContactRelationshipType,
   EducationEntry,
+  ExperienceBullet,
   ExperienceEntry,
   Id,
   Job,
@@ -51,6 +52,12 @@ interface AppStoreState {
       changes: Partial<Omit<ExperienceEntry, 'id' | 'profileId'>>
     }) => void
     deleteExperienceEntry: (experienceEntryId: Id) => void
+    createExperienceBullet: (experienceEntryId: Id) => void
+    updateExperienceBullet: (input: {
+      experienceBulletId: Id
+      changes: Partial<Pick<ExperienceBullet, 'content' | 'sortOrder'>>
+    }) => void
+    deleteExperienceBullet: (experienceBulletId: Id) => void
     createEducationEntry: (profileId: Id) => void
     updateEducationEntry: (input: {
       educationEntryId: Id
@@ -143,11 +150,13 @@ const stampUpdatedJob = (data: AppDataState, jobId: Id, timestamp: string): AppD
 
 const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetProfileId: Id): AppDataState => {
   const clonedSkillCategoryIds = new Map<Id, Id>()
+  const clonedExperienceEntryIds = new Map<Id, Id>()
   const nextData: AppDataState = {
     ...data,
     skillCategories: { ...data.skillCategories },
     skills: { ...data.skills },
     experienceEntries: { ...data.experienceEntries },
+    experienceBullets: { ...data.experienceBullets },
     educationEntries: { ...data.educationEntries },
     certifications: { ...data.certifications },
     references: { ...data.references },
@@ -181,12 +190,25 @@ const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetPro
   Object.values(data.experienceEntries)
     .filter((item) => item.profileId === sourceProfileId)
     .forEach((item) => {
+      const newId = createId()
+      clonedExperienceEntryIds.set(item.id, newId)
       const cloned: ExperienceEntry = {
         ...item,
-        id: createId(),
+        id: newId,
         profileId: targetProfileId,
       }
       nextData.experienceEntries[cloned.id] = cloned
+    })
+
+  Object.values(data.experienceBullets)
+    .filter((item) => clonedExperienceEntryIds.has(item.experienceEntryId))
+    .forEach((item) => {
+      const cloned: ExperienceBullet = {
+        ...item,
+        id: createId(),
+        experienceEntryId: clonedExperienceEntryIds.get(item.experienceEntryId)!,
+      }
+      nextData.experienceBullets[cloned.id] = cloned
     })
 
   Object.values(data.educationEntries)
@@ -231,11 +253,17 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
       .filter((item) => item.profileId === profileId)
       .map((item) => item.id),
   )
+  const experienceEntryIds = new Set(
+    Object.values(data.experienceEntries)
+      .filter((item) => item.profileId === profileId)
+      .map((item) => item.id),
+  )
 
   const nextProfiles = { ...data.profiles }
   const nextSkillCategories = { ...data.skillCategories }
   const nextSkills = { ...data.skills }
   const nextExperienceEntries = { ...data.experienceEntries }
+  const nextExperienceBullets = { ...data.experienceBullets }
   const nextEducationEntries = { ...data.educationEntries }
   const nextCertifications = { ...data.certifications }
   const nextReferences = { ...data.references }
@@ -269,6 +297,12 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
     }
   })
 
+  Object.values(data.experienceBullets).forEach((item) => {
+    if (experienceEntryIds.has(item.experienceEntryId)) {
+      delete nextExperienceBullets[item.id]
+    }
+  })
+
   Object.values(data.educationEntries).forEach((item) => {
     if (item.profileId === profileId) {
       delete nextEducationEntries[item.id]
@@ -293,9 +327,29 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
     skillCategories: nextSkillCategories,
     skills: nextSkills,
     experienceEntries: nextExperienceEntries,
+    experienceBullets: nextExperienceBullets,
     educationEntries: nextEducationEntries,
     certifications: nextCertifications,
     references: nextReferences,
+  }
+}
+
+const deleteExperienceEntryCascade = (data: AppDataState, experienceEntryId: Id): AppDataState => {
+  const nextExperienceEntries = { ...data.experienceEntries }
+  const nextExperienceBullets = { ...data.experienceBullets }
+
+  delete nextExperienceEntries[experienceEntryId]
+
+  Object.values(data.experienceBullets).forEach((item) => {
+    if (item.experienceEntryId === experienceEntryId) {
+      delete nextExperienceBullets[item.id]
+    }
+  })
+
+  return {
+    ...data,
+    experienceEntries: nextExperienceEntries,
+    experienceBullets: nextExperienceBullets,
   }
 }
 
@@ -612,7 +666,6 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         startDate: null,
         endDate: null,
         isCurrent: false,
-        bullets: [],
         supervisor: {
           name: '',
           title: '',
@@ -672,17 +725,96 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         return
       }
 
+      set((state) => ({
+        data: stampUpdatedProfile(deleteExperienceEntryCascade(state.data, experienceEntryId), existing.profileId, now()),
+      }))
+    },
+    createExperienceBullet: (experienceEntryId) => {
+      const experienceEntry = get().data.experienceEntries[experienceEntryId]
+
+      if (!experienceEntry) {
+        return
+      }
+
+      const experienceBullet: ExperienceBullet = {
+        id: createId(),
+        experienceEntryId,
+        content: '',
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.experienceBullets)
+            .filter((item) => item.experienceEntryId === experienceEntryId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            experienceBullets: {
+              ...state.data.experienceBullets,
+              [experienceBullet.id]: experienceBullet,
+            },
+          },
+          experienceEntry.profileId,
+          now(),
+        ),
+      }))
+    },
+    updateExperienceBullet: ({ experienceBulletId, changes }) => {
+      const existing = get().data.experienceBullets[experienceBulletId]
+
+      if (!existing) {
+        return
+      }
+
+      const experienceEntry = get().data.experienceEntries[existing.experienceEntryId]
+
+      if (!experienceEntry) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            experienceBullets: {
+              ...state.data.experienceBullets,
+              [experienceBulletId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          experienceEntry.profileId,
+          now(),
+        ),
+      }))
+    },
+    deleteExperienceBullet: (experienceBulletId) => {
+      const existing = get().data.experienceBullets[experienceBulletId]
+
+      if (!existing) {
+        return
+      }
+
+      const experienceEntry = get().data.experienceEntries[existing.experienceEntryId]
+
+      if (!experienceEntry) {
+        return
+      }
+
       set((state) => {
-        const nextExperienceEntries = { ...state.data.experienceEntries }
-        delete nextExperienceEntries[experienceEntryId]
+        const nextExperienceBullets = { ...state.data.experienceBullets }
+        delete nextExperienceBullets[experienceBulletId]
 
         return {
           data: stampUpdatedProfile(
             {
               ...state.data,
-              experienceEntries: nextExperienceEntries,
+              experienceBullets: nextExperienceBullets,
             },
-            existing.profileId,
+            experienceEntry.profileId,
             now(),
           ),
         }

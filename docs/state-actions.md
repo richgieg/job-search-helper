@@ -243,6 +243,13 @@ These actions should all:
 - `deleteExperienceEntry(input)`
 - `reorderExperienceEntries(input)`
 
+### Experience bullet actions
+
+- `createExperienceBullet(input)`
+- `updateExperienceBullet(input)`
+- `deleteExperienceBullet(input)`
+- `reorderExperienceBullets(input)`
+
 ### Education actions
 
 - `createEducationEntry(input)`

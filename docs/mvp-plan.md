@@ -220,6 +220,7 @@ The copied related records include:
 - `SkillCategory`
 - `Skill`
 - `ExperienceEntry`
+- `ExperienceBullet`
 - `EducationEntry`
 - `Certification`
 - `Reference`
@@ -247,12 +248,17 @@ The copied related records include:
 - start_date
 - end_date
 - is_current
-- bullets_json
 - supervisor_name
 - supervisor_title
 - supervisor_phone
 - supervisor_email
 - enabled
+- sort_order
+
+### ExperienceBullet
+- id
+- experience_entry_id
+- content
 - sort_order
 
 ### EducationEntry
@@ -371,7 +377,7 @@ Avoid relying on AI for the first version.
 
 Use deterministic templating:
 
-- Resume: map selected profile sections into a clean template
+- Resume: map selected profile sections into a clean template, including ordered `ExperienceBullet` records under each experience entry
 - Cover letter: combine contact/job/company data with a user-authored `cover_letter` text block, split into paragraphs by trimmed newlines; use a dummy contact when previewing from a base profile
 - Application page: render profile fields into copyable cards or rows
 

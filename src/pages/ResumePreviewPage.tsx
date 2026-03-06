@@ -88,18 +88,18 @@ export const ResumePreviewPage = () => {
             <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Experience</h3>
             <div className="mt-4 space-y-5">
               {preview.experienceEntries.map((entry) => (
-                <div key={entry.id}>
+                <div key={entry.entry.id}>
                   <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                     <div>
-                      <h4 className="text-base font-semibold text-slate-950">{entry.title || 'Untitled role'}</h4>
-                      <p className="text-sm text-slate-700">{[entry.company, entry.location].filter(Boolean).join(' · ')}</p>
+                      <h4 className="text-base font-semibold text-slate-950">{entry.entry.title || 'Untitled role'}</h4>
+                      <p className="text-sm text-slate-700">{[entry.entry.company, entry.entry.location].filter(Boolean).join(' · ')}</p>
                     </div>
-                    <p className="text-sm text-slate-500">{formatDateRange(entry.startDate, entry.endDate, entry.isCurrent)}</p>
+                    <p className="text-sm text-slate-500">{formatDateRange(entry.entry.startDate, entry.entry.endDate, entry.entry.isCurrent)}</p>
                   </div>
                   {entry.bullets.length > 0 ? (
                     <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-slate-700">
-                      {entry.bullets.filter((bullet) => bullet.trim()).map((bullet, index) => (
-                        <li key={`${entry.id}-${index}`}>{bullet}</li>
+                      {entry.bullets.map((bullet) => (
+                        <li key={bullet.id}>{bullet.content}</li>
                       ))}
                     </ul>
                   ) : null}

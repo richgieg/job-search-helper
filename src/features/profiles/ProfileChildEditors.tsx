@@ -109,6 +109,37 @@ const ItemActions = ({ onSave, onDelete }: { onSave: () => void; onDelete: () =>
   </div>
 )
 
+const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
+  const bullet = useAppStore((state) => state.data.experienceBullets[bulletId])
+  const updateExperienceBullet = useAppStore((state) => state.actions.updateExperienceBullet)
+  const deleteExperienceBullet = useAppStore((state) => state.actions.deleteExperienceBullet)
+  const [content, setContent] = useState(bullet?.content ?? '')
+
+  useEffect(() => {
+    if (!bullet) {
+      return
+    }
+
+    setContent(bullet.content)
+  }, [bullet])
+
+  if (!bullet) {
+    return null
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-200 p-3">
+      <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+        <TextAreaField label="Bullet" placeholder="Describe an accomplishment or responsibility" value={content} onChange={setContent} />
+        <ItemActions
+          onDelete={() => deleteExperienceBullet(bullet.id)}
+          onSave={() => updateExperienceBullet({ experienceBulletId: bullet.id, changes: { content } })}
+        />
+      </div>
+    </div>
+  )
+}
+
 const SkillRow = ({ skillId }: { skillId: string }) => {
   const skill = useAppStore((state) => state.data.skills[skillId])
   const updateSkill = useAppStore((state) => state.actions.updateSkill)
@@ -198,9 +229,20 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
 
 const ExperienceCard = ({ entryId }: { entryId: string }) => {
   const entry = useAppStore((state) => state.data.experienceEntries[entryId])
+  const bulletsById = useAppStore((state) => state.data.experienceBullets)
   const updateExperienceEntry = useAppStore((state) => state.actions.updateExperienceEntry)
   const deleteExperienceEntry = useAppStore((state) => state.actions.deleteExperienceEntry)
+  const createExperienceBullet = useAppStore((state) => state.actions.createExperienceBullet)
   const [draft, setDraft] = useState(entry)
+
+  const bulletIds = useMemo(
+    () =>
+      Object.values(bulletsById)
+        .filter((item) => item.experienceEntryId === entryId)
+        .sort((left, right) => left.sortOrder - right.sortOrder)
+        .map((item) => item.id),
+    [bulletsById, entryId],
+  )
 
   useEffect(() => {
     setDraft(entry)
@@ -244,6 +286,25 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
               value={draft.supervisor.email}
               onChange={(value) => setDraft({ ...draft, supervisor: { ...draft.supervisor, email: value } })}
             />
+          </div>
+        </div>
+        <div className="xl:col-span-3">
+          <div className="flex items-center justify-between gap-3">
+            <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Bullets</h4>
+            <button
+              className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              onClick={() => createExperienceBullet(entry.id)}
+              type="button"
+            >
+              Add bullet
+            </button>
+          </div>
+          <div className="mt-3 space-y-3">
+            {bulletIds.length === 0 ? (
+              <p className="text-sm text-slate-500">No bullets yet.</p>
+            ) : (
+              bulletIds.map((bulletId) => <ExperienceBulletRow key={bulletId} bulletId={bulletId} />)
+            )}
           </div>
         </div>
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
