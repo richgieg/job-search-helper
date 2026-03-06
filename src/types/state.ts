@@ -1,0 +1,264 @@
+export type Id = string
+export type IsoTimestamp = string
+export type IsoDate = string
+
+export type WorkArrangement = 'onsite' | 'hybrid' | 'remote' | 'unknown'
+export type EmploymentType =
+  | 'full_time'
+  | 'part_time'
+  | 'contract'
+  | 'internship'
+  | 'temporary'
+  | 'other'
+
+export type JobPostingSourceType =
+  | 'linkedin'
+  | 'workday'
+  | 'greenhouse'
+  | 'indeed'
+  | 'company_site'
+  | 'other'
+
+export type ContactRelationshipType =
+  | 'recruiter'
+  | 'hiring_manager'
+  | 'referral'
+  | 'interviewer'
+  | 'other'
+
+export type ReferenceType = 'professional' | 'personal'
+
+export type JobEventType =
+  | 'job_saved'
+  | 'applied'
+  | 'interview_scheduled'
+  | 'interview_completed'
+  | 'offer_received'
+  | 'rejected'
+  | 'withdrew'
+
+export type JobComputedStatus =
+  | 'interested'
+  | 'applied'
+  | 'interview'
+  | 'offer'
+  | 'rejected'
+  | 'withdrew'
+
+export type JobStatusFilter = JobComputedStatus | 'all'
+
+export interface PersonalDetails {
+  fullName: string
+  email: string
+  phone: string
+  addressLine1: string
+  addressLine2: string
+  addressLine3: string
+  addressLine4: string
+  city: string
+  region: string
+  postalCode: string
+  country: string
+}
+
+export interface ProfileLinks {
+  linkedinUrl: string
+  githubUrl: string
+  portfolioUrl: string
+  websiteUrl: string
+}
+
+export interface Profile {
+  id: Id
+  name: string
+  summary: string
+  coverLetter: string
+  personalDetails: PersonalDetails
+  links: ProfileLinks
+  jobId: Id | null
+  clonedFromProfileId: Id | null
+  createdAt: IsoTimestamp
+  updatedAt: IsoTimestamp
+}
+
+export interface SkillCategory {
+  id: Id
+  profileId: Id
+  name: string
+  enabled: boolean
+  sortOrder: number
+}
+
+export interface Skill {
+  id: Id
+  skillCategoryId: Id
+  name: string
+  enabled: boolean
+  sortOrder: number
+}
+
+export interface ExperienceEntry {
+  id: Id
+  profileId: Id
+  company: string
+  title: string
+  location: string
+  startDate: IsoDate | null
+  endDate: IsoDate | null
+  isCurrent: boolean
+  description: string
+  bullets: string[]
+  enabled: boolean
+  sortOrder: number
+}
+
+export interface EducationEntry {
+  id: Id
+  profileId: Id
+  school: string
+  degree: string
+  fieldOfStudy: string
+  graduationDate: IsoDate | null
+  description: string
+  enabled: boolean
+  sortOrder: number
+}
+
+export interface Certification {
+  id: Id
+  profileId: Id
+  name: string
+  issuer: string
+  issueDate: IsoDate | null
+  expiryDate: IsoDate | null
+  credentialId: string
+  credentialUrl: string
+  enabled: boolean
+  sortOrder: number
+}
+
+export interface Reference {
+  id: Id
+  profileId: Id
+  type: ReferenceType
+  name: string
+  relationship: string
+  company: string
+  title: string
+  email: string
+  phone: string
+  notes: string
+  enabled: boolean
+  sortOrder: number
+}
+
+export interface Job {
+  id: Id
+  companyName: string
+  jobTitle: string
+  description: string
+  location: string
+  postedCompensation: string
+  desiredCompensation: string
+  compensationNotes: string
+  workArrangement: WorkArrangement
+  employmentType: EmploymentType
+  datePosted: IsoDate | null
+  notes: string
+  createdAt: IsoTimestamp
+  updatedAt: IsoTimestamp
+}
+
+export interface JobPostingSource {
+  id: Id
+  jobId: Id
+  sourceType: JobPostingSourceType
+  url: string
+  label: string
+  sortOrder: number
+  createdAt: IsoTimestamp
+}
+
+export interface JobContact {
+  id: Id
+  jobId: Id
+  name: string
+  title: string
+  company: string
+  addressLine1: string
+  addressLine2: string
+  addressLine3: string
+  addressLine4: string
+  email: string
+  phone: string
+  linkedinUrl: string
+  relationshipType: ContactRelationshipType
+  notes: string
+  sortOrder: number
+}
+
+export interface JobEvent {
+  id: Id
+  jobId: Id
+  eventType: JobEventType
+  occurredAt: IsoTimestamp | null
+  scheduledFor: IsoTimestamp | null
+  notes: string
+  metadata: Record<string, unknown>
+  createdAt: IsoTimestamp
+}
+
+export interface AppDataState {
+  version: 1
+  exportedAt?: IsoTimestamp
+  profiles: Record<Id, Profile>
+  skillCategories: Record<Id, SkillCategory>
+  skills: Record<Id, Skill>
+  experienceEntries: Record<Id, ExperienceEntry>
+  educationEntries: Record<Id, EducationEntry>
+  certifications: Record<Id, Certification>
+  references: Record<Id, Reference>
+  jobs: Record<Id, Job>
+  jobPostingSources: Record<Id, JobPostingSource>
+  jobContacts: Record<Id, JobContact>
+  jobEvents: Record<Id, JobEvent>
+}
+
+export interface JobsListUiState {
+  searchText: string
+  statusFilter: JobStatusFilter | null
+  sortBy: 'updated_at' | 'created_at' | 'company_name' | 'job_title'
+  sortDirection: 'asc' | 'desc'
+}
+
+export interface ProfilesListUiState {
+  searchText: string
+  kindFilter: 'base' | 'job' | null
+  sortBy: 'updated_at' | 'created_at' | 'name'
+  sortDirection: 'asc' | 'desc'
+}
+
+export interface DialogUiState {
+  importExportOpen: boolean
+  duplicateProfileOpen: boolean
+  createJobProfileOpen: boolean
+}
+
+export interface AppUiState {
+  selectedJobId: Id | null
+  selectedProfileId: Id | null
+  jobsList: JobsListUiState
+  profilesList: ProfilesListUiState
+  dialogs: DialogUiState
+}
+
+export interface AppState {
+  data: AppDataState
+  ui: AppUiState
+}
+
+export interface AppExportFile {
+  version: 1
+  exportedAt: IsoTimestamp
+  data: Omit<AppDataState, 'version' | 'exportedAt'>
+}
