@@ -242,8 +242,16 @@ interface ExperienceEntry {
   isCurrent: boolean;
   description: string;
   bullets: string[];
+  supervisor: ExperienceSupervisor;
   enabled: boolean;
   sortOrder: number;
+}
+
+interface ExperienceSupervisor {
+  name: string;
+  title: string;
+  phone: string;
+  email: string;
 }
 ```
 

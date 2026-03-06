@@ -97,6 +97,13 @@ export interface Skill {
   sortOrder: number
 }
 
+export interface ExperienceSupervisor {
+  name: string
+  title: string
+  phone: string
+  email: string
+}
+
 export interface ExperienceEntry {
   id: Id
   profileId: Id
@@ -108,6 +115,7 @@ export interface ExperienceEntry {
   isCurrent: boolean
   description: string
   bullets: string[]
+  supervisor: ExperienceSupervisor
   enabled: boolean
   sortOrder: number
 }

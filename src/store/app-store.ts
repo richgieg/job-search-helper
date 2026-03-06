@@ -614,6 +614,12 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         isCurrent: false,
         description: '',
         bullets: [],
+        supervisor: {
+          name: '',
+          title: '',
+          phone: '',
+          email: '',
+        },
         enabled: true,
         sortOrder: getNextSortOrder(
           Object.values(get().data.experienceEntries)

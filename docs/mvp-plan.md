@@ -249,6 +249,10 @@ The copied related records include:
 - is_current
 - description
 - bullets_json
+- supervisor_name
+- supervisor_title
+- supervisor_phone
+- supervisor_email
 - enabled
 - sort_order
 

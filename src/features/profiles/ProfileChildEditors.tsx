@@ -222,6 +222,33 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
         <div className="xl:col-span-3">
           <TextAreaField label="Description" value={draft.description} onChange={(value) => setDraft({ ...draft, description: value })} />
         </div>
+        <div className="xl:col-span-3">
+          <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Supervisor</h4>
+          <div className="mt-3 grid gap-4 xl:grid-cols-3">
+            <TextField
+              label="Supervisor name"
+              value={draft.supervisor.name}
+              onChange={(value) => setDraft({ ...draft, supervisor: { ...draft.supervisor, name: value } })}
+            />
+            <TextField
+              label="Supervisor title"
+              value={draft.supervisor.title}
+              onChange={(value) => setDraft({ ...draft, supervisor: { ...draft.supervisor, title: value } })}
+            />
+            <TextField
+              label="Supervisor phone"
+              type="tel"
+              value={draft.supervisor.phone}
+              onChange={(value) => setDraft({ ...draft, supervisor: { ...draft.supervisor, phone: value } })}
+            />
+            <TextField
+              label="Supervisor email"
+              type="email"
+              value={draft.supervisor.email}
+              onChange={(value) => setDraft({ ...draft, supervisor: { ...draft.supervisor, email: value } })}
+            />
+          </div>
+        </div>
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
           <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
           <ItemActions
