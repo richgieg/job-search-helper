@@ -32,6 +32,10 @@ export const ResumePreviewPage = () => {
     preview.profile.links.portfolioUrl,
     preview.profile.links.websiteUrl,
   ].filter(Boolean)
+  const summaryParagraphs = preview.profile.summary
+    .split(/\n+/g)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
 
   return (
     <DocumentPageLayout
@@ -54,10 +58,14 @@ export const ResumePreviewPage = () => {
           {links.length > 0 ? <p className="mt-2 text-sm text-sky-700">{links.join(' · ')}</p> : null}
         </header>
 
-        {preview.profile.summary.trim() ? (
+        {summaryParagraphs.length > 0 ? (
           <section className="mt-6">
             <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Summary</h3>
-            <p className="mt-3 text-sm leading-7 text-slate-700">{preview.profile.summary}</p>
+            <div className="mt-3 space-y-4 text-sm leading-7 text-slate-700">
+              {summaryParagraphs.map((paragraph, index) => (
+                <p key={`${preview.profile.id}-summary-${index}`}>{paragraph}</p>
+              ))}
+            </div>
           </section>
         ) : null}
 
