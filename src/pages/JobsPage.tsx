@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react'
+import { SubmitEvent, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { getJobComputedStatus } from '../features/jobs/job-status'
@@ -6,11 +6,9 @@ import { useAppStore } from '../store/app-store'
 
 const JobListItem = ({ jobId }: { jobId: string }) => {
   const job = useAppStore((state) => state.data.jobs[jobId])
-  const profilesById = useAppStore((state) => state.data.profiles)
   const jobEventsById = useAppStore((state) => state.data.jobEvents)
   const deleteJob = useAppStore((state) => state.actions.deleteJob)
 
-  const profiles = useMemo(() => Object.values(profilesById), [profilesById])
   const jobEvents = useMemo(() => Object.values(jobEventsById).filter((event) => event.jobId === jobId), [jobEventsById, jobId])
 
   if (!job) {
@@ -89,7 +87,7 @@ export const JobsPage = () => {
   const jobs = useMemo(() => Object.values(jobsById), [jobsById])
   const sortedJobIds = useMemo(() => [...jobs].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).map((job) => job.id), [jobs])
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const trimmedCompany = companyName.trim()
