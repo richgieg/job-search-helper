@@ -30,8 +30,10 @@ export const DashboardPage = () => {
       <section>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Dashboard</h1>
         <p className="mt-2 max-w-3xl text-sm text-slate-600">
-          This scaffold includes the app shell, routing, store foundation, and import/export plumbing for the
-          browser-only MVP.
+          Manage your job search in one place.
+        </p>
+        <p className="mt-2 max-w-3xl text-sm text-slate-600">
+          Track profiles, jobs, contacts, events, and generated application materials.
         </p>
       </section>
 
@@ -43,12 +45,13 @@ export const DashboardPage = () => {
       </section>
 
       <section className="rounded-2xl border border-dashed border-slate-300 bg-white/70 p-6">
-        <h2 className="text-lg font-semibold text-slate-900">Next implementation targets</h2>
+        <h2 className="text-lg font-semibold text-slate-900">How to use this dashboard</h2>
         <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-slate-600">
-          <li>Expand the store actions to match the documented state actions.</li>
-          <li>Build profile and job CRUD forms.</li>
-          <li>Add import validation with Zod.</li>
-          <li>Wire generated document previews.</li>
+          <li>Create or update reusable base profiles.</li>
+          <li>Add jobs and attach tailored job profiles.</li>
+          <li>Track contacts, application questions, and timeline events.</li>
+          <li>Generate resume, cover letter, and application previews.</li>
+          <li>Export JSON backups or restore from an import.</li>
         </ul>
       </section>
     </div>
