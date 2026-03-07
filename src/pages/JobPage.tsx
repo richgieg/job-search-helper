@@ -204,7 +204,7 @@ export const JobPage = () => {
               Open preview
             </Link>
           ) : null}
-          <button className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={handleSave} type="button">
+          <button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700" onClick={handleSave} type="button">
             Save job
           </button>
           <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={handleDelete} type="button">
