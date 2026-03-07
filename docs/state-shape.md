@@ -158,6 +158,14 @@ type JobComputedStatus =
   | 'withdrew';
 
 type JobStatusFilter = JobComputedStatus | 'all';
+
+type ResumeSectionKey =
+  | 'summary'
+  | 'skills'
+  | 'experience'
+  | 'education'
+  | 'certifications'
+  | 'references';
 ```
 
 ## Core entity types
@@ -176,6 +184,7 @@ interface Profile {
   name: string;
   summary: string;
   coverLetter: string;
+  resumeSettings: ResumeSettings;
   personalDetails: PersonalDetails;
   links: ProfileLinks;
   jobId: Id | null;
@@ -201,6 +210,15 @@ interface ProfileLinks {
   githubUrl: string;
   portfolioUrl: string;
   websiteUrl: string;
+}
+
+interface ResumeSettings {
+  sections: Record<ResumeSectionKey, ResumeSectionSettings>;
+}
+
+interface ResumeSectionSettings {
+  enabled: boolean;
+  sortOrder: number;
 }
 ```
 
@@ -407,6 +425,7 @@ The following relationships should be enforced during normal app operations and 
 
 - `Profile.jobId` is either `null` or points to an existing `Job`.
 - `Profile.clonedFromProfileId` is either `null` or points to an existing `Profile`.
+- `Profile.resumeSettings.sections` contains exactly one settings object for each `ResumeSectionKey`.
 - If `Profile.jobId === null`, the profile is a base profile.
 - If `Profile.jobId !== null`, the profile is a job profile.
 
@@ -564,6 +583,7 @@ These values should be computed, not stored.
 - `getBaseProfiles()`
 - `getJobProfiles(jobId)`
 - `getProfileKind(profile)`
+- `getOrderedResumeSections(profileId)`
 - `getOrderedSkillCategories(profileId)`
 - `getOrderedSkills(skillCategoryId)`
 - `getOrderedExperienceEntries(profileId)`
@@ -603,6 +623,23 @@ In TypeScript application state, prefer typed objects and arrays instead:
 - `metadata: Record<string, unknown>` instead of `metadata_json`
 
 This provides stronger type-safety and simpler component code.
+
+## Resume settings notes
+
+Resume settings should stay embedded on `Profile` for the MVP.
+
+Reasons:
+
+- the generated resume is part of how a specific base profile or job profile is presented
+- duplicating a profile should duplicate its resume settings automatically
+- keeping one resume settings object per profile keeps the model simple while still allowing tailored section order and visibility
+
+Recommended validation rules for `resumeSettings.sections`:
+
+- every `ResumeSectionKey` must be present exactly once as an object key
+- every section must have a boolean `enabled` flag
+- every section must have a numeric `sortOrder`
+- `sortOrder` values should be unique within the profile's resume settings
 
 ## Recommended next step
 

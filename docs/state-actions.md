@@ -143,6 +143,7 @@ Behavior:
 
 - create a `Profile` with `jobId = null`
 - set `clonedFromProfileId = null`
+- initialize default `resumeSettings.sections` values
 - initialize missing nested objects with defaults
 - stamp `createdAt` and `updatedAt`
 
@@ -163,6 +164,48 @@ Behavior:
 
 - require an existing profile
 - apply validated changes
+- update `updatedAt`
+
+### Resume settings actions
+
+Resume settings should be updated through explicit actions rather than bundled into generic profile field updates.
+
+### `setResumeSectionEnabled(input)`
+
+Enables or disables a single resume section for a profile.
+
+```ts
+interface SetResumeSectionEnabledInput {
+  profileId: Id;
+  section: ResumeSectionKey;
+  enabled: boolean;
+}
+```
+
+Behavior:
+
+- require an existing profile
+- require a valid `ResumeSectionKey`
+- update `profile.resumeSettings.sections[section].enabled`
+- update `updatedAt`
+
+### `reorderResumeSections(input)`
+
+Reorders resume sections for a profile.
+
+```ts
+interface ReorderResumeSectionsInput {
+  profileId: Id;
+  orderedSections: ResumeSectionKey[];
+}
+```
+
+Behavior:
+
+- require an existing profile
+- require every `ResumeSectionKey` exactly once in `orderedSections`
+- rewrite each section's `sortOrder`
+- preserve each section's existing `enabled` flag
 - update `updatedAt`
 
 ### `duplicateProfile(input)`
@@ -193,6 +236,7 @@ Notes:
 - duplicating a base profile into a job profile sets `targetJobId` to that job id
 - duplicating a base profile into another base profile uses `targetJobId = null`
 - duplicating a job profile into another job profile may target the same job or a different job
+- duplicating a profile should also duplicate its `resumeSettings`
 
 ### `deleteProfile(input)`
 
@@ -427,11 +471,18 @@ Each action should validate:
 - required fields
 - basic shape constraints
 
+Resume settings actions should additionally validate:
+
+- valid `ResumeSectionKey` values
+- uniqueness and completeness of section keys during reordering
+- unique `sortOrder` values after reordering
+
 Import validation should additionally verify:
 
 - all ids are unique within each entity collection
 - referenced entities exist
 - no dangling relationships remain
+- every profile has a complete and valid `resumeSettings.sections` object
 
 ## Timestamp rules
 
@@ -440,6 +491,7 @@ Recommended timestamp rules:
 - new records set both `createdAt` and `updatedAt`
 - updates change `updatedAt`
 - child record changes should also update parent `Profile.updatedAt` or `Job.updatedAt` where appropriate
+- resume settings changes should update `Profile.updatedAt`
 - import preserves timestamps from imported data
 
 ## Derived data rules
@@ -456,21 +508,24 @@ Actions also should not persist generated outputs.
 Instead:
 
 - generate resume, cover letter, and application page views on demand from current state
+- generate resume sections in the profile's configured visible order from `resumeSettings.sections`
 
 ## Suggested implementation order
 
 1. `createBaseProfile()`
 2. `updateProfile()`
-3. `createJob()`
-4. `updateJob()`
-5. child CRUD for profile records
-6. `duplicateProfile()`
-7. job contact, posting source, and application question actions
-8. job event actions
-9. `deleteProfile()`
-10. `deleteJob()`
-11. `exportAppData()`
-12. `importAppData()`
+3. `setResumeSectionEnabled()`
+4. `reorderResumeSections()`
+5. `createJob()`
+6. `updateJob()`
+7. child CRUD for profile records
+8. `duplicateProfile()`
+9. job contact, posting source, and application question actions
+10. job event actions
+11. `deleteProfile()`
+12. `deleteJob()`
+13. `exportAppData()`
+14. `importAppData()`
 
 ## Testing recommendations
 
@@ -479,8 +534,11 @@ Each action should have focused tests.
 High-priority tests:
 
 - duplicate profile copies all child records with new ids
+- duplicate profile copies `resumeSettings`
 - deleting a profile cascades child deletion
 - deleting a profile clears descendant `clonedFromProfileId`
+- resume section visibility toggles update the correct section only
+- resume section reordering produces unique sequential `sortOrder` values
 - deleting a job deletes attached job profiles and job-owned records
 - importing valid JSON replaces state
 - importing invalid JSON is rejected without mutating state
