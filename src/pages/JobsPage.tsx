@@ -39,7 +39,7 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
       </td>
       <td className="px-4 py-4 align-top text-sm text-slate-600">{new Date(job.updatedAt).toLocaleString()}</td>
       <td className="px-4 py-4 align-top">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/jobs/${job.id}`}>
             Open
           </Link>
@@ -65,7 +65,7 @@ const JobsTable = ({ jobIds }: { jobIds: string[] }) => {
             <th className="px-4 py-3">Job</th>
             <th className="px-4 py-3">Status</th>
             <th className="px-4 py-3">Updated</th>
-            <th className="px-4 py-3">Actions</th>
+            <th className="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody>

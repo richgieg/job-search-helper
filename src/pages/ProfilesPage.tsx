@@ -36,7 +36,7 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
       </td>
       <td className="px-4 py-4 align-top text-sm text-slate-600">{new Date(profile.updatedAt).toLocaleString()}</td>
       <td className="px-4 py-4 align-top">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}`}>
             Open
           </Link>
@@ -110,7 +110,7 @@ export const ProfilesPage = () => {
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                   <th className="px-4 py-3">Profile</th>
                   <th className="px-4 py-3">Updated</th>
-                  <th className="px-4 py-3">Actions</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
