@@ -17,8 +17,8 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
     return null
   }
 
-  const jobProfileCount = profiles.filter((profile) => profile.jobId === jobId).length
-  const firstProfileId = profiles.find((profile) => profile.jobId === jobId)?.id ?? null
+  const attachedProfiles = profiles.filter((profile) => profile.jobId === jobId)
+  const firstProfileId = attachedProfiles[0]?.id ?? null
   const computedStatus = getJobComputedStatus(jobEvents.map((event) => event.eventType))
 
   const handleDelete = () => {
@@ -34,14 +34,13 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
     <tr className="border-t border-slate-200 first:border-t-0">
       <td className="px-4 py-4 align-top">
         <div>
-          <p className="font-medium text-slate-900">{job.companyName}</p>
-          <p className="mt-1 text-sm text-slate-500">{job.jobTitle}</p>
+          <p className="font-medium text-slate-900">{job.jobTitle}</p>
+          <p className="mt-1 text-sm text-slate-500">{job.companyName}</p>
         </div>
       </td>
       <td className="px-4 py-4 align-top">
         <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium capitalize text-sky-700">{computedStatus}</span>
       </td>
-      <td className="px-4 py-4 align-top text-sm text-slate-600">{jobProfileCount}</td>
       <td className="px-4 py-4 align-top text-sm text-slate-600">{new Date(job.updatedAt).toLocaleString()}</td>
       <td className="px-4 py-4 align-top">
         <div className="flex flex-wrap gap-2">
@@ -74,7 +73,6 @@ const JobsTable = ({ jobIds }: { jobIds: string[] }) => {
           <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             <th className="px-4 py-3">Job</th>
             <th className="px-4 py-3">Status</th>
-            <th className="px-4 py-3">Profiles</th>
             <th className="px-4 py-3">Updated</th>
             <th className="px-4 py-3">Actions</th>
           </tr>

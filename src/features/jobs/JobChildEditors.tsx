@@ -339,6 +339,7 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
   const createApplicationQuestion = useAppStore((state) => state.actions.createApplicationQuestion)
   const createJobEvent = useAppStore((state) => state.actions.createJobEvent)
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
+  const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
 
   const attachedProfiles = useMemo(
     () =>
@@ -391,7 +392,6 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-base font-semibold text-slate-900">Attached profiles</h3>
-            <p className="mt-1 text-sm text-slate-500">Current computed status: <span className="font-medium capitalize text-slate-900">{status}</span></p>
           </div>
         </div>
         <div className="mt-4 space-y-3">
@@ -405,6 +405,12 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
                   <p className="mt-1 text-sm text-slate-500">Updated {new Date(profile.updatedAt).toLocaleString()}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  <Link
+                    className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    to={`/profiles/${profile.id}`}
+                  >
+                    Open
+                  </Link>
                   <Link
                     className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                     to={`/previews/cover-letter/${profile.id}`}
@@ -428,7 +434,21 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
                     onClick={() => duplicateProfile({ sourceProfileId: profile.id })}
                     type="button"
                   >
-                    Duplicate profile
+                    Duplicate
+                  </button>
+                  <button
+                    className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50"
+                    onClick={() => {
+                      const confirmed = window.confirm(`Delete profile "${profile.name}"? This cannot be undone.`)
+                      if (!confirmed) {
+                        return
+                      }
+
+                      deleteProfile(profile.id)
+                    }}
+                    type="button"
+                  >
+                    Delete
                   </button>
                 </div>
               </div>

@@ -5,15 +5,12 @@ import { useAppStore } from '../store/app-store'
 
 const ProfileListItem = ({ profileId }: { profileId: string }) => {
   const profile = useAppStore((state) => state.data.profiles[profileId])
-  const jobsById = useAppStore((state) => state.data.jobs)
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
   const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
 
   if (!profile) {
     return null
   }
-
-  const attachedJob = profile.jobId ? jobsById[profile.jobId] : null
 
   const handleDuplicate = () => {
     duplicateProfile({ sourceProfileId: profile.id })
@@ -33,12 +30,8 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
       <td className="px-4 py-4 align-top">
         <div>
           <p className="font-medium text-slate-900">{profile.name}</p>
-          <p className="mt-1 text-sm text-slate-500">
-            {attachedJob ? `${attachedJob.jobTitle || 'Untitled role'} · ${attachedJob.companyName || 'Unknown company'}` : 'Reusable base profile'}
-          </p>
         </div>
       </td>
-      <td className="px-4 py-4 align-top text-sm text-slate-600">{profile.jobId === null ? 'Base' : 'Job'}</td>
       <td className="px-4 py-4 align-top text-sm text-slate-600">{new Date(profile.updatedAt).toLocaleString()}</td>
       <td className="px-4 py-4 align-top">
         <div className="flex flex-wrap gap-2">
@@ -71,7 +64,7 @@ export const ProfilesPage = () => {
   const createBaseProfile = useAppStore((state) => state.actions.createBaseProfile)
   const [name, setName] = useState('')
 
-  const profiles = useMemo(() => Object.values(profilesById), [profilesById])
+  const profiles = useMemo(() => Object.values(profilesById).filter((profile) => profile.jobId === null), [profilesById])
 
   const sortedProfileIds = useMemo(() => [...profiles].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).map((profile) => profile.id), [profiles])
 
@@ -91,7 +84,7 @@ export const ProfilesPage = () => {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Profiles</h1>
-        <p className="mt-2 text-sm text-slate-600">Use this page as a lightweight overview. Open any profile to edit its details, links, document content, and child records.</p>
+        <p className="mt-2 text-sm text-slate-600">Use this page as a lightweight overview of reusable base profiles. Open any profile to edit its details, links, document content, and child records.</p>
       </div>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -123,7 +116,6 @@ export const ProfilesPage = () => {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                   <th className="px-4 py-3">Profile</th>
-                  <th className="px-4 py-3">Kind</th>
                   <th className="px-4 py-3">Updated</th>
                   <th className="px-4 py-3">Actions</th>
                 </tr>
