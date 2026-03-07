@@ -7,6 +7,7 @@ import { DashboardPage } from '../pages/DashboardPage'
 import { ImportExportPage } from '../pages/ImportExportPage'
 import { JobPage } from '../pages/JobPage'
 import { JobsPage } from '../pages/JobsPage'
+import { ProfilePage } from '../pages/ProfilePage'
 import { ProfilesPage } from '../pages/ProfilesPage'
 import { ResumePreviewPage } from '../pages/ResumePreviewPage'
 
@@ -17,6 +18,7 @@ export const AppRoutes = () => {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profiles" element={<ProfilesPage />} />
+        <Route path="/profiles/:profileId" element={<ProfilePage />} />
         <Route path="/jobs" element={<JobsPage />} />
         <Route path="/jobs/:jobId" element={<JobPage />} />
         <Route path="/import-export" element={<ImportExportPage />} />

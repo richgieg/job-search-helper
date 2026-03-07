@@ -195,7 +195,9 @@ This allows the user to keep track of custom questions asked during online appli
    - Quick actions
 
 2. Profiles list
+   - lightweight overview of all profiles
 3. Profile editor
+   - full profile editing and child records
 4. Jobs list
    - lightweight overview of all jobs
 5. Job create/edit
