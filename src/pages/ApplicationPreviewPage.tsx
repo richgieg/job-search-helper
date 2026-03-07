@@ -85,7 +85,7 @@ const CopyValueButton = ({
 }) => (
   <button
     className={[
-      'relative min-w-0 cursor-pointer overflow-hidden rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm text-slate-800 transition hover:border-sky-300 hover:bg-sky-50',
+      'relative min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm text-slate-800 transition hover:border-sky-300 hover:bg-sky-50',
       inline ? 'inline-flex w-auto max-w-full items-center' : 'w-full',
       multiline ? 'max-h-24 whitespace-pre-wrap break-words' : 'truncate whitespace-nowrap',
       copiedKey === copyKey ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : '',
