@@ -156,6 +156,11 @@ const formatDateRange = (startDate: string | null, endDate: string | null, isCur
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter((part): part is string => Boolean(part && part.trim())).join(' • ')
 
+const stripEnabled = <T extends { enabled: boolean }>(value: T) => {
+  const { enabled: _enabled, ...rest } = value
+  return rest
+}
+
 const ExperienceBulletRow = ({
   bulletId,
   onDirtyChange,
@@ -192,7 +197,7 @@ const ExperienceBulletRow = ({
     setEnabled(bullet.enabled)
   }, [bullet])
 
-  const isDirty = bullet ? content !== bullet.content || enabled !== bullet.enabled : false
+  const isDirty = bullet ? content !== bullet.content : false
 
   useEffect(() => {
     onDirtyChange?.(bulletId, isDirty)
@@ -211,7 +216,14 @@ const ExperienceBulletRow = ({
       <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
         <TextAreaField label="Bullet" placeholder="Describe an accomplishment or responsibility" value={content} onChange={setContent} />
         <div className="flex flex-wrap items-center justify-between gap-3 md:flex-col md:items-end">
-          <ToggleField checked={enabled} label="Enabled" onChange={setEnabled} />
+          <ToggleField
+            checked={enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setEnabled(value)
+              updateExperienceBullet({ experienceBulletId: bullet.id, changes: { enabled: value } })
+            }}
+          />
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
               canMoveDown={bulletIds.length > 1}
@@ -231,7 +243,7 @@ const ExperienceBulletRow = ({
             />
             <ItemActions
               onDelete={() => deleteExperienceBullet(bullet.id)}
-              onSave={() => updateExperienceBullet({ experienceBulletId: bullet.id, changes: { content, enabled } })}
+              onSave={() => updateExperienceBullet({ experienceBulletId: bullet.id, changes: { content } })}
             />
           </div>
         </div>
@@ -276,7 +288,7 @@ const SkillRow = ({
     setEnabled(skill.enabled)
   }, [skill])
 
-  const isDirty = skill ? name !== skill.name || enabled !== skill.enabled : false
+  const isDirty = skill ? name !== skill.name : false
 
   useEffect(() => {
     onDirtyChange?.(skillId, isDirty)
@@ -293,7 +305,14 @@ const SkillRow = ({
   return (
     <div className="grid gap-3 rounded-xl border border-slate-200 p-3 md:grid-cols-[1fr_auto_auto_auto] md:items-end">
       <TextField label="Skill name" value={name} onChange={setName} />
-      <ToggleField checked={enabled} label="Enabled" onChange={setEnabled} />
+      <ToggleField
+        checked={enabled}
+        label="Enabled"
+        onChange={(value) => {
+          setEnabled(value)
+          updateSkill({ skillId: skill.id, changes: { enabled: value } })
+        }}
+      />
       <ReorderButtons
         canMoveDown={skillIds.length > 1}
         canMoveUp={skillIds.length > 1}
@@ -312,7 +331,7 @@ const SkillRow = ({
       />
       <ItemActions
         onDelete={() => deleteSkill(skill.id)}
-        onSave={() => updateSkill({ skillId: skill.id, changes: { name, enabled } })}
+        onSave={() => updateSkill({ skillId: skill.id, changes: { name } })}
       />
     </div>
   )
@@ -366,7 +385,7 @@ const SkillCategoryCard = ({
     setEnabled(category.enabled)
   }, [category])
 
-  const isDirty = category ? name !== category.name || enabled !== category.enabled || Object.keys(dirtySkillIds).length > 0 : false
+  const isDirty = category ? name !== category.name || Object.keys(dirtySkillIds).length > 0 : false
   const summary = summarizeParts([
     name || 'Untitled category',
     formatEnabledState(enabled),
@@ -404,7 +423,14 @@ const SkillCategoryCard = ({
     >
       <div className="grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
         <TextField label="Category name" value={name} onChange={setName} />
-        <ToggleField checked={enabled} label="Enabled" onChange={setEnabled} />
+        <ToggleField
+          checked={enabled}
+          label="Enabled"
+          onChange={(value) => {
+            setEnabled(value)
+            updateSkillCategory({ skillCategoryId: category.id, changes: { enabled: value } })
+          }}
+        />
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ReorderButtons
             canMoveDown={skillCategoryIds.length > 1}
@@ -424,7 +450,7 @@ const SkillCategoryCard = ({
           />
           <ItemActions
             onDelete={() => deleteSkillCategory(category.id)}
-            onSave={() => updateSkillCategory({ skillCategoryId: category.id, changes: { name, enabled } })}
+            onSave={() => updateSkillCategory({ skillCategoryId: category.id, changes: { name } })}
           />
         </div>
       </div>
@@ -478,7 +504,7 @@ const ExperienceCard = ({
     setDraft(entry)
   }, [entry])
 
-  const isDirty = entry && draft ? JSON.stringify(draft) !== JSON.stringify(entry) || Object.keys(dirtyBulletIds).length > 0 : false
+  const isDirty = entry && draft ? JSON.stringify(stripEnabled(draft)) !== JSON.stringify(stripEnabled(entry)) || Object.keys(dirtyBulletIds).length > 0 : false
   const summary = summarizeParts([
     draft?.title || 'Untitled role',
     draft?.company || 'Unknown company',
@@ -577,7 +603,14 @@ const ExperienceCard = ({
           </div>
         </div>
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
-          <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
+          <ToggleField
+            checked={draft.enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateExperienceEntry({ experienceEntryId: entry.id, changes: { enabled: value } })
+            }}
+          />
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
               canMoveDown={experienceEntryIds.length > 1}
@@ -597,7 +630,7 @@ const ExperienceCard = ({
             />
             <ItemActions
               onDelete={() => deleteExperienceEntry(entry.id)}
-              onSave={() => updateExperienceEntry({ experienceEntryId: entry.id, changes: draft })}
+              onSave={() => updateExperienceEntry({ experienceEntryId: entry.id, changes: stripEnabled(draft) })}
             />
           </div>
         </div>
@@ -636,7 +669,7 @@ const EducationCard = ({
     setDraft(entry)
   }, [entry])
 
-  const isDirty = entry && draft ? JSON.stringify(draft) !== JSON.stringify(entry) : false
+  const isDirty = entry && draft ? JSON.stringify(stripEnabled(draft)) !== JSON.stringify(stripEnabled(entry)) : false
   const summary = summarizeParts([draft?.degree || 'No degree', draft?.school || 'No school', draft?.graduationDate ? `Graduates ${draft.graduationDate}` : null, formatEnabledState(draft?.enabled ?? true)])
 
   useEffect(() => {
@@ -663,7 +696,14 @@ const EducationCard = ({
         <TextField label="Degree" value={draft.degree} onChange={(value) => setDraft({ ...draft, degree: value })} />
         <TextField label="Graduation date" type="date" value={draft.graduationDate ?? ''} onChange={(value) => setDraft({ ...draft, graduationDate: value || null })} />
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
-          <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
+          <ToggleField
+            checked={draft.enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateEducationEntry({ educationEntryId: entry.id, changes: { enabled: value } })
+            }}
+          />
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
               canMoveDown={educationEntryIds.length > 1}
@@ -683,7 +723,7 @@ const EducationCard = ({
             />
             <ItemActions
               onDelete={() => deleteEducationEntry(entry.id)}
-              onSave={() => updateEducationEntry({ educationEntryId: entry.id, changes: draft })}
+              onSave={() => updateEducationEntry({ educationEntryId: entry.id, changes: stripEnabled(draft) })}
             />
           </div>
         </div>
@@ -722,7 +762,7 @@ const CertificationCard = ({
     setDraft(certification)
   }, [certification])
 
-  const isDirty = certification && draft ? JSON.stringify(draft) !== JSON.stringify(certification) : false
+  const isDirty = certification && draft ? JSON.stringify(stripEnabled(draft)) !== JSON.stringify(stripEnabled(certification)) : false
   const summary = summarizeParts([
     draft?.name || 'Unnamed certification',
     draft?.issuer || 'No issuer',
@@ -758,7 +798,14 @@ const CertificationCard = ({
         <TextField label="Expiry date" type="date" value={draft.expiryDate ?? ''} onChange={(value) => setDraft({ ...draft, expiryDate: value || null })} />
         <TextField label="Credential URL" type="url" value={draft.credentialUrl} onChange={(value) => setDraft({ ...draft, credentialUrl: value })} />
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
-          <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
+          <ToggleField
+            checked={draft.enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateCertification({ certificationId: certification.id, changes: { enabled: value } })
+            }}
+          />
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
               canMoveDown={certificationIds.length > 1}
@@ -778,7 +825,7 @@ const CertificationCard = ({
             />
             <ItemActions
               onDelete={() => deleteCertification(certification.id)}
-              onSave={() => updateCertification({ certificationId: certification.id, changes: draft })}
+              onSave={() => updateCertification({ certificationId: certification.id, changes: stripEnabled(draft) })}
             />
           </div>
         </div>
@@ -817,7 +864,7 @@ const ReferenceCard = ({
     setDraft(reference)
   }, [reference])
 
-  const isDirty = reference && draft ? JSON.stringify(draft) !== JSON.stringify(reference) : false
+  const isDirty = reference && draft ? JSON.stringify(stripEnabled(draft)) !== JSON.stringify(stripEnabled(reference)) : false
   const summary = summarizeParts([
     draft?.type === 'professional' ? 'Professional' : 'Personal',
     draft?.name || 'Unnamed reference',
@@ -866,7 +913,14 @@ const ReferenceCard = ({
           <TextAreaField label="Notes" value={draft.notes} onChange={(value) => setDraft({ ...draft, notes: value })} />
         </div>
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
-          <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
+          <ToggleField
+            checked={draft.enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateReference({ referenceId: reference.id, changes: { enabled: value } })
+            }}
+          />
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
               canMoveDown={referenceIds.length > 1}
@@ -886,7 +940,7 @@ const ReferenceCard = ({
             />
             <ItemActions
               onDelete={() => deleteReference(reference.id)}
-              onSave={() => updateReference({ referenceId: reference.id, changes: draft })}
+              onSave={() => updateReference({ referenceId: reference.id, changes: stripEnabled(draft) })}
             />
           </div>
         </div>
