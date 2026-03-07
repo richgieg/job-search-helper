@@ -1,7 +1,6 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { getJobComputedStatus } from './job-status'
 import { useAppStore } from '../../store/app-store'
 import type { ContactRelationshipType, JobEventType, JobPostingSourceType } from '../../types/state'
 
@@ -383,8 +382,6 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
         .map((item) => item.id),
     [applicationQuestionsById, jobId],
   )
-
-  const status = useMemo(() => getJobComputedStatus(jobEvents.map((item) => item.eventType)), [jobEvents])
 
   return (
     <div className="mt-6">
