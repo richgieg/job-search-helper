@@ -9,35 +9,32 @@ const navigationItems = [
 
 const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   [
-    'rounded-xl px-3 py-2 text-sm font-medium transition',
+    'rounded-lg px-3 py-2 text-sm font-medium transition',
     isActive ? 'bg-sky-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
   ].join(' ')
 
 export const AppLayout = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="mx-auto flex min-h-screen max-w-7xl flex-col lg:flex-row">
-        <aside className="border-b border-slate-200 bg-white lg:min-h-screen lg:w-72 lg:shrink-0 lg:border-b-0 lg:border-r">
-          <div className="p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Job Search Helper</p>
-            <h1 className="mt-3 text-2xl font-semibold tracking-tight">Browser MVP</h1>
-            <p className="mt-3 text-sm text-slate-600">
-              React + Vite + TypeScript scaffold aligned to the planning documents.
-            </p>
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-10">
+          <div className="min-w-0">
+            <p className="text-lg font-semibold uppercase tracking-[0.24em] text-sky-600 sm:text-xl">Job Search Helper</p>
           </div>
-          <nav className="flex flex-wrap gap-2 px-6 pb-6 lg:flex-col">
+
+          <nav className="flex flex-wrap gap-2">
             {navigationItems.map((item) => (
               <NavLink key={item.to} className={navLinkClassName} to={item.to}>
                 {item.label}
               </NavLink>
             ))}
           </nav>
-        </aside>
+        </div>
+      </header>
 
-        <main className="min-w-0 flex-1 p-6 lg:p-10">
+      <main className="mx-auto min-w-0 max-w-7xl p-6 lg:p-10">
           <Outlet />
-        </main>
-      </div>
+      </main>
     </div>
   )
 }
