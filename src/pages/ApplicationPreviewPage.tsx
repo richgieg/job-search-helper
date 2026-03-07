@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { DocumentPageLayout, PreviewNotFound } from '../features/documents/DocumentPageLayout'
-import { formatLocationLine, selectProfilePreviewData } from '../features/documents/preview-data'
+import { selectProfilePreviewData } from '../features/documents/preview-data'
 import { useAppStore } from '../store/app-store'
 
 interface CopyValueItem {
@@ -173,7 +173,6 @@ export const ApplicationPreviewPage = () => {
   }
 
   const personalDetails = preview.profile.personalDetails
-  const locationLine = formatLocationLine(personalDetails.city, personalDetails.state, personalDetails.postalCode)
   const handleCopy = (key: string, value: string) => {
     void copyText(value)
       .then(() => {
@@ -192,7 +191,9 @@ export const ApplicationPreviewPage = () => {
     { label: 'Address line 1', values: buildSingleValue(personalDetails.addressLine1) },
     { label: 'Address line 2', values: buildSingleValue(personalDetails.addressLine2) },
     { label: 'Address line 3', values: buildSingleValue(personalDetails.addressLine3) },
-    { label: 'Location', values: buildSingleValue(locationLine) },
+    { label: 'City', values: buildSingleValue(personalDetails.city) },
+    { label: 'State', values: buildSingleValue(personalDetails.state) },
+    { label: 'Postal code', values: buildSingleValue(personalDetails.postalCode) },
     { label: 'LinkedIn', values: buildSingleValue(preview.profile.links.linkedinUrl) },
     { label: 'GitHub', values: buildSingleValue(preview.profile.links.githubUrl) },
     { label: 'Portfolio', values: buildSingleValue(preview.profile.links.portfolioUrl) },
