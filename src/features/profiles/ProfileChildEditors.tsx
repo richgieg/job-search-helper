@@ -111,9 +111,20 @@ const ToggleField = ({
   </label>
 )
 
-const ItemActions = ({ onSave, onDelete }: { onSave: () => void; onDelete: () => void }) => (
+const sectionSaveButtonClassName =
+  'rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300'
+
+const ItemActions = ({
+  onSave,
+  onDelete,
+  saveDisabled = false,
+}: {
+  onSave: () => void
+  onDelete: () => void
+  saveDisabled?: boolean
+}) => (
   <div className="flex flex-wrap gap-2">
-    <button className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={onSave} type="button">
+    <button className={sectionSaveButtonClassName} disabled={saveDisabled} onClick={onSave} type="button">
       Save
     </button>
     <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={onDelete} type="button">
@@ -244,6 +255,7 @@ const ExperienceBulletRow = ({
             <ItemActions
               onDelete={() => deleteExperienceBullet(bullet.id)}
               onSave={() => updateExperienceBullet({ experienceBulletId: bullet.id, changes: { content } })}
+              saveDisabled={!isDirty}
             />
           </div>
         </div>
@@ -332,6 +344,7 @@ const SkillRow = ({
       <ItemActions
         onDelete={() => deleteSkill(skill.id)}
         onSave={() => updateSkill({ skillId: skill.id, changes: { name } })}
+        saveDisabled={!isDirty}
       />
     </div>
   )
@@ -385,7 +398,8 @@ const SkillCategoryCard = ({
     setEnabled(category.enabled)
   }, [category])
 
-  const isDirty = category ? name !== category.name || Object.keys(dirtySkillIds).length > 0 : false
+  const ownIsDirty = category ? name !== category.name : false
+  const isDirty = category ? ownIsDirty || Object.keys(dirtySkillIds).length > 0 : false
   const summary = summarizeParts([
     name || 'Untitled category',
     formatEnabledState(enabled),
@@ -451,6 +465,7 @@ const SkillCategoryCard = ({
           <ItemActions
             onDelete={() => deleteSkillCategory(category.id)}
             onSave={() => updateSkillCategory({ skillCategoryId: category.id, changes: { name } })}
+            saveDisabled={!ownIsDirty}
           />
         </div>
       </div>
@@ -504,7 +519,8 @@ const ExperienceCard = ({
     setDraft(entry)
   }, [entry])
 
-  const isDirty = entry && draft ? JSON.stringify(stripEnabled(draft)) !== JSON.stringify(stripEnabled(entry)) || Object.keys(dirtyBulletIds).length > 0 : false
+  const ownIsDirty = entry && draft ? JSON.stringify(stripEnabled(draft)) !== JSON.stringify(stripEnabled(entry)) : false
+  const isDirty = entry && draft ? ownIsDirty || Object.keys(dirtyBulletIds).length > 0 : false
   const summary = summarizeParts([
     draft?.title || 'Untitled role',
     draft?.company || 'Unknown company',
@@ -631,6 +647,7 @@ const ExperienceCard = ({
             <ItemActions
               onDelete={() => deleteExperienceEntry(entry.id)}
               onSave={() => updateExperienceEntry({ experienceEntryId: entry.id, changes: stripEnabled(draft) })}
+              saveDisabled={!ownIsDirty}
             />
           </div>
         </div>
@@ -724,6 +741,7 @@ const EducationCard = ({
             <ItemActions
               onDelete={() => deleteEducationEntry(entry.id)}
               onSave={() => updateEducationEntry({ educationEntryId: entry.id, changes: stripEnabled(draft) })}
+              saveDisabled={!isDirty}
             />
           </div>
         </div>
@@ -826,6 +844,7 @@ const CertificationCard = ({
             <ItemActions
               onDelete={() => deleteCertification(certification.id)}
               onSave={() => updateCertification({ certificationId: certification.id, changes: stripEnabled(draft) })}
+              saveDisabled={!isDirty}
             />
           </div>
         </div>
@@ -941,6 +960,7 @@ const ReferenceCard = ({
             <ItemActions
               onDelete={() => deleteReference(reference.id)}
               onSave={() => updateReference({ referenceId: reference.id, changes: stripEnabled(draft) })}
+              saveDisabled={!isDirty}
             />
           </div>
         </div>
