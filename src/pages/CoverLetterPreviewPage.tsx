@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
+import { DocumentProfileHeader } from '../features/documents/DocumentProfileHeader'
 import { PreviewNotFound } from '../features/documents/DocumentPageLayout'
-import { buildCoverLetterParagraphs, formatAddressLines, formatLocationLine, selectProfilePreviewData } from '../features/documents/preview-data'
+import { buildCoverLetterParagraphs, formatAddressLines, selectProfilePreviewData } from '../features/documents/preview-data'
 import { useAppStore } from '../store/app-store'
 
 export const CoverLetterPreviewPage = () => {
@@ -16,12 +17,6 @@ export const CoverLetterPreviewPage = () => {
   }
 
   const personalDetails = preview.profile.personalDetails
-  const senderAddress = formatAddressLines([
-    personalDetails.addressLine1,
-    personalDetails.addressLine2,
-    personalDetails.addressLine3,
-    formatLocationLine(personalDetails.city, personalDetails.state, personalDetails.postalCode),
-  ])
   const recipient = {
     name: preview.primaryContact.name || 'Hiring Team',
     title: preview.primaryContact.title,
@@ -38,26 +33,17 @@ export const CoverLetterPreviewPage = () => {
   return (
     <div className="document-preview-shell">
       <article className="document-page text-sm leading-7 text-slate-700">
-        <div className="cover-letter-header">
-          <div>
-            <p className="font-semibold text-slate-950">{personalDetails.fullName || preview.profile.name || 'Unnamed candidate'}</p>
-            {senderAddress.map((line) => (
+        <DocumentProfileHeader preview={preview} />
+
+        <div className="cover-letter-inside-address mt-10">
+          <p>{new Date().toLocaleDateString()}</p>
+          <div className="mt-4">
+            <p className="font-semibold text-slate-950">{recipient.name}</p>
+            <p>{recipient.title}</p>
+            <p>{recipient.company}</p>
+            {recipient.addressLines.map((line) => (
               <p key={line}>{line}</p>
             ))}
-            {personalDetails.email ? <p>{personalDetails.email}</p> : null}
-            {personalDetails.phone ? <p>{personalDetails.phone}</p> : null}
-          </div>
-
-          <div className="cover-letter-inside-address">
-            <p>{new Date().toLocaleDateString()}</p>
-            <div className="mt-4">
-              <p className="font-semibold text-slate-950">{recipient.name}</p>
-              <p>{recipient.title}</p>
-              <p>{recipient.company}</p>
-              {recipient.addressLines.map((line) => (
-                <p key={line}>{line}</p>
-              ))}
-            </div>
           </div>
         </div>
 

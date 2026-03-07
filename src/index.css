@@ -80,27 +80,8 @@ a[class*='border-rose-300']:not(:hover):not(:focus-visible):not(:active) {
   gap: 1.5rem;
 }
 
-.cover-letter-header {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
 .cover-letter-inside-address {
-  margin-left: 0;
-}
-
-@media (min-width: 64rem) {
-  .cover-letter-header {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-
-  .cover-letter-inside-address {
-    margin-left: 2rem;
-    max-width: 18rem;
-  }
+  max-width: 18rem;
 }
 
 @media (min-width: 48rem) {
@@ -171,16 +152,5 @@ a[class*='border-rose-300']:not(:hover):not(:focus-visible):not(:active) {
 
   .resume-secondary-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .cover-letter-header {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-
-  .cover-letter-inside-address {
-    margin-left: 2rem;
-    max-width: 18rem;
   }
 }
