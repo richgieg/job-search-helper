@@ -10,9 +10,9 @@ interface DocumentPageLayoutProps {
 }
 
 const documentLinks = [
-  { key: 'resume', label: 'Resume', to: (profileId: string) => `/previews/resume/${profileId}` },
-  { key: 'application', label: 'Application page', to: (profileId: string) => `/previews/application/${profileId}` },
   { key: 'cover-letter', label: 'Cover letter', to: (profileId: string) => `/previews/cover-letter/${profileId}` },
+  { key: 'resume', label: 'Resume', to: (profileId: string) => `/previews/resume/${profileId}` },
+  { key: 'application', label: 'Application', to: (profileId: string) => `/previews/application/${profileId}` },
 ] as const
 
 export const DocumentPageLayout = ({ title, subtitle, profileId, activeDocument, children }: DocumentPageLayoutProps) => {
