@@ -20,7 +20,6 @@ export const CoverLetterPreviewPage = () => {
     personalDetails.addressLine1,
     personalDetails.addressLine2,
     personalDetails.addressLine3,
-    personalDetails.addressLine4,
     formatLocationLine(personalDetails.city, personalDetails.state, personalDetails.postalCode),
   ])
   const recipient = preview.primaryContact

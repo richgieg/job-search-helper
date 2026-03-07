@@ -20,7 +20,6 @@ const emptyPersonalDetails: PersonalDetails = {
   addressLine1: '',
   addressLine2: '',
   addressLine3: '',
-  addressLine4: '',
   city: '',
   state: '',
   postalCode: '',
@@ -205,7 +204,6 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
               <Field label="Address line 1" value={personalDetails.addressLine1} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine1: value })} />
               <Field label="Address line 2" value={personalDetails.addressLine2} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine2: value })} />
               <Field label="Address line 3" value={personalDetails.addressLine3} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine3: value })} />
-              <Field label="Address line 4" value={personalDetails.addressLine4} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine4: value })} />
               <Field label="City" value={personalDetails.city} onChange={(value) => setPersonalDetails({ ...personalDetails, city: value })} />
               <Field label="State" value={personalDetails.state} onChange={(value) => setPersonalDetails({ ...personalDetails, state: value })} />
               <Field label="Postal code" value={personalDetails.postalCode} onChange={(value) => setPersonalDetails({ ...personalDetails, postalCode: value })} />

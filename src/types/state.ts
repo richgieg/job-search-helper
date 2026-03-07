@@ -54,7 +54,6 @@ export interface PersonalDetails {
   addressLine1: string
   addressLine2: string
   addressLine3: string
-  addressLine4: string
   city: string
   state: string
   postalCode: string

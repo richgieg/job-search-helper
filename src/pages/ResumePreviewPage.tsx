@@ -31,7 +31,6 @@ export const ResumePreviewPage = () => {
     preview.profile.personalDetails.addressLine1,
     preview.profile.personalDetails.addressLine2,
     preview.profile.personalDetails.addressLine3,
-    preview.profile.personalDetails.addressLine4,
   ])
   const locationLine = formatLocationLine(
     preview.profile.personalDetails.city,

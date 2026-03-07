@@ -28,7 +28,6 @@ export const ApplicationPreviewPage = () => {
     personalDetails.addressLine1,
     personalDetails.addressLine2,
     personalDetails.addressLine3,
-    personalDetails.addressLine4,
   ])
   const locationLine = formatLocationLine(personalDetails.city, personalDetails.state, personalDetails.postalCode)
   const highlightBullets = preview.experienceEntries.flatMap((entry) => entry.bullets.map((bullet) => bullet.content)).slice(0, 4)
