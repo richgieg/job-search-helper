@@ -242,7 +242,7 @@ export const JobPage = () => {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Create job profile from base profile</h2>
         {baseProfiles.length === 0 ? (
           <p className="mt-3 text-sm text-slate-500">Create a base profile first.</p>
