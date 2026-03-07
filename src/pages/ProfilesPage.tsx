@@ -38,15 +38,6 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
           <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}`}>
             Open
           </Link>
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/previews/cover-letter/${profile.id}`}>
-            Cover letter
-          </Link>
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/previews/resume/${profile.id}`}>
-            Resume
-          </Link>
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/previews/application/${profile.id}`}>
-            Application
-          </Link>
           <button className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={handleDuplicate} type="button">
             Duplicate
           </button>
