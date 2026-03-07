@@ -211,6 +211,14 @@ export interface JobContact {
   sortOrder: number
 }
 
+export interface ApplicationQuestion {
+  id: Id
+  jobId: Id
+  question: string
+  answer: string
+  sortOrder: number
+}
+
 export interface JobEvent {
   id: Id
   jobId: Id
@@ -236,6 +244,7 @@ export interface AppDataState {
   jobs: Record<Id, Job>
   jobPostingSources: Record<Id, JobPostingSource>
   jobContacts: Record<Id, JobContact>
+  applicationQuestions: Record<Id, ApplicationQuestion>
   jobEvents: Record<Id, JobEvent>
 }
 

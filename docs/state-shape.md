@@ -57,6 +57,7 @@ interface AppDataState {
   jobs: Record<Id, Job>;
   jobPostingSources: Record<Id, JobPostingSource>;
   jobContacts: Record<Id, JobContact>;
+  applicationQuestions: Record<Id, ApplicationQuestion>;
   jobEvents: Record<Id, JobEvent>;
 }
 
@@ -371,6 +372,18 @@ interface JobContact {
 }
 ```
 
+### ApplicationQuestion
+
+```ts
+interface ApplicationQuestion {
+  id: Id;
+  jobId: Id;
+  question: string;
+  answer: string;
+  sortOrder: number;
+}
+```
+
 ### JobEvent
 
 ```ts
@@ -411,6 +424,7 @@ The following relationships should be enforced during normal app operations and 
 
 - `JobPostingSource.jobId` points to an existing `Job`.
 - `JobContact.jobId` points to an existing `Job`.
+- `ApplicationQuestion.jobId` points to an existing `Job`.
 - `JobEvent.jobId` points to an existing `Job`.
 
 ## Duplication rules
@@ -482,13 +496,14 @@ Cascade delete these records:
 - all profile-owned child records of those job profiles
 - `JobPostingSource`
 - `JobContact`
+- `ApplicationQuestion`
 - `JobEvent`
 
 Rules:
 
 1. Find all job profiles attached to the job.
 2. Delete each job profile using the normal profile deletion rules.
-3. Delete all job-owned posting sources, contacts, and events.
+3. Delete all job-owned posting sources, contacts, application questions, and events.
 4. Delete the job last.
 
 ### Child record deletion
@@ -502,6 +517,7 @@ The following records can be hard deleted directly:
 - `Reference`
 - `JobPostingSource`
 - `JobContact`
+- `ApplicationQuestion`
 - `JobEvent`
 
 Additional rule:

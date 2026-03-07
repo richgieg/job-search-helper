@@ -337,7 +337,7 @@ Behavior:
 
 1. Find all job profiles where `profile.jobId === jobId`.
 2. Delete each job profile using `deleteProfile()`.
-3. Delete all `JobPostingSource`, `JobContact`, and `JobEvent` records for the job.
+3. Delete all `JobPostingSource`, `JobContact`, `ApplicationQuestion`, and `JobEvent` records for the job.
 4. Delete the job.
 5. Clear related UI selection if needed.
 
@@ -354,6 +354,20 @@ Behavior:
 - `updateJobContact(input)`
 - `deleteJobContact(input)`
 - `reorderJobContacts(input)`
+
+## Application question actions
+
+- `createApplicationQuestion(input)`
+- `updateApplicationQuestion(input)`
+- `deleteApplicationQuestion(input)`
+- `reorderApplicationQuestions(input)`
+
+These actions should:
+
+- require an existing job
+- maintain `sortOrder`
+- update `Job.updatedAt`
+- preserve the question/answer text exactly as entered by the user
 
 ## Job event actions
 
@@ -451,7 +465,7 @@ Instead:
 4. `updateJob()`
 5. child CRUD for profile records
 6. `duplicateProfile()`
-7. job contact and posting source actions
+7. job contact, posting source, and application question actions
 8. job event actions
 9. `deleteProfile()`
 10. `deleteJob()`

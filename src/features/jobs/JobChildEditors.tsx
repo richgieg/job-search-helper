@@ -289,13 +289,54 @@ const JobEventCard = ({ jobEventId }: { jobEventId: string }) => {
   )
 }
 
+const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestionId: string }) => {
+  const applicationQuestion = useAppStore((state) => state.data.applicationQuestions[applicationQuestionId])
+  const updateApplicationQuestion = useAppStore((state) => state.actions.updateApplicationQuestion)
+  const deleteApplicationQuestion = useAppStore((state) => state.actions.deleteApplicationQuestion)
+  const [draft, setDraft] = useState(applicationQuestion)
+
+  useEffect(() => {
+    setDraft(applicationQuestion)
+  }, [applicationQuestion])
+
+  if (!applicationQuestion || !draft) {
+    return null
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-200 p-4">
+      <div className="grid gap-4 xl:grid-cols-1">
+        <TextAreaField label="Question" value={draft.question} onChange={(value) => setDraft({ ...draft, question: value })} />
+        <TextAreaField label="Answer" value={draft.answer} onChange={(value) => setDraft({ ...draft, answer: value })} />
+        <div className="flex justify-end">
+          <ItemActions
+            onDelete={() => deleteApplicationQuestion(applicationQuestion.id)}
+            onSave={() =>
+              updateApplicationQuestion({
+                applicationQuestionId: applicationQuestion.id,
+                changes: {
+                  question: draft.question,
+                  answer: draft.answer,
+                  sortOrder: draft.sortOrder,
+                },
+              })
+            }
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export const JobChildEditors = ({ jobId }: { jobId: string }) => {
   const profilesById = useAppStore((state) => state.data.profiles)
   const jobPostingSourcesById = useAppStore((state) => state.data.jobPostingSources)
   const jobContactsById = useAppStore((state) => state.data.jobContacts)
+  const applicationQuestionsById = useAppStore((state) => state.data.applicationQuestions)
   const jobEventsById = useAppStore((state) => state.data.jobEvents)
   const createJobPostingSource = useAppStore((state) => state.actions.createJobPostingSource)
   const createJobContact = useAppStore((state) => state.actions.createJobContact)
+  const createApplicationQuestion = useAppStore((state) => state.actions.createApplicationQuestion)
   const createJobEvent = useAppStore((state) => state.actions.createJobEvent)
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
 
@@ -331,6 +372,15 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
         .filter((item) => item.jobId === jobId)
         .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
     [jobEventsById, jobId],
+  )
+
+  const applicationQuestionIds = useMemo(
+    () =>
+      Object.values(applicationQuestionsById)
+        .filter((item) => item.jobId === jobId)
+        .sort((left, right) => left.sortOrder - right.sortOrder)
+        .map((item) => item.id),
+    [applicationQuestionsById, jobId],
   )
 
   const status = useMemo(() => getJobComputedStatus(jobEvents.map((item) => item.eventType)), [jobEvents])
@@ -393,6 +443,19 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
 
       <Section actionLabel="Add contact" description="Maintain recruiters, hiring managers, referrals, and interviewers for the job." onAdd={() => createJobContact(jobId)} title="Contacts">
         {jobContactIds.length === 0 ? <p className="text-sm text-slate-500">No contacts yet.</p> : jobContactIds.map((id) => <JobContactCard key={id} jobContactId={id} />)}
+      </Section>
+
+      <Section
+        actionLabel="Add application question"
+        description="Track custom questions asked during the application flow and the answers you submitted."
+        onAdd={() => createApplicationQuestion(jobId)}
+        title="Application questions"
+      >
+        {applicationQuestionIds.length === 0 ? (
+          <p className="text-sm text-slate-500">No application questions yet.</p>
+        ) : (
+          applicationQuestionIds.map((id) => <ApplicationQuestionCard key={id} applicationQuestionId={id} />)
+        )}
       </Section>
 
       <Section actionLabel="Add event" description="Events drive the job's computed pipeline status." onAdd={() => createJobEvent({ jobId })} title="Events">

@@ -114,6 +114,7 @@ Each job should support:
 - Date posted
 - Notes
 - Zero or more linked job-specific profiles
+- Zero or more saved application questions and answers
 
 Recommendation: model job progress from events instead of storing a standalone status field.
 
@@ -146,7 +147,17 @@ Each job can have multiple contacts:
 - Relationship type: recruiter, hiring manager, referral, interviewer, other
 - Notes
 
-### 4. Generated outputs
+### 4. Application questions
+
+Each job can have zero or more saved application questions:
+
+- Question
+- Answer
+- Sort order
+
+This allows the user to keep track of custom questions asked during online application forms and the answers they submitted.
+
+### 5. Generated outputs
 
 #### Resume
 
@@ -169,7 +180,7 @@ Each job can have multiple contacts:
 - Every answer/value can be clicked to copy to clipboard
 - Includes common sections used in application forms
 
-### 5. Data portability
+### 6. Data portability
 
 - Export the full app state as a JSON file
 - Import a previously exported JSON file to restore the app state
@@ -344,6 +355,13 @@ Examples for `source_type`: LinkedIn, Workday, Greenhouse, Indeed, CompanySite, 
 - notes
 - sort_order
 
+### ApplicationQuestion
+- id
+- job_id
+- question
+- answer
+- sort_order
+
 ### JobEvent
 - id
 - job_id
@@ -400,7 +418,8 @@ The MVP is successful if a user can:
 7. Open a generated resume from either a base profile or a selected job-specific profile.
 8. Open a generated cover letter from either a base profile or a selected job-specific profile.
 9. Open an application page from either a base profile or a selected job-specific profile and click any field to copy it.
-10. Export the full app state to JSON and import it later to restore the app state.
+10. Save one or more job-specific application questions and answers for a job.
+11. Export the full app state to JSON and import it later to restore the app state.
 
 ## Delivery phases
 

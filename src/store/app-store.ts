@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 import { createDefaultUiState, createEmptyDataState, emptyProfileDefaults } from './create-initial-state'
 import type {
+  ApplicationQuestion,
   AppDataState,
   AppExportFile,
   AppUiState,
@@ -88,6 +89,12 @@ interface AppStoreState {
     createJobContact: (jobId: Id) => void
     updateJobContact: (input: { jobContactId: Id; changes: Partial<Omit<JobContact, 'id' | 'jobId'>> }) => void
     deleteJobContact: (jobContactId: Id) => void
+    createApplicationQuestion: (jobId: Id) => void
+    updateApplicationQuestion: (input: {
+      applicationQuestionId: Id
+      changes: Partial<Omit<ApplicationQuestion, 'id' | 'jobId'>>
+    }) => void
+    deleteApplicationQuestion: (applicationQuestionId: Id) => void
     createJobEvent: (input: { jobId: Id; eventType?: JobEventType }) => void
     updateJobEvent: (input: { jobEventId: Id; changes: Partial<Omit<JobEvent, 'id' | 'jobId' | 'createdAt'>> }) => void
     deleteJobEvent: (jobEventId: Id) => void
@@ -1146,6 +1153,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         const nextJobs = { ...nextData.jobs }
         const nextJobPostingSources = { ...nextData.jobPostingSources }
         const nextJobContacts = { ...nextData.jobContacts }
+        const nextApplicationQuestions = { ...nextData.applicationQuestions }
         const nextJobEvents = { ...nextData.jobEvents }
 
         delete nextJobs[jobId]
@@ -1162,6 +1170,12 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           }
         })
 
+        Object.values(nextData.applicationQuestions).forEach((item) => {
+          if (item.jobId === jobId) {
+            delete nextApplicationQuestions[item.id]
+          }
+        })
+
         Object.values(nextData.jobEvents).forEach((item) => {
           if (item.jobId === jobId) {
             delete nextJobEvents[item.id]
@@ -1174,6 +1188,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
             jobs: nextJobs,
             jobPostingSources: nextJobPostingSources,
             jobContacts: nextJobContacts,
+            applicationQuestions: nextApplicationQuestions,
             jobEvents: nextJobEvents,
           },
           ui: {
@@ -1359,6 +1374,86 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         }
       })
     },
+    createApplicationQuestion: (jobId) => {
+      const job = get().data.jobs[jobId]
+
+      if (!job) {
+        return
+      }
+
+      const applicationQuestion: ApplicationQuestion = {
+        id: createId(),
+        jobId,
+        question: '',
+        answer: '',
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.applicationQuestions)
+            .filter((item) => item.jobId === jobId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            applicationQuestions: {
+              ...state.data.applicationQuestions,
+              [applicationQuestion.id]: applicationQuestion,
+            },
+          },
+          jobId,
+          now(),
+        ),
+      }))
+    },
+    updateApplicationQuestion: ({ applicationQuestionId, changes }) => {
+      const existing = get().data.applicationQuestions[applicationQuestionId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            applicationQuestions: {
+              ...state.data.applicationQuestions,
+              [applicationQuestionId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          existing.jobId,
+          now(),
+        ),
+      }))
+    },
+    deleteApplicationQuestion: (applicationQuestionId) => {
+      const existing = get().data.applicationQuestions[applicationQuestionId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => {
+        const nextApplicationQuestions = { ...state.data.applicationQuestions }
+        delete nextApplicationQuestions[applicationQuestionId]
+
+        return {
+          data: stampUpdatedJob(
+            {
+              ...state.data,
+              applicationQuestions: nextApplicationQuestions,
+            },
+            existing.jobId,
+            now(),
+          ),
+        }
+      })
+    },
     createJobEvent: ({ jobId, eventType = 'job_saved' }) => {
       const job = get().data.jobs[jobId]
 
@@ -1445,6 +1540,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           version: 1,
           exportedAt: file.exportedAt,
           ...file.data,
+          applicationQuestions: file.data.applicationQuestions ?? {},
         },
         ui: createDefaultUiState(),
       })
