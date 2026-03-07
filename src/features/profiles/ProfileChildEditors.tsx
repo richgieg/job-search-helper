@@ -425,27 +425,16 @@ const SkillCategoryCard = ({
   return (
     <CollapsiblePanel
       actionLabel="Add skill"
-      isDirty={isDirty}
-      onAction={() => createSkill(category.id)}
-      onDiscardChanges={() => {
-        setName(category.name)
-        setEnabled(category.enabled)
-        setDirtySkillIds({})
-      }}
-      summary={summary}
-      title={name || 'Skill category'}
-    >
-      <div className="grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
-        <TextField label="Category name" value={name} onChange={setName} />
-        <ToggleField
-          checked={enabled}
-          label="Enabled"
-          onChange={(value) => {
-            setEnabled(value)
-            updateSkillCategory({ skillCategoryId: category.id, changes: { enabled: value } })
-          }}
-        />
+      headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
+          <ToggleField
+            checked={enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setEnabled(value)
+              updateSkillCategory({ skillCategoryId: category.id, changes: { enabled: value } })
+            }}
+          />
           <ReorderButtons
             canMoveDown={skillCategoryIds.length > 1}
             canMoveUp={skillCategoryIds.length > 1}
@@ -468,6 +457,19 @@ const SkillCategoryCard = ({
             saveDisabled={!ownIsDirty}
           />
         </div>
+      }
+      isDirty={isDirty}
+      onAction={() => createSkill(category.id)}
+      onDiscardChanges={() => {
+        setName(category.name)
+        setEnabled(category.enabled)
+        setDirtySkillIds({})
+      }}
+      summary={summary}
+      title={name || 'Skill category'}
+    >
+      <div className="grid gap-3">
+        <TextField label="Category name" value={name} onChange={setName} />
       </div>
 
       <div className="mt-4 space-y-3">
