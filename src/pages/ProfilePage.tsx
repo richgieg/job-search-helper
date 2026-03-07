@@ -96,8 +96,6 @@ export const ProfilePage = () => {
   }
 
   const attachedJob = profile.jobId ? jobsById[profile.jobId] : null
-  const backLinkTo = attachedJob ? `/jobs/${attachedJob.id}` : '/profiles'
-  const backLinkLabel = attachedJob ? 'Back to job' : 'Back to profiles'
 
   const handleSave = () => {
     const trimmed = name.trim()
@@ -147,9 +145,6 @@ export const ProfilePage = () => {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={backLinkTo}>
-            {backLinkLabel}
-          </Link>
           <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/previews/cover-letter/${profile.id}`}>
             Cover letter
           </Link>
