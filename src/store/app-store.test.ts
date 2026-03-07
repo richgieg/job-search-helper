@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { selectProfilePreviewData } from '../features/documents/preview-data'
+import { getOrderedResumeSections, selectProfilePreviewData } from '../features/documents/preview-data'
 import { createDefaultUiState, createEmptyDataState } from './create-initial-state'
 import { useAppStore } from './app-store'
 
@@ -17,8 +17,9 @@ const getOrderedIds = <T extends { id: string; sortOrder: number }>(items: Recor
     .sort((left, right) => left.sortOrder - right.sortOrder)
     .map((item) => item.id)
 
-const expectDefined = <T>(value: T | undefined, message: string): T => {
+const expectDefined = <T>(value: T | null | undefined, message: string): T => {
   expect(value, message).toBeDefined()
+  expect(value, message).not.toBeNull()
   return value as T
 }
 
@@ -60,6 +61,40 @@ describe('app store reorder actions', () => {
     expect(categories[secondSkillCategoryId]?.sortOrder).toBe(1)
     expect(categories[firstSkillCategoryId]?.sortOrder).toBe(2)
     expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
+  })
+
+  it('initializes, updates, and reorders per-profile resume settings', () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    const initialProfile = useAppStore.getState().data.profiles[profileId]
+    expect(initialProfile?.resumeSettings.sections.summary.enabled).toBe(true)
+    expect(initialProfile?.resumeSettings.sections.summary.sortOrder).toBe(1)
+    expect(initialProfile?.resumeSettings.sections.references.sortOrder).toBe(6)
+
+    actions.setResumeSectionEnabled({
+      profileId,
+      section: 'references',
+      enabled: false,
+    })
+
+    actions.reorderResumeSections({
+      profileId,
+      orderedSections: ['skills', 'experience', 'summary', 'education', 'certifications', 'references'],
+    })
+
+    const nextProfile = useAppStore.getState().data.profiles[profileId]
+    expect(nextProfile?.resumeSettings.sections.references.enabled).toBe(false)
+    expect(getOrderedResumeSections(nextProfile!).map((section) => section.section)).toEqual([
+      'skills',
+      'experience',
+      'summary',
+      'education',
+      'certifications',
+      'references',
+    ])
   })
 
   it('reorders experience bullets and preview data reflects the new order', () => {
@@ -188,5 +223,49 @@ describe('app store reorder actions', () => {
       .sort((left, right) => left.sortOrder - right.sortOrder)
 
     expect(importedQuestions.map((item) => item.question)).toEqual(['Question Two', 'Question One'])
+  })
+
+  it('preserves resume settings through profile duplication and export/import', () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    actions.setResumeSectionEnabled({ profileId, section: 'references', enabled: false })
+    actions.reorderResumeSections({
+      profileId,
+      orderedSections: ['experience', 'summary', 'skills', 'education', 'certifications', 'references'],
+    })
+
+    const duplicatedProfileId = expectDefined(
+      actions.duplicateProfile({ sourceProfileId: profileId }),
+      'Expected duplicate profile id',
+    )
+
+    expect(getOrderedResumeSections(useAppStore.getState().data.profiles[duplicatedProfileId]!).map((section) => section.section)).toEqual([
+      'experience',
+      'summary',
+      'skills',
+      'education',
+      'certifications',
+      'references',
+    ])
+    expect(useAppStore.getState().data.profiles[duplicatedProfileId]?.resumeSettings.sections.references.enabled).toBe(false)
+
+    const exported = actions.exportAppData()
+
+    resetStore()
+    useAppStore.getState().actions.importAppData(exported)
+
+    const importedProfile = useAppStore.getState().data.profiles[duplicatedProfileId]
+    expect(importedProfile?.resumeSettings.sections.references.enabled).toBe(false)
+    expect(getOrderedResumeSections(importedProfile!).map((section) => section.section)).toEqual([
+      'experience',
+      'summary',
+      'skills',
+      'education',
+      'certifications',
+      'references',
+    ])
   })
 })

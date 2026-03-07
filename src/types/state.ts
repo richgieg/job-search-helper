@@ -47,6 +47,23 @@ export type JobComputedStatus =
 
 export type JobStatusFilter = JobComputedStatus | 'all'
 
+export type ResumeSectionKey =
+  | 'summary'
+  | 'skills'
+  | 'experience'
+  | 'education'
+  | 'certifications'
+  | 'references'
+
+export interface ResumeSectionSettings {
+  enabled: boolean
+  sortOrder: number
+}
+
+export interface ResumeSettings {
+  sections: Record<ResumeSectionKey, ResumeSectionSettings>
+}
+
 export interface PersonalDetails {
   fullName: string
   email: string
@@ -71,6 +88,7 @@ export interface Profile {
   name: string
   summary: string
   coverLetter: string
+  resumeSettings: ResumeSettings
   personalDetails: PersonalDetails
   links: ProfileLinks
   jobId: Id | null

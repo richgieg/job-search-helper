@@ -10,6 +10,7 @@ import type {
   JobPostingSource,
   Profile,
   Reference,
+  ResumeSectionKey,
   Skill,
   SkillCategory,
 } from '../../types/state'
@@ -36,6 +37,12 @@ export interface ProfilePreviewData {
   certifications: AppDataState['certifications'][Id][]
   references: Reference[]
   computedStatus: ReturnType<typeof getJobComputedStatus>
+}
+
+export interface OrderedResumeSection {
+  section: ResumeSectionKey
+  enabled: boolean
+  sortOrder: number
 }
 
 const compareSortOrder = <T extends { sortOrder: number }>(left: T, right: T) => left.sortOrder - right.sortOrder
@@ -134,6 +141,15 @@ export const formatDateRange = (startDate: string | null, endDate: string | null
 
   return `${start} – ${end}`
 }
+
+export const getOrderedResumeSections = (profile: Profile): OrderedResumeSection[] =>
+  Object.entries(profile.resumeSettings.sections)
+    .map(([section, settings]) => ({
+      section: section as ResumeSectionKey,
+      enabled: settings.enabled,
+      sortOrder: settings.sortOrder,
+    }))
+    .sort((left, right) => left.sortOrder - right.sortOrder)
 
 export const selectProfilePreviewData = (data: AppDataState, profileId: Id): ProfilePreviewData | null => {
   const profile = data.profiles[profileId]

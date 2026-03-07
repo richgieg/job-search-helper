@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
+import { ReorderButtons } from '../components/ReorderButtons'
 import { ProfileChildEditors } from '../features/profiles/ProfileChildEditors'
 import { useAppStore } from '../store/app-store'
-import type { PersonalDetails, ProfileLinks } from '../types/state'
+import type { PersonalDetails, ProfileLinks, ResumeSectionKey } from '../types/state'
+import { moveOrderedItem } from '../utils/reorder'
 
 const createPersonalDetailsDraft = (personalDetails: PersonalDetails): PersonalDetails => ({
   ...personalDetails,
@@ -30,6 +32,15 @@ const emptyLinks: ProfileLinks = {
   githubUrl: '',
   portfolioUrl: '',
   websiteUrl: '',
+}
+
+const resumeSectionLabels: Record<ResumeSectionKey, string> = {
+  summary: 'Summary',
+  skills: 'Skills',
+  experience: 'Experience',
+  education: 'Education',
+  certifications: 'Certifications',
+  references: 'References',
 }
 
 const Field = ({
@@ -62,6 +73,8 @@ export const ProfilePage = () => {
   const profile = useAppStore((state) => state.data.profiles[profileId])
   const jobsById = useAppStore((state) => state.data.jobs)
   const updateProfile = useAppStore((state) => state.actions.updateProfile)
+  const setResumeSectionEnabled = useAppStore((state) => state.actions.setResumeSectionEnabled)
+  const reorderResumeSections = useAppStore((state) => state.actions.reorderResumeSections)
   const [name, setName] = useState(profile?.name ?? '')
   const [summary, setSummary] = useState(profile?.summary ?? '')
   const [coverLetter, setCoverLetter] = useState(profile?.coverLetter ?? '')
@@ -93,6 +106,13 @@ export const ProfilePage = () => {
   }
 
   const attachedJob = profile.jobId ? jobsById[profile.jobId] : null
+  const orderedResumeSections = Object.entries(profile.resumeSettings.sections)
+    .map(([section, settings]) => ({
+      section: section as ResumeSectionKey,
+      ...settings,
+    }))
+    .sort((left, right) => left.sortOrder - right.sortOrder)
+  const orderedResumeSectionKeys = orderedResumeSections.map((section) => section.section)
 
   const handleSave = () => {
     const trimmed = name.trim()
@@ -199,6 +219,49 @@ export const ProfilePage = () => {
             <Field label="GitHub" type="url" value={links.githubUrl} onChange={(value) => setLinks({ ...links, githubUrl: value })} />
             <Field label="Portfolio" type="url" value={links.portfolioUrl} onChange={(value) => setLinks({ ...links, portfolioUrl: value })} />
             <Field label="Website" type="url" value={links.websiteUrl} onChange={(value) => setLinks({ ...links, websiteUrl: value })} />
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Resume settings</h2>
+          <p className="mt-2 text-sm text-slate-500">Control which sections appear on the resume and the order in which they are shown.</p>
+          <div className="mt-4 space-y-3">
+            {orderedResumeSections.map((resumeSection, index) => (
+              <div key={resumeSection.section} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
+                <label className="inline-flex items-center gap-3 text-sm font-medium text-slate-800">
+                  <input
+                    checked={resumeSection.enabled}
+                    className="h-4 w-4 rounded border-slate-300"
+                    onChange={(event) =>
+                      setResumeSectionEnabled({
+                        profileId: profile.id,
+                        section: resumeSection.section,
+                        enabled: event.target.checked,
+                      })
+                    }
+                    type="checkbox"
+                  />
+                  <span>{resumeSectionLabels[resumeSection.section]}</span>
+                </label>
+
+                <ReorderButtons
+                  canMoveDown={orderedResumeSectionKeys.length > 1}
+                  canMoveUp={orderedResumeSectionKeys.length > 1}
+                  onMoveDown={() =>
+                    reorderResumeSections({
+                      profileId: profile.id,
+                      orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, 1) as ResumeSectionKey[],
+                    })
+                  }
+                  onMoveUp={() =>
+                    reorderResumeSections({
+                      profileId: profile.id,
+                      orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, -1) as ResumeSectionKey[],
+                    })
+                  }
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>

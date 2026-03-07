@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import { createDefaultUiState, createEmptyDataState, emptyProfileDefaults } from './create-initial-state'
+import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState, emptyProfileDefaults } from './create-initial-state'
 import type {
   ApplicationQuestion,
   AppDataState,
@@ -21,6 +21,8 @@ import type {
   Profile,
   ProfileLinks,
   Reference,
+  ResumeSectionKey,
+  ResumeSettings,
   Skill,
   SkillCategory,
 } from '../types/state'
@@ -36,6 +38,8 @@ interface AppStoreState {
       personalDetails?: Partial<PersonalDetails>
       links?: Partial<ProfileLinks>
     }) => void
+    setResumeSectionEnabled: (input: { profileId: Id; section: ResumeSectionKey; enabled: boolean }) => void
+    reorderResumeSections: (input: { profileId: Id; orderedSections: ResumeSectionKey[] }) => void
     duplicateProfile: (input: { sourceProfileId: Id; targetJobId?: Id | null; name?: string }) => Id | null
     deleteProfile: (profileId: Id) => void
     createSkillCategory: (profileId: Id) => void
@@ -159,6 +163,57 @@ const reorderSortableEntities = <T extends { id: Id; sortOrder: number }>(entiti
   })
 
   return nextEntities
+}
+
+const resumeSectionKeys: ResumeSectionKey[] = ['summary', 'skills', 'experience', 'education', 'certifications', 'references']
+
+const hasExactResumeSections = (orderedSections: ResumeSectionKey[]) => {
+  if (orderedSections.length !== resumeSectionKeys.length) {
+    return false
+  }
+
+  const sectionSet = new Set(orderedSections)
+
+  if (sectionSet.size !== resumeSectionKeys.length) {
+    return false
+  }
+
+  return resumeSectionKeys.every((section) => sectionSet.has(section))
+}
+
+const normalizeResumeSettings = (resumeSettings?: ResumeSettings): ResumeSettings => {
+  const defaults = createDefaultResumeSettings()
+
+  if (!resumeSettings) {
+    return defaults
+  }
+
+  const sections = resumeSectionKeys.reduce<Record<ResumeSectionKey, { enabled: boolean; sortOrder: number }>>((accumulator, section) => {
+    const sourceSection = resumeSettings.sections?.[section]
+    const defaultSection = defaults.sections[section]
+
+    accumulator[section] = {
+      enabled: sourceSection?.enabled ?? defaultSection.enabled,
+      sortOrder: sourceSection?.sortOrder ?? defaultSection.sortOrder,
+    }
+
+    return accumulator
+  }, {} as Record<ResumeSectionKey, { enabled: boolean; sortOrder: number }>)
+
+  const orderedSections = resumeSectionKeys
+    .slice()
+    .sort((left, right) => sections[left].sortOrder - sections[right].sortOrder)
+
+  orderedSections.forEach((section, index) => {
+    sections[section] = {
+      ...sections[section],
+      sortOrder: index + 1,
+    }
+  })
+
+  return {
+    sections,
+  }
 }
 
 const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: string): AppDataState => {
@@ -429,7 +484,15 @@ const createProfileRecord = (name: string): Profile => {
   return {
     id: createId(),
     name,
-    ...emptyProfileDefaults,
+    summary: emptyProfileDefaults.summary,
+    coverLetter: emptyProfileDefaults.coverLetter,
+    resumeSettings: createDefaultResumeSettings(),
+    personalDetails: {
+      ...emptyProfileDefaults.personalDetails,
+    },
+    links: {
+      ...emptyProfileDefaults.links,
+    },
     jobId: null,
     clonedFromProfileId: null,
     createdAt: timestamp,
@@ -487,6 +550,69 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         },
       }))
     },
+    setResumeSectionEnabled: ({ profileId, section, enabled }) => {
+      const existingProfile = get().data.profiles[profileId]
+
+      if (!existingProfile) {
+        return
+      }
+
+      set((state) => ({
+        data: {
+          ...state.data,
+          profiles: {
+            ...state.data.profiles,
+            [profileId]: {
+              ...existingProfile,
+              resumeSettings: {
+                sections: {
+                  ...existingProfile.resumeSettings.sections,
+                  [section]: {
+                    ...existingProfile.resumeSettings.sections[section],
+                    enabled,
+                  },
+                },
+              },
+              updatedAt: now(),
+            },
+          },
+        },
+      }))
+    },
+    reorderResumeSections: ({ profileId, orderedSections }) => {
+      const existingProfile = get().data.profiles[profileId]
+
+      if (!existingProfile || !hasExactResumeSections(orderedSections)) {
+        return
+      }
+
+      set((state) => {
+        const nextSections = orderedSections.reduce<ResumeSettings['sections']>((accumulator, section, index) => {
+          accumulator[section] = {
+            ...existingProfile.resumeSettings.sections[section],
+            sortOrder: index + 1,
+          }
+
+          return accumulator
+        }, {} as ResumeSettings['sections'])
+
+        return {
+          data: {
+            ...state.data,
+            profiles: {
+              ...state.data.profiles,
+              [profileId]: {
+                ...existingProfile,
+                resumeSettings: {
+                  sections: nextSections,
+                },
+                updatedAt: now(),
+              },
+            },
+          },
+        }
+      })
+    },
     duplicateProfile: ({ sourceProfileId, targetJobId, name }) => {
       const sourceProfile = get().data.profiles[sourceProfileId]
 
@@ -505,6 +631,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         ...sourceProfile,
         id: createId(),
         name: nextName,
+        resumeSettings: normalizeResumeSettings(sourceProfile.resumeSettings),
         jobId: targetJobId === undefined ? sourceProfile.jobId : targetJobId,
         clonedFromProfileId: sourceProfileId,
         createdAt: timestamp,
@@ -1796,6 +1923,15 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           version: 1,
           exportedAt: file.exportedAt,
           ...file.data,
+          profiles: Object.fromEntries(
+            Object.entries(file.data.profiles ?? {}).map(([profileId, profile]) => [
+              profileId,
+              {
+                ...profile,
+                resumeSettings: normalizeResumeSettings(profile.resumeSettings),
+              },
+            ]),
+          ),
           applicationQuestions: file.data.applicationQuestions ?? {},
         },
         ui: createDefaultUiState(),
