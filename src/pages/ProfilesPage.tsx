@@ -78,12 +78,12 @@ export const ProfilesPage = () => {
         <p className="mt-2 text-sm text-slate-600">Use this page as a lightweight overview of reusable base profiles. Open any profile to edit its details, links, document content, and child records.</p>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">Quick add base profile</h2>
+      <section className="max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-900">Quick add profile</h2>
         <form className="mt-4 flex flex-col gap-3 sm:flex-row" onSubmit={handleSubmit}>
           <input
             className="min-w-0 flex-1 rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none ring-0 transition focus:border-sky-500"
-            placeholder="General Software Engineer"
+            placeholder="Profile name"
             value={name}
             onChange={(event) => setName(event.target.value)}
           />

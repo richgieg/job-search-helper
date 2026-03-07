@@ -109,7 +109,7 @@ export const JobsPage = () => {
         <p className="mt-2 text-sm text-slate-600">Use this page as a lightweight overview. Open any job to edit its details, profiles, contacts, questions, sources, and events.</p>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Quick add job</h2>
         <form className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]" onSubmit={handleSubmit}>
           <input
