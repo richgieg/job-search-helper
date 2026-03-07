@@ -80,7 +80,13 @@ const buildFallbackContact = (job: Job): JobContact => ({
 export const formatAddressLines = (values: Array<string | null | undefined>) => compact(values)
 
 export const formatLocationLine = (city: string, state: string, postalCode: string) => {
-  const cityStatePostal = [city, state, postalCode].map((value) => value.trim()).filter(Boolean).join(', ')
+  const trimmedCity = city.trim()
+  const trimmedState = state.trim()
+  const trimmedPostalCode = postalCode.trim()
+
+  const cityState = [trimmedCity, trimmedState].filter(Boolean).join(', ')
+  const cityStatePostal = [cityState, trimmedPostalCode].filter(Boolean).join(' ')
+
   return compact([cityStatePostal]).join(' · ')
 }
 
