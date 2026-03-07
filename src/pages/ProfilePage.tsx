@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
+import { CollapsiblePanel } from '../components/CollapsiblePanel'
 import { ReorderButtons } from '../components/ReorderButtons'
 import { ProfileChildEditors } from '../features/profiles/ProfileChildEditors'
 import { useAppStore } from '../store/app-store'
@@ -34,6 +35,20 @@ const emptyLinks: ProfileLinks = {
   websiteUrl: '',
 }
 
+const personalDetailKeys: Array<keyof PersonalDetails> = [
+  'fullName',
+  'email',
+  'phone',
+  'addressLine1',
+  'addressLine2',
+  'addressLine3',
+  'city',
+  'state',
+  'postalCode',
+]
+
+const profileLinkKeys: Array<keyof ProfileLinks> = ['linkedinUrl', 'githubUrl', 'portfolioUrl', 'websiteUrl']
+
 const resumeSectionLabels: Record<ResumeSectionKey, string> = {
   summary: 'Summary',
   skills: 'Skills',
@@ -42,6 +57,10 @@ const resumeSectionLabels: Record<ResumeSectionKey, string> = {
   certifications: 'Certifications',
   references: 'References',
 }
+
+const arePersonalDetailsEqual = (left: PersonalDetails, right: PersonalDetails) => personalDetailKeys.every((key) => left[key] === right[key])
+
+const areProfileLinksEqual = (left: ProfileLinks, right: ProfileLinks) => profileLinkKeys.every((key) => left[key] === right[key])
 
 const Field = ({
   label,
@@ -113,6 +132,9 @@ export const ProfilePage = () => {
     }))
     .sort((left, right) => left.sortOrder - right.sortOrder)
   const orderedResumeSectionKeys = orderedResumeSections.map((section) => section.section)
+  const profileDetailsDirty = name !== profile.name || summary !== profile.summary || coverLetter !== profile.coverLetter
+  const personalDetailsDirty = !arePersonalDetailsEqual(personalDetails, profile.personalDetails)
+  const linksDirty = !areProfileLinksEqual(links, profile.links)
 
   const handleSave = () => {
     const trimmed = name.trim()
@@ -169,100 +191,119 @@ export const ProfilePage = () => {
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">Updated {new Date(profile.updatedAt).toLocaleString()}</span>
         </div>
 
-        <div className="mt-6 grid gap-4 xl:grid-cols-2">
-          <Field label="Profile name" value={name} onChange={setName} />
+        <div className="mt-6 space-y-4">
+          <CollapsiblePanel
+            description="Edit the core profile content used across previews and applications."
+            isDirty={profileDetailsDirty}
+            onDiscardChanges={() => {
+              setName(profile.name)
+              setSummary(profile.summary)
+              setCoverLetter(profile.coverLetter)
+            }}
+            title="Profile details"
+          >
+            <div className="grid gap-4 xl:grid-cols-2">
+              <Field label="Profile name" value={name} onChange={setName} />
 
-          <div className="xl:col-span-2">
-            <label className="flex flex-col gap-2 text-sm text-slate-700">
-              <span className="font-medium">Professional summary</span>
-              <textarea
-                className="min-h-28 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
-                placeholder="Professional summary"
-                value={summary}
-                onChange={(event) => setSummary(event.target.value)}
-              />
-            </label>
-          </div>
+              <div className="xl:col-span-2">
+                <label className="flex flex-col gap-2 text-sm text-slate-700">
+                  <span className="font-medium">Professional summary</span>
+                  <textarea
+                    className="min-h-28 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+                    placeholder="Professional summary"
+                    value={summary}
+                    onChange={(event) => setSummary(event.target.value)}
+                  />
+                </label>
+              </div>
 
-          <div className="xl:col-span-2">
-            <label className="flex flex-col gap-2 text-sm text-slate-700">
-              <span className="font-medium">Cover letter content</span>
-              <textarea
-                className="min-h-40 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
-                placeholder="Cover letter content"
-                value={coverLetter}
-                onChange={(event) => setCoverLetter(event.target.value)}
-              />
-            </label>
-          </div>
-        </div>
+              <div className="xl:col-span-2">
+                <label className="flex flex-col gap-2 text-sm text-slate-700">
+                  <span className="font-medium">Cover letter content</span>
+                  <textarea
+                    className="min-h-40 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+                    placeholder="Cover letter content"
+                    value={coverLetter}
+                    onChange={(event) => setCoverLetter(event.target.value)}
+                  />
+                </label>
+              </div>
+            </div>
+          </CollapsiblePanel>
 
-        <div className="mt-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Personal details</h2>
-          <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <Field label="Full name" value={personalDetails.fullName} onChange={(value) => setPersonalDetails({ ...personalDetails, fullName: value })} />
-            <Field label="Email" type="email" value={personalDetails.email} onChange={(value) => setPersonalDetails({ ...personalDetails, email: value })} />
-            <Field label="Phone" type="tel" value={personalDetails.phone} onChange={(value) => setPersonalDetails({ ...personalDetails, phone: value })} />
-            <Field label="Address line 1" value={personalDetails.addressLine1} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine1: value })} />
-            <Field label="Address line 2" value={personalDetails.addressLine2} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine2: value })} />
-            <Field label="Address line 3" value={personalDetails.addressLine3} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine3: value })} />
-            <Field label="City" value={personalDetails.city} onChange={(value) => setPersonalDetails({ ...personalDetails, city: value })} />
-            <Field label="State" value={personalDetails.state} onChange={(value) => setPersonalDetails({ ...personalDetails, state: value })} />
-            <Field label="Postal code" value={personalDetails.postalCode} onChange={(value) => setPersonalDetails({ ...personalDetails, postalCode: value })} />
-          </div>
-        </div>
+          <CollapsiblePanel
+            description="Manage contact and address details used in document headers and applications."
+            isDirty={personalDetailsDirty}
+            onDiscardChanges={() => setPersonalDetails(createPersonalDetailsDraft(profile.personalDetails))}
+            title="Personal details"
+          >
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <Field label="Full name" value={personalDetails.fullName} onChange={(value) => setPersonalDetails({ ...personalDetails, fullName: value })} />
+              <Field label="Email" type="email" value={personalDetails.email} onChange={(value) => setPersonalDetails({ ...personalDetails, email: value })} />
+              <Field label="Phone" type="tel" value={personalDetails.phone} onChange={(value) => setPersonalDetails({ ...personalDetails, phone: value })} />
+              <Field label="Address line 1" value={personalDetails.addressLine1} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine1: value })} />
+              <Field label="Address line 2" value={personalDetails.addressLine2} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine2: value })} />
+              <Field label="Address line 3" value={personalDetails.addressLine3} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine3: value })} />
+              <Field label="City" value={personalDetails.city} onChange={(value) => setPersonalDetails({ ...personalDetails, city: value })} />
+              <Field label="State" value={personalDetails.state} onChange={(value) => setPersonalDetails({ ...personalDetails, state: value })} />
+              <Field label="Postal code" value={personalDetails.postalCode} onChange={(value) => setPersonalDetails({ ...personalDetails, postalCode: value })} />
+            </div>
+          </CollapsiblePanel>
 
-        <div className="mt-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Links</h2>
-          <div className="mt-3 grid gap-4 md:grid-cols-2">
-            <Field label="LinkedIn" type="url" value={links.linkedinUrl} onChange={(value) => setLinks({ ...links, linkedinUrl: value })} />
-            <Field label="GitHub" type="url" value={links.githubUrl} onChange={(value) => setLinks({ ...links, githubUrl: value })} />
-            <Field label="Portfolio" type="url" value={links.portfolioUrl} onChange={(value) => setLinks({ ...links, portfolioUrl: value })} />
-            <Field label="Website" type="url" value={links.websiteUrl} onChange={(value) => setLinks({ ...links, websiteUrl: value })} />
-          </div>
-        </div>
+          <CollapsiblePanel
+            description="Store the public URLs that should travel with this profile."
+            isDirty={linksDirty}
+            onDiscardChanges={() => setLinks(createLinksDraft(profile.links))}
+            title="Links"
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="LinkedIn" type="url" value={links.linkedinUrl} onChange={(value) => setLinks({ ...links, linkedinUrl: value })} />
+              <Field label="GitHub" type="url" value={links.githubUrl} onChange={(value) => setLinks({ ...links, githubUrl: value })} />
+              <Field label="Portfolio" type="url" value={links.portfolioUrl} onChange={(value) => setLinks({ ...links, portfolioUrl: value })} />
+              <Field label="Website" type="url" value={links.websiteUrl} onChange={(value) => setLinks({ ...links, websiteUrl: value })} />
+            </div>
+          </CollapsiblePanel>
 
-        <div className="mt-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Resume settings</h2>
-          <p className="mt-2 text-sm text-slate-500">Control which sections appear on the resume and the order in which they are shown.</p>
-          <div className="mt-4 space-y-3">
-            {orderedResumeSections.map((resumeSection, index) => (
-              <div key={resumeSection.section} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
-                <label className="inline-flex items-center gap-3 text-sm font-medium text-slate-800">
-                  <input
-                    checked={resumeSection.enabled}
-                    className="h-4 w-4 rounded border-slate-300"
-                    onChange={(event) =>
-                      setResumeSectionEnabled({
+          <CollapsiblePanel description="Control which sections appear on the resume and the order in which they are shown." title="Resume settings">
+            <div className="space-y-3">
+              {orderedResumeSections.map((resumeSection, index) => (
+                <div key={resumeSection.section} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
+                  <label className="inline-flex items-center gap-3 text-sm font-medium text-slate-800">
+                    <input
+                      checked={resumeSection.enabled}
+                      className="h-4 w-4 rounded border-slate-300"
+                      onChange={(event) =>
+                        setResumeSectionEnabled({
+                          profileId: profile.id,
+                          section: resumeSection.section,
+                          enabled: event.target.checked,
+                        })
+                      }
+                      type="checkbox"
+                    />
+                    <span>{resumeSectionLabels[resumeSection.section]}</span>
+                  </label>
+
+                  <ReorderButtons
+                    canMoveDown={orderedResumeSectionKeys.length > 1}
+                    canMoveUp={orderedResumeSectionKeys.length > 1}
+                    onMoveDown={() =>
+                      reorderResumeSections({
                         profileId: profile.id,
-                        section: resumeSection.section,
-                        enabled: event.target.checked,
+                        orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, 1) as ResumeSectionKey[],
                       })
                     }
-                    type="checkbox"
+                    onMoveUp={() =>
+                      reorderResumeSections({
+                        profileId: profile.id,
+                        orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, -1) as ResumeSectionKey[],
+                      })
+                    }
                   />
-                  <span>{resumeSectionLabels[resumeSection.section]}</span>
-                </label>
-
-                <ReorderButtons
-                  canMoveDown={orderedResumeSectionKeys.length > 1}
-                  canMoveUp={orderedResumeSectionKeys.length > 1}
-                  onMoveDown={() =>
-                    reorderResumeSections({
-                      profileId: profile.id,
-                      orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, 1) as ResumeSectionKey[],
-                    })
-                  }
-                  onMoveUp={() =>
-                    reorderResumeSections({
-                      profileId: profile.id,
-                      orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, -1) as ResumeSectionKey[],
-                    })
-                  }
-                />
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          </CollapsiblePanel>
         </div>
       </section>
 

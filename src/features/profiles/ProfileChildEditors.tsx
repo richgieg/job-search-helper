@@ -1,42 +1,10 @@
-import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
 import type { EmploymentType, ReferenceType, WorkArrangement } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
-
-const Section = ({
-  title,
-  description,
-  actionLabel,
-  onAdd,
-  children,
-}: {
-  title: string
-  description: string
-  actionLabel: string
-  onAdd: () => void
-  children: ReactNode
-}) => {
-  return (
-    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-          <p className="mt-1 text-sm text-slate-500">{description}</p>
-        </div>
-        <button
-          className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
-          onClick={onAdd}
-          type="button"
-        >
-          {actionLabel}
-        </button>
-      </div>
-      <div className="mt-4 space-y-4">{children}</div>
-    </section>
-  )
-}
 
 const TextField = ({
   label,
@@ -154,7 +122,47 @@ const ItemActions = ({ onSave, onDelete }: { onSave: () => void; onDelete: () =>
   </div>
 )
 
-const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
+const updateDirtyFlags = (current: Record<string, boolean>, id: string, dirty: boolean) => {
+  if (dirty) {
+    if (current[id]) {
+      return current
+    }
+
+    return {
+      ...current,
+      [id]: true,
+    }
+  }
+
+  if (!current[id]) {
+    return current
+  }
+
+  const next = { ...current }
+  delete next[id]
+  return next
+}
+
+const countLabel = (count: number, singular: string, plural = `${singular}s`) => `${count} ${count === 1 ? singular : plural}`
+
+const formatEnabledState = (enabled: boolean) => (enabled ? 'Enabled' : 'Disabled')
+
+const formatDateRange = (startDate: string | null, endDate: string | null, isCurrent?: boolean) => {
+  const start = startDate || 'No start date'
+  const end = isCurrent ? 'Present' : endDate || 'No end date'
+
+  return `${start} – ${end}`
+}
+
+const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter((part): part is string => Boolean(part && part.trim())).join(' • ')
+
+const ExperienceBulletRow = ({
+  bulletId,
+  onDirtyChange,
+}: {
+  bulletId: string
+  onDirtyChange?: (id: string, dirty: boolean) => void
+}) => {
   const bullet = useAppStore((state) => state.data.experienceBullets[bulletId])
   const bulletsById = useAppStore((state) => state.data.experienceBullets)
   const updateExperienceBullet = useAppStore((state) => state.actions.updateExperienceBullet)
@@ -183,6 +191,16 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
     setContent(bullet.content)
     setEnabled(bullet.enabled)
   }, [bullet])
+
+  const isDirty = bullet ? content !== bullet.content || enabled !== bullet.enabled : false
+
+  useEffect(() => {
+    onDirtyChange?.(bulletId, isDirty)
+
+    return () => {
+      onDirtyChange?.(bulletId, false)
+    }
+  }, [bulletId, isDirty, onDirtyChange])
 
   if (!bullet) {
     return null
@@ -222,7 +240,13 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
   )
 }
 
-const SkillRow = ({ skillId }: { skillId: string }) => {
+const SkillRow = ({
+  skillId,
+  onDirtyChange,
+}: {
+  skillId: string
+  onDirtyChange?: (id: string, dirty: boolean) => void
+}) => {
   const skill = useAppStore((state) => state.data.skills[skillId])
   const skillsById = useAppStore((state) => state.data.skills)
   const updateSkill = useAppStore((state) => state.actions.updateSkill)
@@ -251,6 +275,16 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
     setName(skill.name)
     setEnabled(skill.enabled)
   }, [skill])
+
+  const isDirty = skill ? name !== skill.name || enabled !== skill.enabled : false
+
+  useEffect(() => {
+    onDirtyChange?.(skillId, isDirty)
+
+    return () => {
+      onDirtyChange?.(skillId, false)
+    }
+  }, [isDirty, onDirtyChange, skillId])
 
   if (!skill) {
     return null
@@ -284,7 +318,13 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
   )
 }
 
-const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => {
+const SkillCategoryCard = ({
+  skillCategoryId,
+  onDirtyChange,
+}: {
+  skillCategoryId: string
+  onDirtyChange?: (id: string, dirty: boolean) => void
+}) => {
   const category = useAppStore((state) => state.data.skillCategories[skillCategoryId])
   const skillCategoriesById = useAppStore((state) => state.data.skillCategories)
   const skillsById = useAppStore((state) => state.data.skills)
@@ -294,6 +334,7 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
   const createSkill = useAppStore((state) => state.actions.createSkill)
   const [name, setName] = useState(category?.name ?? '')
   const [enabled, setEnabled] = useState(category?.enabled ?? true)
+  const [dirtySkillIds, setDirtySkillIds] = useState<Record<string, boolean>>({})
 
   const skillCategoryIds = useMemo(
     () =>
@@ -325,12 +366,42 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
     setEnabled(category.enabled)
   }, [category])
 
+  const isDirty = category ? name !== category.name || enabled !== category.enabled || Object.keys(dirtySkillIds).length > 0 : false
+  const summary = summarizeParts([
+    name || 'Untitled category',
+    formatEnabledState(enabled),
+    countLabel(skillIds.length, 'skill'),
+  ])
+
+  const handleSkillDirtyChange = useCallback((id: string, dirty: boolean) => {
+    setDirtySkillIds((current) => updateDirtyFlags(current, id, dirty))
+  }, [])
+
+  useEffect(() => {
+    onDirtyChange?.(skillCategoryId, isDirty)
+
+    return () => {
+      onDirtyChange?.(skillCategoryId, false)
+    }
+  }, [isDirty, onDirtyChange, skillCategoryId])
+
   if (!category) {
     return null
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
+    <CollapsiblePanel
+      actionLabel="Add skill"
+      isDirty={isDirty}
+      onAction={() => createSkill(category.id)}
+      onDiscardChanges={() => {
+        setName(category.name)
+        setEnabled(category.enabled)
+        setDirtySkillIds({})
+      }}
+      summary={summary}
+      title={name || 'Skill category'}
+    >
       <div className="grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
         <TextField label="Category name" value={name} onChange={setName} />
         <ToggleField checked={enabled} label="Enabled" onChange={setEnabled} />
@@ -359,19 +430,19 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
       </div>
 
       <div className="mt-4 space-y-3">
-        {skillIds.map((skillId) => (
-          <SkillRow key={skillId} skillId={skillId} />
-        ))}
+        {skillIds.length === 0 ? <p className="text-sm text-slate-500">No skills yet.</p> : skillIds.map((skillId) => <SkillRow key={skillId} onDirtyChange={handleSkillDirtyChange} skillId={skillId} />)}
       </div>
-
-      <button className="mt-4 rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => createSkill(category.id)} type="button">
-        Add skill
-      </button>
-    </div>
+    </CollapsiblePanel>
   )
 }
 
-const ExperienceCard = ({ entryId }: { entryId: string }) => {
+const ExperienceCard = ({
+  entryId,
+  onDirtyChange,
+}: {
+  entryId: string
+  onDirtyChange?: (id: string, dirty: boolean) => void
+}) => {
   const entry = useAppStore((state) => state.data.experienceEntries[entryId])
   const experienceEntriesById = useAppStore((state) => state.data.experienceEntries)
   const bulletsById = useAppStore((state) => state.data.experienceBullets)
@@ -380,6 +451,7 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
   const reorderExperienceEntries = useAppStore((state) => state.actions.reorderExperienceEntries)
   const createExperienceBullet = useAppStore((state) => state.actions.createExperienceBullet)
   const [draft, setDraft] = useState(entry)
+  const [dirtyBulletIds, setDirtyBulletIds] = useState<Record<string, boolean>>({})
 
   const experienceEntryIds = useMemo(
     () =>
@@ -406,12 +478,43 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
     setDraft(entry)
   }, [entry])
 
+  const isDirty = entry && draft ? JSON.stringify(draft) !== JSON.stringify(entry) || Object.keys(dirtyBulletIds).length > 0 : false
+  const summary = summarizeParts([
+    draft?.title || 'Untitled role',
+    draft?.company || 'Unknown company',
+    formatDateRange(draft?.startDate ?? null, draft?.endDate ?? null, draft?.isCurrent),
+    formatEnabledState(draft?.enabled ?? true),
+    countLabel(bulletIds.length, 'bullet'),
+  ])
+
+  const handleBulletDirtyChange = useCallback((id: string, dirty: boolean) => {
+    setDirtyBulletIds((current) => updateDirtyFlags(current, id, dirty))
+  }, [])
+
+  useEffect(() => {
+    onDirtyChange?.(entryId, isDirty)
+
+    return () => {
+      onDirtyChange?.(entryId, false)
+    }
+  }, [entryId, isDirty, onDirtyChange])
+
   if (!entry || !draft) {
     return null
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
+    <CollapsiblePanel
+      actionLabel="Add bullet"
+      isDirty={isDirty}
+      onAction={() => createExperienceBullet(entry.id)}
+      onDiscardChanges={() => {
+        setDraft(entry)
+        setDirtyBulletIds({})
+      }}
+      summary={summary}
+      title={draft.title || entry.title || 'Experience entry'}
+    >
       <div className="grid gap-4 xl:grid-cols-3">
         <TextField label="Company" value={draft.company} onChange={(value) => setDraft({ ...draft, company: value })} />
         <TextField label="Title" value={draft.title} onChange={(value) => setDraft({ ...draft, title: value })} />
@@ -464,19 +567,12 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
         <div className="xl:col-span-3">
           <div className="flex items-center justify-between gap-3">
             <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Bullets</h4>
-            <button
-              className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-              onClick={() => createExperienceBullet(entry.id)}
-              type="button"
-            >
-              Add bullet
-            </button>
           </div>
           <div className="mt-3 space-y-3">
             {bulletIds.length === 0 ? (
               <p className="text-sm text-slate-500">No bullets yet.</p>
             ) : (
-              bulletIds.map((bulletId) => <ExperienceBulletRow key={bulletId} bulletId={bulletId} />)
+              bulletIds.map((bulletId) => <ExperienceBulletRow key={bulletId} bulletId={bulletId} onDirtyChange={handleBulletDirtyChange} />)
             )}
           </div>
         </div>
@@ -506,11 +602,17 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
           </div>
         </div>
       </div>
-    </div>
+    </CollapsiblePanel>
   )
 }
 
-const EducationCard = ({ entryId }: { entryId: string }) => {
+const EducationCard = ({
+  entryId,
+  onDirtyChange,
+}: {
+  entryId: string
+  onDirtyChange?: (id: string, dirty: boolean) => void
+}) => {
   const entry = useAppStore((state) => state.data.educationEntries[entryId])
   const educationEntriesById = useAppStore((state) => state.data.educationEntries)
   const updateEducationEntry = useAppStore((state) => state.actions.updateEducationEntry)
@@ -534,12 +636,28 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
     setDraft(entry)
   }, [entry])
 
+  const isDirty = entry && draft ? JSON.stringify(draft) !== JSON.stringify(entry) : false
+  const summary = summarizeParts([draft?.degree || 'No degree', draft?.school || 'No school', draft?.graduationDate ? `Graduates ${draft.graduationDate}` : null, formatEnabledState(draft?.enabled ?? true)])
+
+  useEffect(() => {
+    onDirtyChange?.(entryId, isDirty)
+
+    return () => {
+      onDirtyChange?.(entryId, false)
+    }
+  }, [entryId, isDirty, onDirtyChange])
+
   if (!entry || !draft) {
     return null
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
+    <CollapsiblePanel
+      isDirty={isDirty}
+      onDiscardChanges={() => setDraft(entry)}
+      summary={summary}
+      title={draft.school || entry.school || 'Education entry'}
+    >
       <div className="grid gap-4 xl:grid-cols-3">
         <TextField label="School" value={draft.school} onChange={(value) => setDraft({ ...draft, school: value })} />
         <TextField label="Degree" value={draft.degree} onChange={(value) => setDraft({ ...draft, degree: value })} />
@@ -570,11 +688,17 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
           </div>
         </div>
       </div>
-    </div>
+    </CollapsiblePanel>
   )
 }
 
-const CertificationCard = ({ certificationId }: { certificationId: string }) => {
+const CertificationCard = ({
+  certificationId,
+  onDirtyChange,
+}: {
+  certificationId: string
+  onDirtyChange?: (id: string, dirty: boolean) => void
+}) => {
   const certification = useAppStore((state) => state.data.certifications[certificationId])
   const certificationsById = useAppStore((state) => state.data.certifications)
   const updateCertification = useAppStore((state) => state.actions.updateCertification)
@@ -598,12 +722,34 @@ const CertificationCard = ({ certificationId }: { certificationId: string }) => 
     setDraft(certification)
   }, [certification])
 
+  const isDirty = certification && draft ? JSON.stringify(draft) !== JSON.stringify(certification) : false
+  const summary = summarizeParts([
+    draft?.name || 'Unnamed certification',
+    draft?.issuer || 'No issuer',
+    draft?.issueDate ? `Issued ${draft.issueDate}` : null,
+    draft?.expiryDate ? `Expires ${draft.expiryDate}` : null,
+    formatEnabledState(draft?.enabled ?? true),
+  ])
+
+  useEffect(() => {
+    onDirtyChange?.(certificationId, isDirty)
+
+    return () => {
+      onDirtyChange?.(certificationId, false)
+    }
+  }, [certificationId, isDirty, onDirtyChange])
+
   if (!certification || !draft) {
     return null
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
+    <CollapsiblePanel
+      isDirty={isDirty}
+      onDiscardChanges={() => setDraft(certification)}
+      summary={summary}
+      title={draft.name || certification.name || 'Certification'}
+    >
       <div className="grid gap-4 xl:grid-cols-3">
         <TextField label="Name" value={draft.name} onChange={(value) => setDraft({ ...draft, name: value })} />
         <TextField label="Issuer" value={draft.issuer} onChange={(value) => setDraft({ ...draft, issuer: value })} />
@@ -637,11 +783,17 @@ const CertificationCard = ({ certificationId }: { certificationId: string }) => 
           </div>
         </div>
       </div>
-    </div>
+    </CollapsiblePanel>
   )
 }
 
-const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
+const ReferenceCard = ({
+  referenceId,
+  onDirtyChange,
+}: {
+  referenceId: string
+  onDirtyChange?: (id: string, dirty: boolean) => void
+}) => {
   const reference = useAppStore((state) => state.data.references[referenceId])
   const referencesById = useAppStore((state) => state.data.references)
   const updateReference = useAppStore((state) => state.actions.updateReference)
@@ -665,12 +817,33 @@ const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
     setDraft(reference)
   }, [reference])
 
+  const isDirty = reference && draft ? JSON.stringify(draft) !== JSON.stringify(reference) : false
+  const summary = summarizeParts([
+    draft?.type === 'professional' ? 'Professional' : 'Personal',
+    draft?.name || 'Unnamed reference',
+    draft?.company || draft?.relationship || null,
+    formatEnabledState(draft?.enabled ?? true),
+  ])
+
+  useEffect(() => {
+    onDirtyChange?.(referenceId, isDirty)
+
+    return () => {
+      onDirtyChange?.(referenceId, false)
+    }
+  }, [isDirty, onDirtyChange, referenceId])
+
   if (!reference || !draft) {
     return null
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
+    <CollapsiblePanel
+      isDirty={isDirty}
+      onDiscardChanges={() => setDraft(reference)}
+      summary={summary}
+      title={draft.name || reference.name || 'Reference'}
+    >
       <div className="grid gap-4 xl:grid-cols-3">
         <label className="flex flex-col gap-2 text-sm text-slate-700">
           <span className="font-medium">Type</span>
@@ -718,7 +891,7 @@ const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
           </div>
         </div>
       </div>
-    </div>
+    </CollapsiblePanel>
   )
 }
 
@@ -733,6 +906,11 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
   const createEducationEntry = useAppStore((state) => state.actions.createEducationEntry)
   const createCertification = useAppStore((state) => state.actions.createCertification)
   const createReference = useAppStore((state) => state.actions.createReference)
+  const [dirtySkillCategoryIds, setDirtySkillCategoryIds] = useState<Record<string, boolean>>({})
+  const [dirtyExperienceEntryIds, setDirtyExperienceEntryIds] = useState<Record<string, boolean>>({})
+  const [dirtyEducationEntryIds, setDirtyEducationEntryIds] = useState<Record<string, boolean>>({})
+  const [dirtyCertificationIds, setDirtyCertificationIds] = useState<Record<string, boolean>>({})
+  const [dirtyReferenceIds, setDirtyReferenceIds] = useState<Record<string, boolean>>({})
 
   const skillCategoryIds = useMemo(
     () =>
@@ -779,27 +957,87 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
     [profileId, referencesById],
   )
 
+  const handleSkillCategoryDirtyChange = useCallback((id: string, dirty: boolean) => {
+    setDirtySkillCategoryIds((current) => updateDirtyFlags(current, id, dirty))
+  }, [])
+
+  const handleExperienceEntryDirtyChange = useCallback((id: string, dirty: boolean) => {
+    setDirtyExperienceEntryIds((current) => updateDirtyFlags(current, id, dirty))
+  }, [])
+
+  const handleEducationEntryDirtyChange = useCallback((id: string, dirty: boolean) => {
+    setDirtyEducationEntryIds((current) => updateDirtyFlags(current, id, dirty))
+  }, [])
+
+  const handleCertificationDirtyChange = useCallback((id: string, dirty: boolean) => {
+    setDirtyCertificationIds((current) => updateDirtyFlags(current, id, dirty))
+  }, [])
+
+  const handleReferenceDirtyChange = useCallback((id: string, dirty: boolean) => {
+    setDirtyReferenceIds((current) => updateDirtyFlags(current, id, dirty))
+  }, [])
+
   return (
-    <div className="mt-6">
-      <Section actionLabel="Add skill category" description="Organize skills into enabled or disabled categories." onAdd={() => createSkillCategory(profileId)} title="Skills">
-        {skillCategoryIds.length === 0 ? <p className="text-sm text-slate-500">No skill categories yet.</p> : skillCategoryIds.map((id) => <SkillCategoryCard key={id} skillCategoryId={id} />)}
-      </Section>
+    <div className="mt-6 space-y-6">
+      <CollapsiblePanel
+        actionLabel="Add skill category"
+        description="Organize skills into enabled or disabled categories."
+        isDirty={Object.keys(dirtySkillCategoryIds).length > 0}
+        onAction={() => createSkillCategory(profileId)}
+        title="Skills"
+      >
+        <div className="space-y-4">
+          {skillCategoryIds.length === 0 ? <p className="text-sm text-slate-500">No skill categories yet.</p> : skillCategoryIds.map((id) => <SkillCategoryCard key={id} onDirtyChange={handleSkillCategoryDirtyChange} skillCategoryId={id} />)}
+        </div>
+      </CollapsiblePanel>
 
-      <Section actionLabel="Add experience" description="Capture work history entries used in resumes and applications." onAdd={() => createExperienceEntry(profileId)} title="Experience">
-        {experienceEntryIds.length === 0 ? <p className="text-sm text-slate-500">No experience entries yet.</p> : experienceEntryIds.map((id) => <ExperienceCard key={id} entryId={id} />)}
-      </Section>
+      <CollapsiblePanel
+        actionLabel="Add experience"
+        description="Capture work history entries used in resumes and applications."
+        isDirty={Object.keys(dirtyExperienceEntryIds).length > 0}
+        onAction={() => createExperienceEntry(profileId)}
+        title="Experience"
+      >
+        <div className="space-y-4">
+          {experienceEntryIds.length === 0 ? <p className="text-sm text-slate-500">No experience entries yet.</p> : experienceEntryIds.map((id) => <ExperienceCard entryId={id} key={id} onDirtyChange={handleExperienceEntryDirtyChange} />)}
+        </div>
+      </CollapsiblePanel>
 
-      <Section actionLabel="Add education" description="Store education entries that can be enabled or disabled per profile." onAdd={() => createEducationEntry(profileId)} title="Education">
-        {educationEntryIds.length === 0 ? <p className="text-sm text-slate-500">No education entries yet.</p> : educationEntryIds.map((id) => <EducationCard key={id} entryId={id} />)}
-      </Section>
+      <CollapsiblePanel
+        actionLabel="Add education"
+        description="Store education entries that can be enabled or disabled per profile."
+        isDirty={Object.keys(dirtyEducationEntryIds).length > 0}
+        onAction={() => createEducationEntry(profileId)}
+        title="Education"
+      >
+        <div className="space-y-4">
+          {educationEntryIds.length === 0 ? <p className="text-sm text-slate-500">No education entries yet.</p> : educationEntryIds.map((id) => <EducationCard entryId={id} key={id} onDirtyChange={handleEducationEntryDirtyChange} />)}
+        </div>
+      </CollapsiblePanel>
 
-      <Section actionLabel="Add certification" description="Track certifications and their optional credential metadata." onAdd={() => createCertification(profileId)} title="Certifications">
-        {certificationIds.length === 0 ? <p className="text-sm text-slate-500">No certifications yet.</p> : certificationIds.map((id) => <CertificationCard key={id} certificationId={id} />)}
-      </Section>
+      <CollapsiblePanel
+        actionLabel="Add certification"
+        description="Track certifications and their optional credential metadata."
+        isDirty={Object.keys(dirtyCertificationIds).length > 0}
+        onAction={() => createCertification(profileId)}
+        title="Certifications"
+      >
+        <div className="space-y-4">
+          {certificationIds.length === 0 ? <p className="text-sm text-slate-500">No certifications yet.</p> : certificationIds.map((id) => <CertificationCard certificationId={id} key={id} onDirtyChange={handleCertificationDirtyChange} />)}
+        </div>
+      </CollapsiblePanel>
 
-      <Section actionLabel="Add reference" description="Maintain both professional and personal references." onAdd={() => createReference(profileId)} title="References">
-        {referenceIds.length === 0 ? <p className="text-sm text-slate-500">No references yet.</p> : referenceIds.map((id) => <ReferenceCard key={id} referenceId={id} />)}
-      </Section>
+      <CollapsiblePanel
+        actionLabel="Add reference"
+        description="Maintain both professional and personal references."
+        isDirty={Object.keys(dirtyReferenceIds).length > 0}
+        onAction={() => createReference(profileId)}
+        title="References"
+      >
+        <div className="space-y-4">
+          {referenceIds.length === 0 ? <p className="text-sm text-slate-500">No references yet.</p> : referenceIds.map((id) => <ReferenceCard key={id} onDirtyChange={handleReferenceDirtyChange} referenceId={id} />)}
+        </div>
+      </CollapsiblePanel>
     </div>
   )
 }
