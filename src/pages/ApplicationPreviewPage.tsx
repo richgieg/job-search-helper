@@ -11,8 +11,8 @@ interface CopyValueItem {
 }
 
 interface FieldRow {
-  label: string
   values: CopyValueItem[]
+  label: string
   multiline?: boolean
 }
 
@@ -76,15 +76,20 @@ const CopyValueButton = ({
 }) => (
   <button
     className={[
-      'w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm text-slate-800 transition hover:border-sky-300 hover:bg-sky-50',
-      multiline ? 'max-h-24 overflow-hidden whitespace-pre-wrap' : 'truncate whitespace-nowrap',
+      'relative w-full cursor-pointer overflow-hidden rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm text-slate-800 transition hover:border-sky-300 hover:bg-sky-50',
+      multiline ? 'max-h-24 whitespace-pre-wrap' : 'truncate whitespace-nowrap',
       copiedKey === copyKey ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : '',
     ].join(' ')}
     onClick={() => onCopy(copyKey, item.copyValue)}
     title={item.copyValue}
     type="button"
   >
-    {item.display}
+    <span className="block pr-16">{item.display}</span>
+    {copiedKey === copyKey ? (
+      <span className="absolute inset-0 flex items-center justify-center bg-emerald-50/95 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+        Copied!
+      </span>
+    ) : null}
   </button>
 )
 
@@ -193,7 +198,6 @@ export const ApplicationPreviewPage = () => {
       <div className="space-y-6">
         <div className="rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm text-sky-900">
           Click any value to copy it. Date fields include multiple formats so you can choose the one an application form expects.
-          {copiedKey ? <span className="ml-2 font-medium text-emerald-700">Copied.</span> : null}
         </div>
 
         <DataTable copiedKey={copiedKey} description="Personal details and links from the selected profile." onCopy={handleCopy} rows={personalInfoRows} title="Personal Info" />
