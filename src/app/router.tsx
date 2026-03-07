@@ -5,6 +5,7 @@ import { ApplicationPreviewPage } from '../pages/ApplicationPreviewPage'
 import { CoverLetterPreviewPage } from '../pages/CoverLetterPreviewPage'
 import { DashboardPage } from '../pages/DashboardPage'
 import { ImportExportPage } from '../pages/ImportExportPage'
+import { JobPage } from '../pages/JobPage'
 import { JobsPage } from '../pages/JobsPage'
 import { ProfilesPage } from '../pages/ProfilesPage'
 import { ResumePreviewPage } from '../pages/ResumePreviewPage'
@@ -17,6 +18,7 @@ export const AppRoutes = () => {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profiles" element={<ProfilesPage />} />
         <Route path="/jobs" element={<JobsPage />} />
+        <Route path="/jobs/:jobId" element={<JobPage />} />
         <Route path="/import-export" element={<ImportExportPage />} />
         <Route path="/previews/resume/:profileId" element={<ResumePreviewPage />} />
         <Route path="/previews/application/:profileId" element={<ApplicationPreviewPage />} />
