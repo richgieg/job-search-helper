@@ -78,8 +78,6 @@ export const JobPage = () => {
 
   const profiles = useMemo(() => Object.values(profilesById), [profilesById])
   const baseProfiles = useMemo(() => profiles.filter((profile) => profile.jobId === null), [profiles])
-  const attachedProfiles = useMemo(() => profiles.filter((profile) => profile.jobId === jobId), [jobId, profiles])
-  const firstAttachedProfileId = attachedProfiles[0]?.id ?? null
   const jobEvents = useMemo(() => Object.values(jobEventsById).filter((event) => event.jobId === jobId), [jobEventsById, jobId])
   const computedStatus = useMemo(() => getJobComputedStatus(jobEvents.map((event) => event.eventType)), [jobEvents])
 
@@ -199,11 +197,6 @@ export const JobPage = () => {
           <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to="/jobs">
             Back to jobs
           </Link>
-          {firstAttachedProfileId ? (
-            <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/previews/resume/${firstAttachedProfileId}`}>
-              Open preview
-            </Link>
-          ) : null}
           <button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700" onClick={handleSave} type="button">
             Save job
           </button>
