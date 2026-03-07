@@ -1,7 +1,9 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
 
+import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
 import type { EmploymentType, ReferenceType, WorkArrangement } from '../../types/state'
+import { moveOrderedItem } from '../../utils/reorder'
 
 const Section = ({
   title,
@@ -154,10 +156,24 @@ const ItemActions = ({ onSave, onDelete }: { onSave: () => void; onDelete: () =>
 
 const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
   const bullet = useAppStore((state) => state.data.experienceBullets[bulletId])
+  const bulletsById = useAppStore((state) => state.data.experienceBullets)
   const updateExperienceBullet = useAppStore((state) => state.actions.updateExperienceBullet)
   const deleteExperienceBullet = useAppStore((state) => state.actions.deleteExperienceBullet)
+  const reorderExperienceBullets = useAppStore((state) => state.actions.reorderExperienceBullets)
   const [content, setContent] = useState(bullet?.content ?? '')
   const [enabled, setEnabled] = useState(bullet?.enabled ?? true)
+
+  const bulletIds = useMemo(
+    () =>
+      bullet
+        ? Object.values(bulletsById)
+            .filter((item) => item.experienceEntryId === bullet.experienceEntryId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [bullet, bulletsById],
+  )
+  const bulletIndex = bulletIds.indexOf(bulletId)
 
   useEffect(() => {
     if (!bullet) {
@@ -178,10 +194,28 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
         <TextAreaField label="Bullet" placeholder="Describe an accomplishment or responsibility" value={content} onChange={setContent} />
         <div className="flex flex-wrap items-center justify-between gap-3 md:flex-col md:items-end">
           <ToggleField checked={enabled} label="Enabled" onChange={setEnabled} />
-          <ItemActions
-            onDelete={() => deleteExperienceBullet(bullet.id)}
-            onSave={() => updateExperienceBullet({ experienceBulletId: bullet.id, changes: { content, enabled } })}
-          />
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ReorderButtons
+              canMoveDown={bulletIndex >= 0 && bulletIndex < bulletIds.length - 1}
+              canMoveUp={bulletIndex > 0}
+              onMoveDown={() =>
+                reorderExperienceBullets({
+                  experienceEntryId: bullet.experienceEntryId,
+                  orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderExperienceBullets({
+                  experienceEntryId: bullet.experienceEntryId,
+                  orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
+                })
+              }
+            />
+            <ItemActions
+              onDelete={() => deleteExperienceBullet(bullet.id)}
+              onSave={() => updateExperienceBullet({ experienceBulletId: bullet.id, changes: { content, enabled } })}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -190,10 +224,24 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
 
 const SkillRow = ({ skillId }: { skillId: string }) => {
   const skill = useAppStore((state) => state.data.skills[skillId])
+  const skillsById = useAppStore((state) => state.data.skills)
   const updateSkill = useAppStore((state) => state.actions.updateSkill)
   const deleteSkill = useAppStore((state) => state.actions.deleteSkill)
+  const reorderSkills = useAppStore((state) => state.actions.reorderSkills)
   const [name, setName] = useState(skill?.name ?? '')
   const [enabled, setEnabled] = useState(skill?.enabled ?? true)
+
+  const skillIds = useMemo(
+    () =>
+      skill
+        ? Object.values(skillsById)
+            .filter((item) => item.skillCategoryId === skill.skillCategoryId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [skill, skillsById],
+  )
+  const skillIndex = skillIds.indexOf(skillId)
 
   useEffect(() => {
     if (!skill) {
@@ -209,9 +257,25 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
   }
 
   return (
-    <div className="grid gap-3 rounded-xl border border-slate-200 p-3 md:grid-cols-[1fr_auto_auto] md:items-end">
+    <div className="grid gap-3 rounded-xl border border-slate-200 p-3 md:grid-cols-[1fr_auto_auto_auto] md:items-end">
       <TextField label="Skill name" value={name} onChange={setName} />
       <ToggleField checked={enabled} label="Enabled" onChange={setEnabled} />
+      <ReorderButtons
+        canMoveDown={skillIndex >= 0 && skillIndex < skillIds.length - 1}
+        canMoveUp={skillIndex > 0}
+        onMoveDown={() =>
+          reorderSkills({
+            skillCategoryId: skill.skillCategoryId,
+            orderedIds: moveOrderedItem(skillIds, skillIndex, 1),
+          })
+        }
+        onMoveUp={() =>
+          reorderSkills({
+            skillCategoryId: skill.skillCategoryId,
+            orderedIds: moveOrderedItem(skillIds, skillIndex, -1),
+          })
+        }
+      />
       <ItemActions
         onDelete={() => deleteSkill(skill.id)}
         onSave={() => updateSkill({ skillId: skill.id, changes: { name, enabled } })}
@@ -222,12 +286,26 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
 
 const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => {
   const category = useAppStore((state) => state.data.skillCategories[skillCategoryId])
+  const skillCategoriesById = useAppStore((state) => state.data.skillCategories)
   const skillsById = useAppStore((state) => state.data.skills)
   const updateSkillCategory = useAppStore((state) => state.actions.updateSkillCategory)
   const deleteSkillCategory = useAppStore((state) => state.actions.deleteSkillCategory)
+  const reorderSkillCategories = useAppStore((state) => state.actions.reorderSkillCategories)
   const createSkill = useAppStore((state) => state.actions.createSkill)
   const [name, setName] = useState(category?.name ?? '')
   const [enabled, setEnabled] = useState(category?.enabled ?? true)
+
+  const skillCategoryIds = useMemo(
+    () =>
+      category
+        ? Object.values(skillCategoriesById)
+            .filter((item) => item.profileId === category.profileId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [category, skillCategoriesById],
+  )
+  const skillCategoryIndex = skillCategoryIds.indexOf(skillCategoryId)
 
   const skillIds = useMemo(
     () =>
@@ -256,10 +334,28 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
       <div className="grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
         <TextField label="Category name" value={name} onChange={setName} />
         <ToggleField checked={enabled} label="Enabled" onChange={setEnabled} />
-        <ItemActions
-          onDelete={() => deleteSkillCategory(category.id)}
-          onSave={() => updateSkillCategory({ skillCategoryId: category.id, changes: { name, enabled } })}
-        />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ReorderButtons
+            canMoveDown={skillCategoryIndex >= 0 && skillCategoryIndex < skillCategoryIds.length - 1}
+            canMoveUp={skillCategoryIndex > 0}
+            onMoveDown={() =>
+              reorderSkillCategories({
+                profileId: category.profileId,
+                orderedIds: moveOrderedItem(skillCategoryIds, skillCategoryIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderSkillCategories({
+                profileId: category.profileId,
+                orderedIds: moveOrderedItem(skillCategoryIds, skillCategoryIndex, -1),
+              })
+            }
+          />
+          <ItemActions
+            onDelete={() => deleteSkillCategory(category.id)}
+            onSave={() => updateSkillCategory({ skillCategoryId: category.id, changes: { name, enabled } })}
+          />
+        </div>
       </div>
 
       <div className="mt-4 space-y-3">
@@ -277,11 +373,25 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
 
 const ExperienceCard = ({ entryId }: { entryId: string }) => {
   const entry = useAppStore((state) => state.data.experienceEntries[entryId])
+  const experienceEntriesById = useAppStore((state) => state.data.experienceEntries)
   const bulletsById = useAppStore((state) => state.data.experienceBullets)
   const updateExperienceEntry = useAppStore((state) => state.actions.updateExperienceEntry)
   const deleteExperienceEntry = useAppStore((state) => state.actions.deleteExperienceEntry)
+  const reorderExperienceEntries = useAppStore((state) => state.actions.reorderExperienceEntries)
   const createExperienceBullet = useAppStore((state) => state.actions.createExperienceBullet)
   const [draft, setDraft] = useState(entry)
+
+  const experienceEntryIds = useMemo(
+    () =>
+      entry
+        ? Object.values(experienceEntriesById)
+            .filter((item) => item.profileId === entry.profileId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [entry, experienceEntriesById],
+  )
+  const experienceEntryIndex = experienceEntryIds.indexOf(entryId)
 
   const bulletIds = useMemo(
     () =>
@@ -372,10 +482,28 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
         </div>
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
           <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
-          <ItemActions
-            onDelete={() => deleteExperienceEntry(entry.id)}
-            onSave={() => updateExperienceEntry({ experienceEntryId: entry.id, changes: draft })}
-          />
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ReorderButtons
+              canMoveDown={experienceEntryIndex >= 0 && experienceEntryIndex < experienceEntryIds.length - 1}
+              canMoveUp={experienceEntryIndex > 0}
+              onMoveDown={() =>
+                reorderExperienceEntries({
+                  profileId: entry.profileId,
+                  orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderExperienceEntries({
+                  profileId: entry.profileId,
+                  orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, -1),
+                })
+              }
+            />
+            <ItemActions
+              onDelete={() => deleteExperienceEntry(entry.id)}
+              onSave={() => updateExperienceEntry({ experienceEntryId: entry.id, changes: draft })}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -384,9 +512,23 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
 
 const EducationCard = ({ entryId }: { entryId: string }) => {
   const entry = useAppStore((state) => state.data.educationEntries[entryId])
+  const educationEntriesById = useAppStore((state) => state.data.educationEntries)
   const updateEducationEntry = useAppStore((state) => state.actions.updateEducationEntry)
   const deleteEducationEntry = useAppStore((state) => state.actions.deleteEducationEntry)
+  const reorderEducationEntries = useAppStore((state) => state.actions.reorderEducationEntries)
   const [draft, setDraft] = useState(entry)
+
+  const educationEntryIds = useMemo(
+    () =>
+      entry
+        ? Object.values(educationEntriesById)
+            .filter((item) => item.profileId === entry.profileId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [educationEntriesById, entry],
+  )
+  const educationEntryIndex = educationEntryIds.indexOf(entryId)
 
   useEffect(() => {
     setDraft(entry)
@@ -404,10 +546,28 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
         <TextField label="Graduation date" type="date" value={draft.graduationDate ?? ''} onChange={(value) => setDraft({ ...draft, graduationDate: value || null })} />
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
           <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
-          <ItemActions
-            onDelete={() => deleteEducationEntry(entry.id)}
-            onSave={() => updateEducationEntry({ educationEntryId: entry.id, changes: draft })}
-          />
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ReorderButtons
+              canMoveDown={educationEntryIndex >= 0 && educationEntryIndex < educationEntryIds.length - 1}
+              canMoveUp={educationEntryIndex > 0}
+              onMoveDown={() =>
+                reorderEducationEntries({
+                  profileId: entry.profileId,
+                  orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderEducationEntries({
+                  profileId: entry.profileId,
+                  orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, -1),
+                })
+              }
+            />
+            <ItemActions
+              onDelete={() => deleteEducationEntry(entry.id)}
+              onSave={() => updateEducationEntry({ educationEntryId: entry.id, changes: draft })}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -416,9 +576,23 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
 
 const CertificationCard = ({ certificationId }: { certificationId: string }) => {
   const certification = useAppStore((state) => state.data.certifications[certificationId])
+  const certificationsById = useAppStore((state) => state.data.certifications)
   const updateCertification = useAppStore((state) => state.actions.updateCertification)
   const deleteCertification = useAppStore((state) => state.actions.deleteCertification)
+  const reorderCertifications = useAppStore((state) => state.actions.reorderCertifications)
   const [draft, setDraft] = useState(certification)
+
+  const certificationIds = useMemo(
+    () =>
+      certification
+        ? Object.values(certificationsById)
+            .filter((item) => item.profileId === certification.profileId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [certification, certificationsById],
+  )
+  const certificationIndex = certificationIds.indexOf(certificationId)
 
   useEffect(() => {
     setDraft(certification)
@@ -439,10 +613,28 @@ const CertificationCard = ({ certificationId }: { certificationId: string }) => 
         <TextField label="Credential URL" type="url" value={draft.credentialUrl} onChange={(value) => setDraft({ ...draft, credentialUrl: value })} />
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
           <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
-          <ItemActions
-            onDelete={() => deleteCertification(certification.id)}
-            onSave={() => updateCertification({ certificationId: certification.id, changes: draft })}
-          />
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ReorderButtons
+              canMoveDown={certificationIndex >= 0 && certificationIndex < certificationIds.length - 1}
+              canMoveUp={certificationIndex > 0}
+              onMoveDown={() =>
+                reorderCertifications({
+                  profileId: certification.profileId,
+                  orderedIds: moveOrderedItem(certificationIds, certificationIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderCertifications({
+                  profileId: certification.profileId,
+                  orderedIds: moveOrderedItem(certificationIds, certificationIndex, -1),
+                })
+              }
+            />
+            <ItemActions
+              onDelete={() => deleteCertification(certification.id)}
+              onSave={() => updateCertification({ certificationId: certification.id, changes: draft })}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -451,9 +643,23 @@ const CertificationCard = ({ certificationId }: { certificationId: string }) => 
 
 const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
   const reference = useAppStore((state) => state.data.references[referenceId])
+  const referencesById = useAppStore((state) => state.data.references)
   const updateReference = useAppStore((state) => state.actions.updateReference)
   const deleteReference = useAppStore((state) => state.actions.deleteReference)
+  const reorderReferences = useAppStore((state) => state.actions.reorderReferences)
   const [draft, setDraft] = useState(reference)
+
+  const referenceIds = useMemo(
+    () =>
+      reference
+        ? Object.values(referencesById)
+            .filter((item) => item.profileId === reference.profileId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [reference, referencesById],
+  )
+  const referenceIndex = referenceIds.indexOf(referenceId)
 
   useEffect(() => {
     setDraft(reference)
@@ -488,10 +694,28 @@ const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
         </div>
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
           <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
-          <ItemActions
-            onDelete={() => deleteReference(reference.id)}
-            onSave={() => updateReference({ referenceId: reference.id, changes: draft })}
-          />
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ReorderButtons
+              canMoveDown={referenceIndex >= 0 && referenceIndex < referenceIds.length - 1}
+              canMoveUp={referenceIndex > 0}
+              onMoveDown={() =>
+                reorderReferences({
+                  profileId: reference.profileId,
+                  orderedIds: moveOrderedItem(referenceIds, referenceIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderReferences({
+                  profileId: reference.profileId,
+                  orderedIds: moveOrderedItem(referenceIds, referenceIndex, -1),
+                })
+              }
+            />
+            <ItemActions
+              onDelete={() => deleteReference(reference.id)}
+              onSave={() => updateReference({ referenceId: reference.id, changes: draft })}
+            />
+          </div>
         </div>
       </div>
     </div>

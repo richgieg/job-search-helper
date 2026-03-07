@@ -44,39 +44,46 @@ interface AppStoreState {
       changes: Partial<Pick<SkillCategory, 'name' | 'enabled' | 'sortOrder'>>
     }) => void
     deleteSkillCategory: (skillCategoryId: Id) => void
+    reorderSkillCategories: (input: { profileId: Id; orderedIds: Id[] }) => void
     createSkill: (skillCategoryId: Id) => void
     updateSkill: (input: { skillId: Id; changes: Partial<Pick<Skill, 'name' | 'enabled' | 'sortOrder'>> }) => void
     deleteSkill: (skillId: Id) => void
+    reorderSkills: (input: { skillCategoryId: Id; orderedIds: Id[] }) => void
     createExperienceEntry: (profileId: Id) => void
     updateExperienceEntry: (input: {
       experienceEntryId: Id
       changes: Partial<Omit<ExperienceEntry, 'id' | 'profileId'>>
     }) => void
     deleteExperienceEntry: (experienceEntryId: Id) => void
+    reorderExperienceEntries: (input: { profileId: Id; orderedIds: Id[] }) => void
     createExperienceBullet: (experienceEntryId: Id) => void
     updateExperienceBullet: (input: {
       experienceBulletId: Id
       changes: Partial<Pick<ExperienceBullet, 'content' | 'enabled' | 'sortOrder'>>
     }) => void
     deleteExperienceBullet: (experienceBulletId: Id) => void
+    reorderExperienceBullets: (input: { experienceEntryId: Id; orderedIds: Id[] }) => void
     createEducationEntry: (profileId: Id) => void
     updateEducationEntry: (input: {
       educationEntryId: Id
       changes: Partial<Omit<EducationEntry, 'id' | 'profileId'>>
     }) => void
     deleteEducationEntry: (educationEntryId: Id) => void
+    reorderEducationEntries: (input: { profileId: Id; orderedIds: Id[] }) => void
     createCertification: (profileId: Id) => void
     updateCertification: (input: {
       certificationId: Id
       changes: Partial<Omit<Certification, 'id' | 'profileId'>>
     }) => void
     deleteCertification: (certificationId: Id) => void
+    reorderCertifications: (input: { profileId: Id; orderedIds: Id[] }) => void
     createReference: (profileId: Id) => void
     updateReference: (input: {
       referenceId: Id
       changes: Partial<Omit<Reference, 'id' | 'profileId'>>
     }) => void
     deleteReference: (referenceId: Id) => void
+    reorderReferences: (input: { profileId: Id; orderedIds: Id[] }) => void
     createJob: (input: Pick<Job, 'companyName' | 'jobTitle'> & Partial<Job>) => void
     updateJob: (input: { jobId: Id; changes: Partial<Omit<Job, 'id' | 'createdAt' | 'updatedAt'>> }) => void
     deleteJob: (jobId: Id) => void
@@ -86,15 +93,18 @@ interface AppStoreState {
       changes: Partial<Omit<JobPostingSource, 'id' | 'jobId' | 'createdAt'>>
     }) => void
     deleteJobPostingSource: (jobPostingSourceId: Id) => void
+    reorderJobPostingSources: (input: { jobId: Id; orderedIds: Id[] }) => void
     createJobContact: (jobId: Id) => void
     updateJobContact: (input: { jobContactId: Id; changes: Partial<Omit<JobContact, 'id' | 'jobId'>> }) => void
     deleteJobContact: (jobContactId: Id) => void
+    reorderJobContacts: (input: { jobId: Id; orderedIds: Id[] }) => void
     createApplicationQuestion: (jobId: Id) => void
     updateApplicationQuestion: (input: {
       applicationQuestionId: Id
       changes: Partial<Omit<ApplicationQuestion, 'id' | 'jobId'>>
     }) => void
     deleteApplicationQuestion: (applicationQuestionId: Id) => void
+    reorderApplicationQuestions: (input: { jobId: Id; orderedIds: Id[] }) => void
     createJobEvent: (input: { jobId: Id; eventType?: JobEventType }) => void
     updateJobEvent: (input: { jobEventId: Id; changes: Partial<Omit<JobEvent, 'id' | 'jobId' | 'createdAt'>> }) => void
     deleteJobEvent: (jobEventId: Id) => void
@@ -115,6 +125,40 @@ const getNextSortOrder = (sortOrders: number[]) => {
   }
 
   return Math.max(...sortOrders) + 1
+}
+
+const hasExactIds = (expectedIds: Id[], orderedIds: Id[]) => {
+  if (expectedIds.length !== orderedIds.length) {
+    return false
+  }
+
+  const expectedIdSet = new Set(expectedIds)
+  const orderedIdSet = new Set(orderedIds)
+
+  if (expectedIdSet.size !== orderedIdSet.size) {
+    return false
+  }
+
+  return expectedIds.every((id) => orderedIdSet.has(id))
+}
+
+const reorderSortableEntities = <T extends { id: Id; sortOrder: number }>(entities: Record<Id, T>, orderedIds: Id[]) => {
+  const nextEntities = { ...entities }
+
+  orderedIds.forEach((id, index) => {
+    const entity = nextEntities[id]
+
+    if (!entity) {
+      return
+    }
+
+    nextEntities[id] = {
+      ...entity,
+      sortOrder: index + 1,
+    }
+  })
+
+  return nextEntities
 }
 
 const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: string): AppDataState => {
@@ -567,6 +611,26 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         data: stampUpdatedProfile(deleteSkillCategoryCascade(state.data, skillCategoryId), existing.profileId, now()),
       }))
     },
+    reorderSkillCategories: ({ profileId, orderedIds }) => {
+      const existingIds = Object.values(get().data.skillCategories)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            skillCategories: reorderSortableEntities(state.data.skillCategories, orderedIds),
+          },
+          profileId,
+          now(),
+        ),
+      }))
+    },
     createSkill: (skillCategoryId) => {
       const category = get().data.skillCategories[skillCategoryId]
 
@@ -657,6 +721,32 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         }
       })
     },
+    reorderSkills: ({ skillCategoryId, orderedIds }) => {
+      const category = get().data.skillCategories[skillCategoryId]
+
+      if (!category) {
+        return
+      }
+
+      const existingIds = Object.values(get().data.skills)
+        .filter((item) => item.skillCategoryId === skillCategoryId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            skills: reorderSortableEntities(state.data.skills, orderedIds),
+          },
+          category.profileId,
+          now(),
+        ),
+      }))
+    },
     createExperienceEntry: (profileId) => {
       const profile = get().data.profiles[profileId]
 
@@ -738,6 +828,26 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
 
       set((state) => ({
         data: stampUpdatedProfile(deleteExperienceEntryCascade(state.data, experienceEntryId), existing.profileId, now()),
+      }))
+    },
+    reorderExperienceEntries: ({ profileId, orderedIds }) => {
+      const existingIds = Object.values(get().data.experienceEntries)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            experienceEntries: reorderSortableEntities(state.data.experienceEntries, orderedIds),
+          },
+          profileId,
+          now(),
+        ),
       }))
     },
     createExperienceBullet: (experienceEntryId) => {
@@ -832,6 +942,32 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         }
       })
     },
+    reorderExperienceBullets: ({ experienceEntryId, orderedIds }) => {
+      const experienceEntry = get().data.experienceEntries[experienceEntryId]
+
+      if (!experienceEntry) {
+        return
+      }
+
+      const existingIds = Object.values(get().data.experienceBullets)
+        .filter((item) => item.experienceEntryId === experienceEntryId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            experienceBullets: reorderSortableEntities(state.data.experienceBullets, orderedIds),
+          },
+          experienceEntry.profileId,
+          now(),
+        ),
+      }))
+    },
     createEducationEntry: (profileId) => {
       const profile = get().data.profiles[profileId]
 
@@ -913,6 +1049,26 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           ),
         }
       })
+    },
+    reorderEducationEntries: ({ profileId, orderedIds }) => {
+      const existingIds = Object.values(get().data.educationEntries)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            educationEntries: reorderSortableEntities(state.data.educationEntries, orderedIds),
+          },
+          profileId,
+          now(),
+        ),
+      }))
     },
     createCertification: (profileId) => {
       const profile = get().data.profiles[profileId]
@@ -998,6 +1154,26 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           ),
         }
       })
+    },
+    reorderCertifications: ({ profileId, orderedIds }) => {
+      const existingIds = Object.values(get().data.certifications)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            certifications: reorderSortableEntities(state.data.certifications, orderedIds),
+          },
+          profileId,
+          now(),
+        ),
+      }))
     },
     createReference: (profileId) => {
       const profile = get().data.profiles[profileId]
@@ -1085,6 +1261,26 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           ),
         }
       })
+    },
+    reorderReferences: ({ profileId, orderedIds }) => {
+      const existingIds = Object.values(get().data.references)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            references: reorderSortableEntities(state.data.references, orderedIds),
+          },
+          profileId,
+          now(),
+        ),
+      }))
     },
     createJob: (input) => {
       const timestamp = now()
@@ -1284,6 +1480,26 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         }
       })
     },
+    reorderJobPostingSources: ({ jobId, orderedIds }) => {
+      const existingIds = Object.values(get().data.jobPostingSources)
+        .filter((item) => item.jobId === jobId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            jobPostingSources: reorderSortableEntities(state.data.jobPostingSources, orderedIds),
+          },
+          jobId,
+          now(),
+        ),
+      }))
+    },
     createJobContact: (jobId) => {
       const job = get().data.jobs[jobId]
 
@@ -1374,6 +1590,26 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         }
       })
     },
+    reorderJobContacts: ({ jobId, orderedIds }) => {
+      const existingIds = Object.values(get().data.jobContacts)
+        .filter((item) => item.jobId === jobId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            jobContacts: reorderSortableEntities(state.data.jobContacts, orderedIds),
+          },
+          jobId,
+          now(),
+        ),
+      }))
+    },
     createApplicationQuestion: (jobId) => {
       const job = get().data.jobs[jobId]
 
@@ -1453,6 +1689,26 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           ),
         }
       })
+    },
+    reorderApplicationQuestions: ({ jobId, orderedIds }) => {
+      const existingIds = Object.values(get().data.applicationQuestions)
+        .filter((item) => item.jobId === jobId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            applicationQuestions: reorderSortableEntities(state.data.applicationQuestions, orderedIds),
+          },
+          jobId,
+          now(),
+        ),
+      }))
     },
     createJobEvent: ({ jobId, eventType = 'job_saved' }) => {
       const job = get().data.jobs[jobId]

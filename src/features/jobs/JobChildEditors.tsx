@@ -1,8 +1,10 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
 import type { ContactRelationshipType, JobEventType, JobPostingSourceType } from '../../types/state'
+import { moveOrderedItem } from '../../utils/reorder'
 
 const Section = ({
   title,
@@ -110,9 +112,23 @@ const fromDateTimeLocal = (value: string) => (value ? new Date(value).toISOStrin
 
 const JobPostingSourceCard = ({ jobPostingSourceId }: { jobPostingSourceId: string }) => {
   const source = useAppStore((state) => state.data.jobPostingSources[jobPostingSourceId])
+  const jobPostingSourcesById = useAppStore((state) => state.data.jobPostingSources)
   const updateJobPostingSource = useAppStore((state) => state.actions.updateJobPostingSource)
   const deleteJobPostingSource = useAppStore((state) => state.actions.deleteJobPostingSource)
+  const reorderJobPostingSources = useAppStore((state) => state.actions.reorderJobPostingSources)
   const [draft, setDraft] = useState(source)
+
+  const jobPostingSourceIds = useMemo(
+    () =>
+      source
+        ? Object.values(jobPostingSourcesById)
+            .filter((item) => item.jobId === source.jobId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [jobPostingSourcesById, source],
+  )
+  const jobPostingSourceIndex = jobPostingSourceIds.indexOf(jobPostingSourceId)
 
   useEffect(() => {
     setDraft(source)
@@ -142,7 +158,23 @@ const JobPostingSourceCard = ({ jobPostingSourceId }: { jobPostingSourceId: stri
         </label>
         <TextField label="Label" value={draft.label} onChange={(value) => setDraft({ ...draft, label: value })} />
         <TextField label="URL" type="url" value={draft.url} onChange={(value) => setDraft({ ...draft, url: value })} />
-        <div className="xl:col-span-3 flex justify-end">
+        <div className="xl:col-span-3 flex flex-wrap items-center justify-end gap-2">
+          <ReorderButtons
+            canMoveDown={jobPostingSourceIndex >= 0 && jobPostingSourceIndex < jobPostingSourceIds.length - 1}
+            canMoveUp={jobPostingSourceIndex > 0}
+            onMoveDown={() =>
+              reorderJobPostingSources({
+                jobId: source.jobId,
+                orderedIds: moveOrderedItem(jobPostingSourceIds, jobPostingSourceIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderJobPostingSources({
+                jobId: source.jobId,
+                orderedIds: moveOrderedItem(jobPostingSourceIds, jobPostingSourceIndex, -1),
+              })
+            }
+          />
           <ItemActions
             onDelete={() => deleteJobPostingSource(source.id)}
             onSave={() =>
@@ -165,9 +197,23 @@ const JobPostingSourceCard = ({ jobPostingSourceId }: { jobPostingSourceId: stri
 
 const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
   const contact = useAppStore((state) => state.data.jobContacts[jobContactId])
+  const jobContactsById = useAppStore((state) => state.data.jobContacts)
   const updateJobContact = useAppStore((state) => state.actions.updateJobContact)
   const deleteJobContact = useAppStore((state) => state.actions.deleteJobContact)
+  const reorderJobContacts = useAppStore((state) => state.actions.reorderJobContacts)
   const [draft, setDraft] = useState(contact)
+
+  const jobContactIds = useMemo(
+    () =>
+      contact
+        ? Object.values(jobContactsById)
+            .filter((item) => item.jobId === contact.jobId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [contact, jobContactsById],
+  )
+  const jobContactIndex = jobContactIds.indexOf(jobContactId)
 
   useEffect(() => {
     setDraft(contact)
@@ -207,7 +253,23 @@ const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
         <div className="xl:col-span-3">
           <TextAreaField label="Notes" value={draft.notes} onChange={(value) => setDraft({ ...draft, notes: value })} />
         </div>
-        <div className="xl:col-span-3 flex justify-end">
+        <div className="xl:col-span-3 flex flex-wrap items-center justify-end gap-2">
+          <ReorderButtons
+            canMoveDown={jobContactIndex >= 0 && jobContactIndex < jobContactIds.length - 1}
+            canMoveUp={jobContactIndex > 0}
+            onMoveDown={() =>
+              reorderJobContacts({
+                jobId: contact.jobId,
+                orderedIds: moveOrderedItem(jobContactIds, jobContactIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderJobContacts({
+                jobId: contact.jobId,
+                orderedIds: moveOrderedItem(jobContactIds, jobContactIndex, -1),
+              })
+            }
+          />
           <ItemActions
             onDelete={() => deleteJobContact(contact.id)}
             onSave={() => updateJobContact({ jobContactId: contact.id, changes: draft })}
@@ -290,9 +352,23 @@ const JobEventCard = ({ jobEventId }: { jobEventId: string }) => {
 
 const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestionId: string }) => {
   const applicationQuestion = useAppStore((state) => state.data.applicationQuestions[applicationQuestionId])
+  const applicationQuestionsById = useAppStore((state) => state.data.applicationQuestions)
   const updateApplicationQuestion = useAppStore((state) => state.actions.updateApplicationQuestion)
   const deleteApplicationQuestion = useAppStore((state) => state.actions.deleteApplicationQuestion)
+  const reorderApplicationQuestions = useAppStore((state) => state.actions.reorderApplicationQuestions)
   const [draft, setDraft] = useState(applicationQuestion)
+
+  const applicationQuestionIds = useMemo(
+    () =>
+      applicationQuestion
+        ? Object.values(applicationQuestionsById)
+            .filter((item) => item.jobId === applicationQuestion.jobId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [applicationQuestion, applicationQuestionsById],
+  )
+  const applicationQuestionIndex = applicationQuestionIds.indexOf(applicationQuestionId)
 
   useEffect(() => {
     setDraft(applicationQuestion)
@@ -307,7 +383,23 @@ const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestio
       <div className="grid gap-4 xl:grid-cols-1">
         <TextAreaField label="Question" value={draft.question} onChange={(value) => setDraft({ ...draft, question: value })} />
         <TextAreaField label="Answer" value={draft.answer} onChange={(value) => setDraft({ ...draft, answer: value })} />
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ReorderButtons
+            canMoveDown={applicationQuestionIndex >= 0 && applicationQuestionIndex < applicationQuestionIds.length - 1}
+            canMoveUp={applicationQuestionIndex > 0}
+            onMoveDown={() =>
+              reorderApplicationQuestions({
+                jobId: applicationQuestion.jobId,
+                orderedIds: moveOrderedItem(applicationQuestionIds, applicationQuestionIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderApplicationQuestions({
+                jobId: applicationQuestion.jobId,
+                orderedIds: moveOrderedItem(applicationQuestionIds, applicationQuestionIndex, -1),
+              })
+            }
+          />
           <ItemActions
             onDelete={() => deleteApplicationQuestion(applicationQuestion.id)}
             onSave={() =>
