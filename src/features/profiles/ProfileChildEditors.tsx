@@ -606,18 +606,6 @@ const ExperienceCard = ({
             />
           </div>
         </div>
-        <div className="xl:col-span-3">
-          <div className="flex items-center justify-between gap-3">
-            <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Bullets</h4>
-          </div>
-          <div className="mt-3 space-y-3">
-            {bulletIds.length === 0 ? (
-              <p className="text-sm text-slate-500">No bullets yet.</p>
-            ) : (
-              bulletIds.map((bulletId) => <ExperienceBulletRow key={bulletId} bulletId={bulletId} onDirtyChange={handleBulletDirtyChange} />)
-            )}
-          </div>
-        </div>
         <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
           <ToggleField
             checked={draft.enabled}
@@ -649,6 +637,18 @@ const ExperienceCard = ({
               onSave={() => updateExperienceEntry({ experienceEntryId: entry.id, changes: stripEnabled(draft) })}
               saveDisabled={!ownIsDirty}
             />
+          </div>
+        </div>
+        <div className="xl:col-span-3">
+          <div className="flex items-center justify-between gap-3">
+            <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Bullets</h4>
+          </div>
+          <div className="mt-3 space-y-3">
+            {bulletIds.length === 0 ? (
+              <p className="text-sm text-slate-500">No bullets yet.</p>
+            ) : (
+              bulletIds.map((bulletId) => <ExperienceBulletRow key={bulletId} bulletId={bulletId} onDirtyChange={handleBulletDirtyChange} />)
+            )}
           </div>
         </div>
       </div>
