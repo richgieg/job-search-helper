@@ -14,6 +14,9 @@ import { ResumePreviewPage } from '../pages/ResumePreviewPage'
 export const AppRoutes = () => {
   return (
     <Routes>
+      <Route path="/previews/cover-letter/:profileId" element={<CoverLetterPreviewPage />} />
+      <Route path="/previews/resume/:profileId" element={<ResumePreviewPage />} />
+
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
@@ -22,9 +25,7 @@ export const AppRoutes = () => {
         <Route path="/jobs" element={<JobsPage />} />
         <Route path="/jobs/:jobId" element={<JobPage />} />
         <Route path="/import-export" element={<ImportExportPage />} />
-        <Route path="/previews/resume/:profileId" element={<ResumePreviewPage />} />
         <Route path="/previews/application/:profileId" element={<ApplicationPreviewPage />} />
-        <Route path="/previews/cover-letter/:profileId" element={<CoverLetterPreviewPage />} />
       </Route>
     </Routes>
   )

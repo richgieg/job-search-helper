@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
-import { DocumentPageLayout, PreviewNotFound } from '../features/documents/DocumentPageLayout'
+import { PreviewNotFound } from '../features/documents/DocumentPageLayout'
 import { formatAddressLines, formatDateRange, formatLocationLine, selectProfilePreviewData } from '../features/documents/preview-data'
 import { useAppStore } from '../store/app-store'
 
@@ -49,13 +49,8 @@ export const ResumePreviewPage = () => {
     .filter(Boolean)
 
   return (
-    <DocumentPageLayout
-      activeDocument="resume"
-      profileId={preview.profile.id}
-      subtitle="A printable resume view generated from the selected profile."
-      title={preview.profile.name || 'Resume preview'}
-    >
-      <article className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div className="document-preview-shell">
+      <article className="document-page">
         <header className="border-b border-slate-200 pb-6">
           <h2 className="text-3xl font-semibold tracking-tight text-slate-950">
             {preview.profile.personalDetails.fullName || preview.profile.name || 'Unnamed candidate'}
@@ -83,7 +78,7 @@ export const ResumePreviewPage = () => {
         {preview.skillCategories.length > 0 ? (
           <section className="mt-8">
             <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Skills</h3>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <div className="resume-skills-grid mt-4">
               {preview.skillCategories.map((item) => (
                 <div key={item.category.id} className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-sm font-semibold text-slate-900">{item.category.name || 'General'}</p>
@@ -100,7 +95,7 @@ export const ResumePreviewPage = () => {
             <div className="mt-4 space-y-5">
               {preview.experienceEntries.map((entry) => (
                 <div key={entry.entry.id}>
-                  <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                  <div className="resume-experience-header">
                     <div>
                       <h4 className="text-base font-semibold text-slate-950">{entry.entry.title || 'Untitled role'}</h4>
                       <p className="text-sm text-slate-700">
@@ -112,7 +107,7 @@ export const ResumePreviewPage = () => {
                         })}
                       </p>
                     </div>
-                    <p className="text-sm text-slate-500">{formatDateRange(entry.entry.startDate, entry.entry.endDate, entry.entry.isCurrent)}</p>
+                    <p className="resume-experience-date text-sm text-slate-500">{formatDateRange(entry.entry.startDate, entry.entry.endDate, entry.entry.isCurrent)}</p>
                   </div>
                   {entry.bullets.length > 0 ? (
                     <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-slate-700">
@@ -128,7 +123,7 @@ export const ResumePreviewPage = () => {
         ) : null}
 
         {(preview.educationEntries.length > 0 || preview.certifications.length > 0 || preview.references.length > 0) ? (
-          <section className="mt-8 grid gap-6 lg:grid-cols-3">
+          <section className="resume-secondary-grid mt-8">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Education</h3>
               <div className="mt-4 space-y-4 text-sm text-slate-700">
@@ -182,6 +177,6 @@ export const ResumePreviewPage = () => {
           </section>
         ) : null}
       </article>
-    </DocumentPageLayout>
+    </div>
   )
 }

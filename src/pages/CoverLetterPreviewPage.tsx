@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
-import { DocumentPageLayout, PreviewNotFound } from '../features/documents/DocumentPageLayout'
+import { PreviewNotFound } from '../features/documents/DocumentPageLayout'
 import { buildCoverLetterParagraphs, formatAddressLines, formatLocationLine, selectProfilePreviewData } from '../features/documents/preview-data'
 import { useAppStore } from '../store/app-store'
 
@@ -36,15 +36,10 @@ export const CoverLetterPreviewPage = () => {
   const paragraphs = buildCoverLetterParagraphs(preview)
 
   return (
-    <DocumentPageLayout
-      activeDocument="cover-letter"
-      profileId={preview.profile.id}
-      subtitle="A printable letter view generated from the selected profile, with a fallback recipient for base profiles."
-      title={`${preview.profile.name || 'Profile'} cover letter`}
-    >
-      <article className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="flex flex-col gap-8 lg:flex-row lg:justify-between">
-          <div className="text-sm leading-7 text-slate-700">
+    <div className="document-preview-shell">
+      <article className="document-page text-sm leading-7 text-slate-700">
+        <div className="cover-letter-header">
+          <div>
             <p className="font-semibold text-slate-950">{personalDetails.fullName || preview.profile.name || 'Unnamed candidate'}</p>
             {senderAddress.map((line) => (
               <p key={line}>{line}</p>
@@ -53,7 +48,7 @@ export const CoverLetterPreviewPage = () => {
             {personalDetails.phone ? <p>{personalDetails.phone}</p> : null}
           </div>
 
-          <div className="text-sm leading-7 text-slate-700">
+          <div className="cover-letter-inside-address">
             <p>{new Date().toLocaleDateString()}</p>
             <div className="mt-4">
               <p className="font-semibold text-slate-950">{recipient.name}</p>
@@ -66,7 +61,7 @@ export const CoverLetterPreviewPage = () => {
           </div>
         </div>
 
-        <div className="mt-10 text-sm leading-8 text-slate-800">
+        <div className="mt-10 leading-8 text-slate-800">
           <p>Dear {recipient.name === 'Hiring Team' ? 'Hiring Team' : recipient.name},</p>
 
           <div className="mt-6 space-y-5">
@@ -81,6 +76,6 @@ export const CoverLetterPreviewPage = () => {
           </div>
         </div>
       </article>
-    </DocumentPageLayout>
+    </div>
   )
 }

@@ -15,6 +15,11 @@ body {
   min-height: 100vh;
 }
 
+@page {
+  size: letter;
+  margin: 0.5in;
+}
+
 #root {
   min-height: 100vh;
 }
@@ -36,4 +41,146 @@ label[class*='border-slate-300']:not(:hover):not(:focus-within):not(:active) {
 button[class*='border-rose-300']:not(:hover):not(:focus-visible):not(:active),
 a[class*='border-rose-300']:not(:hover):not(:focus-visible):not(:active) {
   background: white;
+}
+
+.document-preview-shell {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  background: #e2e8f0;
+}
+
+.document-page {
+  box-sizing: border-box;
+  width: 8.5in;
+  min-height: 11in;
+  padding: 0.5in;
+  background: white;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+}
+
+.resume-skills-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.resume-experience-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.resume-experience-date {
+  text-align: left;
+}
+
+.resume-secondary-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.cover-letter-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.cover-letter-inside-address {
+  margin-left: 0;
+}
+
+@media (min-width: 64rem) {
+  .cover-letter-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .cover-letter-inside-address {
+    margin-left: 2rem;
+    max-width: 18rem;
+  }
+}
+
+@media (min-width: 48rem) {
+  .resume-skills-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .resume-experience-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .resume-experience-date {
+    text-align: right;
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 64rem) {
+  .resume-secondary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media print {
+  :root {
+    background: white;
+  }
+
+  body {
+    min-width: 0;
+    min-height: 0;
+    background: white;
+  }
+
+  #root {
+    min-height: 0;
+  }
+
+  .document-preview-shell {
+    min-height: 0;
+    padding: 0;
+    background: white;
+  }
+
+  .document-page {
+    width: auto;
+    min-height: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .resume-skills-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .resume-experience-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .resume-experience-date {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .resume-secondary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cover-letter-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .cover-letter-inside-address {
+    margin-left: 2rem;
+    max-width: 18rem;
+  }
 }
