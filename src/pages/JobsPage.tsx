@@ -17,8 +17,6 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
     return null
   }
 
-  const attachedProfiles = profiles.filter((profile) => profile.jobId === jobId)
-  const firstProfileId = attachedProfiles[0]?.id ?? null
   const computedStatus = getJobComputedStatus(jobEvents.map((event) => event.eventType))
 
   const handleDelete = () => {
@@ -47,11 +45,6 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
           <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/jobs/${job.id}`}>
             Open
           </Link>
-          {firstProfileId ? (
-            <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/previews/resume/${firstProfileId}`}>
-              Preview
-            </Link>
-          ) : null}
           <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={handleDelete} type="button">
             Delete
           </button>
