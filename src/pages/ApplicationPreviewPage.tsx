@@ -14,6 +14,7 @@ interface FieldRow {
   values: CopyValueItem[]
   label: string
   multiline?: boolean
+  inline?: boolean
 }
 
 const copyText = async (value: string) => {
@@ -61,22 +62,31 @@ const buildSingleValue = (value: string | null | undefined): CopyValueItem[] => 
   return trimmed ? [{ display: trimmed, copyValue: trimmed }] : []
 }
 
+const buildDateRow = (label: string, value: string | null): FieldRow => ({
+  label,
+  values: buildDateFormats(value),
+  inline: true,
+})
+
 const CopyValueButton = ({
   item,
   copyKey,
   copiedKey,
   onCopy,
   multiline = false,
+  inline = false,
 }: {
   item: CopyValueItem
   copyKey: string
   copiedKey: string | null
   onCopy: (copyKey: string, value: string) => void
   multiline?: boolean
+  inline?: boolean
 }) => (
   <button
     className={[
-      'relative w-full cursor-pointer overflow-hidden rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm text-slate-800 transition hover:border-sky-300 hover:bg-sky-50',
+      'relative cursor-pointer overflow-hidden rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm text-slate-800 transition hover:border-sky-300 hover:bg-sky-50',
+      inline ? 'inline-flex w-auto max-w-full items-center' : 'w-full',
       multiline ? 'max-h-24 whitespace-pre-wrap' : 'truncate whitespace-nowrap',
       copiedKey === copyKey ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : '',
     ].join(' ')}
@@ -128,13 +138,14 @@ const DataTable = ({
                   {row.label}
                 </th>
                 <td className="px-5 py-4">
-                  <div className="space-y-2">
+                  <div className={row.inline ? 'flex flex-wrap gap-2' : 'space-y-2'}>
                     {row.values.map((item, index) => (
                       <CopyValueButton
                         key={`${row.label}-${index}-${item.copyValue}`}
                         copyKey={`${title}-${row.label}-${index}`}
                         copiedKey={copiedKey}
                         item={item}
+                        inline={row.inline ?? false}
                         multiline={row.multiline ?? false}
                         onCopy={onCopy}
                       />
@@ -226,8 +237,8 @@ export const ApplicationPreviewPage = () => {
                     label: 'Employment type',
                     values: entry.employmentType !== 'other' ? buildSingleValue(toTitleCase(entry.employmentType)) : [],
                   },
-                  { label: 'Start date', values: buildDateFormats(entry.startDate) },
-                  { label: 'End date', values: buildDateFormats(entry.endDate) },
+                  buildDateRow('Start date', entry.startDate),
+                  buildDateRow('End date', entry.endDate),
                   { label: 'Current role', values: buildSingleValue(entry.isCurrent ? 'Yes' : 'No') },
                   { label: 'Reason for leaving (short)', values: buildSingleValue(entry.reasonForLeavingShort) },
                   {
@@ -265,7 +276,7 @@ export const ApplicationPreviewPage = () => {
                 rows={[
                   { label: 'School', values: buildSingleValue(entry.school) },
                   { label: 'Degree', values: buildSingleValue(entry.degree) },
-                  { label: 'Graduation date', values: buildDateFormats(entry.graduationDate) },
+                  buildDateRow('Graduation date', entry.graduationDate),
                 ]}
                 title={`${entry.school || 'School'}${entry.degree ? ` · ${entry.degree}` : ''}`}
               />
@@ -287,8 +298,8 @@ export const ApplicationPreviewPage = () => {
                 rows={[
                   { label: 'Name', values: buildSingleValue(entry.name) },
                   { label: 'Issuer', values: buildSingleValue(entry.issuer) },
-                  { label: 'Issue date', values: buildDateFormats(entry.issueDate) },
-                  { label: 'Expiry date', values: buildDateFormats(entry.expiryDate) },
+                  buildDateRow('Issue date', entry.issueDate),
+                  buildDateRow('Expiry date', entry.expiryDate),
                   { label: 'Credential ID', values: buildSingleValue(entry.credentialId) },
                   { label: 'Credential URL', values: buildSingleValue(entry.credentialUrl) },
                 ]}
@@ -311,10 +322,11 @@ export const ApplicationPreviewPage = () => {
                 onCopy={handleCopy}
                 rows={[
                   { label: 'Category', values: buildSingleValue(item.category.name || 'General') },
-                  ...item.skills.map((skill, skillIndex) => ({
-                    label: `Skill ${skillIndex + 1}`,
-                    values: buildSingleValue(skill.name),
-                  })),
+                  {
+                    label: 'Skills',
+                    values: item.skills.map((skill) => ({ display: skill.name, copyValue: skill.name })),
+                    inline: true,
+                  },
                 ]}
                 title={item.category.name || `Skill category ${index + 1}`}
               />
