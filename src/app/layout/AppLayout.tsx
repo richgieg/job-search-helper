@@ -17,7 +17,7 @@ export const AppLayout = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col lg:flex-row">
-        <aside className="border-b border-slate-200 bg-white lg:min-h-screen lg:w-72 lg:border-b-0 lg:border-r">
+        <aside className="border-b border-slate-200 bg-white lg:min-h-screen lg:w-72 lg:shrink-0 lg:border-b-0 lg:border-r">
           <div className="p-6">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Job Search Helper</p>
             <h1 className="mt-3 text-2xl font-semibold tracking-tight">Browser MVP</h1>
@@ -34,7 +34,7 @@ export const AppLayout = () => {
           </nav>
         </aside>
 
-        <main className="flex-1 p-6 lg:p-10">
+        <main className="min-w-0 flex-1 p-6 lg:p-10">
           <Outlet />
         </main>
       </div>

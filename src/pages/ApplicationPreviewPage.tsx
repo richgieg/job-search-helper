@@ -130,32 +130,34 @@ const DataTable = ({
       {populatedRows.length === 0 ? (
         <p className="px-5 py-4 text-sm text-slate-500">{emptyMessage || 'No data available.'}</p>
       ) : (
-        <table className="min-w-full border-collapse">
-          <tbody>
-            {populatedRows.map((row) => (
-              <tr key={row.label} className="border-t border-slate-200 align-top first:border-t-0">
-                <th className="w-56 bg-slate-50 px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  {row.label}
-                </th>
-                <td className="px-5 py-4">
-                  <div className={row.inline ? 'flex flex-wrap gap-2' : 'space-y-2'}>
-                    {row.values.map((item, index) => (
-                      <CopyValueButton
-                        key={`${row.label}-${index}-${item.copyValue}`}
-                        copyKey={`${title}-${row.label}-${index}`}
-                        copiedKey={copiedKey}
-                        item={item}
-                        inline={row.inline ?? false}
-                        multiline={row.multiline ?? false}
-                        onCopy={onCopy}
-                      />
-                    ))}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse">
+            <tbody>
+              {populatedRows.map((row) => (
+                <tr key={row.label} className="border-t border-slate-200 align-top first:border-t-0">
+                  <th className="w-56 bg-slate-50 px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    {row.label}
+                  </th>
+                  <td className="px-5 py-4">
+                    <div className={row.inline ? 'flex flex-wrap gap-2' : 'space-y-2'}>
+                      {row.values.map((item, index) => (
+                        <CopyValueButton
+                          key={`${row.label}-${index}-${item.copyValue}`}
+                          copyKey={`${title}-${row.label}-${index}`}
+                          copiedKey={copiedKey}
+                          item={item}
+                          inline={row.inline ?? false}
+                          multiline={row.multiline ?? false}
+                          onCopy={onCopy}
+                        />
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )
