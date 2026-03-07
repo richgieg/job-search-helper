@@ -26,8 +26,8 @@ export interface PreviewExperienceEntry {
 
 export interface ProfilePreviewData {
   profile: Profile
-  job: Job | null
-  primaryContact: JobContact | null
+  job: Job
+  primaryContact: JobContact
   contacts: JobContact[]
   postingSources: JobPostingSource[]
   skillCategories: PreviewSkillCategory[]
@@ -41,6 +41,41 @@ export interface ProfilePreviewData {
 const compareSortOrder = <T extends { sortOrder: number }>(left: T, right: T) => left.sortOrder - right.sortOrder
 
 const compact = (values: Array<string | null | undefined>) => values.map((value) => value?.trim() ?? '').filter(Boolean)
+
+const buildFallbackJob = (profile: Profile): Job => ({
+  id: `preview-job-${profile.id}`,
+  companyName: 'Example Company',
+  jobTitle: 'Example Role',
+  description: '',
+  location: '',
+  postedCompensation: '',
+  desiredCompensation: '',
+  compensationNotes: '',
+  workArrangement: 'unknown',
+  employmentType: 'other',
+  datePosted: null,
+  notes: '',
+  createdAt: profile.createdAt,
+  updatedAt: profile.updatedAt,
+})
+
+const buildFallbackContact = (job: Job): JobContact => ({
+  id: `preview-contact-${job.id}`,
+  jobId: job.id,
+  name: 'Hiring Manager',
+  title: '',
+  company: job.companyName || 'Example Company',
+  addressLine1: '123 Example Street',
+  addressLine2: '',
+  addressLine3: '',
+  addressLine4: 'Example City, EX 12345',
+  email: '',
+  phone: '',
+  linkedinUrl: '',
+  relationshipType: 'hiring_manager',
+  notes: '',
+  sortOrder: 0,
+})
 
 export const formatAddressLines = (values: Array<string | null | undefined>) => compact(values)
 
@@ -87,7 +122,7 @@ export const selectProfilePreviewData = (data: AppDataState, profileId: Id): Pro
     return null
   }
 
-  const job = profile.jobId ? data.jobs[profile.jobId] ?? null : null
+  const job = profile.jobId ? data.jobs[profile.jobId] ?? buildFallbackJob(profile) : buildFallbackJob(profile)
 
   const contacts = Object.values(data.jobContacts)
     .filter((contact) => contact.jobId === profile.jobId)
@@ -137,7 +172,7 @@ export const selectProfilePreviewData = (data: AppDataState, profileId: Id): Pro
   return {
     profile,
     job,
-    primaryContact: contacts[0] ?? null,
+    primaryContact: contacts[0] ?? buildFallbackContact(job),
     contacts,
     postingSources,
     skillCategories,
@@ -148,13 +183,6 @@ export const selectProfilePreviewData = (data: AppDataState, profileId: Id): Pro
     computedStatus: getJobComputedStatus(jobEvents.map((event) => event.eventType)),
   }
 }
-
-export const buildDefaultRecipient = (job: Job | null) => ({
-  name: 'Hiring Manager',
-  title: '',
-  company: job?.companyName ?? 'Example Company',
-  addressLines: ['123 Example Street', 'Example City, EX 12345'],
-})
 
 export const buildCoverLetterParagraphs = (preview: ProfilePreviewData) => {
   const trimmed = preview.profile.coverLetter
@@ -167,8 +195,8 @@ export const buildCoverLetterParagraphs = (preview: ProfilePreviewData) => {
   }
 
   const summary = preview.profile.summary.trim()
-  const role = preview.job?.jobTitle ?? 'the opportunity'
-  const company = preview.job?.companyName ?? 'your team'
+  const role = preview.job.jobTitle || 'the opportunity'
+  const company = preview.job.companyName || 'your team'
 
   return [
     `I am excited to submit my application for ${role} at ${company}.`,

@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { DocumentPageLayout, PreviewNotFound } from '../features/documents/DocumentPageLayout'
-import { buildCoverLetterParagraphs, buildDefaultRecipient, formatAddressLines, formatLocationLine, selectProfilePreviewData } from '../features/documents/preview-data'
+import { buildCoverLetterParagraphs, formatAddressLines, formatLocationLine, selectProfilePreviewData } from '../features/documents/preview-data'
 import { useAppStore } from '../store/app-store'
 
 export const CoverLetterPreviewPage = () => {
@@ -22,19 +22,17 @@ export const CoverLetterPreviewPage = () => {
     personalDetails.addressLine3,
     formatLocationLine(personalDetails.city, personalDetails.state, personalDetails.postalCode),
   ])
-  const recipient = preview.primaryContact
-    ? {
-        name: preview.primaryContact.name || 'Hiring Team',
-        title: preview.primaryContact.title,
-        company: preview.primaryContact.company || preview.job?.companyName || 'Example Company',
-        addressLines: formatAddressLines([
-          preview.primaryContact.addressLine1,
-          preview.primaryContact.addressLine2,
-          preview.primaryContact.addressLine3,
-          preview.primaryContact.addressLine4,
-        ]),
-      }
-    : buildDefaultRecipient(preview.job)
+  const recipient = {
+    name: preview.primaryContact.name || 'Hiring Team',
+    title: preview.primaryContact.title,
+    company: preview.primaryContact.company || preview.job.companyName || 'Example Company',
+    addressLines: formatAddressLines([
+      preview.primaryContact.addressLine1,
+      preview.primaryContact.addressLine2,
+      preview.primaryContact.addressLine3,
+      preview.primaryContact.addressLine4,
+    ]),
+  }
   const paragraphs = buildCoverLetterParagraphs(preview)
 
   return (
