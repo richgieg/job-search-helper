@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 
 import { JobChildEditors } from '../features/jobs/JobChildEditors'
 import { getJobComputedStatus } from '../features/jobs/job-status'
@@ -66,12 +66,10 @@ interface JobDraftState {
 
 export const JobPage = () => {
   const { jobId = '' } = useParams()
-  const navigate = useNavigate()
   const job = useAppStore((state) => state.data.jobs[jobId])
   const profilesById = useAppStore((state) => state.data.profiles)
   const jobEventsById = useAppStore((state) => state.data.jobEvents)
   const updateJob = useAppStore((state) => state.actions.updateJob)
-  const deleteJob = useAppStore((state) => state.actions.deleteJob)
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
   const [draft, setDraft] = useState<JobDraftState | null>(null)
   const [selectedBaseProfileId, setSelectedBaseProfileId] = useState('')
@@ -163,16 +161,6 @@ export const JobPage = () => {
     })
   }
 
-  const handleDelete = () => {
-    const confirmed = window.confirm(`Delete job "${job.jobTitle}" at "${job.companyName}"? This removes attached job profiles too.`)
-    if (!confirmed) {
-      return
-    }
-
-    deleteJob(job.id)
-    navigate('/jobs')
-  }
-
   const handleAddJobProfile = () => {
     if (!selectedBaseProfileId) {
       return
@@ -196,9 +184,6 @@ export const JobPage = () => {
         <div className="flex flex-wrap gap-2">
           <button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700" onClick={handleSave} type="button">
             Save job
-          </button>
-          <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={handleDelete} type="button">
-            Delete
           </button>
         </div>
       </div>

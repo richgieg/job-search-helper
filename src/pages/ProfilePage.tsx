@@ -64,7 +64,6 @@ export const ProfilePage = () => {
   const jobsById = useAppStore((state) => state.data.jobs)
   const updateProfile = useAppStore((state) => state.actions.updateProfile)
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
-  const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
   const [name, setName] = useState(profile?.name ?? '')
   const [summary, setSummary] = useState(profile?.summary ?? '')
   const [coverLetter, setCoverLetter] = useState(profile?.coverLetter ?? '')
@@ -123,16 +122,6 @@ export const ProfilePage = () => {
     }
   }
 
-  const handleDelete = () => {
-    const confirmed = window.confirm(`Delete profile "${profile.name}"? This cannot be undone.`)
-    if (!confirmed) {
-      return
-    }
-
-    deleteProfile(profile.id)
-    navigate('/profiles')
-  }
-
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -159,9 +148,6 @@ export const ProfilePage = () => {
           </button>
           <button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700" onClick={handleSave} type="button">
             Save profile
-          </button>
-          <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={handleDelete} type="button">
-            Delete
           </button>
         </div>
       </div>
