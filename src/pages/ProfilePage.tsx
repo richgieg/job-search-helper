@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 
 import { ProfileChildEditors } from '../features/profiles/ProfileChildEditors'
 import { useAppStore } from '../store/app-store'
@@ -59,11 +59,9 @@ const Field = ({
 
 export const ProfilePage = () => {
   const { profileId = '' } = useParams()
-  const navigate = useNavigate()
   const profile = useAppStore((state) => state.data.profiles[profileId])
   const jobsById = useAppStore((state) => state.data.jobs)
   const updateProfile = useAppStore((state) => state.actions.updateProfile)
-  const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
   const [name, setName] = useState(profile?.name ?? '')
   const [summary, setSummary] = useState(profile?.summary ?? '')
   const [coverLetter, setCoverLetter] = useState(profile?.coverLetter ?? '')
@@ -115,13 +113,6 @@ export const ProfilePage = () => {
     })
   }
 
-  const handleDuplicate = () => {
-    const nextProfileId = duplicateProfile({ sourceProfileId: profile.id })
-    if (nextProfileId) {
-      navigate(`/profiles/${nextProfileId}`)
-    }
-  }
-
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -143,9 +134,6 @@ export const ProfilePage = () => {
           <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/previews/application/${profile.id}`}>
             Application
           </Link>
-          <button className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={handleDuplicate} type="button">
-            Duplicate
-          </button>
           <button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700" onClick={handleSave} type="button">
             Save profile
           </button>
