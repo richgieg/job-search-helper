@@ -21,7 +21,6 @@ export const ReorderButtons = ({ canMoveUp, canMoveDown, onMoveUp, onMoveDown }:
         className={buttonClassName(!canMoveUp)}
         disabled={!canMoveUp}
         onClick={onMoveUp}
-        title="Move up"
         type="button"
       >
         ↑
@@ -31,7 +30,6 @@ export const ReorderButtons = ({ canMoveUp, canMoveDown, onMoveUp, onMoveDown }:
         className={buttonClassName(!canMoveDown)}
         disabled={!canMoveDown}
         onClick={onMoveDown}
-        title="Move down"
         type="button"
       >
         ↓
