@@ -548,6 +548,39 @@ const ExperienceCard = ({
   return (
     <CollapsiblePanel
       actionLabel="Add bullet"
+      headerActions={
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ToggleField
+            checked={draft.enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateExperienceEntry({ experienceEntryId: entry.id, changes: { enabled: value } })
+            }}
+          />
+          <ReorderButtons
+            canMoveDown={experienceEntryIds.length > 1}
+            canMoveUp={experienceEntryIds.length > 1}
+            onMoveDown={() =>
+              reorderExperienceEntries({
+                profileId: entry.profileId,
+                orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderExperienceEntries({
+                profileId: entry.profileId,
+                orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, -1),
+              })
+            }
+          />
+          <ItemActions
+            onDelete={() => deleteExperienceEntry(entry.id)}
+            onSave={() => updateExperienceEntry({ experienceEntryId: entry.id, changes: stripEnabled(draft) })}
+            saveDisabled={!ownIsDirty}
+          />
+        </div>
+      }
       isDirty={isDirty}
       onAction={() => createExperienceBullet(entry.id)}
       onDiscardChanges={() => {
@@ -606,39 +639,6 @@ const ExperienceCard = ({
             />
           </div>
         </div>
-        <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
-          <ToggleField
-            checked={draft.enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setDraft({ ...draft, enabled: value })
-              updateExperienceEntry({ experienceEntryId: entry.id, changes: { enabled: value } })
-            }}
-          />
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <ReorderButtons
-              canMoveDown={experienceEntryIds.length > 1}
-              canMoveUp={experienceEntryIds.length > 1}
-              onMoveDown={() =>
-                reorderExperienceEntries({
-                  profileId: entry.profileId,
-                  orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, 1),
-                })
-              }
-              onMoveUp={() =>
-                reorderExperienceEntries({
-                  profileId: entry.profileId,
-                  orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, -1),
-                })
-              }
-            />
-            <ItemActions
-              onDelete={() => deleteExperienceEntry(entry.id)}
-              onSave={() => updateExperienceEntry({ experienceEntryId: entry.id, changes: stripEnabled(draft) })}
-              saveDisabled={!ownIsDirty}
-            />
-          </div>
-        </div>
         <div className="xl:col-span-3">
           <div className="flex items-center justify-between gap-3">
             <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Bullets</h4>
@@ -687,7 +687,12 @@ const EducationCard = ({
   }, [entry])
 
   const isDirty = entry && draft ? JSON.stringify(stripEnabled(draft)) !== JSON.stringify(stripEnabled(entry)) : false
-  const summary = summarizeParts([draft?.degree || 'No degree', draft?.school || 'No school', draft?.graduationDate ? `Graduates ${draft.graduationDate}` : null, formatEnabledState(draft?.enabled ?? true)])
+  const summary = summarizeParts([
+    draft?.degree || 'No degree',
+    draft?.school || 'No school',
+    draft?.graduationDate ? `Graduates ${draft.graduationDate}` : null,
+    formatEnabledState(draft?.enabled ?? true),
+  ])
 
   useEffect(() => {
     onDirtyChange?.(entryId, isDirty)
