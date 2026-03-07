@@ -710,6 +710,39 @@ const EducationCard = ({
 
   return (
     <CollapsiblePanel
+      headerActions={
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ToggleField
+            checked={draft.enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateEducationEntry({ educationEntryId: entry.id, changes: { enabled: value } })
+            }}
+          />
+          <ReorderButtons
+            canMoveDown={educationEntryIds.length > 1}
+            canMoveUp={educationEntryIds.length > 1}
+            onMoveDown={() =>
+              reorderEducationEntries({
+                profileId: entry.profileId,
+                orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderEducationEntries({
+                profileId: entry.profileId,
+                orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, -1),
+              })
+            }
+          />
+          <ItemActions
+            onDelete={() => deleteEducationEntry(entry.id)}
+            onSave={() => updateEducationEntry({ educationEntryId: entry.id, changes: stripEnabled(draft) })}
+            saveDisabled={!isDirty}
+          />
+        </div>
+      }
       isDirty={isDirty}
       onDiscardChanges={() => setDraft(entry)}
       summary={summary}
@@ -719,39 +752,6 @@ const EducationCard = ({
         <TextField label="School" value={draft.school} onChange={(value) => setDraft({ ...draft, school: value })} />
         <TextField label="Degree" value={draft.degree} onChange={(value) => setDraft({ ...draft, degree: value })} />
         <TextField label="Graduation date" type="date" value={draft.graduationDate ?? ''} onChange={(value) => setDraft({ ...draft, graduationDate: value || null })} />
-        <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
-          <ToggleField
-            checked={draft.enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setDraft({ ...draft, enabled: value })
-              updateEducationEntry({ educationEntryId: entry.id, changes: { enabled: value } })
-            }}
-          />
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <ReorderButtons
-              canMoveDown={educationEntryIds.length > 1}
-              canMoveUp={educationEntryIds.length > 1}
-              onMoveDown={() =>
-                reorderEducationEntries({
-                  profileId: entry.profileId,
-                  orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, 1),
-                })
-              }
-              onMoveUp={() =>
-                reorderEducationEntries({
-                  profileId: entry.profileId,
-                  orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, -1),
-                })
-              }
-            />
-            <ItemActions
-              onDelete={() => deleteEducationEntry(entry.id)}
-              onSave={() => updateEducationEntry({ educationEntryId: entry.id, changes: stripEnabled(draft) })}
-              saveDisabled={!isDirty}
-            />
-          </div>
-        </div>
       </div>
     </CollapsiblePanel>
   )
@@ -810,6 +810,39 @@ const CertificationCard = ({
 
   return (
     <CollapsiblePanel
+      headerActions={
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ToggleField
+            checked={draft.enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateCertification({ certificationId: certification.id, changes: { enabled: value } })
+            }}
+          />
+          <ReorderButtons
+            canMoveDown={certificationIds.length > 1}
+            canMoveUp={certificationIds.length > 1}
+            onMoveDown={() =>
+              reorderCertifications({
+                profileId: certification.profileId,
+                orderedIds: moveOrderedItem(certificationIds, certificationIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderCertifications({
+                profileId: certification.profileId,
+                orderedIds: moveOrderedItem(certificationIds, certificationIndex, -1),
+              })
+            }
+          />
+          <ItemActions
+            onDelete={() => deleteCertification(certification.id)}
+            onSave={() => updateCertification({ certificationId: certification.id, changes: stripEnabled(draft) })}
+            saveDisabled={!isDirty}
+          />
+        </div>
+      }
       isDirty={isDirty}
       onDiscardChanges={() => setDraft(certification)}
       summary={summary}
@@ -822,39 +855,6 @@ const CertificationCard = ({
         <TextField label="Issue date" type="date" value={draft.issueDate ?? ''} onChange={(value) => setDraft({ ...draft, issueDate: value || null })} />
         <TextField label="Expiry date" type="date" value={draft.expiryDate ?? ''} onChange={(value) => setDraft({ ...draft, expiryDate: value || null })} />
         <TextField label="Credential URL" type="url" value={draft.credentialUrl} onChange={(value) => setDraft({ ...draft, credentialUrl: value })} />
-        <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
-          <ToggleField
-            checked={draft.enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setDraft({ ...draft, enabled: value })
-              updateCertification({ certificationId: certification.id, changes: { enabled: value } })
-            }}
-          />
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <ReorderButtons
-              canMoveDown={certificationIds.length > 1}
-              canMoveUp={certificationIds.length > 1}
-              onMoveDown={() =>
-                reorderCertifications({
-                  profileId: certification.profileId,
-                  orderedIds: moveOrderedItem(certificationIds, certificationIndex, 1),
-                })
-              }
-              onMoveUp={() =>
-                reorderCertifications({
-                  profileId: certification.profileId,
-                  orderedIds: moveOrderedItem(certificationIds, certificationIndex, -1),
-                })
-              }
-            />
-            <ItemActions
-              onDelete={() => deleteCertification(certification.id)}
-              onSave={() => updateCertification({ certificationId: certification.id, changes: stripEnabled(draft) })}
-              saveDisabled={!isDirty}
-            />
-          </div>
-        </div>
       </div>
     </CollapsiblePanel>
   )
@@ -912,6 +912,39 @@ const ReferenceCard = ({
 
   return (
     <CollapsiblePanel
+      headerActions={
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ToggleField
+            checked={draft.enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateReference({ referenceId: reference.id, changes: { enabled: value } })
+            }}
+          />
+          <ReorderButtons
+            canMoveDown={referenceIds.length > 1}
+            canMoveUp={referenceIds.length > 1}
+            onMoveDown={() =>
+              reorderReferences({
+                profileId: reference.profileId,
+                orderedIds: moveOrderedItem(referenceIds, referenceIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderReferences({
+                profileId: reference.profileId,
+                orderedIds: moveOrderedItem(referenceIds, referenceIndex, -1),
+              })
+            }
+          />
+          <ItemActions
+            onDelete={() => deleteReference(reference.id)}
+            onSave={() => updateReference({ referenceId: reference.id, changes: stripEnabled(draft) })}
+            saveDisabled={!isDirty}
+          />
+        </div>
+      }
       isDirty={isDirty}
       onDiscardChanges={() => setDraft(reference)}
       summary={summary}
@@ -937,39 +970,6 @@ const ReferenceCard = ({
         <TextField label="Phone" type="tel" value={draft.phone} onChange={(value) => setDraft({ ...draft, phone: value })} />
         <div className="xl:col-span-2">
           <TextAreaField label="Notes" value={draft.notes} onChange={(value) => setDraft({ ...draft, notes: value })} />
-        </div>
-        <div className="xl:col-span-3 flex flex-wrap items-center justify-between gap-3">
-          <ToggleField
-            checked={draft.enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setDraft({ ...draft, enabled: value })
-              updateReference({ referenceId: reference.id, changes: { enabled: value } })
-            }}
-          />
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <ReorderButtons
-              canMoveDown={referenceIds.length > 1}
-              canMoveUp={referenceIds.length > 1}
-              onMoveDown={() =>
-                reorderReferences({
-                  profileId: reference.profileId,
-                  orderedIds: moveOrderedItem(referenceIds, referenceIndex, 1),
-                })
-              }
-              onMoveUp={() =>
-                reorderReferences({
-                  profileId: reference.profileId,
-                  orderedIds: moveOrderedItem(referenceIds, referenceIndex, -1),
-                })
-              }
-            />
-            <ItemActions
-              onDelete={() => deleteReference(reference.id)}
-              onSave={() => updateReference({ referenceId: reference.id, changes: stripEnabled(draft) })}
-              saveDisabled={!isDirty}
-            />
-          </div>
         </div>
       </div>
     </CollapsiblePanel>
