@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react'
+import { SubmitEvent, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useAppStore } from '../store/app-store'
@@ -59,7 +59,7 @@ export const ProfilesPage = () => {
 
   const sortedProfileIds = useMemo(() => [...profiles].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).map((profile) => profile.id), [profiles])
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const trimmed = name.trim()
