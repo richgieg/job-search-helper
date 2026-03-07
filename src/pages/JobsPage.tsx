@@ -29,10 +29,10 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
   return (
     <tr className="border-t border-slate-200 first:border-t-0">
       <td className="px-4 py-4 align-top">
-        <div>
-          <p className="font-medium text-slate-900">{job.jobTitle}</p>
-          <p className="mt-1 text-sm text-slate-500">{job.companyName}</p>
-        </div>
+        <Link className="group inline-block" to={`/jobs/${job.id}`}>
+          <p className="font-medium text-slate-900 group-hover:text-sky-700">{job.jobTitle}</p>
+          <p className="mt-1 text-sm text-slate-500 group-hover:text-sky-600">{job.companyName}</p>
+        </Link>
       </td>
       <td className="px-4 py-4 align-top">
         <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium capitalize text-sky-700">{computedStatus}</span>

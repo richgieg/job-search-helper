@@ -29,7 +29,9 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
     <tr className="border-t border-slate-200 first:border-t-0">
       <td className="px-4 py-4 align-top">
         <div>
-          <p className="font-medium text-slate-900">{profile.name}</p>
+          <Link className="font-medium text-slate-900 hover:text-sky-700" to={`/profiles/${profile.id}`}>
+            {profile.name}
+          </Link>
         </div>
       </td>
       <td className="px-4 py-4 align-top text-sm text-slate-600">{new Date(profile.updatedAt).toLocaleString()}</td>
