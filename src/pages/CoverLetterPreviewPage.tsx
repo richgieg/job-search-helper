@@ -26,7 +26,7 @@ export const CoverLetterPreviewPage = () => {
   const recipient = preview.primaryContact
     ? {
         name: preview.primaryContact.name || 'Hiring Team',
-        title: preview.primaryContact.title || 'Hiring manager',
+        title: preview.primaryContact.title,
         company: preview.primaryContact.company || preview.job?.companyName || 'Example Company',
         addressLines: formatAddressLines([
           preview.primaryContact.addressLine1,

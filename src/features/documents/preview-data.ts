@@ -150,8 +150,8 @@ export const selectProfilePreviewData = (data: AppDataState, profileId: Id): Pro
 }
 
 export const buildDefaultRecipient = (job: Job | null) => ({
-  name: 'Hiring Team',
-  title: job ? `${job.jobTitle} hiring team` : 'Hiring manager',
+  name: 'Hiring Manager',
+  title: '',
   company: job?.companyName ?? 'Example Company',
   addressLines: ['123 Example Street', 'Example City, EX 12345'],
 })
