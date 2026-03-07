@@ -196,8 +196,8 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
           <ToggleField checked={enabled} label="Enabled" onChange={setEnabled} />
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
-              canMoveDown={bulletIndex >= 0 && bulletIndex < bulletIds.length - 1}
-              canMoveUp={bulletIndex > 0}
+              canMoveDown={bulletIds.length > 1}
+              canMoveUp={bulletIds.length > 1}
               onMoveDown={() =>
                 reorderExperienceBullets({
                   experienceEntryId: bullet.experienceEntryId,
@@ -261,8 +261,8 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
       <TextField label="Skill name" value={name} onChange={setName} />
       <ToggleField checked={enabled} label="Enabled" onChange={setEnabled} />
       <ReorderButtons
-        canMoveDown={skillIndex >= 0 && skillIndex < skillIds.length - 1}
-        canMoveUp={skillIndex > 0}
+        canMoveDown={skillIds.length > 1}
+        canMoveUp={skillIds.length > 1}
         onMoveDown={() =>
           reorderSkills({
             skillCategoryId: skill.skillCategoryId,
@@ -336,8 +336,8 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
         <ToggleField checked={enabled} label="Enabled" onChange={setEnabled} />
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ReorderButtons
-            canMoveDown={skillCategoryIndex >= 0 && skillCategoryIndex < skillCategoryIds.length - 1}
-            canMoveUp={skillCategoryIndex > 0}
+            canMoveDown={skillCategoryIds.length > 1}
+            canMoveUp={skillCategoryIds.length > 1}
             onMoveDown={() =>
               reorderSkillCategories({
                 profileId: category.profileId,
@@ -484,8 +484,8 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
           <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
-              canMoveDown={experienceEntryIndex >= 0 && experienceEntryIndex < experienceEntryIds.length - 1}
-              canMoveUp={experienceEntryIndex > 0}
+              canMoveDown={experienceEntryIds.length > 1}
+              canMoveUp={experienceEntryIds.length > 1}
               onMoveDown={() =>
                 reorderExperienceEntries({
                   profileId: entry.profileId,
@@ -548,8 +548,8 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
           <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
-              canMoveDown={educationEntryIndex >= 0 && educationEntryIndex < educationEntryIds.length - 1}
-              canMoveUp={educationEntryIndex > 0}
+              canMoveDown={educationEntryIds.length > 1}
+              canMoveUp={educationEntryIds.length > 1}
               onMoveDown={() =>
                 reorderEducationEntries({
                   profileId: entry.profileId,
@@ -615,8 +615,8 @@ const CertificationCard = ({ certificationId }: { certificationId: string }) => 
           <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
-              canMoveDown={certificationIndex >= 0 && certificationIndex < certificationIds.length - 1}
-              canMoveUp={certificationIndex > 0}
+              canMoveDown={certificationIds.length > 1}
+              canMoveUp={certificationIds.length > 1}
               onMoveDown={() =>
                 reorderCertifications({
                   profileId: certification.profileId,
@@ -696,8 +696,8 @@ const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
           <ToggleField checked={draft.enabled} label="Enabled" onChange={(value) => setDraft({ ...draft, enabled: value })} />
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
-              canMoveDown={referenceIndex >= 0 && referenceIndex < referenceIds.length - 1}
-              canMoveUp={referenceIndex > 0}
+              canMoveDown={referenceIds.length > 1}
+              canMoveUp={referenceIds.length > 1}
               onMoveDown={() =>
                 reorderReferences({
                   profileId: reference.profileId,

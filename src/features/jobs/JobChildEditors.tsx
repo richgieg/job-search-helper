@@ -160,8 +160,8 @@ const JobPostingSourceCard = ({ jobPostingSourceId }: { jobPostingSourceId: stri
         <TextField label="URL" type="url" value={draft.url} onChange={(value) => setDraft({ ...draft, url: value })} />
         <div className="xl:col-span-3 flex flex-wrap items-center justify-end gap-2">
           <ReorderButtons
-            canMoveDown={jobPostingSourceIndex >= 0 && jobPostingSourceIndex < jobPostingSourceIds.length - 1}
-            canMoveUp={jobPostingSourceIndex > 0}
+            canMoveDown={jobPostingSourceIds.length > 1}
+            canMoveUp={jobPostingSourceIds.length > 1}
             onMoveDown={() =>
               reorderJobPostingSources({
                 jobId: source.jobId,
@@ -255,8 +255,8 @@ const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
         </div>
         <div className="xl:col-span-3 flex flex-wrap items-center justify-end gap-2">
           <ReorderButtons
-            canMoveDown={jobContactIndex >= 0 && jobContactIndex < jobContactIds.length - 1}
-            canMoveUp={jobContactIndex > 0}
+            canMoveDown={jobContactIds.length > 1}
+            canMoveUp={jobContactIds.length > 1}
             onMoveDown={() =>
               reorderJobContacts({
                 jobId: contact.jobId,
@@ -385,8 +385,8 @@ const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestio
         <TextAreaField label="Answer" value={draft.answer} onChange={(value) => setDraft({ ...draft, answer: value })} />
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ReorderButtons
-            canMoveDown={applicationQuestionIndex >= 0 && applicationQuestionIndex < applicationQuestionIds.length - 1}
-            canMoveUp={applicationQuestionIndex > 0}
+            canMoveDown={applicationQuestionIds.length > 1}
+            canMoveUp={applicationQuestionIds.length > 1}
             onMoveDown={() =>
               reorderApplicationQuestions({
                 jobId: applicationQuestion.jobId,

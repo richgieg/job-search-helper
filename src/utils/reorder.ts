@@ -1,7 +1,13 @@
 export const moveOrderedItem = (orderedIds: string[], currentIndex: number, direction: -1 | 1) => {
-  const nextIndex = currentIndex + direction
+  const itemCount = orderedIds.length
 
-  if (currentIndex < 0 || nextIndex < 0 || currentIndex >= orderedIds.length || nextIndex >= orderedIds.length) {
+  if (itemCount < 2 || currentIndex < 0 || currentIndex >= itemCount) {
+    return orderedIds
+  }
+
+  const nextIndex = currentIndex + direction < 0 ? itemCount - 1 : (currentIndex + direction) % itemCount
+
+  if (nextIndex === currentIndex) {
     return orderedIds
   }
 
