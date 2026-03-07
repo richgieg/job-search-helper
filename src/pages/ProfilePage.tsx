@@ -60,6 +60,9 @@ const resumeSectionLabels: Record<ResumeSectionKey, string> = {
 
 const arePersonalDetailsEqual = (left: PersonalDetails, right: PersonalDetails) => personalDetailKeys.every((key) => left[key] === right[key])
 
+const sectionSaveButtonClassName =
+  'rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300'
+
 const areProfileLinksEqual = (left: ProfileLinks, right: ProfileLinks) => profileLinkKeys.every((key) => left[key] === right[key])
 
 const Field = ({
@@ -136,7 +139,7 @@ export const ProfilePage = () => {
   const personalDetailsDirty = !arePersonalDetailsEqual(personalDetails, profile.personalDetails)
   const linksDirty = !areProfileLinksEqual(links, profile.links)
 
-  const handleSave = () => {
+  const handleSaveProfileDetails = () => {
     const trimmed = name.trim()
     if (!trimmed) {
       setName(profile.name)
@@ -150,7 +153,21 @@ export const ProfilePage = () => {
         summary,
         coverLetter,
       },
+    })
+  }
+
+  const handleSavePersonalDetails = () => {
+    updateProfile({
+      profileId: profile.id,
+      changes: {},
       personalDetails,
+    })
+  }
+
+  const handleSaveLinks = () => {
+    updateProfile({
+      profileId: profile.id,
+      changes: {},
       links,
     })
   }
@@ -176,9 +193,6 @@ export const ProfilePage = () => {
           <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/previews/application/${profile.id}`}>
             Application
           </Link>
-          <button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700" onClick={handleSave} type="button">
-            Save profile
-          </button>
         </div>
       </div>
 
@@ -194,6 +208,11 @@ export const ProfilePage = () => {
         <div className="mt-6 space-y-4">
           <CollapsiblePanel
             description="Edit the core profile content used across previews and applications."
+            headerActions={
+              <button className={sectionSaveButtonClassName} disabled={!profileDetailsDirty} onClick={handleSaveProfileDetails} type="button">
+                Save
+              </button>
+            }
             isDirty={profileDetailsDirty}
             onDiscardChanges={() => {
               setName(profile.name)
@@ -233,6 +252,11 @@ export const ProfilePage = () => {
 
           <CollapsiblePanel
             description="Manage contact and address details used in document headers and applications."
+            headerActions={
+              <button className={sectionSaveButtonClassName} disabled={!personalDetailsDirty} onClick={handleSavePersonalDetails} type="button">
+                Save
+              </button>
+            }
             isDirty={personalDetailsDirty}
             onDiscardChanges={() => setPersonalDetails(createPersonalDetailsDraft(profile.personalDetails))}
             title="Personal details"
@@ -252,6 +276,11 @@ export const ProfilePage = () => {
 
           <CollapsiblePanel
             description="Store the public URLs that should travel with this profile."
+            headerActions={
+              <button className={sectionSaveButtonClassName} disabled={!linksDirty} onClick={handleSaveLinks} type="button">
+                Save
+              </button>
+            }
             isDirty={linksDirty}
             onDiscardChanges={() => setLinks(createLinksDraft(profile.links))}
             title="Links"
