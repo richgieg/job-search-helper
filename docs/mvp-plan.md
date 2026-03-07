@@ -14,8 +14,9 @@ The first version should let a user:
 4. Duplicate base profiles and job profiles.
 5. Track job application status and key dates.
 6. Store contacts related to each job.
-7. Generate a cover letter, resume, and copy-friendly application page from either a base profile or a selected job-specific profile.
-8. Export the app state to JSON and import it later to restore the app state.
+7. Configure resume section visibility and section order per profile.
+8. Generate a cover letter, resume, and copy-friendly application page from either a base profile or a selected job-specific profile.
+9. Export the app state to JSON and import it later to restore the app state.
 
 ## Recommended MVP boundaries
 
@@ -30,6 +31,7 @@ Keep the MVP focused on a single primary user: an individual job seeker, with no
 - Profile duplication workflows
 - Job status tracking
 - Resume generation from structured profile data
+- Per-profile resume section visibility and ordering
 - Cover letter generation from structured profile data
 - Copy-to-clipboard application page
 - JSON export/import for full app backup and restore
@@ -78,6 +80,10 @@ Each reusable profile should support:
 - Profile name
 - Professional summary
 - Cover letter content
+- Resume settings
+   - control whether each resume section is shown or hidden
+   - control the order of resume sections
+   - stored per profile so base profiles and job profiles can differ
 - Skill categories and skills
 - Professional experience entries
 - Education entries
@@ -162,9 +168,11 @@ This allows the user to keep track of custom questions asked during online appli
 #### Resume
 
 - Generated from either a base profile or a selected job-specific profile
+- Respects the profile's resume settings for section visibility and section order
 - Exportable as printable HTML in MVP
 - Optional PDF in phase 2
 - Simple templates only in MVP
+- No freeform template designer in MVP; resume settings control section visibility and ordering only
 
 #### Cover letter
 
@@ -218,6 +226,7 @@ This allows the user to keep track of custom questions asked during online appli
 - name
 - summary
 - cover_letter
+- resume_settings_json
 - personal_details_json
 - links_json
 - job_id
@@ -226,6 +235,8 @@ This allows the user to keep track of custom questions asked during online appli
 - updated_at
 
 If `job_id` is null, the profile is a base profile. If `job_id` is not null, the profile is a job-specific profile.
+
+`resume_settings_json` stores the profile's single resume settings configuration for the MVP, including whether each resume section is shown and the order in which sections should appear.
 
 `cloned_from_profile_id` is null for profiles created from scratch and points to the profile that was duplicated when a profile is copied.
 
@@ -404,7 +415,7 @@ Avoid relying on AI for the first version.
 
 Use deterministic templating:
 
-- Resume: map selected profile sections into a clean template, including ordered `ExperienceBullet` records under each experience entry
+- Resume: map selected profile sections into a clean template, respecting the profile's configured section visibility and section order, including ordered `ExperienceBullet` records under each experience entry
 - Cover letter: combine contact/job/company data with a user-authored `cover_letter` text block, split into paragraphs by trimmed newlines; use a dummy contact when previewing from a base profile
 - Application page: render profile fields into copyable cards or rows
 
