@@ -42,6 +42,20 @@ const compareSortOrder = <T extends { sortOrder: number }>(left: T, right: T) =>
 
 const compact = (values: Array<string | null | undefined>) => values.map((value) => value?.trim() ?? '').filter(Boolean)
 
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const replaceTemplateToken = (value: string, token: string, replacement: string) => {
+  const escapedToken = escapeRegExp(token)
+
+  return value
+    .replace(new RegExp(`${escapedToken}([.!?])`, 'g'), (_, punctuation: string) =>
+      replacement.endsWith(punctuation) ? replacement : `${replacement}${punctuation}`,
+    )
+    .replaceAll(token, replacement)
+}
+
+const endSentence = (value: string) => (/[.!?]$/.test(value) ? value : `${value}.`)
+
 const buildFallbackJob = (profile: Profile): Job => ({
   id: `preview-job-${profile.id}`,
   companyName: 'Example Company',
@@ -191,9 +205,14 @@ export const selectProfilePreviewData = (data: AppDataState, profileId: Id): Pro
 }
 
 export const buildCoverLetterParagraphs = (preview: ProfilePreviewData) => {
+  const role = preview.job.jobTitle || 'Example Role'
+  const company = preview.job.companyName || 'Example Company'
+  const replaceJobTokens = (value: string) =>
+    replaceTemplateToken(replaceTemplateToken(value, '{{JOB.TITLE}}', role), '{{JOB.COMPANY}}', company)
+
   const trimmed = preview.profile.coverLetter
     .split(/\n\s*\n/g)
-    .map((paragraph) => paragraph.trim())
+    .map((paragraph) => replaceJobTokens(paragraph.trim()))
     .filter(Boolean)
 
   if (trimmed.length > 0) {
@@ -201,12 +220,10 @@ export const buildCoverLetterParagraphs = (preview: ProfilePreviewData) => {
   }
 
   const summary = preview.profile.summary.trim()
-  const role = preview.job.jobTitle || 'the opportunity'
-  const company = preview.job.companyName || 'your team'
 
   return [
-    `I am excited to submit my application for ${role} at ${company}.`,
+    endSentence(`I am excited to submit my application for ${role} at ${company}`),
     summary || 'My background combines hands-on delivery, collaboration, and a strong focus on clear communication and measurable outcomes.',
-    `Thank you for considering my application. I would welcome the chance to discuss how I can contribute to ${company}.`,
+    endSentence(`Thank you for considering my application. I would welcome the chance to discuss how I can contribute to ${company}`),
   ]
 }
