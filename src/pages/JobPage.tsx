@@ -293,25 +293,18 @@ export const JobPage = () => {
           <TextField label="Date posted" type="date" value={draft.datePosted} onBlur={() => commitDatePosted(draft.datePosted)} onChange={(value) => setDraft({ ...draft, datePosted: value })} />
           <SelectField label="Work arrangement" options={workArrangementOptions} value={draft.workArrangement} onBlur={() => commitSelectField('workArrangement', draft.workArrangement)} onChange={(value) => setDraft({ ...draft, workArrangement: value })} />
           <SelectField label="Employment type" options={employmentTypeOptions} value={draft.employmentType} onBlur={() => commitSelectField('employmentType', draft.employmentType)} onChange={(value) => setDraft({ ...draft, employmentType: value })} />
-        </div>
-      </CollapsiblePanel>
-
-      <CollapsiblePanel description="Track posted, desired, and supplemental compensation information." title="Compensation">
-        <div className="grid gap-4 xl:grid-cols-2">
           <TextField label="Posted compensation" value={draft.postedCompensation} onBlur={() => commitTextField('postedCompensation', draft.postedCompensation)} onChange={(value) => setDraft({ ...draft, postedCompensation: value })} />
           <TextField label="Desired compensation" value={draft.desiredCompensation} onBlur={() => commitTextField('desiredCompensation', draft.desiredCompensation)} onChange={(value) => setDraft({ ...draft, desiredCompensation: value })} />
           <div className="xl:col-span-2">
             <TextAreaField label="Compensation notes" value={draft.compensationNotes} onBlur={() => commitTextField('compensationNotes', draft.compensationNotes)} onChange={(value) => setDraft({ ...draft, compensationNotes: value })} />
           </div>
+          <div className="xl:col-span-2">
+            <TextAreaField label="Description" value={draft.description} onBlur={() => commitTextField('description', draft.description)} onChange={(value) => setDraft({ ...draft, description: value })} />
+          </div>
+          <div className="xl:col-span-2">
+            <TextAreaField label="Notes" value={draft.notes} onBlur={() => commitTextField('notes', draft.notes)} onChange={(value) => setDraft({ ...draft, notes: value })} />
+          </div>
         </div>
-      </CollapsiblePanel>
-
-      <CollapsiblePanel description="Store the posting text used for tailoring documents and tracking applications." title="Description">
-        <TextAreaField label="Description" value={draft.description} onBlur={() => commitTextField('description', draft.description)} onChange={(value) => setDraft({ ...draft, description: value })} />
-      </CollapsiblePanel>
-
-      <CollapsiblePanel description="Capture private notes about this job and application process." title="Notes">
-        <TextAreaField label="Notes" value={draft.notes} onBlur={() => commitTextField('notes', draft.notes)} onChange={(value) => setDraft({ ...draft, notes: value })} />
       </CollapsiblePanel>
 
       <CollapsiblePanel description="Create job-specific profiles from base profiles and manage the profiles already attached to this job." title="Profiles">
