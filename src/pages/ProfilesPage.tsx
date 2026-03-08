@@ -98,7 +98,7 @@ export const ProfilesPage = () => {
         {sortedProfileIds.length === 0 ? (
           <p className="text-sm text-slate-500">No profiles yet.</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="mt-4 overflow-x-auto">
             <table className="min-w-full border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
