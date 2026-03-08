@@ -54,7 +54,7 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
 
 const JobsTable = ({ jobIds }: { jobIds: string[] }) => {
   if (jobIds.length === 0) {
-    return <p className="mt-4 text-sm text-slate-500">No jobs yet.</p>
+    return <p className="text-sm text-slate-500">No jobs yet.</p>
   }
 
   return (
@@ -110,8 +110,7 @@ export const JobsPage = () => {
       </div>
 
       <section className="max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">Quick add job</h2>
-        <form className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]" onSubmit={handleSubmit}>
+        <form className="grid gap-3 md:grid-cols-[1fr_1fr_auto]" onSubmit={handleSubmit}>
           <input
             className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
             placeholder="Company name"
@@ -131,11 +130,6 @@ export const JobsPage = () => {
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Job list</h2>
-          <span className="text-sm text-slate-500">{sortedJobIds.length} total</span>
-        </div>
-
         <JobsTable jobIds={sortedJobIds} />
       </section>
     </div>
