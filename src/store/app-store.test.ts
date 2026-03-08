@@ -201,11 +201,11 @@ describe('app store reorder actions', () => {
 
     actions.updateJobLink({
       jobLinkId: firstJobLinkId,
-      changes: { name: 'Company site', url: 'https://example.com/job' },
+      changes: { url: 'https://example.com/job' },
     })
     actions.updateJobLink({
       jobLinkId: secondJobLinkId,
-      changes: { name: 'LinkedIn', url: 'https://linkedin.com/jobs/view/example' },
+      changes: { url: 'https://linkedin.com/jobs/view/example' },
     })
 
     actions.reorderJobLinks({
@@ -222,7 +222,10 @@ describe('app store reorder actions', () => {
       .filter((item) => item.jobId === jobId)
       .sort((left, right) => left.sortOrder - right.sortOrder)
 
-    expect(importedJobLinks.map((item) => item.name)).toEqual(['LinkedIn', 'Company site'])
+    expect(importedJobLinks.map((item) => item.url)).toEqual([
+      'https://linkedin.com/jobs/view/example',
+      'https://example.com/job',
+    ])
   })
 
   it('preserves application question order through export and import', () => {

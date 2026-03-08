@@ -347,12 +347,9 @@ The copied related records include:
 ### JobLink
 - id
 - job_id
-- name
 - url
 - sort_order
 - created_at
-
-`name` is a short user-defined label such as LinkedIn, Workday, Company Site, or Official.
 
 ### JobContact
 - id

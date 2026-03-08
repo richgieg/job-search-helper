@@ -1535,7 +1535,6 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const jobLink: JobLink = {
         id: createId(),
         jobId,
-        name: '',
         url: '',
         sortOrder: getNextSortOrder(
           Object.values(get().data.jobLinks)

@@ -352,7 +352,6 @@ interface Job {
 interface JobLink {
   id: Id;
   jobId: Id;
-  name: string;
   url: string;
   sortOrder: number;
   createdAt: IsoTimestamp;

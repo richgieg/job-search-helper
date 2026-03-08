@@ -14,7 +14,7 @@ const TextField = ({
   placeholder,
   type = 'text',
 }: {
-  label: string
+  label?: string
   value: string
   onChange: (value: string) => void
   onBlur?: () => void
@@ -22,7 +22,7 @@ const TextField = ({
   type?: 'text' | 'email' | 'tel' | 'url' | 'date' | 'datetime-local'
 }) => (
   <label className="flex flex-col gap-2 text-sm text-slate-700">
-    <span className="font-medium">{label}</span>
+    {label ? <span className="font-medium">{label}</span> : null}
     <input
       className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
       placeholder={placeholder}
@@ -148,11 +148,8 @@ const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
   return (
     <div className="rounded-xl border border-slate-200 p-4">
       <div className="flex items-end gap-4">
-        <div className="min-w-0 basis-52 flex-1">
-          <TextField label="Name" value={draft.name} onBlur={() => draft.name !== link.name && commitLinkChanges({ name: draft.name })} onChange={(value) => setDraft({ ...draft, name: value })} />
-        </div>
-        <div className="min-w-0 basis-[32rem] flex-[4]">
-          <TextField label="URL" type="url" value={draft.url} onBlur={() => draft.url !== link.url && commitLinkChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
+        <div className="min-w-0 flex-1">
+          <TextField placeholder="https://example.com/job" type="url" value={draft.url} onBlur={() => draft.url !== link.url && commitLinkChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
         </div>
         <div className="flex shrink-0 items-center justify-end gap-2 self-end">
           <ReorderButtons
@@ -446,7 +443,7 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
 
   return (
     <>
-      <CollapsiblePanel actionLabel="Add link" collapsible={hasJobLinks} description="Track the relevant job URLs with short names." onAction={() => createJobLink(jobId)} title="Links">
+      <CollapsiblePanel actionLabel="Add link" collapsible={hasJobLinks} description="Track the relevant job URLs for this role." onAction={() => createJobLink(jobId)} title="Links">
         {hasJobLinks ? <div className="space-y-4">{jobLinkIds.map((id) => <JobLinkCard key={id} jobLinkId={id} />)}</div> : null}
       </CollapsiblePanel>
 

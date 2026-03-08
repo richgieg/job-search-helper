@@ -196,7 +196,6 @@ export interface Job {
 export interface JobLink {
   id: Id
   jobId: Id
-  name: string
   url: string
   sortOrder: number
   createdAt: IsoTimestamp
