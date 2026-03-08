@@ -27,15 +27,15 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
 
   return (
     <tr className="border-t border-slate-200 first:border-t-0 hover:bg-sky-50/40">
-      <td className="border-r border-slate-200 px-4 py-3 align-top last:border-r-0">
+      <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
         <div>
           <Link className="font-medium text-slate-900 hover:text-sky-700" to={`/profiles/${profile.id}`}>
             {profile.name}
           </Link>
         </div>
       </td>
-      <td className="border-r border-slate-200 px-4 py-3 align-top text-sm text-slate-600 last:border-r-0 whitespace-nowrap">{new Date(profile.updatedAt).toLocaleString()}</td>
-      <td className="px-4 py-3 align-top">
+      <td className="border-r border-slate-200 px-4 py-3 align-middle text-sm text-slate-600 last:border-r-0 whitespace-nowrap">{new Date(profile.updatedAt).toLocaleString()}</td>
+      <td className="px-4 py-3 align-middle">
         <div className="flex flex-wrap justify-end gap-2">
           <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}`}>
             Open

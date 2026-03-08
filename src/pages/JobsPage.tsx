@@ -28,17 +28,17 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
 
   return (
     <tr className="border-t border-slate-200 first:border-t-0 hover:bg-sky-50/40">
-      <td className="border-r border-slate-200 px-4 py-3 align-top last:border-r-0">
+      <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
         <Link className="group inline-block" to={`/jobs/${job.id}`}>
           <p className="font-medium text-slate-900 group-hover:text-sky-700">{job.jobTitle}</p>
           <p className="mt-1 text-sm text-slate-500 group-hover:text-sky-600">{job.companyName}</p>
         </Link>
       </td>
-      <td className="border-r border-slate-200 px-4 py-3 align-top last:border-r-0">
+      <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
         <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium capitalize text-sky-700">{computedStatus}</span>
       </td>
-      <td className="border-r border-slate-200 px-4 py-3 align-top text-sm text-slate-600 last:border-r-0 whitespace-nowrap">{new Date(job.updatedAt).toLocaleString()}</td>
-      <td className="px-4 py-3 align-top">
+      <td className="border-r border-slate-200 px-4 py-3 align-middle text-sm text-slate-600 last:border-r-0 whitespace-nowrap">{new Date(job.updatedAt).toLocaleString()}</td>
+      <td className="px-4 py-3 align-middle">
         <div className="flex flex-wrap justify-end gap-2">
           <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/jobs/${job.id}`}>
             Open
