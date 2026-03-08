@@ -6,9 +6,17 @@ import { useAppStore } from '../store/app-store'
 
 const JobListItem = ({ jobId }: { jobId: string }) => {
   const job = useAppStore((state) => state.data.jobs[jobId])
+  const jobLinksById = useAppStore((state) => state.data.jobLinks)
   const jobEventsById = useAppStore((state) => state.data.jobEvents)
   const deleteJob = useAppStore((state) => state.actions.deleteJob)
 
+  const jobLinks = useMemo(
+    () =>
+      Object.values(jobLinksById)
+        .filter((link) => link.jobId === jobId)
+        .sort((left, right) => left.sortOrder - right.sortOrder),
+    [jobId, jobLinksById],
+  )
   const jobEvents = useMemo(() => Object.values(jobEventsById).filter((event) => event.jobId === jobId), [jobEventsById, jobId])
 
   if (!job) {
@@ -37,9 +45,27 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
       <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
         <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium capitalize text-sky-700">{computedStatus}</span>
       </td>
-      <td className="border-r border-slate-200 px-4 py-3 align-middle text-sm text-slate-600 last:border-r-0 whitespace-nowrap">{new Date(job.updatedAt).toLocaleString()}</td>
+      <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
+        {jobLinks.length === 0 ? (
+          <span className="text-sm text-slate-400">—</span>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {jobLinks.map((jobLink, index) => (
+              <a
+                key={jobLink.id}
+                className="text-sm font-medium text-sky-700 underline-offset-2 hover:text-sky-800 hover:underline"
+                href={jobLink.url}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {`link ${index + 1}`}
+              </a>
+            ))}
+          </div>
+        )}
+      </td>
       <td className="px-4 py-3 align-middle">
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="flex flex-nowrap justify-end gap-2 whitespace-nowrap">
           <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/jobs/${job.id}`}>
             Open
           </Link>
@@ -61,16 +87,16 @@ const JobsTable = ({ jobIds }: { jobIds: string[] }) => {
     <div className="overflow-x-auto">
       <table className="min-w-full border-collapse table-fixed text-sm">
         <colgroup>
-          <col className="w-[52%]" />
+          <col className="w-[46%]" />
           <col className="w-[14%]" />
+          <col className="w-[22%]" />
           <col className="w-[18%]" />
-          <col className="w-[16%]" />
         </colgroup>
         <thead>
           <tr className="border-b border-slate-300 bg-slate-100 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
             <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Job</th>
             <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Status</th>
-            <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Updated</th>
+            <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Links</th>
             <th className="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
