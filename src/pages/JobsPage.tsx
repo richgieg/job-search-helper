@@ -113,18 +113,18 @@ export const JobsPage = () => {
         <h2 className="text-lg font-semibold text-slate-900">Quick add job</h2>
         <form className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]" onSubmit={handleSubmit}>
           <input
-            className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-sky-500"
+            className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
             placeholder="Company name"
             value={companyName}
             onChange={(event) => setCompanyName(event.target.value)}
           />
           <input
-            className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-sky-500"
+            className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
             placeholder="Job title"
             value={jobTitle}
             onChange={(event) => setJobTitle(event.target.value)}
           />
-          <button className="rounded-xl bg-sky-600 px-4 py-3 text-sm font-medium text-white hover:bg-sky-700" type="submit">
+          <button className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700" type="submit">
             Add job
           </button>
         </form>

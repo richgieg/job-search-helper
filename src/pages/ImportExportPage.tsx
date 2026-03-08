@@ -65,10 +65,10 @@ export const ImportExportPage = () => {
         <p className="mt-2 text-lg font-semibold text-slate-900">{summary}</p>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <button className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white hover:bg-slate-700" onClick={handleExport} type="button">
+          <button className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700" onClick={handleExport} type="button">
             Export JSON
           </button>
-          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
+          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
             Import JSON
             <input accept="application/json" className="hidden" onChange={handleImport} type="file" />
           </label>
