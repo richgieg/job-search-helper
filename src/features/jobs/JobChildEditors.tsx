@@ -148,10 +148,10 @@ const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
   return (
     <div className="rounded-xl border border-slate-200 p-4">
       <div className="flex items-end gap-4">
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 basis-52 flex-1">
           <TextField label="Name" value={draft.name} onBlur={() => draft.name !== link.name && commitLinkChanges({ name: draft.name })} onChange={(value) => setDraft({ ...draft, name: value })} />
         </div>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 basis-[32rem] flex-[4]">
           <TextField label="URL" type="url" value={draft.url} onBlur={() => draft.url !== link.url && commitLinkChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
         </div>
         <div className="flex shrink-0 items-center justify-end gap-2 self-end">
