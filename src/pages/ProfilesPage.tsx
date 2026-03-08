@@ -59,7 +59,7 @@ export const ProfilesPage = () => {
 
   const profiles = useMemo(() => Object.values(profilesById).filter((profile) => profile.jobId === null), [profilesById])
 
-  const sortedProfileIds = useMemo(() => [...profiles].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).map((profile) => profile.id), [profiles])
+  const sortedProfileIds = useMemo(() => [...profiles].sort((left, right) => right.createdAt.localeCompare(left.createdAt)).map((profile) => profile.id), [profiles])
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
