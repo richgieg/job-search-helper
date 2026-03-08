@@ -1,4 +1,4 @@
-import { SubmitEvent, useMemo, useState } from 'react'
+import { SubmitEvent, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { getJobComputedStatus } from '../features/jobs/job-status'
@@ -84,6 +84,7 @@ export const JobsPage = () => {
   const [companyName, setCompanyName] = useState('')
   const [jobTitle, setJobTitle] = useState('')
   const [initialLinkUrl, setInitialLinkUrl] = useState('')
+  const jobTitleInputRef = useRef<HTMLInputElement | null>(null)
 
   const jobs = useMemo(() => Object.values(jobsById), [jobsById])
   const sortedJobIds = useMemo(() => [...jobs].sort((left, right) => right.createdAt.localeCompare(left.createdAt)).map((job) => job.id), [jobs])
@@ -107,6 +108,7 @@ export const JobsPage = () => {
     setCompanyName('')
     setJobTitle('')
     setInitialLinkUrl('')
+    jobTitleInputRef.current?.focus()
   }
 
   return (
@@ -121,6 +123,7 @@ export const JobsPage = () => {
           <input
             className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
             placeholder="Job title"
+            ref={jobTitleInputRef}
             value={jobTitle}
             onChange={(event) => setJobTitle(event.target.value)}
           />
