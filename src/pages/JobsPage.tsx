@@ -85,7 +85,7 @@ export const JobsPage = () => {
   const [jobTitle, setJobTitle] = useState('')
 
   const jobs = useMemo(() => Object.values(jobsById), [jobsById])
-  const sortedJobIds = useMemo(() => [...jobs].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).map((job) => job.id), [jobs])
+  const sortedJobIds = useMemo(() => [...jobs].sort((left, right) => right.createdAt.localeCompare(left.createdAt)).map((job) => job.id), [jobs])
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
