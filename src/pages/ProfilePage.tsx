@@ -35,20 +35,6 @@ const emptyLinks: ProfileLinks = {
   websiteUrl: '',
 }
 
-const personalDetailKeys: Array<keyof PersonalDetails> = [
-  'fullName',
-  'email',
-  'phone',
-  'addressLine1',
-  'addressLine2',
-  'addressLine3',
-  'city',
-  'state',
-  'postalCode',
-]
-
-const profileLinkKeys: Array<keyof ProfileLinks> = ['linkedinUrl', 'githubUrl', 'portfolioUrl', 'websiteUrl']
-
 const resumeSectionLabels: Record<ResumeSectionKey, string> = {
   summary: 'Summary',
   skills: 'Skills',
@@ -58,23 +44,18 @@ const resumeSectionLabels: Record<ResumeSectionKey, string> = {
   references: 'References',
 }
 
-const arePersonalDetailsEqual = (left: PersonalDetails, right: PersonalDetails) => personalDetailKeys.every((key) => left[key] === right[key])
-
-const sectionSaveButtonClassName =
-  'rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300'
-
-const areProfileLinksEqual = (left: ProfileLinks, right: ProfileLinks) => profileLinkKeys.every((key) => left[key] === right[key])
-
 const Field = ({
   label,
   value,
   onChange,
+  onBlur,
   placeholder,
   type = 'text',
 }: {
   label: string
   value: string
   onChange: (value: string) => void
+  onBlur?: () => void
   placeholder?: string
   type?: 'text' | 'email' | 'tel' | 'url'
 }) => (
@@ -85,6 +66,7 @@ const Field = ({
       placeholder={placeholder}
       type={type}
       value={value}
+      onBlur={onBlur}
       onChange={(event) => onChange(event.target.value)}
     />
   </label>
@@ -135,14 +117,18 @@ export const ProfilePage = () => {
     }))
     .sort((left, right) => left.sortOrder - right.sortOrder)
   const orderedResumeSectionKeys = orderedResumeSections.map((section) => section.section)
-  const profileDetailsDirty = name !== profile.name || summary !== profile.summary || coverLetter !== profile.coverLetter
-  const personalDetailsDirty = !arePersonalDetailsEqual(personalDetails, profile.personalDetails)
-  const linksDirty = !areProfileLinksEqual(links, profile.links)
 
-  const handleSaveProfileDetails = () => {
+  const commitProfileName = () => {
     const trimmed = name.trim()
     if (!trimmed) {
       setName(profile.name)
+      return
+    }
+
+    if (trimmed === profile.name) {
+      if (name !== trimmed) {
+        setName(trimmed)
+      }
       return
     }
 
@@ -150,25 +136,51 @@ export const ProfilePage = () => {
       profileId: profile.id,
       changes: {
         name: trimmed,
-        summary,
-        coverLetter,
+      },
+    })
+    if (name !== trimmed) {
+      setName(trimmed)
+    }
+  }
+
+  const commitProfileTextField = (field: 'summary' | 'coverLetter', value: string) => {
+    if (value === profile[field]) {
+      return
+    }
+
+    updateProfile({
+      profileId: profile.id,
+      changes: {
+        [field]: value,
       },
     })
   }
 
-  const handleSavePersonalDetails = () => {
+  const commitPersonalDetail = <K extends keyof PersonalDetails>(key: K, value: PersonalDetails[K]) => {
+    if (value === profile.personalDetails[key]) {
+      return
+    }
+
     updateProfile({
       profileId: profile.id,
       changes: {},
-      personalDetails,
+      personalDetails: {
+        [key]: value,
+      },
     })
   }
 
-  const handleSaveLinks = () => {
+  const commitLink = <K extends keyof ProfileLinks>(key: K, value: ProfileLinks[K]) => {
+    if (value === profile.links[key]) {
+      return
+    }
+
     updateProfile({
       profileId: profile.id,
       changes: {},
-      links,
+      links: {
+        [key]: value,
+      },
     })
   }
 
@@ -208,23 +220,10 @@ export const ProfilePage = () => {
         <div className="mt-6 space-y-4">
           <CollapsiblePanel
             description="Edit the core profile content used across previews and applications."
-            headerActions={(expanded) =>
-              expanded ? (
-                <button className={sectionSaveButtonClassName} disabled={!profileDetailsDirty} onClick={handleSaveProfileDetails} type="button">
-                  Save
-                </button>
-              ) : null
-            }
-            isDirty={profileDetailsDirty}
-            onDiscardChanges={() => {
-              setName(profile.name)
-              setSummary(profile.summary)
-              setCoverLetter(profile.coverLetter)
-            }}
             title="Profile details"
           >
             <div className="grid gap-4 xl:grid-cols-2">
-              <Field label="Profile name" value={name} onChange={setName} />
+              <Field label="Profile name" onBlur={commitProfileName} value={name} onChange={setName} />
 
               <div className="xl:col-span-2">
                 <label className="flex flex-col gap-2 text-sm text-slate-700">
@@ -233,6 +232,7 @@ export const ProfilePage = () => {
                     className="min-h-28 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
                     placeholder="Professional summary"
                     value={summary}
+                    onBlur={() => commitProfileTextField('summary', summary)}
                     onChange={(event) => setSummary(event.target.value)}
                   />
                 </label>
@@ -245,6 +245,7 @@ export const ProfilePage = () => {
                     className="min-h-40 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
                     placeholder="Cover letter content"
                     value={coverLetter}
+                    onBlur={() => commitProfileTextField('coverLetter', coverLetter)}
                     onChange={(event) => setCoverLetter(event.target.value)}
                   />
                 </label>
@@ -254,48 +255,30 @@ export const ProfilePage = () => {
 
           <CollapsiblePanel
             description="Manage contact and address details used in document headers and applications."
-            headerActions={(expanded) =>
-              expanded ? (
-                <button className={sectionSaveButtonClassName} disabled={!personalDetailsDirty} onClick={handleSavePersonalDetails} type="button">
-                  Save
-                </button>
-              ) : null
-            }
-            isDirty={personalDetailsDirty}
-            onDiscardChanges={() => setPersonalDetails(createPersonalDetailsDraft(profile.personalDetails))}
             title="Personal details"
           >
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <Field label="Full name" value={personalDetails.fullName} onChange={(value) => setPersonalDetails({ ...personalDetails, fullName: value })} />
-              <Field label="Email" type="email" value={personalDetails.email} onChange={(value) => setPersonalDetails({ ...personalDetails, email: value })} />
-              <Field label="Phone" type="tel" value={personalDetails.phone} onChange={(value) => setPersonalDetails({ ...personalDetails, phone: value })} />
-              <Field label="Address line 1" value={personalDetails.addressLine1} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine1: value })} />
-              <Field label="Address line 2" value={personalDetails.addressLine2} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine2: value })} />
-              <Field label="Address line 3" value={personalDetails.addressLine3} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine3: value })} />
-              <Field label="City" value={personalDetails.city} onChange={(value) => setPersonalDetails({ ...personalDetails, city: value })} />
-              <Field label="State" value={personalDetails.state} onChange={(value) => setPersonalDetails({ ...personalDetails, state: value })} />
-              <Field label="Postal code" value={personalDetails.postalCode} onChange={(value) => setPersonalDetails({ ...personalDetails, postalCode: value })} />
+              <Field label="Full name" value={personalDetails.fullName} onBlur={() => commitPersonalDetail('fullName', personalDetails.fullName)} onChange={(value) => setPersonalDetails({ ...personalDetails, fullName: value })} />
+              <Field label="Email" type="email" value={personalDetails.email} onBlur={() => commitPersonalDetail('email', personalDetails.email)} onChange={(value) => setPersonalDetails({ ...personalDetails, email: value })} />
+              <Field label="Phone" type="tel" value={personalDetails.phone} onBlur={() => commitPersonalDetail('phone', personalDetails.phone)} onChange={(value) => setPersonalDetails({ ...personalDetails, phone: value })} />
+              <Field label="Address line 1" value={personalDetails.addressLine1} onBlur={() => commitPersonalDetail('addressLine1', personalDetails.addressLine1)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine1: value })} />
+              <Field label="Address line 2" value={personalDetails.addressLine2} onBlur={() => commitPersonalDetail('addressLine2', personalDetails.addressLine2)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine2: value })} />
+              <Field label="Address line 3" value={personalDetails.addressLine3} onBlur={() => commitPersonalDetail('addressLine3', personalDetails.addressLine3)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine3: value })} />
+              <Field label="City" value={personalDetails.city} onBlur={() => commitPersonalDetail('city', personalDetails.city)} onChange={(value) => setPersonalDetails({ ...personalDetails, city: value })} />
+              <Field label="State" value={personalDetails.state} onBlur={() => commitPersonalDetail('state', personalDetails.state)} onChange={(value) => setPersonalDetails({ ...personalDetails, state: value })} />
+              <Field label="Postal code" value={personalDetails.postalCode} onBlur={() => commitPersonalDetail('postalCode', personalDetails.postalCode)} onChange={(value) => setPersonalDetails({ ...personalDetails, postalCode: value })} />
             </div>
           </CollapsiblePanel>
 
           <CollapsiblePanel
             description="Store the public URLs that should travel with this profile."
-            headerActions={(expanded) =>
-              expanded ? (
-                <button className={sectionSaveButtonClassName} disabled={!linksDirty} onClick={handleSaveLinks} type="button">
-                  Save
-                </button>
-              ) : null
-            }
-            isDirty={linksDirty}
-            onDiscardChanges={() => setLinks(createLinksDraft(profile.links))}
             title="Links"
           >
             <div className="grid gap-4 md:grid-cols-2">
-              <Field label="LinkedIn" type="url" value={links.linkedinUrl} onChange={(value) => setLinks({ ...links, linkedinUrl: value })} />
-              <Field label="GitHub" type="url" value={links.githubUrl} onChange={(value) => setLinks({ ...links, githubUrl: value })} />
-              <Field label="Portfolio" type="url" value={links.portfolioUrl} onChange={(value) => setLinks({ ...links, portfolioUrl: value })} />
-              <Field label="Website" type="url" value={links.websiteUrl} onChange={(value) => setLinks({ ...links, websiteUrl: value })} />
+              <Field label="LinkedIn" type="url" value={links.linkedinUrl} onBlur={() => commitLink('linkedinUrl', links.linkedinUrl)} onChange={(value) => setLinks({ ...links, linkedinUrl: value })} />
+              <Field label="GitHub" type="url" value={links.githubUrl} onBlur={() => commitLink('githubUrl', links.githubUrl)} onChange={(value) => setLinks({ ...links, githubUrl: value })} />
+              <Field label="Portfolio" type="url" value={links.portfolioUrl} onBlur={() => commitLink('portfolioUrl', links.portfolioUrl)} onChange={(value) => setLinks({ ...links, portfolioUrl: value })} />
+              <Field label="Website" type="url" value={links.websiteUrl} onBlur={() => commitLink('websiteUrl', links.websiteUrl)} onChange={(value) => setLinks({ ...links, websiteUrl: value })} />
             </div>
           </CollapsiblePanel>
 
