@@ -175,7 +175,6 @@ const getExperienceEntryEditableFields = (entry: ExperienceEntry) => ({
   employmentType: entry.employmentType,
   startDate: entry.startDate,
   endDate: entry.endDate,
-  isCurrent: entry.isCurrent,
   reasonForLeavingShort: entry.reasonForLeavingShort,
   reasonForLeavingDetails: entry.reasonForLeavingDetails,
   supervisor: {
@@ -664,7 +663,14 @@ const ExperienceCard = ({
         <SelectField label="Employment type" value={draft.employmentType} onChange={(value) => setDraft({ ...draft, employmentType: value })} options={employmentTypeOptions} />
         <TextField label="Start date" type="date" value={draft.startDate ?? ''} onChange={(value) => setDraft({ ...draft, startDate: value || null })} />
         <TextField label="End date" type="date" value={draft.endDate ?? ''} onChange={(value) => setDraft({ ...draft, endDate: value || null })} />
-        <ToggleField checked={draft.isCurrent} label="Current role" onChange={(value) => setDraft({ ...draft, isCurrent: value })} />
+        <ToggleField
+          checked={draft.isCurrent}
+          label="Current role"
+          onChange={(value) => {
+            setDraft({ ...draft, isCurrent: value })
+            updateExperienceEntry({ experienceEntryId: entry.id, changes: { isCurrent: value } })
+          }}
+        />
         <TextField
           label="Reason for leaving (short)"
           value={draft.reasonForLeavingShort}
