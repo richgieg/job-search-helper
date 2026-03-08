@@ -1,52 +1,23 @@
-import { type ReactNode, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
 
+import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
 import type { ContactRelationshipType, JobEventType, JobPostingSourceType } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
 
-const Section = ({
-  title,
-  description,
-  actionLabel,
-  onAdd,
-  children,
-}: {
-  title: string
-  description: string
-  actionLabel: string
-  onAdd: () => void
-  children: ReactNode
-}) => (
-  <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-        <p className="mt-1 text-sm text-slate-500">{description}</p>
-      </div>
-      <button
-        className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
-        onClick={onAdd}
-        type="button"
-      >
-        {actionLabel}
-      </button>
-    </div>
-    <div className="mt-4 space-y-4">{children}</div>
-  </section>
-)
-
 const TextField = ({
   label,
   value,
   onChange,
+  onBlur,
   placeholder,
   type = 'text',
 }: {
   label: string
   value: string
   onChange: (value: string) => void
+  onBlur?: () => void
   placeholder?: string
   type?: 'text' | 'email' | 'tel' | 'url' | 'date' | 'datetime-local'
 }) => (
@@ -57,6 +28,7 @@ const TextField = ({
       placeholder={placeholder}
       type={type}
       value={value}
+      onBlur={onBlur}
       onChange={(event) => onChange(event.target.value)}
     />
   </label>
@@ -66,30 +38,58 @@ const TextAreaField = ({
   label,
   value,
   onChange,
+  onBlur,
 }: {
   label: string
   value: string
   onChange: (value: string) => void
+  onBlur?: () => void
 }) => (
   <label className="flex flex-col gap-2 text-sm text-slate-700">
     <span className="font-medium">{label}</span>
     <textarea
       className="min-h-24 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
       value={value}
+      onBlur={onBlur}
       onChange={(event) => onChange(event.target.value)}
     />
   </label>
 )
 
-const ItemActions = ({ onSave, onDelete }: { onSave: () => void; onDelete: () => void }) => (
-  <div className="flex flex-wrap gap-2">
-    <button className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={onSave} type="button">
-      Save
-    </button>
-    <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={onDelete} type="button">
-      Delete
-    </button>
-  </div>
+const SelectField = <T extends string>({
+  label,
+  value,
+  onChange,
+  onBlur,
+  options,
+}: {
+  label: string
+  value: T
+  onChange: (value: T) => void
+  onBlur?: () => void
+  options: Array<{ value: T; label: string }>
+}) => (
+  <label className="flex flex-col gap-2 text-sm text-slate-700">
+    <span className="font-medium">{label}</span>
+    <select
+      className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+      value={value}
+      onBlur={onBlur}
+      onChange={(event) => onChange(event.target.value as T)}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  </label>
+)
+
+const DeleteButton = ({ onDelete }: { onDelete: () => void }) => (
+  <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={onDelete} type="button">
+    Delete
+  </button>
 )
 
 const toDateTimeLocal = (value: string | null) => {
@@ -138,26 +138,32 @@ const JobPostingSourceCard = ({ jobPostingSourceId }: { jobPostingSourceId: stri
     return null
   }
 
+  const commitSourceChanges = (changes: Partial<typeof source>) => {
+    updateJobPostingSource({
+      jobPostingSourceId: source.id,
+      changes,
+    })
+  }
+
   return (
     <div className="rounded-xl border border-slate-200 p-4">
       <div className="grid gap-4 xl:grid-cols-3">
-        <label className="flex flex-col gap-2 text-sm text-slate-700">
-          <span className="font-medium">Source type</span>
-          <select
-            className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
-            value={draft.sourceType}
-            onChange={(event) => setDraft({ ...draft, sourceType: event.target.value as JobPostingSourceType })}
-          >
-            <option value="linkedin">LinkedIn</option>
-            <option value="workday">Workday</option>
-            <option value="greenhouse">Greenhouse</option>
-            <option value="indeed">Indeed</option>
-            <option value="company_site">Company site</option>
-            <option value="other">Other</option>
-          </select>
-        </label>
-        <TextField label="Label" value={draft.label} onChange={(value) => setDraft({ ...draft, label: value })} />
-        <TextField label="URL" type="url" value={draft.url} onChange={(value) => setDraft({ ...draft, url: value })} />
+        <SelectField
+          label="Source type"
+          options={[
+            { value: 'linkedin', label: 'LinkedIn' },
+            { value: 'workday', label: 'Workday' },
+            { value: 'greenhouse', label: 'Greenhouse' },
+            { value: 'indeed', label: 'Indeed' },
+            { value: 'company_site', label: 'Company site' },
+            { value: 'other', label: 'Other' },
+          ]}
+          value={draft.sourceType}
+          onBlur={() => draft.sourceType !== source.sourceType && commitSourceChanges({ sourceType: draft.sourceType })}
+          onChange={(value) => setDraft({ ...draft, sourceType: value as JobPostingSourceType })}
+        />
+        <TextField label="Label" value={draft.label} onBlur={() => draft.label !== source.label && commitSourceChanges({ label: draft.label })} onChange={(value) => setDraft({ ...draft, label: value })} />
+        <TextField label="URL" type="url" value={draft.url} onBlur={() => draft.url !== source.url && commitSourceChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
         <div className="xl:col-span-3 flex flex-wrap items-center justify-end gap-2">
           <ReorderButtons
             canMoveDown={jobPostingSourceIds.length > 1}
@@ -175,20 +181,7 @@ const JobPostingSourceCard = ({ jobPostingSourceId }: { jobPostingSourceId: stri
               })
             }
           />
-          <ItemActions
-            onDelete={() => deleteJobPostingSource(source.id)}
-            onSave={() =>
-              updateJobPostingSource({
-                jobPostingSourceId: source.id,
-                changes: {
-                  label: draft.label,
-                  sourceType: draft.sourceType,
-                  url: draft.url,
-                  sortOrder: draft.sortOrder,
-                },
-              })
-            }
-          />
+          <DeleteButton onDelete={() => deleteJobPostingSource(source.id)} />
         </div>
       </div>
     </div>
@@ -223,35 +216,41 @@ const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
     return null
   }
 
+  const commitContactChanges = (changes: Partial<typeof contact>) => {
+    updateJobContact({
+      jobContactId: contact.id,
+      changes,
+    })
+  }
+
   return (
     <div className="rounded-xl border border-slate-200 p-4">
       <div className="grid gap-4 xl:grid-cols-3">
-        <TextField label="Name" value={draft.name} onChange={(value) => setDraft({ ...draft, name: value })} />
-        <TextField label="Title" value={draft.title} onChange={(value) => setDraft({ ...draft, title: value })} />
-        <TextField label="Company" value={draft.company} onChange={(value) => setDraft({ ...draft, company: value })} />
-        <label className="flex flex-col gap-2 text-sm text-slate-700">
-          <span className="font-medium">Relationship type</span>
-          <select
-            className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
-            value={draft.relationshipType}
-            onChange={(event) => setDraft({ ...draft, relationshipType: event.target.value as ContactRelationshipType })}
-          >
-            <option value="recruiter">Recruiter</option>
-            <option value="hiring_manager">Hiring manager</option>
-            <option value="referral">Referral</option>
-            <option value="interviewer">Interviewer</option>
-            <option value="other">Other</option>
-          </select>
-        </label>
-        <TextField label="Email" type="email" value={draft.email} onChange={(value) => setDraft({ ...draft, email: value })} />
-        <TextField label="Phone" type="tel" value={draft.phone} onChange={(value) => setDraft({ ...draft, phone: value })} />
-        <TextField label="LinkedIn URL" type="url" value={draft.linkedinUrl} onChange={(value) => setDraft({ ...draft, linkedinUrl: value })} />
-        <TextField label="Address line 1" value={draft.addressLine1} onChange={(value) => setDraft({ ...draft, addressLine1: value })} />
-        <TextField label="Address line 2" value={draft.addressLine2} onChange={(value) => setDraft({ ...draft, addressLine2: value })} />
-        <TextField label="Address line 3" value={draft.addressLine3} onChange={(value) => setDraft({ ...draft, addressLine3: value })} />
-        <TextField label="Address line 4" value={draft.addressLine4} onChange={(value) => setDraft({ ...draft, addressLine4: value })} />
+        <TextField label="Name" value={draft.name} onBlur={() => draft.name !== contact.name && commitContactChanges({ name: draft.name })} onChange={(value) => setDraft({ ...draft, name: value })} />
+        <TextField label="Title" value={draft.title} onBlur={() => draft.title !== contact.title && commitContactChanges({ title: draft.title })} onChange={(value) => setDraft({ ...draft, title: value })} />
+        <TextField label="Company" value={draft.company} onBlur={() => draft.company !== contact.company && commitContactChanges({ company: draft.company })} onChange={(value) => setDraft({ ...draft, company: value })} />
+        <SelectField
+          label="Relationship type"
+          options={[
+            { value: 'recruiter', label: 'Recruiter' },
+            { value: 'hiring_manager', label: 'Hiring manager' },
+            { value: 'referral', label: 'Referral' },
+            { value: 'interviewer', label: 'Interviewer' },
+            { value: 'other', label: 'Other' },
+          ]}
+          value={draft.relationshipType}
+          onBlur={() => draft.relationshipType !== contact.relationshipType && commitContactChanges({ relationshipType: draft.relationshipType })}
+          onChange={(value) => setDraft({ ...draft, relationshipType: value as ContactRelationshipType })}
+        />
+        <TextField label="Email" type="email" value={draft.email} onBlur={() => draft.email !== contact.email && commitContactChanges({ email: draft.email })} onChange={(value) => setDraft({ ...draft, email: value })} />
+        <TextField label="Phone" type="tel" value={draft.phone} onBlur={() => draft.phone !== contact.phone && commitContactChanges({ phone: draft.phone })} onChange={(value) => setDraft({ ...draft, phone: value })} />
+        <TextField label="LinkedIn URL" type="url" value={draft.linkedinUrl} onBlur={() => draft.linkedinUrl !== contact.linkedinUrl && commitContactChanges({ linkedinUrl: draft.linkedinUrl })} onChange={(value) => setDraft({ ...draft, linkedinUrl: value })} />
+        <TextField label="Address line 1" value={draft.addressLine1} onBlur={() => draft.addressLine1 !== contact.addressLine1 && commitContactChanges({ addressLine1: draft.addressLine1 })} onChange={(value) => setDraft({ ...draft, addressLine1: value })} />
+        <TextField label="Address line 2" value={draft.addressLine2} onBlur={() => draft.addressLine2 !== contact.addressLine2 && commitContactChanges({ addressLine2: draft.addressLine2 })} onChange={(value) => setDraft({ ...draft, addressLine2: value })} />
+        <TextField label="Address line 3" value={draft.addressLine3} onBlur={() => draft.addressLine3 !== contact.addressLine3 && commitContactChanges({ addressLine3: draft.addressLine3 })} onChange={(value) => setDraft({ ...draft, addressLine3: value })} />
+        <TextField label="Address line 4" value={draft.addressLine4} onBlur={() => draft.addressLine4 !== contact.addressLine4 && commitContactChanges({ addressLine4: draft.addressLine4 })} onChange={(value) => setDraft({ ...draft, addressLine4: value })} />
         <div className="xl:col-span-3">
-          <TextAreaField label="Notes" value={draft.notes} onChange={(value) => setDraft({ ...draft, notes: value })} />
+          <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== contact.notes && commitContactChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
         </div>
         <div className="xl:col-span-3 flex flex-wrap items-center justify-end gap-2">
           <ReorderButtons
@@ -270,10 +269,7 @@ const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
               })
             }
           />
-          <ItemActions
-            onDelete={() => deleteJobContact(contact.id)}
-            onSave={() => updateJobContact({ jobContactId: contact.id, changes: draft })}
-          />
+          <DeleteButton onDelete={() => deleteJobContact(contact.id)} />
         </div>
       </div>
     </div>
@@ -294,56 +290,50 @@ const JobEventCard = ({ jobEventId }: { jobEventId: string }) => {
     return null
   }
 
+  const commitEventChanges = (changes: Partial<typeof jobEvent>) => {
+    updateJobEvent({
+      jobEventId: jobEvent.id,
+      changes,
+    })
+  }
+
   return (
     <div className="rounded-xl border border-slate-200 p-4">
       <div className="grid gap-4 xl:grid-cols-3">
-        <label className="flex flex-col gap-2 text-sm text-slate-700">
-          <span className="font-medium">Event type</span>
-          <select
-            className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
-            value={draft.eventType}
-            onChange={(event) => setDraft({ ...draft, eventType: event.target.value as JobEventType })}
-          >
-            <option value="job_saved">Job saved</option>
-            <option value="applied">Applied</option>
-            <option value="interview_scheduled">Interview scheduled</option>
-            <option value="interview_completed">Interview completed</option>
-            <option value="offer_received">Offer received</option>
-            <option value="rejected">Rejected</option>
-            <option value="withdrew">Withdrew</option>
-          </select>
-        </label>
+        <SelectField
+          label="Event type"
+          options={[
+            { value: 'job_saved', label: 'Job saved' },
+            { value: 'applied', label: 'Applied' },
+            { value: 'interview_scheduled', label: 'Interview scheduled' },
+            { value: 'interview_completed', label: 'Interview completed' },
+            { value: 'offer_received', label: 'Offer received' },
+            { value: 'rejected', label: 'Rejected' },
+            { value: 'withdrew', label: 'Withdrew' },
+          ]}
+          value={draft.eventType}
+          onBlur={() => draft.eventType !== jobEvent.eventType && commitEventChanges({ eventType: draft.eventType })}
+          onChange={(value) => setDraft({ ...draft, eventType: value as JobEventType })}
+        />
         <TextField
           label="Occurred at"
           type="datetime-local"
           value={toDateTimeLocal(draft.occurredAt)}
+          onBlur={() => draft.occurredAt !== jobEvent.occurredAt && commitEventChanges({ occurredAt: draft.occurredAt })}
           onChange={(value) => setDraft({ ...draft, occurredAt: fromDateTimeLocal(value) })}
         />
         <TextField
           label="Scheduled for"
           type="datetime-local"
           value={toDateTimeLocal(draft.scheduledFor)}
+          onBlur={() => draft.scheduledFor !== jobEvent.scheduledFor && commitEventChanges({ scheduledFor: draft.scheduledFor })}
           onChange={(value) => setDraft({ ...draft, scheduledFor: fromDateTimeLocal(value) })}
         />
         <div className="xl:col-span-3">
-          <TextAreaField label="Notes" value={draft.notes} onChange={(value) => setDraft({ ...draft, notes: value })} />
+          <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== jobEvent.notes && commitEventChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
         </div>
         <div className="xl:col-span-3 flex justify-end">
-          <ItemActions
-            onDelete={() => deleteJobEvent(jobEvent.id)}
-            onSave={() =>
-              updateJobEvent({
-                jobEventId: jobEvent.id,
-                changes: {
-                  eventType: draft.eventType,
-                  occurredAt: draft.occurredAt,
-                  scheduledFor: draft.scheduledFor,
-                  notes: draft.notes,
-                  metadata: draft.metadata,
-                },
-              })
-            }
-          />
+          <DeleteButton onDelete={() => deleteJobEvent(jobEvent.id)} />
         </div>
       </div>
     </div>
@@ -378,11 +368,18 @@ const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestio
     return null
   }
 
+  const commitQuestionChanges = (changes: Partial<typeof applicationQuestion>) => {
+    updateApplicationQuestion({
+      applicationQuestionId: applicationQuestion.id,
+      changes,
+    })
+  }
+
   return (
     <div className="rounded-xl border border-slate-200 p-4">
       <div className="grid gap-4 xl:grid-cols-1">
-        <TextAreaField label="Question" value={draft.question} onChange={(value) => setDraft({ ...draft, question: value })} />
-        <TextAreaField label="Answer" value={draft.answer} onChange={(value) => setDraft({ ...draft, answer: value })} />
+        <TextAreaField label="Question" value={draft.question} onBlur={() => draft.question !== applicationQuestion.question && commitQuestionChanges({ question: draft.question })} onChange={(value) => setDraft({ ...draft, question: value })} />
+        <TextAreaField label="Answer" value={draft.answer} onBlur={() => draft.answer !== applicationQuestion.answer && commitQuestionChanges({ answer: draft.answer })} onChange={(value) => setDraft({ ...draft, answer: value })} />
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ReorderButtons
             canMoveDown={applicationQuestionIds.length > 1}
@@ -400,19 +397,7 @@ const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestio
               })
             }
           />
-          <ItemActions
-            onDelete={() => deleteApplicationQuestion(applicationQuestion.id)}
-            onSave={() =>
-              updateApplicationQuestion({
-                applicationQuestionId: applicationQuestion.id,
-                changes: {
-                  question: draft.question,
-                  answer: draft.answer,
-                  sortOrder: draft.sortOrder,
-                },
-              })
-            }
-          />
+          <DeleteButton onDelete={() => deleteApplicationQuestion(applicationQuestion.id)} />
         </div>
       </div>
     </div>
@@ -420,7 +405,6 @@ const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestio
 }
 
 export const JobChildEditors = ({ jobId }: { jobId: string }) => {
-  const profilesById = useAppStore((state) => state.data.profiles)
   const jobPostingSourcesById = useAppStore((state) => state.data.jobPostingSources)
   const jobContactsById = useAppStore((state) => state.data.jobContacts)
   const applicationQuestionsById = useAppStore((state) => state.data.applicationQuestions)
@@ -429,16 +413,6 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
   const createJobContact = useAppStore((state) => state.actions.createJobContact)
   const createApplicationQuestion = useAppStore((state) => state.actions.createApplicationQuestion)
   const createJobEvent = useAppStore((state) => state.actions.createJobEvent)
-  const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
-  const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
-
-  const attachedProfiles = useMemo(
-    () =>
-      Object.values(profilesById)
-        .filter((profile) => profile.jobId === jobId)
-        .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)),
-    [jobId, profilesById],
-  )
 
   const jobPostingSourceIds = useMemo(
     () =>
@@ -476,82 +450,39 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
   )
 
   return (
-    <div className="mt-6">
-      <section className="max-w-3xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h3 className="text-base font-semibold text-slate-900">Attached profiles</h3>
-          </div>
+    <>
+      <CollapsiblePanel actionLabel="Add posting source" description="Track the different URLs and systems where this job appears." onAction={() => createJobPostingSource(jobId)} title="Posting sources">
+        <div className="space-y-4">
+          {jobPostingSourceIds.length === 0 ? <p className="text-sm text-slate-500">No posting sources yet.</p> : jobPostingSourceIds.map((id) => <JobPostingSourceCard key={id} jobPostingSourceId={id} />)}
         </div>
-        <div className="mt-4 space-y-3">
-          {attachedProfiles.length === 0 ? (
-            <p className="text-sm text-slate-500">No job profiles attached yet.</p>
-          ) : (
-            attachedProfiles.map((profile) => (
-              <div key={profile.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="font-medium text-slate-900">{profile.name}</p>
-                  <p className="mt-1 text-sm text-slate-500">Updated {new Date(profile.updatedAt).toLocaleString()}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Link
-                    className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                    to={`/profiles/${profile.id}`}
-                  >
-                    Open
-                  </Link>
-                  <button
-                    className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                    onClick={() => duplicateProfile({ sourceProfileId: profile.id })}
-                    type="button"
-                  >
-                    Duplicate
-                  </button>
-                  <button
-                    className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50"
-                    onClick={() => {
-                      const confirmed = window.confirm(`Delete profile "${profile.name}"? This cannot be undone.`)
-                      if (!confirmed) {
-                        return
-                      }
+      </CollapsiblePanel>
 
-                      deleteProfile(profile.id)
-                    }}
-                    type="button"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
+      <CollapsiblePanel actionLabel="Add contact" description="Maintain recruiters, hiring managers, referrals, and interviewers for the job." onAction={() => createJobContact(jobId)} title="Contacts">
+        <div className="space-y-4">
+          {jobContactIds.length === 0 ? <p className="text-sm text-slate-500">No contacts yet.</p> : jobContactIds.map((id) => <JobContactCard key={id} jobContactId={id} />)}
         </div>
-      </section>
+      </CollapsiblePanel>
 
-      <Section actionLabel="Add posting source" description="Track the different URLs and systems where this job appears." onAdd={() => createJobPostingSource(jobId)} title="Posting sources">
-        {jobPostingSourceIds.length === 0 ? <p className="text-sm text-slate-500">No posting sources yet.</p> : jobPostingSourceIds.map((id) => <JobPostingSourceCard key={id} jobPostingSourceId={id} />)}
-      </Section>
-
-      <Section actionLabel="Add contact" description="Maintain recruiters, hiring managers, referrals, and interviewers for the job." onAdd={() => createJobContact(jobId)} title="Contacts">
-        {jobContactIds.length === 0 ? <p className="text-sm text-slate-500">No contacts yet.</p> : jobContactIds.map((id) => <JobContactCard key={id} jobContactId={id} />)}
-      </Section>
-
-      <Section
+      <CollapsiblePanel
         actionLabel="Add application question"
         description="Track custom questions asked during the application flow and the answers you submitted."
-        onAdd={() => createApplicationQuestion(jobId)}
+        onAction={() => createApplicationQuestion(jobId)}
         title="Application questions"
       >
-        {applicationQuestionIds.length === 0 ? (
-          <p className="text-sm text-slate-500">No application questions yet.</p>
-        ) : (
-          applicationQuestionIds.map((id) => <ApplicationQuestionCard key={id} applicationQuestionId={id} />)
-        )}
-      </Section>
+        <div className="space-y-4">
+          {applicationQuestionIds.length === 0 ? (
+            <p className="text-sm text-slate-500">No application questions yet.</p>
+          ) : (
+            applicationQuestionIds.map((id) => <ApplicationQuestionCard key={id} applicationQuestionId={id} />)
+          )}
+        </div>
+      </CollapsiblePanel>
 
-      <Section actionLabel="Add event" description="Events drive the job's computed pipeline status." onAdd={() => createJobEvent({ jobId })} title="Events">
-        {jobEvents.length === 0 ? <p className="text-sm text-slate-500">No events yet.</p> : jobEvents.map((item) => <JobEventCard key={item.id} jobEventId={item.id} />)}
-      </Section>
-    </div>
+      <CollapsiblePanel actionLabel="Add event" description="Events drive the job's computed pipeline status." onAction={() => createJobEvent({ jobId })} title="Events">
+        <div className="space-y-4">
+          {jobEvents.length === 0 ? <p className="text-sm text-slate-500">No events yet.</p> : jobEvents.map((item) => <JobEventCard key={item.id} jobEventId={item.id} />)}
+        </div>
+      </CollapsiblePanel>
+    </>
   )
 }
