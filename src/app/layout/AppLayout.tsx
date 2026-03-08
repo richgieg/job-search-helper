@@ -33,7 +33,7 @@ export const AppLayout = () => {
       </header>
 
       <main className="mx-auto min-w-0 max-w-7xl p-6 lg:p-10">
-          <Outlet />
+        <Outlet />
       </main>
     </div>
   )

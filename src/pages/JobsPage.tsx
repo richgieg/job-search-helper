@@ -27,18 +27,18 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
   }
 
   return (
-    <tr className="border-t border-slate-200 first:border-t-0">
-      <td className="px-4 py-4 align-top">
+    <tr className="border-t border-slate-200 first:border-t-0 hover:bg-sky-50/40">
+      <td className="border-r border-slate-200 px-4 py-3 align-top last:border-r-0">
         <Link className="group inline-block" to={`/jobs/${job.id}`}>
           <p className="font-medium text-slate-900 group-hover:text-sky-700">{job.jobTitle}</p>
           <p className="mt-1 text-sm text-slate-500 group-hover:text-sky-600">{job.companyName}</p>
         </Link>
       </td>
-      <td className="px-4 py-4 align-top">
+      <td className="border-r border-slate-200 px-4 py-3 align-top last:border-r-0">
         <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium capitalize text-sky-700">{computedStatus}</span>
       </td>
-      <td className="px-4 py-4 align-top text-sm text-slate-600">{new Date(job.updatedAt).toLocaleString()}</td>
-      <td className="px-4 py-4 align-top">
+      <td className="border-r border-slate-200 px-4 py-3 align-top text-sm text-slate-600 last:border-r-0 whitespace-nowrap">{new Date(job.updatedAt).toLocaleString()}</td>
+      <td className="px-4 py-3 align-top">
         <div className="flex flex-wrap justify-end gap-2">
           <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/jobs/${job.id}`}>
             Open
@@ -54,17 +54,23 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
 
 const JobsTable = ({ jobIds }: { jobIds: string[] }) => {
   if (jobIds.length === 0) {
-    return <p className="text-sm text-slate-500">No jobs yet.</p>
+    return <p className="p-6 text-sm text-slate-500">No jobs yet.</p>
   }
 
   return (
-    <div className="mt-4 overflow-x-auto">
-      <table className="min-w-full border-collapse">
+    <div className="overflow-x-auto">
+      <table className="min-w-full border-collapse table-fixed text-sm">
+        <colgroup>
+          <col className="w-[52%]" />
+          <col className="w-[14%]" />
+          <col className="w-[18%]" />
+          <col className="w-[16%]" />
+        </colgroup>
         <thead>
-          <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            <th className="px-4 py-3">Job</th>
-            <th className="px-4 py-3">Status</th>
-            <th className="px-4 py-3">Updated</th>
+          <tr className="border-b border-slate-300 bg-slate-100 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Job</th>
+            <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Status</th>
+            <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Updated</th>
             <th className="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
@@ -147,7 +153,7 @@ export const JobsPage = () => {
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
         <JobsTable jobIds={sortedJobIds} />
       </section>
     </div>
