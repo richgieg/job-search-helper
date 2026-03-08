@@ -929,9 +929,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         onAction={() => createSkillCategory(profileId)}
         title="Skills"
       >
-        <div className="space-y-4">
-          {skillCategoryIds.map((id) => <SkillCategoryCard key={id} skillCategoryId={id} />)}
-        </div>
+        {hasSkillCategories ? <div className="space-y-4">{skillCategoryIds.map((id) => <SkillCategoryCard key={id} skillCategoryId={id} />)}</div> : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel
@@ -941,9 +939,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         onAction={() => createExperienceEntry(profileId)}
         title="Experience"
       >
-        <div className="space-y-4">
-          {experienceEntryIds.map((id) => <ExperienceCard entryId={id} key={id} />)}
-        </div>
+        {hasExperienceEntries ? <div className="space-y-4">{experienceEntryIds.map((id) => <ExperienceCard entryId={id} key={id} />)}</div> : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel
@@ -953,9 +949,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         onAction={() => createEducationEntry(profileId)}
         title="Education"
       >
-        <div className="space-y-4">
-          {educationEntryIds.map((id) => <EducationCard entryId={id} key={id} />)}
-        </div>
+        {hasEducationEntries ? <div className="space-y-4">{educationEntryIds.map((id) => <EducationCard entryId={id} key={id} />)}</div> : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel
@@ -965,9 +959,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         onAction={() => createCertification(profileId)}
         title="Certifications"
       >
-        <div className="space-y-4">
-          {certificationIds.map((id) => <CertificationCard certificationId={id} key={id} />)}
-        </div>
+        {hasCertifications ? <div className="space-y-4">{certificationIds.map((id) => <CertificationCard certificationId={id} key={id} />)}</div> : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel
@@ -977,9 +969,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         onAction={() => createReference(profileId)}
         title="References"
       >
-        <div className="space-y-4">
-          {referenceIds.map((id) => <ReferenceCard key={id} referenceId={id} />)}
-        </div>
+        {hasReferences ? <div className="space-y-4">{referenceIds.map((id) => <ReferenceCard key={id} referenceId={id} />)}</div> : null}
       </CollapsiblePanel>
     </>
   )

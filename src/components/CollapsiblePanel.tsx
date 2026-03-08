@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react'
+import { Children, type ReactNode, useState } from 'react'
 
 interface CollapsiblePanelProps {
   title: string
@@ -29,6 +29,7 @@ export const CollapsiblePanel = ({
 }: CollapsiblePanelProps) => {
   const [expanded, setExpanded] = useState(defaultExpanded)
   const isExpanded = collapsible ? expanded : true
+  const hasContent = Children.count(children) > 0
 
   const handleToggle = () => {
     if (!collapsible) {
@@ -87,7 +88,7 @@ export const CollapsiblePanel = ({
         </div>
       </div>
 
-      {isExpanded ? <div className={['mt-4', contentClassName].filter(Boolean).join(' ')}>{children}</div> : null}
+      {isExpanded && hasContent ? <div className={['mt-4', contentClassName].filter(Boolean).join(' ')}>{children}</div> : null}
     </section>
   )
 }
