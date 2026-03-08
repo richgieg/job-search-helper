@@ -16,7 +16,7 @@ import type {
   JobContact,
   JobEvent,
   JobEventType,
-  JobPostingSource,
+  JobLink,
   PersonalDetails,
   Profile,
   ProfileLinks,
@@ -91,13 +91,13 @@ interface AppStoreState {
     createJob: (input: Pick<Job, 'companyName' | 'jobTitle'> & Partial<Job>) => void
     updateJob: (input: { jobId: Id; changes: Partial<Omit<Job, 'id' | 'createdAt' | 'updatedAt'>> }) => void
     deleteJob: (jobId: Id) => void
-    createJobPostingSource: (jobId: Id) => void
-    updateJobPostingSource: (input: {
-      jobPostingSourceId: Id
-      changes: Partial<Omit<JobPostingSource, 'id' | 'jobId' | 'createdAt'>>
+    createJobLink: (jobId: Id) => void
+    updateJobLink: (input: {
+      jobLinkId: Id
+      changes: Partial<Omit<JobLink, 'id' | 'jobId' | 'createdAt'>>
     }) => void
-    deleteJobPostingSource: (jobPostingSourceId: Id) => void
-    reorderJobPostingSources: (input: { jobId: Id; orderedIds: Id[] }) => void
+    deleteJobLink: (jobLinkId: Id) => void
+    reorderJobLinks: (input: { jobId: Id; orderedIds: Id[] }) => void
     createJobContact: (jobId: Id) => void
     updateJobContact: (input: { jobContactId: Id; changes: Partial<Omit<JobContact, 'id' | 'jobId'>> }) => void
     deleteJobContact: (jobContactId: Id) => void
@@ -1474,16 +1474,16 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           })
 
         const nextJobs = { ...nextData.jobs }
-        const nextJobPostingSources = { ...nextData.jobPostingSources }
+        const nextJobLinks = { ...nextData.jobLinks }
         const nextJobContacts = { ...nextData.jobContacts }
         const nextApplicationQuestions = { ...nextData.applicationQuestions }
         const nextJobEvents = { ...nextData.jobEvents }
 
         delete nextJobs[jobId]
 
-        Object.values(nextData.jobPostingSources).forEach((item) => {
+        Object.values(nextData.jobLinks).forEach((item) => {
           if (item.jobId === jobId) {
-            delete nextJobPostingSources[item.id]
+            delete nextJobLinks[item.id]
           }
         })
 
@@ -1509,7 +1509,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           data: {
             ...nextData,
             jobs: nextJobs,
-            jobPostingSources: nextJobPostingSources,
+            jobLinks: nextJobLinks,
             jobContacts: nextJobContacts,
             applicationQuestions: nextApplicationQuestions,
             jobEvents: nextJobEvents,
@@ -1525,21 +1525,20 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         }
       })
     },
-    createJobPostingSource: (jobId) => {
+    createJobLink: (jobId) => {
       const job = get().data.jobs[jobId]
 
       if (!job) {
         return
       }
 
-      const jobPostingSource: JobPostingSource = {
+      const jobLink: JobLink = {
         id: createId(),
         jobId,
-        sourceType: 'other',
+        name: '',
         url: '',
-        label: '',
         sortOrder: getNextSortOrder(
-          Object.values(get().data.jobPostingSources)
+          Object.values(get().data.jobLinks)
             .filter((item) => item.jobId === jobId)
             .map((item) => item.sortOrder),
         ),
@@ -1550,9 +1549,9 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         data: stampUpdatedJob(
           {
             ...state.data,
-            jobPostingSources: {
-              ...state.data.jobPostingSources,
-              [jobPostingSource.id]: jobPostingSource,
+            jobLinks: {
+              ...state.data.jobLinks,
+              [jobLink.id]: jobLink,
             },
           },
           jobId,
@@ -1560,8 +1559,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         ),
       }))
     },
-    updateJobPostingSource: ({ jobPostingSourceId, changes }) => {
-      const existing = get().data.jobPostingSources[jobPostingSourceId]
+    updateJobLink: ({ jobLinkId, changes }) => {
+      const existing = get().data.jobLinks[jobLinkId]
 
       if (!existing) {
         return
@@ -1571,9 +1570,9 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         data: stampUpdatedJob(
           {
             ...state.data,
-            jobPostingSources: {
-              ...state.data.jobPostingSources,
-              [jobPostingSourceId]: {
+            jobLinks: {
+              ...state.data.jobLinks,
+              [jobLinkId]: {
                 ...existing,
                 ...changes,
               },
@@ -1584,22 +1583,22 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         ),
       }))
     },
-    deleteJobPostingSource: (jobPostingSourceId) => {
-      const existing = get().data.jobPostingSources[jobPostingSourceId]
+    deleteJobLink: (jobLinkId) => {
+      const existing = get().data.jobLinks[jobLinkId]
 
       if (!existing) {
         return
       }
 
       set((state) => {
-        const nextJobPostingSources = { ...state.data.jobPostingSources }
-        delete nextJobPostingSources[jobPostingSourceId]
+        const nextJobLinks = { ...state.data.jobLinks }
+        delete nextJobLinks[jobLinkId]
 
         return {
           data: stampUpdatedJob(
             {
               ...state.data,
-              jobPostingSources: nextJobPostingSources,
+              jobLinks: nextJobLinks,
             },
             existing.jobId,
             now(),
@@ -1607,8 +1606,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         }
       })
     },
-    reorderJobPostingSources: ({ jobId, orderedIds }) => {
-      const existingIds = Object.values(get().data.jobPostingSources)
+    reorderJobLinks: ({ jobId, orderedIds }) => {
+      const existingIds = Object.values(get().data.jobLinks)
         .filter((item) => item.jobId === jobId)
         .map((item) => item.id)
 
@@ -1620,7 +1619,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         data: stampUpdatedJob(
           {
             ...state.data,
-            jobPostingSources: reorderSortableEntities(state.data.jobPostingSources, orderedIds),
+            jobLinks: reorderSortableEntities(state.data.jobLinks, orderedIds),
           },
           jobId,
           now(),
@@ -1932,6 +1931,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
               },
             ]),
           ),
+          jobLinks: file.data.jobLinks ?? {},
           applicationQuestions: file.data.applicationQuestions ?? {},
         },
         ui: createDefaultUiState(),

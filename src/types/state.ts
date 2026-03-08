@@ -11,14 +11,6 @@ export type EmploymentType =
   | 'temporary'
   | 'other'
 
-export type JobPostingSourceType =
-  | 'linkedin'
-  | 'workday'
-  | 'greenhouse'
-  | 'indeed'
-  | 'company_site'
-  | 'other'
-
 export type ContactRelationshipType =
   | 'recruiter'
   | 'hiring_manager'
@@ -201,12 +193,11 @@ export interface Job {
   updatedAt: IsoTimestamp
 }
 
-export interface JobPostingSource {
+export interface JobLink {
   id: Id
   jobId: Id
-  sourceType: JobPostingSourceType
+  name: string
   url: string
-  label: string
   sortOrder: number
   createdAt: IsoTimestamp
 }
@@ -260,7 +251,7 @@ export interface AppDataState {
   certifications: Record<Id, Certification>
   references: Record<Id, Reference>
   jobs: Record<Id, Job>
-  jobPostingSources: Record<Id, JobPostingSource>
+  jobLinks: Record<Id, JobLink>
   jobContacts: Record<Id, JobContact>
   applicationQuestions: Record<Id, ApplicationQuestion>
   jobEvents: Record<Id, JobEvent>

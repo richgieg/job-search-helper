@@ -344,16 +344,15 @@ The copied related records include:
 - created_at
 - updated_at
 
-### JobPostingSource
+### JobLink
 - id
 - job_id
-- source_type
+- name
 - url
-- label
 - sort_order
 - created_at
 
-Examples for `source_type`: LinkedIn, Workday, Greenhouse, Indeed, CompanySite, Other.
+`name` is a short user-defined label such as LinkedIn, Workday, Company Site, or Official.
 
 ### JobContact
 - id

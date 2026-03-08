@@ -55,7 +55,7 @@ interface AppDataState {
   certifications: Record<Id, Certification>;
   references: Record<Id, Reference>;
   jobs: Record<Id, Job>;
-  jobPostingSources: Record<Id, JobPostingSource>;
+  jobLinks: Record<Id, JobLink>;
   jobContacts: Record<Id, JobContact>;
   applicationQuestions: Record<Id, ApplicationQuestion>;
   jobEvents: Record<Id, JobEvent>;
@@ -121,14 +121,6 @@ type EmploymentType =
   | 'contract'
   | 'internship'
   | 'temporary'
-  | 'other';
-
-type JobPostingSourceType =
-  | 'linkedin'
-  | 'workday'
-  | 'greenhouse'
-  | 'indeed'
-  | 'company_site'
   | 'other';
 
 type ContactRelationshipType =
@@ -354,15 +346,14 @@ interface Job {
 }
 ```
 
-### JobPostingSource
+### JobLink
 
 ```ts
-interface JobPostingSource {
+interface JobLink {
   id: Id;
   jobId: Id;
-  sourceType: JobPostingSourceType;
+  name: string;
   url: string;
-  label: string;
   sortOrder: number;
   createdAt: IsoTimestamp;
 }
@@ -441,7 +432,7 @@ The following relationships should be enforced during normal app operations and 
 
 ### Job relationships
 
-- `JobPostingSource.jobId` points to an existing `Job`.
+- `JobLink.jobId` points to an existing `Job`.
 - `JobContact.jobId` points to an existing `Job`.
 - `ApplicationQuestion.jobId` points to an existing `Job`.
 - `JobEvent.jobId` points to an existing `Job`.
@@ -513,7 +504,7 @@ Cascade delete these records:
 
 - job profiles where `Profile.jobId === job.id`
 - all profile-owned child records of those job profiles
-- `JobPostingSource`
+- `JobLink`
 - `JobContact`
 - `ApplicationQuestion`
 - `JobEvent`
@@ -522,7 +513,7 @@ Rules:
 
 1. Find all job profiles attached to the job.
 2. Delete each job profile using the normal profile deletion rules.
-3. Delete all job-owned posting sources, contacts, application questions, and events.
+3. Delete all job-owned links, contacts, application questions, and events.
 4. Delete the job last.
 
 ### Child record deletion
@@ -534,7 +525,7 @@ The following records can be hard deleted directly:
 - `EducationEntry`
 - `Certification`
 - `Reference`
-- `JobPostingSource`
+- `JobLink`
 - `JobContact`
 - `ApplicationQuestion`
 - `JobEvent`
@@ -563,7 +554,7 @@ Confirmation dialogs should summarize cascade impact.
 
 Examples:
 
-- deleting a job removes its job profiles, posting sources, contacts, and events
+- deleting a job removes its job profiles, links, contacts, and events
 - deleting a profile removes its skill categories, skills, experience entries, education entries, certifications, and references
 
 Recommended improvement for the MVP:
@@ -594,7 +585,7 @@ These values should be computed, not stored.
 
 ### Job selectors
 
-- `getJobPostingSources(jobId)`
+- `getJobLinks(jobId)`
 - `getOrderedJobContacts(jobId)`
 - `getJobEvents(jobId)`
 - `getCurrentJobStatus(jobId)`

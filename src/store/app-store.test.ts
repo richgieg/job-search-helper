@@ -180,6 +180,51 @@ describe('app store reorder actions', () => {
     expect(reorderedContacts.map((item) => item.name)).toEqual(['Contact Two', 'Contact One'])
   })
 
+  it('preserves job link order through export and import', () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
+    const jobId = expectDefined(Object.keys(useAppStore.getState().data.jobs)[0], 'Expected a job id')
+
+    actions.createJobLink(jobId)
+    actions.createJobLink(jobId)
+
+    const jobLinkIds = getOrderedIds(
+      Object.fromEntries(
+        Object.values(useAppStore.getState().data.jobLinks)
+          .filter((item) => item.jobId === jobId)
+          .map((item) => [item.id, item]),
+      ),
+    )
+    const firstJobLinkId = expectDefined(jobLinkIds[0], 'Expected first job link id')
+    const secondJobLinkId = expectDefined(jobLinkIds[1], 'Expected second job link id')
+
+    actions.updateJobLink({
+      jobLinkId: firstJobLinkId,
+      changes: { name: 'Company site', url: 'https://example.com/job' },
+    })
+    actions.updateJobLink({
+      jobLinkId: secondJobLinkId,
+      changes: { name: 'LinkedIn', url: 'https://linkedin.com/jobs/view/example' },
+    })
+
+    actions.reorderJobLinks({
+      jobId,
+      orderedIds: [secondJobLinkId, firstJobLinkId],
+    })
+
+    const exported = actions.exportAppData()
+
+    resetStore()
+    useAppStore.getState().actions.importAppData(exported)
+
+    const importedJobLinks = Object.values(useAppStore.getState().data.jobLinks)
+      .filter((item) => item.jobId === jobId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+
+    expect(importedJobLinks.map((item) => item.name)).toEqual(['LinkedIn', 'Company site'])
+  })
+
   it('preserves application question order through export and import', () => {
     const { actions } = useAppStore.getState()
 

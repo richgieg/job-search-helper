@@ -381,16 +381,16 @@ Behavior:
 
 1. Find all job profiles where `profile.jobId === jobId`.
 2. Delete each job profile using `deleteProfile()`.
-3. Delete all `JobPostingSource`, `JobContact`, `ApplicationQuestion`, and `JobEvent` records for the job.
+3. Delete all `JobLink`, `JobContact`, `ApplicationQuestion`, and `JobEvent` records for the job.
 4. Delete the job.
 5. Clear related UI selection if needed.
 
-## Job posting source actions
+## Job link actions
 
-- `createJobPostingSource(input)`
-- `updateJobPostingSource(input)`
-- `deleteJobPostingSource(input)`
-- `reorderJobPostingSources(input)`
+- `createJobLink(input)`
+- `updateJobLink(input)`
+- `deleteJobLink(input)`
+- `reorderJobLinks(input)`
 
 ## Job contact actions
 
@@ -520,7 +520,7 @@ Instead:
 6. `updateJob()`
 7. child CRUD for profile records
 8. `duplicateProfile()`
-9. job contact, posting source, and application question actions
+9. job contact, job link, and application question actions
 10. job event actions
 11. `deleteProfile()`
 12. `deleteJob()`

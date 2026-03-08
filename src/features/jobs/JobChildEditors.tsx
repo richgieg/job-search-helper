@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
-import type { ContactRelationshipType, JobEventType, JobPostingSourceType } from '../../types/state'
+import type { ContactRelationshipType, JobEventType } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
 
 const TextField = ({
@@ -110,78 +110,64 @@ const toDateTimeLocal = (value: string | null) => {
 
 const fromDateTimeLocal = (value: string) => (value ? new Date(value).toISOString() : null)
 
-const JobPostingSourceCard = ({ jobPostingSourceId }: { jobPostingSourceId: string }) => {
-  const source = useAppStore((state) => state.data.jobPostingSources[jobPostingSourceId])
-  const jobPostingSourcesById = useAppStore((state) => state.data.jobPostingSources)
-  const updateJobPostingSource = useAppStore((state) => state.actions.updateJobPostingSource)
-  const deleteJobPostingSource = useAppStore((state) => state.actions.deleteJobPostingSource)
-  const reorderJobPostingSources = useAppStore((state) => state.actions.reorderJobPostingSources)
-  const [draft, setDraft] = useState(source)
+const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
+  const link = useAppStore((state) => state.data.jobLinks[jobLinkId])
+  const jobLinksById = useAppStore((state) => state.data.jobLinks)
+  const updateJobLink = useAppStore((state) => state.actions.updateJobLink)
+  const deleteJobLink = useAppStore((state) => state.actions.deleteJobLink)
+  const reorderJobLinks = useAppStore((state) => state.actions.reorderJobLinks)
+  const [draft, setDraft] = useState(link)
 
-  const jobPostingSourceIds = useMemo(
+  const jobLinkIds = useMemo(
     () =>
-      source
-        ? Object.values(jobPostingSourcesById)
-            .filter((item) => item.jobId === source.jobId)
+      link
+        ? Object.values(jobLinksById)
+            .filter((item) => item.jobId === link.jobId)
             .sort((left, right) => left.sortOrder - right.sortOrder)
             .map((item) => item.id)
         : [],
-    [jobPostingSourcesById, source],
+    [jobLinksById, link],
   )
-  const jobPostingSourceIndex = jobPostingSourceIds.indexOf(jobPostingSourceId)
+  const jobLinkIndex = jobLinkIds.indexOf(jobLinkId)
 
   useEffect(() => {
-    setDraft(source)
-  }, [source])
+    setDraft(link)
+  }, [link])
 
-  if (!source || !draft) {
+  if (!link || !draft) {
     return null
   }
 
-  const commitSourceChanges = (changes: Partial<typeof source>) => {
-    updateJobPostingSource({
-      jobPostingSourceId: source.id,
+  const commitLinkChanges = (changes: Partial<typeof link>) => {
+    updateJobLink({
+      jobLinkId: link.id,
       changes,
     })
   }
 
   return (
     <div className="rounded-xl border border-slate-200 p-4">
-      <div className="grid gap-4 xl:grid-cols-3">
-        <SelectField
-          label="Source type"
-          options={[
-            { value: 'linkedin', label: 'LinkedIn' },
-            { value: 'workday', label: 'Workday' },
-            { value: 'greenhouse', label: 'Greenhouse' },
-            { value: 'indeed', label: 'Indeed' },
-            { value: 'company_site', label: 'Company site' },
-            { value: 'other', label: 'Other' },
-          ]}
-          value={draft.sourceType}
-          onBlur={() => draft.sourceType !== source.sourceType && commitSourceChanges({ sourceType: draft.sourceType })}
-          onChange={(value) => setDraft({ ...draft, sourceType: value as JobPostingSourceType })}
-        />
-        <TextField label="Label" value={draft.label} onBlur={() => draft.label !== source.label && commitSourceChanges({ label: draft.label })} onChange={(value) => setDraft({ ...draft, label: value })} />
-        <TextField label="URL" type="url" value={draft.url} onBlur={() => draft.url !== source.url && commitSourceChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
-        <div className="xl:col-span-3 flex flex-wrap items-center justify-end gap-2">
+      <div className="grid gap-4 xl:grid-cols-2">
+        <TextField label="Name" value={draft.name} onBlur={() => draft.name !== link.name && commitLinkChanges({ name: draft.name })} onChange={(value) => setDraft({ ...draft, name: value })} />
+        <TextField label="URL" type="url" value={draft.url} onBlur={() => draft.url !== link.url && commitLinkChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
+        <div className="xl:col-span-2 flex flex-wrap items-center justify-end gap-2">
           <ReorderButtons
-            canMoveDown={jobPostingSourceIds.length > 1}
-            canMoveUp={jobPostingSourceIds.length > 1}
+            canMoveDown={jobLinkIds.length > 1}
+            canMoveUp={jobLinkIds.length > 1}
             onMoveDown={() =>
-              reorderJobPostingSources({
-                jobId: source.jobId,
-                orderedIds: moveOrderedItem(jobPostingSourceIds, jobPostingSourceIndex, 1),
+              reorderJobLinks({
+                jobId: link.jobId,
+                orderedIds: moveOrderedItem(jobLinkIds, jobLinkIndex, 1),
               })
             }
             onMoveUp={() =>
-              reorderJobPostingSources({
-                jobId: source.jobId,
-                orderedIds: moveOrderedItem(jobPostingSourceIds, jobPostingSourceIndex, -1),
+              reorderJobLinks({
+                jobId: link.jobId,
+                orderedIds: moveOrderedItem(jobLinkIds, jobLinkIndex, -1),
               })
             }
           />
-          <DeleteButton onDelete={() => deleteJobPostingSource(source.id)} />
+          <DeleteButton onDelete={() => deleteJobLink(link.id)} />
         </div>
       </div>
     </div>
@@ -405,22 +391,22 @@ const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestio
 }
 
 export const JobChildEditors = ({ jobId }: { jobId: string }) => {
-  const jobPostingSourcesById = useAppStore((state) => state.data.jobPostingSources)
+  const jobLinksById = useAppStore((state) => state.data.jobLinks)
   const jobContactsById = useAppStore((state) => state.data.jobContacts)
   const applicationQuestionsById = useAppStore((state) => state.data.applicationQuestions)
   const jobEventsById = useAppStore((state) => state.data.jobEvents)
-  const createJobPostingSource = useAppStore((state) => state.actions.createJobPostingSource)
+  const createJobLink = useAppStore((state) => state.actions.createJobLink)
   const createJobContact = useAppStore((state) => state.actions.createJobContact)
   const createApplicationQuestion = useAppStore((state) => state.actions.createApplicationQuestion)
   const createJobEvent = useAppStore((state) => state.actions.createJobEvent)
 
-  const jobPostingSourceIds = useMemo(
+  const jobLinkIds = useMemo(
     () =>
-      Object.values(jobPostingSourcesById)
+      Object.values(jobLinksById)
         .filter((item) => item.jobId === jobId)
         .sort((left, right) => left.sortOrder - right.sortOrder)
         .map((item) => item.id),
-    [jobId, jobPostingSourcesById],
+    [jobId, jobLinksById],
   )
 
   const jobContactIds = useMemo(
@@ -451,9 +437,9 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
 
   return (
     <>
-      <CollapsiblePanel actionLabel="Add posting source" description="Track the different URLs and systems where this job appears." onAction={() => createJobPostingSource(jobId)} title="Posting sources">
+      <CollapsiblePanel actionLabel="Add link" description="Track the relevant job URLs with short names." onAction={() => createJobLink(jobId)} title="Links">
         <div className="space-y-4">
-          {jobPostingSourceIds.length === 0 ? <p className="text-sm text-slate-500">No posting sources yet.</p> : jobPostingSourceIds.map((id) => <JobPostingSourceCard key={id} jobPostingSourceId={id} />)}
+          {jobLinkIds.length === 0 ? <p className="text-sm text-slate-500">No links yet.</p> : jobLinkIds.map((id) => <JobLinkCard key={id} jobLinkId={id} />)}
         </div>
       </CollapsiblePanel>
 

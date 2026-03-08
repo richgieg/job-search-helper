@@ -41,7 +41,7 @@ export const createEmptyDataState = (): AppDataState => ({
   certifications: {},
   references: {},
   jobs: {},
-  jobPostingSources: {},
+  jobLinks: {},
   jobContacts: {},
   applicationQuestions: {},
   jobEvents: {},
