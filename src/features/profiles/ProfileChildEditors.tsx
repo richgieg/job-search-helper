@@ -464,7 +464,7 @@ const SkillCategoryCard = ({
 
   return (
     <CollapsiblePanel
-      headerActions={
+      headerActions={(expanded) => (
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ToggleField
             checked={enabled}
@@ -490,13 +490,19 @@ const SkillCategoryCard = ({
               })
             }
           />
-          <ItemActions
-            onDelete={() => deleteSkillCategory(category.id)}
-            onSave={() => updateSkillCategory({ skillCategoryId: category.id, changes: { name } })}
-            saveDisabled={!ownIsDirty}
-          />
+          {expanded ? (
+            <ItemActions
+              onDelete={() => deleteSkillCategory(category.id)}
+              onSave={() => updateSkillCategory({ skillCategoryId: category.id, changes: { name } })}
+              saveDisabled={!ownIsDirty}
+            />
+          ) : (
+            <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={() => deleteSkillCategory(category.id)} type="button">
+              Delete
+            </button>
+          )}
         </div>
-      }
+      )}
       isDirty={isDirty}
       onDiscardChanges={() => {
         setName(category.name)
@@ -603,7 +609,7 @@ const ExperienceCard = ({
 
   return (
     <CollapsiblePanel
-      headerActions={
+      headerActions={(expanded) => (
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ToggleField
             checked={draft.enabled}
@@ -629,13 +635,19 @@ const ExperienceCard = ({
               })
             }
           />
-          <ItemActions
-            onDelete={() => deleteExperienceEntry(entry.id)}
-            onSave={() => updateExperienceEntry({ experienceEntryId: entry.id, changes: getExperienceEntryEditableFields(draft) })}
-            saveDisabled={!ownIsDirty}
-          />
+          {expanded ? (
+            <ItemActions
+              onDelete={() => deleteExperienceEntry(entry.id)}
+              onSave={() => updateExperienceEntry({ experienceEntryId: entry.id, changes: getExperienceEntryEditableFields(draft) })}
+              saveDisabled={!ownIsDirty}
+            />
+          ) : (
+            <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={() => deleteExperienceEntry(entry.id)} type="button">
+              Delete
+            </button>
+          )}
         </div>
-      }
+      )}
       isDirty={isDirty}
       onDiscardChanges={() => {
         setDraft(entry)
@@ -770,7 +782,7 @@ const EducationCard = ({
 
   return (
     <CollapsiblePanel
-      headerActions={
+      headerActions={(expanded) => (
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ToggleField
             checked={draft.enabled}
@@ -796,13 +808,19 @@ const EducationCard = ({
               })
             }
           />
-          <ItemActions
-            onDelete={() => deleteEducationEntry(entry.id)}
-            onSave={() => updateEducationEntry({ educationEntryId: entry.id, changes: getEducationEntryEditableFields(draft) })}
-            saveDisabled={!isDirty}
-          />
+          {expanded ? (
+            <ItemActions
+              onDelete={() => deleteEducationEntry(entry.id)}
+              onSave={() => updateEducationEntry({ educationEntryId: entry.id, changes: getEducationEntryEditableFields(draft) })}
+              saveDisabled={!isDirty}
+            />
+          ) : (
+            <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={() => deleteEducationEntry(entry.id)} type="button">
+              Delete
+            </button>
+          )}
         </div>
-      }
+      )}
       isDirty={isDirty}
       onDiscardChanges={() => setDraft(entry)}
       summary={summary}
@@ -873,7 +891,7 @@ const CertificationCard = ({
 
   return (
     <CollapsiblePanel
-      headerActions={
+      headerActions={(expanded) => (
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ToggleField
             checked={draft.enabled}
@@ -899,13 +917,19 @@ const CertificationCard = ({
               })
             }
           />
-          <ItemActions
-            onDelete={() => deleteCertification(certification.id)}
-            onSave={() => updateCertification({ certificationId: certification.id, changes: getCertificationEditableFields(draft) })}
-            saveDisabled={!isDirty}
-          />
+          {expanded ? (
+            <ItemActions
+              onDelete={() => deleteCertification(certification.id)}
+              onSave={() => updateCertification({ certificationId: certification.id, changes: getCertificationEditableFields(draft) })}
+              saveDisabled={!isDirty}
+            />
+          ) : (
+            <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={() => deleteCertification(certification.id)} type="button">
+              Delete
+            </button>
+          )}
         </div>
-      }
+      )}
       isDirty={isDirty}
       onDiscardChanges={() => setDraft(certification)}
       summary={summary}
@@ -976,7 +1000,7 @@ const ReferenceCard = ({
 
   return (
     <CollapsiblePanel
-      headerActions={
+      headerActions={(expanded) => (
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ToggleField
             checked={draft.enabled}
@@ -1002,13 +1026,19 @@ const ReferenceCard = ({
               })
             }
           />
-          <ItemActions
-            onDelete={() => deleteReference(reference.id)}
-            onSave={() => updateReference({ referenceId: reference.id, changes: getReferenceEditableFields(draft) })}
-            saveDisabled={!isDirty}
-          />
+          {expanded ? (
+            <ItemActions
+              onDelete={() => deleteReference(reference.id)}
+              onSave={() => updateReference({ referenceId: reference.id, changes: getReferenceEditableFields(draft) })}
+              saveDisabled={!isDirty}
+            />
+          ) : (
+            <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={() => deleteReference(reference.id)} type="button">
+              Delete
+            </button>
+          )}
         </div>
-      }
+      )}
       isDirty={isDirty}
       onDiscardChanges={() => setDraft(reference)}
       summary={summary}

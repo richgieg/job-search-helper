@@ -11,7 +11,7 @@ interface CollapsiblePanelProps {
   expandOnAction?: boolean
   isDirty?: boolean
   onDiscardChanges?: () => void
-  headerActions?: ReactNode
+  headerActions?: ReactNode | ((expanded: boolean) => ReactNode)
   contentClassName?: string
 }
 
@@ -66,6 +66,8 @@ export const CollapsiblePanel = ({
     setExpanded(false)
   }
 
+  const resolvedHeaderActions = typeof headerActions === 'function' ? headerActions(expanded) : headerActions
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -83,7 +85,7 @@ export const CollapsiblePanel = ({
         </button>
 
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          {headerActions}
+          {resolvedHeaderActions}
           {actionLabel && onAction ? (
             <button className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700" onClick={handleAction} type="button">
               {actionLabel}

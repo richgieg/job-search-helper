@@ -208,10 +208,12 @@ export const ProfilePage = () => {
         <div className="mt-6 space-y-4">
           <CollapsiblePanel
             description="Edit the core profile content used across previews and applications."
-            headerActions={
-              <button className={sectionSaveButtonClassName} disabled={!profileDetailsDirty} onClick={handleSaveProfileDetails} type="button">
-                Save
-              </button>
+            headerActions={(expanded) =>
+              expanded ? (
+                <button className={sectionSaveButtonClassName} disabled={!profileDetailsDirty} onClick={handleSaveProfileDetails} type="button">
+                  Save
+                </button>
+              ) : null
             }
             isDirty={profileDetailsDirty}
             onDiscardChanges={() => {
@@ -252,10 +254,12 @@ export const ProfilePage = () => {
 
           <CollapsiblePanel
             description="Manage contact and address details used in document headers and applications."
-            headerActions={
-              <button className={sectionSaveButtonClassName} disabled={!personalDetailsDirty} onClick={handleSavePersonalDetails} type="button">
-                Save
-              </button>
+            headerActions={(expanded) =>
+              expanded ? (
+                <button className={sectionSaveButtonClassName} disabled={!personalDetailsDirty} onClick={handleSavePersonalDetails} type="button">
+                  Save
+                </button>
+              ) : null
             }
             isDirty={personalDetailsDirty}
             onDiscardChanges={() => setPersonalDetails(createPersonalDetailsDraft(profile.personalDetails))}
@@ -276,10 +280,12 @@ export const ProfilePage = () => {
 
           <CollapsiblePanel
             description="Store the public URLs that should travel with this profile."
-            headerActions={
-              <button className={sectionSaveButtonClassName} disabled={!linksDirty} onClick={handleSaveLinks} type="button">
-                Save
-              </button>
+            headerActions={(expanded) =>
+              expanded ? (
+                <button className={sectionSaveButtonClassName} disabled={!linksDirty} onClick={handleSaveLinks} type="button">
+                  Save
+                </button>
+              ) : null
             }
             isDirty={linksDirty}
             onDiscardChanges={() => setLinks(createLinksDraft(profile.links))}
