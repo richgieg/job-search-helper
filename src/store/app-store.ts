@@ -88,7 +88,7 @@ interface AppStoreState {
     }) => void
     deleteReference: (referenceId: Id) => void
     reorderReferences: (input: { profileId: Id; orderedIds: Id[] }) => void
-    createJob: (input: Pick<Job, 'companyName' | 'jobTitle'> & Partial<Job>) => void
+    createJob: (input: Pick<Job, 'companyName' | 'jobTitle'> & Partial<Job> & { initialLinkUrl?: string }) => Id
     updateJob: (input: { jobId: Id; changes: Partial<Omit<Job, 'id' | 'createdAt' | 'updatedAt'>> }) => void
     deleteJob: (jobId: Id) => void
     createJobLink: (jobId: Id) => void
@@ -1411,6 +1411,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
     },
     createJob: (input) => {
       const timestamp = now()
+      const initialLinkUrl = input.initialLinkUrl?.trim() ?? ''
       const job: Job = {
         id: createId(),
         companyName: input.companyName,
@@ -1428,6 +1429,16 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         updatedAt: timestamp,
       }
 
+      const initialJobLink: JobLink | null = initialLinkUrl
+        ? {
+            id: createId(),
+            jobId: job.id,
+            url: initialLinkUrl,
+            sortOrder: 1,
+            createdAt: timestamp,
+          }
+        : null
+
       set((state) => ({
         data: {
           ...state.data,
@@ -1435,12 +1446,20 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
             ...state.data.jobs,
             [job.id]: job,
           },
+          jobLinks: initialJobLink
+            ? {
+                ...state.data.jobLinks,
+                [initialJobLink.id]: initialJobLink,
+              }
+            : state.data.jobLinks,
         },
         ui: {
           ...state.ui,
           selectedJobId: job.id,
         },
       }))
+
+      return job.id
     },
     updateJob: ({ jobId, changes }) => {
       const existingJob = get().data.jobs[jobId]

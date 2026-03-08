@@ -83,6 +83,7 @@ export const JobsPage = () => {
   const createJob = useAppStore((state) => state.actions.createJob)
   const [companyName, setCompanyName] = useState('')
   const [jobTitle, setJobTitle] = useState('')
+  const [initialLinkUrl, setInitialLinkUrl] = useState('')
 
   const jobs = useMemo(() => Object.values(jobsById), [jobsById])
   const sortedJobIds = useMemo(() => [...jobs].sort((left, right) => right.createdAt.localeCompare(left.createdAt)).map((job) => job.id), [jobs])
@@ -92,14 +93,20 @@ export const JobsPage = () => {
 
     const trimmedCompany = companyName.trim()
     const trimmedTitle = jobTitle.trim()
+    const trimmedInitialLinkUrl = initialLinkUrl.trim()
 
     if (!trimmedCompany || !trimmedTitle) {
       return
     }
 
-    createJob({ companyName: trimmedCompany, jobTitle: trimmedTitle })
+    createJob({
+      companyName: trimmedCompany,
+      jobTitle: trimmedTitle,
+      ...(trimmedInitialLinkUrl ? { initialLinkUrl: trimmedInitialLinkUrl } : {}),
+    })
     setCompanyName('')
     setJobTitle('')
+    setInitialLinkUrl('')
   }
 
   return (
@@ -123,7 +130,15 @@ export const JobsPage = () => {
             value={companyName}
             onChange={(event) => setCompanyName(event.target.value)}
           />
-          <button className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700" type="submit">
+          <input
+            className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500 md:col-span-2 md:row-start-2"
+            placeholder="https://example.com/job (optional)"
+            spellCheck={false}
+            type="url"
+            value={initialLinkUrl}
+            onChange={(event) => setInitialLinkUrl(event.target.value)}
+          />
+          <button className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700 md:col-start-3 md:row-start-1" type="submit">
             Add job
           </button>
         </form>

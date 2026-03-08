@@ -180,6 +180,25 @@ describe('app store reorder actions', () => {
     expect(reorderedContacts.map((item) => item.name)).toEqual(['Contact Two', 'Contact One'])
   })
 
+  it('creates a job with an optional initial link', () => {
+    const { actions } = useAppStore.getState()
+
+    const jobId = actions.createJob({
+      companyName: 'Example Co',
+      jobTitle: 'Engineer',
+      initialLinkUrl: 'https://example.com/job',
+    })
+
+    expect(useAppStore.getState().data.jobs[jobId]?.jobTitle).toBe('Engineer')
+
+    const jobLinks = Object.values(useAppStore.getState().data.jobLinks)
+      .filter((item) => item.jobId === jobId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+
+    expect(jobLinks).toHaveLength(1)
+    expect(jobLinks[0]?.url).toBe('https://example.com/job')
+  })
+
   it('preserves job link order through export and import', () => {
     const { actions } = useAppStore.getState()
 

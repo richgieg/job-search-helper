@@ -26,6 +26,7 @@ const TextField = ({
     <input
       className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
       placeholder={placeholder}
+      spellCheck={type === 'url' ? false : undefined}
       type={type}
       value={value}
       onBlur={onBlur}
