@@ -914,60 +914,71 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
     [profileId, referencesById],
   )
 
+  const hasSkillCategories = skillCategoryIds.length > 0
+  const hasExperienceEntries = experienceEntryIds.length > 0
+  const hasEducationEntries = educationEntryIds.length > 0
+  const hasCertifications = certificationIds.length > 0
+  const hasReferences = referenceIds.length > 0
+
   return (
     <>
       <CollapsiblePanel
         actionLabel="Add skill category"
+        collapsible={hasSkillCategories}
         description="Organize skills into enabled or disabled categories."
         onAction={() => createSkillCategory(profileId)}
         title="Skills"
       >
         <div className="space-y-4">
-          {skillCategoryIds.length === 0 ? <p className="text-sm text-slate-500">No skill categories yet.</p> : skillCategoryIds.map((id) => <SkillCategoryCard key={id} skillCategoryId={id} />)}
+          {skillCategoryIds.map((id) => <SkillCategoryCard key={id} skillCategoryId={id} />)}
         </div>
       </CollapsiblePanel>
 
       <CollapsiblePanel
         actionLabel="Add experience"
+        collapsible={hasExperienceEntries}
         description="Capture work history entries used in resumes and applications."
         onAction={() => createExperienceEntry(profileId)}
         title="Experience"
       >
         <div className="space-y-4">
-          {experienceEntryIds.length === 0 ? <p className="text-sm text-slate-500">No experience entries yet.</p> : experienceEntryIds.map((id) => <ExperienceCard entryId={id} key={id} />)}
+          {experienceEntryIds.map((id) => <ExperienceCard entryId={id} key={id} />)}
         </div>
       </CollapsiblePanel>
 
       <CollapsiblePanel
         actionLabel="Add education"
+        collapsible={hasEducationEntries}
         description="Store education entries that can be enabled or disabled per profile."
         onAction={() => createEducationEntry(profileId)}
         title="Education"
       >
         <div className="space-y-4">
-          {educationEntryIds.length === 0 ? <p className="text-sm text-slate-500">No education entries yet.</p> : educationEntryIds.map((id) => <EducationCard entryId={id} key={id} />)}
+          {educationEntryIds.map((id) => <EducationCard entryId={id} key={id} />)}
         </div>
       </CollapsiblePanel>
 
       <CollapsiblePanel
         actionLabel="Add certification"
+        collapsible={hasCertifications}
         description="Track certifications and their optional credential metadata."
         onAction={() => createCertification(profileId)}
         title="Certifications"
       >
         <div className="space-y-4">
-          {certificationIds.length === 0 ? <p className="text-sm text-slate-500">No certifications yet.</p> : certificationIds.map((id) => <CertificationCard certificationId={id} key={id} />)}
+          {certificationIds.map((id) => <CertificationCard certificationId={id} key={id} />)}
         </div>
       </CollapsiblePanel>
 
       <CollapsiblePanel
         actionLabel="Add reference"
+        collapsible={hasReferences}
         description="Maintain both professional and personal references."
         onAction={() => createReference(profileId)}
         title="References"
       >
         <div className="space-y-4">
-          {referenceIds.length === 0 ? <p className="text-sm text-slate-500">No references yet.</p> : referenceIds.map((id) => <ReferenceCard key={id} referenceId={id} />)}
+          {referenceIds.map((id) => <ReferenceCard key={id} referenceId={id} />)}
         </div>
       </CollapsiblePanel>
     </>
