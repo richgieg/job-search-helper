@@ -134,7 +134,7 @@ export const JobsPage = () => {
             onChange={(event) => setCompanyName(event.target.value)}
           />
           <input
-            className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500 md:col-span-2 md:row-start-2"
+            className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500 md:col-span-3 md:row-start-2"
             placeholder="https://example.com/job (optional)"
             spellCheck={false}
             type="url"
