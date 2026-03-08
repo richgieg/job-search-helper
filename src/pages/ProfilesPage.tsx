@@ -81,8 +81,7 @@ export const ProfilesPage = () => {
       </div>
 
       <section className="max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">Quick add profile</h2>
-        <form className="mt-4 flex flex-col gap-3 sm:flex-row" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-3 sm:flex-row" onSubmit={handleSubmit}>
           <input
             className="min-w-0 flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-0 transition focus:border-sky-500"
             placeholder="Profile name"
@@ -96,15 +95,10 @@ export const ProfilesPage = () => {
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Profile list</h2>
-          <span className="text-sm text-slate-500">{sortedProfileIds.length} total</span>
-        </div>
-
         {sortedProfileIds.length === 0 ? (
-          <p className="mt-4 text-sm text-slate-500">No profiles yet.</p>
+          <p className="text-sm text-slate-500">No profiles yet.</p>
         ) : (
-          <div className="mt-4 overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="min-w-full border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
