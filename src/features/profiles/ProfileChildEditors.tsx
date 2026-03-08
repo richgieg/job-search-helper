@@ -464,7 +464,6 @@ const SkillCategoryCard = ({
 
   return (
     <CollapsiblePanel
-      actionLabel="Add skill"
       headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ToggleField
@@ -499,7 +498,6 @@ const SkillCategoryCard = ({
         </div>
       }
       isDirty={isDirty}
-      onAction={() => createSkill(category.id)}
       onDiscardChanges={() => {
         setName(category.name)
         setEnabled(category.enabled)
@@ -512,8 +510,21 @@ const SkillCategoryCard = ({
         <TextField label="Category name" value={name} onChange={setName} />
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-4">
+        <div className="flex items-center justify-between gap-3">
+          <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Skills</h4>
+          <button
+            className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            onClick={() => createSkill(category.id)}
+            type="button"
+          >
+            Add skill
+          </button>
+        </div>
+
+        <div className="mt-3 space-y-3">
         {skillIds.length === 0 ? <p className="text-sm text-slate-500">No skills yet.</p> : skillIds.map((skillId) => <SkillRow key={skillId} onDirtyChange={handleSkillDirtyChange} skillId={skillId} />)}
+        </div>
       </div>
     </CollapsiblePanel>
   )
