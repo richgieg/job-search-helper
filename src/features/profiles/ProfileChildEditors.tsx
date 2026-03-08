@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
-import type { EmploymentType, ReferenceType, WorkArrangement } from '../../types/state'
+import type { Certification, EducationEntry, EmploymentType, ExperienceEntry, Reference, ReferenceType, WorkArrangement } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
 
 const TextField = ({
@@ -167,10 +167,50 @@ const formatDateRange = (startDate: string | null, endDate: string | null, isCur
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter((part): part is string => Boolean(part && part.trim())).join(' • ')
 
-const stripEnabled = <T extends { enabled: boolean }>(value: T) => {
-  const { enabled: _enabled, ...rest } = value
-  return rest
-}
+const getExperienceEntryEditableFields = (entry: ExperienceEntry) => ({
+  company: entry.company,
+  title: entry.title,
+  location: entry.location,
+  workArrangement: entry.workArrangement,
+  employmentType: entry.employmentType,
+  startDate: entry.startDate,
+  endDate: entry.endDate,
+  isCurrent: entry.isCurrent,
+  reasonForLeavingShort: entry.reasonForLeavingShort,
+  reasonForLeavingDetails: entry.reasonForLeavingDetails,
+  supervisor: {
+    name: entry.supervisor.name,
+    title: entry.supervisor.title,
+    phone: entry.supervisor.phone,
+    email: entry.supervisor.email,
+  },
+})
+
+const getEducationEntryEditableFields = (entry: EducationEntry) => ({
+  school: entry.school,
+  degree: entry.degree,
+  graduationDate: entry.graduationDate,
+})
+
+const getCertificationEditableFields = (certification: Certification) => ({
+  name: certification.name,
+  issuer: certification.issuer,
+  issueDate: certification.issueDate,
+  expiryDate: certification.expiryDate,
+  credentialId: certification.credentialId,
+  credentialUrl: certification.credentialUrl,
+})
+
+const getReferenceEditableFields = (reference: Reference) => ({
+  type: reference.type,
+  name: reference.name,
+  relationship: reference.relationship,
+  company: reference.company,
+  title: reference.title,
+  email: reference.email,
+  phone: reference.phone,
+  notes: reference.notes,
+})
 
 const ExperienceBulletRow = ({
   bulletId,
@@ -521,7 +561,10 @@ const ExperienceCard = ({
     setDraft(entry)
   }, [entry])
 
-  const ownIsDirty = entry && draft ? JSON.stringify(stripEnabled(draft)) !== JSON.stringify(stripEnabled(entry)) : false
+  const ownIsDirty =
+    entry && draft
+      ? JSON.stringify(getExperienceEntryEditableFields(draft)) !== JSON.stringify(getExperienceEntryEditableFields(entry))
+      : false
   const isDirty = entry && draft ? ownIsDirty || Object.keys(dirtyBulletIds).length > 0 : false
   const summary = summarizeParts([
     draft?.title || 'Untitled role',
@@ -578,7 +621,7 @@ const ExperienceCard = ({
           />
           <ItemActions
             onDelete={() => deleteExperienceEntry(entry.id)}
-            onSave={() => updateExperienceEntry({ experienceEntryId: entry.id, changes: stripEnabled(draft) })}
+            onSave={() => updateExperienceEntry({ experienceEntryId: entry.id, changes: getExperienceEntryEditableFields(draft) })}
             saveDisabled={!ownIsDirty}
           />
         </div>
@@ -688,7 +731,8 @@ const EducationCard = ({
     setDraft(entry)
   }, [entry])
 
-  const isDirty = entry && draft ? JSON.stringify(stripEnabled(draft)) !== JSON.stringify(stripEnabled(entry)) : false
+  const isDirty =
+    entry && draft ? JSON.stringify(getEducationEntryEditableFields(draft)) !== JSON.stringify(getEducationEntryEditableFields(entry)) : false
   const summary = summarizeParts([
     draft?.degree || 'No degree',
     draft?.school || 'No school',
@@ -738,7 +782,7 @@ const EducationCard = ({
           />
           <ItemActions
             onDelete={() => deleteEducationEntry(entry.id)}
-            onSave={() => updateEducationEntry({ educationEntryId: entry.id, changes: stripEnabled(draft) })}
+            onSave={() => updateEducationEntry({ educationEntryId: entry.id, changes: getEducationEntryEditableFields(draft) })}
             saveDisabled={!isDirty}
           />
         </div>
@@ -787,7 +831,10 @@ const CertificationCard = ({
     setDraft(certification)
   }, [certification])
 
-  const isDirty = certification && draft ? JSON.stringify(stripEnabled(draft)) !== JSON.stringify(stripEnabled(certification)) : false
+  const isDirty =
+    certification && draft
+      ? JSON.stringify(getCertificationEditableFields(draft)) !== JSON.stringify(getCertificationEditableFields(certification))
+      : false
   const summary = summarizeParts([
     draft?.name || 'Unnamed certification',
     draft?.issuer || 'No issuer',
@@ -838,7 +885,7 @@ const CertificationCard = ({
           />
           <ItemActions
             onDelete={() => deleteCertification(certification.id)}
-            onSave={() => updateCertification({ certificationId: certification.id, changes: stripEnabled(draft) })}
+            onSave={() => updateCertification({ certificationId: certification.id, changes: getCertificationEditableFields(draft) })}
             saveDisabled={!isDirty}
           />
         </div>
@@ -890,7 +937,8 @@ const ReferenceCard = ({
     setDraft(reference)
   }, [reference])
 
-  const isDirty = reference && draft ? JSON.stringify(stripEnabled(draft)) !== JSON.stringify(stripEnabled(reference)) : false
+  const isDirty =
+    reference && draft ? JSON.stringify(getReferenceEditableFields(draft)) !== JSON.stringify(getReferenceEditableFields(reference)) : false
   const summary = summarizeParts([
     draft?.type === 'professional' ? 'Professional' : 'Personal',
     draft?.name || 'Unnamed reference',
@@ -940,7 +988,7 @@ const ReferenceCard = ({
           />
           <ItemActions
             onDelete={() => deleteReference(reference.id)}
-            onSave={() => updateReference({ referenceId: reference.id, changes: stripEnabled(draft) })}
+            onSave={() => updateReference({ referenceId: reference.id, changes: getReferenceEditableFields(draft) })}
             saveDisabled={!isDirty}
           />
         </div>
