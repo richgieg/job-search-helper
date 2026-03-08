@@ -57,7 +57,7 @@ export const CollapsiblePanel = ({
 
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           {headerActions}
-          {actionLabel && onAction ? (
+          {expanded && actionLabel && onAction ? (
             <button className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700" onClick={handleAction} type="button">
               {actionLabel}
             </button>
