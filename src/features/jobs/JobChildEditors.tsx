@@ -439,39 +439,35 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
     [applicationQuestionsById, jobId],
   )
 
+  const hasJobLinks = jobLinkIds.length > 0
+  const hasJobContacts = jobContactIds.length > 0
+  const hasApplicationQuestions = applicationQuestionIds.length > 0
+  const hasJobEvents = jobEvents.length > 0
+
   return (
     <>
-      <CollapsiblePanel actionLabel="Add link" description="Track the relevant job URLs with short names." onAction={() => createJobLink(jobId)} title="Links">
-        <div className="space-y-4">
-          {jobLinkIds.length === 0 ? <p className="text-sm text-slate-500">No links yet.</p> : jobLinkIds.map((id) => <JobLinkCard key={id} jobLinkId={id} />)}
-        </div>
+      <CollapsiblePanel actionLabel="Add link" collapsible={hasJobLinks} description="Track the relevant job URLs with short names." onAction={() => createJobLink(jobId)} title="Links">
+        {hasJobLinks ? <div className="space-y-4">{jobLinkIds.map((id) => <JobLinkCard key={id} jobLinkId={id} />)}</div> : null}
       </CollapsiblePanel>
 
-      <CollapsiblePanel actionLabel="Add contact" description="Maintain recruiters, hiring managers, referrals, and interviewers for the job." onAction={() => createJobContact(jobId)} title="Contacts">
-        <div className="space-y-4">
-          {jobContactIds.length === 0 ? <p className="text-sm text-slate-500">No contacts yet.</p> : jobContactIds.map((id) => <JobContactCard key={id} jobContactId={id} />)}
-        </div>
+      <CollapsiblePanel actionLabel="Add contact" collapsible={hasJobContacts} description="Maintain recruiters, hiring managers, referrals, and interviewers for the job." onAction={() => createJobContact(jobId)} title="Contacts">
+        {hasJobContacts ? <div className="space-y-4">{jobContactIds.map((id) => <JobContactCard key={id} jobContactId={id} />)}</div> : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel
         actionLabel="Add application question"
+        collapsible={hasApplicationQuestions}
         description="Track custom questions asked during the application flow and the answers you submitted."
         onAction={() => createApplicationQuestion(jobId)}
         title="Application questions"
       >
-        <div className="space-y-4">
-          {applicationQuestionIds.length === 0 ? (
-            <p className="text-sm text-slate-500">No application questions yet.</p>
-          ) : (
-            applicationQuestionIds.map((id) => <ApplicationQuestionCard key={id} applicationQuestionId={id} />)
-          )}
-        </div>
+        {hasApplicationQuestions ? (
+          <div className="space-y-4">{applicationQuestionIds.map((id) => <ApplicationQuestionCard key={id} applicationQuestionId={id} />)}</div>
+        ) : null}
       </CollapsiblePanel>
 
-      <CollapsiblePanel actionLabel="Add event" description="Events drive the job's computed pipeline status." onAction={() => createJobEvent({ jobId })} title="Events">
-        <div className="space-y-4">
-          {jobEvents.length === 0 ? <p className="text-sm text-slate-500">No events yet.</p> : jobEvents.map((item) => <JobEventCard key={item.id} jobEventId={item.id} />)}
-        </div>
+      <CollapsiblePanel actionLabel="Add event" collapsible={hasJobEvents} description="Events drive the job's computed pipeline status." onAction={() => createJobEvent({ jobId })} title="Events">
+        {hasJobEvents ? <div className="space-y-4">{jobEvents.map((item) => <JobEventCard key={item.id} jobEventId={item.id} />)}</div> : null}
       </CollapsiblePanel>
     </>
   )
