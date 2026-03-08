@@ -592,7 +592,6 @@ const ExperienceCard = ({
 
   return (
     <CollapsiblePanel
-      actionLabel="Add bullet"
       headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ToggleField
@@ -627,7 +626,6 @@ const ExperienceCard = ({
         </div>
       }
       isDirty={isDirty}
-      onAction={() => createExperienceBullet(entry.id)}
       onDiscardChanges={() => {
         setDraft(entry)
         setDirtyBulletIds({})
@@ -687,6 +685,13 @@ const ExperienceCard = ({
         <div className="xl:col-span-3">
           <div className="flex items-center justify-between gap-3">
             <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Bullets</h4>
+            <button
+              className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              onClick={() => createExperienceBullet(entry.id)}
+              type="button"
+            >
+              Add bullet
+            </button>
           </div>
           <div className="mt-3 space-y-3">
             {bulletIds.length === 0 ? (
