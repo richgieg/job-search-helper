@@ -11,6 +11,7 @@ interface CollapsiblePanelProps {
   onAction?: () => void
   expandOnAction?: boolean
   headerActions?: ReactNode
+  headerActionContent?: ReactNode
   contentClassName?: string
 }
 
@@ -25,6 +26,7 @@ export const CollapsiblePanel = ({
   onAction,
   expandOnAction = true,
   headerActions,
+  headerActionContent,
   contentClassName,
 }: CollapsiblePanelProps) => {
   const [expanded, setExpanded] = useState(defaultExpanded)
@@ -69,17 +71,18 @@ export const CollapsiblePanel = ({
               <span aria-hidden="true" className="mt-0.5 text-sm text-slate-300">
                 ▸
               </span>
-            <div className="min-w-0">
-              <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-              {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
-              {summary ? <p className="mt-1 text-xs text-slate-500">{summary}</p> : null}
-            </div>
+                <div className="min-w-0">
+                  <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+                  {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
+                  {summary ? <p className="mt-1 text-xs text-slate-500">{summary}</p> : null}
+                </div>
             </div>
           </div>
         )}
 
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           {headerActions}
+            {(!collapsible || isExpanded) && headerActionContent ? headerActionContent : null}
           {(!collapsible || isExpanded) && actionLabel && onAction ? (
             <button className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700" onClick={handleAction} type="button">
               {actionLabel}

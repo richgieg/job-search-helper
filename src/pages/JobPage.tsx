@@ -151,6 +151,7 @@ export const JobPage = () => {
         .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)),
     [jobId, profiles],
   )
+  const hasAttachedProfiles = attachedProfiles.length > 0
   const jobEvents = useMemo(() => Object.values(jobEventsById).filter((event) => event.jobId === jobId), [jobEventsById, jobId])
   const computedStatus = useMemo(() => getJobComputedStatus(jobEvents.map((event) => event.eventType)), [jobEvents])
 
@@ -307,14 +308,16 @@ export const JobPage = () => {
         </div>
       </CollapsiblePanel>
 
-      <CollapsiblePanel description="Create job-specific profiles from base profiles and manage the profiles already attached to this job." title="Profiles">
-        <div className="space-y-6">
-          {baseProfiles.length === 0 ? (
+      <CollapsiblePanel
+        collapsible={hasAttachedProfiles}
+        description="Create job-specific profiles from base profiles and manage the profiles already attached to this job."
+        headerActionContent={
+          baseProfiles.length === 0 ? (
             <p className="text-sm text-slate-500">Create a base profile first.</p>
           ) : (
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <select
-                className="min-w-0 flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+                className="min-w-0 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500 sm:w-64"
                 value={selectedBaseProfileId}
                 onChange={(event) => setSelectedBaseProfileId(event.target.value)}
               >
@@ -328,13 +331,13 @@ export const JobPage = () => {
                 Add profile
               </button>
             </div>
-          )}
-
+          )
+        }
+        title="Profiles"
+      >
+        {hasAttachedProfiles ? (
           <div className="space-y-3">
-            {attachedProfiles.length === 0 ? (
-              <p className="text-sm text-slate-500">No job profiles attached yet.</p>
-            ) : (
-              attachedProfiles.map((profile) => (
+            {attachedProfiles.map((profile) => (
                 <div key={profile.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="font-medium text-slate-900">{profile.name}</p>
@@ -363,10 +366,9 @@ export const JobPage = () => {
                     </button>
                   </div>
                 </div>
-              ))
-            )}
+              ))}
           </div>
-        </div>
+        ) : null}
       </CollapsiblePanel>
 
       <JobChildEditors jobId={job.id} />
