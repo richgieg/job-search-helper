@@ -915,7 +915,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
   )
 
   return (
-    <div className="mt-6 space-y-6">
+    <>
       <CollapsiblePanel
         actionLabel="Add skill category"
         description="Organize skills into enabled or disabled categories."
@@ -970,6 +970,6 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
           {referenceIds.length === 0 ? <p className="text-sm text-slate-500">No references yet.</p> : referenceIds.map((id) => <ReferenceCard key={id} referenceId={id} />)}
         </div>
       </CollapsiblePanel>
-    </div>
+    </>
   )
 }

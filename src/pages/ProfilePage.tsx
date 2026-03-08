@@ -216,114 +216,112 @@ export const ProfilePage = () => {
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">Created {new Date(profile.createdAt).toLocaleString()}</span>
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">Updated {new Date(profile.updatedAt).toLocaleString()}</span>
         </div>
-
-        <div className="mt-6 space-y-4">
-          <CollapsiblePanel
-            description="Edit the core profile content used across previews and applications."
-            title="Profile details"
-          >
-            <div className="grid gap-4 xl:grid-cols-2">
-              <Field label="Profile name" onBlur={commitProfileName} value={name} onChange={setName} />
-
-              <div className="xl:col-span-2">
-                <label className="flex flex-col gap-2 text-sm text-slate-700">
-                  <span className="font-medium">Professional summary</span>
-                  <textarea
-                    className="min-h-28 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
-                    placeholder="Professional summary"
-                    value={summary}
-                    onBlur={() => commitProfileTextField('summary', summary)}
-                    onChange={(event) => setSummary(event.target.value)}
-                  />
-                </label>
-              </div>
-
-              <div className="xl:col-span-2">
-                <label className="flex flex-col gap-2 text-sm text-slate-700">
-                  <span className="font-medium">Cover letter content</span>
-                  <textarea
-                    className="min-h-40 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
-                    placeholder="Cover letter content"
-                    value={coverLetter}
-                    onBlur={() => commitProfileTextField('coverLetter', coverLetter)}
-                    onChange={(event) => setCoverLetter(event.target.value)}
-                  />
-                </label>
-              </div>
-            </div>
-          </CollapsiblePanel>
-
-          <CollapsiblePanel
-            description="Manage contact and address details used in document headers and applications."
-            title="Personal details"
-          >
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <Field label="Full name" value={personalDetails.fullName} onBlur={() => commitPersonalDetail('fullName', personalDetails.fullName)} onChange={(value) => setPersonalDetails({ ...personalDetails, fullName: value })} />
-              <Field label="Email" type="email" value={personalDetails.email} onBlur={() => commitPersonalDetail('email', personalDetails.email)} onChange={(value) => setPersonalDetails({ ...personalDetails, email: value })} />
-              <Field label="Phone" type="tel" value={personalDetails.phone} onBlur={() => commitPersonalDetail('phone', personalDetails.phone)} onChange={(value) => setPersonalDetails({ ...personalDetails, phone: value })} />
-              <Field label="Address line 1" value={personalDetails.addressLine1} onBlur={() => commitPersonalDetail('addressLine1', personalDetails.addressLine1)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine1: value })} />
-              <Field label="Address line 2" value={personalDetails.addressLine2} onBlur={() => commitPersonalDetail('addressLine2', personalDetails.addressLine2)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine2: value })} />
-              <Field label="Address line 3" value={personalDetails.addressLine3} onBlur={() => commitPersonalDetail('addressLine3', personalDetails.addressLine3)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine3: value })} />
-              <Field label="City" value={personalDetails.city} onBlur={() => commitPersonalDetail('city', personalDetails.city)} onChange={(value) => setPersonalDetails({ ...personalDetails, city: value })} />
-              <Field label="State" value={personalDetails.state} onBlur={() => commitPersonalDetail('state', personalDetails.state)} onChange={(value) => setPersonalDetails({ ...personalDetails, state: value })} />
-              <Field label="Postal code" value={personalDetails.postalCode} onBlur={() => commitPersonalDetail('postalCode', personalDetails.postalCode)} onChange={(value) => setPersonalDetails({ ...personalDetails, postalCode: value })} />
-            </div>
-          </CollapsiblePanel>
-
-          <CollapsiblePanel
-            description="Store the public URLs that should travel with this profile."
-            title="Links"
-          >
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="LinkedIn" type="url" value={links.linkedinUrl} onBlur={() => commitLink('linkedinUrl', links.linkedinUrl)} onChange={(value) => setLinks({ ...links, linkedinUrl: value })} />
-              <Field label="GitHub" type="url" value={links.githubUrl} onBlur={() => commitLink('githubUrl', links.githubUrl)} onChange={(value) => setLinks({ ...links, githubUrl: value })} />
-              <Field label="Portfolio" type="url" value={links.portfolioUrl} onBlur={() => commitLink('portfolioUrl', links.portfolioUrl)} onChange={(value) => setLinks({ ...links, portfolioUrl: value })} />
-              <Field label="Website" type="url" value={links.websiteUrl} onBlur={() => commitLink('websiteUrl', links.websiteUrl)} onChange={(value) => setLinks({ ...links, websiteUrl: value })} />
-            </div>
-          </CollapsiblePanel>
-
-          <CollapsiblePanel description="Control which sections appear on the resume and the order in which they are shown." title="Resume settings">
-            <div className="space-y-3">
-              {orderedResumeSections.map((resumeSection, index) => (
-                <div key={resumeSection.section} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
-                  <label className="inline-flex items-center gap-3 text-sm font-medium text-slate-800">
-                    <input
-                      checked={resumeSection.enabled}
-                      className="h-4 w-4 rounded border-slate-300"
-                      onChange={(event) =>
-                        setResumeSectionEnabled({
-                          profileId: profile.id,
-                          section: resumeSection.section,
-                          enabled: event.target.checked,
-                        })
-                      }
-                      type="checkbox"
-                    />
-                    <span>{resumeSectionLabels[resumeSection.section]}</span>
-                  </label>
-
-                  <ReorderButtons
-                    canMoveDown={orderedResumeSectionKeys.length > 1}
-                    canMoveUp={orderedResumeSectionKeys.length > 1}
-                    onMoveDown={() =>
-                      reorderResumeSections({
-                        profileId: profile.id,
-                        orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, 1) as ResumeSectionKey[],
-                      })
-                    }
-                    onMoveUp={() =>
-                      reorderResumeSections({
-                        profileId: profile.id,
-                        orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, -1) as ResumeSectionKey[],
-                      })
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-          </CollapsiblePanel>
-        </div>
       </section>
+
+      <CollapsiblePanel
+        description="Edit the core profile content used across previews and applications."
+        title="Profile details"
+      >
+        <div className="grid gap-4 xl:grid-cols-2">
+          <Field label="Profile name" onBlur={commitProfileName} value={name} onChange={setName} />
+
+          <div className="xl:col-span-2">
+            <label className="flex flex-col gap-2 text-sm text-slate-700">
+              <span className="font-medium">Professional summary</span>
+              <textarea
+                className="min-h-28 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+                placeholder="Professional summary"
+                value={summary}
+                onBlur={() => commitProfileTextField('summary', summary)}
+                onChange={(event) => setSummary(event.target.value)}
+              />
+            </label>
+          </div>
+
+          <div className="xl:col-span-2">
+            <label className="flex flex-col gap-2 text-sm text-slate-700">
+              <span className="font-medium">Cover letter content</span>
+              <textarea
+                className="min-h-40 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+                placeholder="Cover letter content"
+                value={coverLetter}
+                onBlur={() => commitProfileTextField('coverLetter', coverLetter)}
+                onChange={(event) => setCoverLetter(event.target.value)}
+              />
+            </label>
+          </div>
+        </div>
+      </CollapsiblePanel>
+
+      <CollapsiblePanel
+        description="Manage contact and address details used in document headers and applications."
+        title="Personal details"
+      >
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <Field label="Full name" value={personalDetails.fullName} onBlur={() => commitPersonalDetail('fullName', personalDetails.fullName)} onChange={(value) => setPersonalDetails({ ...personalDetails, fullName: value })} />
+          <Field label="Email" type="email" value={personalDetails.email} onBlur={() => commitPersonalDetail('email', personalDetails.email)} onChange={(value) => setPersonalDetails({ ...personalDetails, email: value })} />
+          <Field label="Phone" type="tel" value={personalDetails.phone} onBlur={() => commitPersonalDetail('phone', personalDetails.phone)} onChange={(value) => setPersonalDetails({ ...personalDetails, phone: value })} />
+          <Field label="Address line 1" value={personalDetails.addressLine1} onBlur={() => commitPersonalDetail('addressLine1', personalDetails.addressLine1)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine1: value })} />
+          <Field label="Address line 2" value={personalDetails.addressLine2} onBlur={() => commitPersonalDetail('addressLine2', personalDetails.addressLine2)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine2: value })} />
+          <Field label="Address line 3" value={personalDetails.addressLine3} onBlur={() => commitPersonalDetail('addressLine3', personalDetails.addressLine3)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine3: value })} />
+          <Field label="City" value={personalDetails.city} onBlur={() => commitPersonalDetail('city', personalDetails.city)} onChange={(value) => setPersonalDetails({ ...personalDetails, city: value })} />
+          <Field label="State" value={personalDetails.state} onBlur={() => commitPersonalDetail('state', personalDetails.state)} onChange={(value) => setPersonalDetails({ ...personalDetails, state: value })} />
+          <Field label="Postal code" value={personalDetails.postalCode} onBlur={() => commitPersonalDetail('postalCode', personalDetails.postalCode)} onChange={(value) => setPersonalDetails({ ...personalDetails, postalCode: value })} />
+        </div>
+      </CollapsiblePanel>
+
+      <CollapsiblePanel
+        description="Store the public URLs that should travel with this profile."
+        title="Links"
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="LinkedIn" type="url" value={links.linkedinUrl} onBlur={() => commitLink('linkedinUrl', links.linkedinUrl)} onChange={(value) => setLinks({ ...links, linkedinUrl: value })} />
+          <Field label="GitHub" type="url" value={links.githubUrl} onBlur={() => commitLink('githubUrl', links.githubUrl)} onChange={(value) => setLinks({ ...links, githubUrl: value })} />
+          <Field label="Portfolio" type="url" value={links.portfolioUrl} onBlur={() => commitLink('portfolioUrl', links.portfolioUrl)} onChange={(value) => setLinks({ ...links, portfolioUrl: value })} />
+          <Field label="Website" type="url" value={links.websiteUrl} onBlur={() => commitLink('websiteUrl', links.websiteUrl)} onChange={(value) => setLinks({ ...links, websiteUrl: value })} />
+        </div>
+      </CollapsiblePanel>
+
+      <CollapsiblePanel description="Control which sections appear on the resume and the order in which they are shown." title="Resume settings">
+        <div className="space-y-3">
+          {orderedResumeSections.map((resumeSection, index) => (
+            <div key={resumeSection.section} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
+              <label className="inline-flex items-center gap-3 text-sm font-medium text-slate-800">
+                <input
+                  checked={resumeSection.enabled}
+                  className="h-4 w-4 rounded border-slate-300"
+                  onChange={(event) =>
+                    setResumeSectionEnabled({
+                      profileId: profile.id,
+                      section: resumeSection.section,
+                      enabled: event.target.checked,
+                    })
+                  }
+                  type="checkbox"
+                />
+                <span>{resumeSectionLabels[resumeSection.section]}</span>
+              </label>
+
+              <ReorderButtons
+                canMoveDown={orderedResumeSectionKeys.length > 1}
+                canMoveUp={orderedResumeSectionKeys.length > 1}
+                onMoveDown={() =>
+                  reorderResumeSections({
+                    profileId: profile.id,
+                    orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, 1) as ResumeSectionKey[],
+                  })
+                }
+                onMoveUp={() =>
+                  reorderResumeSections({
+                    profileId: profile.id,
+                    orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, -1) as ResumeSectionKey[],
+                  })
+                }
+              />
+            </div>
+          ))}
+        </div>
+      </CollapsiblePanel>
 
       <ProfileChildEditors profileId={profile.id} />
     </div>
