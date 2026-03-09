@@ -372,6 +372,8 @@ export const ProfilePage = () => {
         </div>
       </CollapsiblePanel>
 
+      <ProfileChildEditors profileId={profile.id} />
+
       <CollapsiblePanel description="Control which sections appear on the resume and the order in which they are shown." title="Resume settings">
         <div className="space-y-3">
           {orderedResumeSections.map((resumeSection, index) => (
@@ -412,8 +414,6 @@ export const ProfilePage = () => {
           ))}
         </div>
       </CollapsiblePanel>
-
-      <ProfileChildEditors profileId={profile.id} />
     </div>
   )
 }
