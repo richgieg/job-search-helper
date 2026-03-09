@@ -202,6 +202,7 @@ export const ApplicationPage = () => {
 
   return (
     <DocumentPageLayout
+      eyebrow="Application Content"
       subtitle="Raw, copy-friendly profile data for filling out online application forms. Click any value to copy it."
       title={`${preview.profile.name || 'Profile'} application preview`}
     >
