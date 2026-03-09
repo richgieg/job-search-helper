@@ -1,6 +1,7 @@
 import { getJobComputedStatus } from '../jobs/job-status'
 import type {
   AppDataState,
+  Certification,
   EducationEntry,
   ExperienceBullet,
   ExperienceEntry,
@@ -36,7 +37,7 @@ export interface ProfileDocumentData {
   skillCategories: DocumentSkillCategory[]
   experienceEntries: DocumentExperienceEntry[]
   educationEntries: EducationEntry[]
-  certifications: AppDataState['certifications'][Id][]
+  certifications: Certification[]
   references: Reference[]
   computedStatus: ReturnType<typeof getJobComputedStatus>
 }
