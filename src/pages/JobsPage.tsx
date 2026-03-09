@@ -155,31 +155,43 @@ export const JobsPage = () => {
       </div>
 
       <section className="max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <form className="grid gap-3 md:grid-cols-[1fr_1fr_auto]" onSubmit={handleSubmit}>
-          <input
-            className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
-            placeholder="Job title"
-            ref={jobTitleInputRef}
-            value={jobTitle}
-            onChange={(event) => setJobTitle(event.target.value)}
-          />
-          <input
-            className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
-            placeholder="Company name"
-            value={companyName}
-            onChange={(event) => setCompanyName(event.target.value)}
-          />
-          <input
-            className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500 md:col-span-3 md:row-start-2"
-            placeholder="https://example.com/job (optional)"
-            spellCheck={false}
-            type="url"
-            value={initialLinkUrl}
-            onChange={(event) => setInitialLinkUrl(event.target.value)}
-          />
-          <button className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700 md:col-start-3 md:row-start-1" type="submit">
-            Add job
-          </button>
+        <form className="space-y-3" onSubmit={handleSubmit}>
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="flex min-w-0 flex-col gap-2 text-sm text-slate-700">
+              <span className="font-medium">Job title</span>
+              <input
+                className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+                ref={jobTitleInputRef}
+                value={jobTitle}
+                onChange={(event) => setJobTitle(event.target.value)}
+              />
+            </label>
+            <label className="flex min-w-0 flex-col gap-2 text-sm text-slate-700">
+              <span className="font-medium">Company name</span>
+              <input
+                className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+                value={companyName}
+                onChange={(event) => setCompanyName(event.target.value)}
+              />
+            </label>
+          </div>
+
+          <label className="flex min-w-0 flex-col gap-2 text-sm text-slate-700">
+            <span className="font-medium">URL (optional)</span>
+            <input
+              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+              spellCheck={false}
+              type="url"
+              value={initialLinkUrl}
+              onChange={(event) => setInitialLinkUrl(event.target.value)}
+            />
+          </label>
+
+          <div className="flex justify-end">
+            <button className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700" type="submit">
+              Add job
+            </button>
+          </div>
         </form>
       </section>
 

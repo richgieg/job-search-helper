@@ -81,16 +81,21 @@ export const ProfilesPage = () => {
       </div>
 
       <section className="max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <form className="flex flex-col gap-3 sm:flex-row" onSubmit={handleSubmit}>
-          <input
-            className="min-w-0 flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-0 transition focus:border-sky-500"
-            placeholder="Profile name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-          <button className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700" type="submit">
-            Add profile
-          </button>
+        <form className="space-y-3" onSubmit={handleSubmit}>
+          <label className="flex min-w-0 flex-1 flex-col gap-2 text-sm text-slate-700">
+            <span className="font-medium">Profile name</span>
+            <input
+              className="min-w-0 flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-0 transition focus:border-sky-500"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </label>
+
+          <div className="flex justify-end">
+            <button className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700" type="submit">
+              Add profile
+            </button>
+          </div>
         </form>
       </section>
 
