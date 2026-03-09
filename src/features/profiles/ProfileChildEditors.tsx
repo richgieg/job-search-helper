@@ -262,33 +262,37 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
   }
 
   return (
-    <div className="grid gap-3 rounded-xl border border-slate-200 p-3 md:grid-cols-[1fr_auto_auto_auto] md:items-end">
-      <TextField label="Skill name" onBlur={commitName} value={name} onChange={setName} />
-      <ToggleField
-        checked={enabled}
-        label="Enabled"
-        onChange={(value) => {
-          setEnabled(value)
-          updateSkill({ skillId: skill.id, changes: { enabled: value } })
-        }}
-      />
-      <ReorderButtons
-        canMoveDown={skillIds.length > 1}
-        canMoveUp={skillIds.length > 1}
-        onMoveDown={() =>
-          reorderSkills({
-            skillCategoryId: skill.skillCategoryId,
-            orderedIds: moveOrderedItem(skillIds, skillIndex, 1),
-          })
-        }
-        onMoveUp={() =>
-          reorderSkills({
-            skillCategoryId: skill.skillCategoryId,
-            orderedIds: moveOrderedItem(skillIds, skillIndex, -1),
-          })
-        }
-      />
-      <DeleteButton onDelete={() => deleteSkill(skill.id)} />
+    <div className="rounded-xl border border-slate-200 p-3">
+      <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+        <TextField label="Skill name" onBlur={commitName} value={name} onChange={setName} />
+        <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
+          <ToggleField
+            checked={enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setEnabled(value)
+              updateSkill({ skillId: skill.id, changes: { enabled: value } })
+            }}
+          />
+          <ReorderButtons
+            canMoveDown={skillIds.length > 1}
+            canMoveUp={skillIds.length > 1}
+            onMoveDown={() =>
+              reorderSkills({
+                skillCategoryId: skill.skillCategoryId,
+                orderedIds: moveOrderedItem(skillIds, skillIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderSkills({
+                skillCategoryId: skill.skillCategoryId,
+                orderedIds: moveOrderedItem(skillIds, skillIndex, -1),
+              })
+            }
+          />
+          <DeleteButton onDelete={() => deleteSkill(skill.id)} />
+        </div>
+      </div>
     </div>
   )
 }
