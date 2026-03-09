@@ -680,7 +680,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const skillCategory: SkillCategory = {
         id: createId(),
         profileId,
-        name: 'New skill category',
+        name: '',
         enabled: true,
         sortOrder: getNextSortOrder(
           Object.values(get().data.skillCategories)
@@ -768,7 +768,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const skill: Skill = {
         id: createId(),
         skillCategoryId,
-        name: 'New skill',
+        name: '',
         enabled: true,
         sortOrder: getNextSortOrder(
           Object.values(get().data.skills)
