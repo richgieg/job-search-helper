@@ -322,14 +322,6 @@ These actions should all:
 - `deleteProfileLink(input)`
 - `reorderProfileLinks(input)`
 
-These actions should:
-
-- require an existing profile
-- maintain sequential `sortOrder`
-- update `Profile.updatedAt`
-- preserve `name` exactly as entered by the user
-- preserve normalized state shape
-
 ### Common child action shape
 
 A typical create action could look like:
@@ -490,6 +482,7 @@ Profile link actions should additionally validate:
 
 - non-empty `name`
 - valid `url` shape
+- boolean `enabled`
 - unique ordered ids during reordering
 
 Resume settings actions should additionally validate:
@@ -530,6 +523,7 @@ Instead:
 
 - generate resume, cover letter, and application page views on demand from current state
 - generate resume sections in the profile's configured visible order from `resumeSettings.sections`
+- generate profile link output from enabled profile links in `sortOrder`
 
 ## Suggested implementation order
 
@@ -558,7 +552,9 @@ High-priority tests:
 - duplicate profile copies `resumeSettings`
 - deleting a profile cascades child deletion
 - deleting a profile clears descendant `clonedFromProfileId`
+- toggling profile link visibility updates the correct record and parent `Profile.updatedAt`
 - reordering profile links produces unique sequential `sortOrder` values
+- previews and generated outputs exclude disabled profile links
 - resume section visibility toggles update the correct section only
 - resume section reordering produces unique sequential `sortOrder` values
 - deleting a job deletes attached job profiles and job-owned records

@@ -215,6 +215,7 @@ interface ProfileLink {
   profileId: Id;
   name: string;
   url: string;
+  enabled: boolean;
   sortOrder: number;
 }
 ```

@@ -228,7 +228,6 @@ This allows the user to keep track of custom questions asked during online appli
 - cover_letter
 - resume_settings_json
 - personal_details_json
-- links_json
 - job_id
 - cloned_from_profile_id
 - created_at
@@ -237,8 +236,6 @@ This allows the user to keep track of custom questions asked during online appli
 If `job_id` is null, the profile is a base profile. If `job_id` is not null, the profile is a job-specific profile.
 
 `resume_settings_json` stores the profile's single resume settings configuration for the MVP, including whether each resume section is shown and the order in which sections should appear.
-
-`links_json` stores an ordered collection of profile link records, where each link has a user-defined name and URL.
 
 `cloned_from_profile_id` is null for profiles created from scratch and points to the profile that was duplicated when a profile is copied.
 
@@ -260,6 +257,7 @@ The copied related records include:
 - profile_id
 - name
 - url
+- enabled
 - sort_order
 
 ### SkillCategory

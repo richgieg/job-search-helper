@@ -63,7 +63,54 @@ describe('app store reorder actions', () => {
     expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
   })
 
-  it('reorders profile links for a profile and preview data reflects the new order', () => {
+  it('reorders enabled profile links for a profile and preview data reflects the new order', async () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    actions.createProfileLink(profileId)
+    actions.createProfileLink(profileId)
+
+    const createdLinks = Object.values(useAppStore.getState().data.profileLinks).filter((item) => item.profileId === profileId)
+    expect(createdLinks.every((item) => item.enabled)).toBe(true)
+
+    const profileLinkIds = getOrderedIds(
+      Object.fromEntries(
+        Object.values(useAppStore.getState().data.profileLinks)
+          .filter((item) => item.profileId === profileId)
+          .map((item) => [item.id, item]),
+      ),
+    )
+    const firstProfileLinkId = expectDefined(profileLinkIds[0], 'Expected first profile link id')
+    const secondProfileLinkId = expectDefined(profileLinkIds[1], 'Expected second profile link id')
+    const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
+    await waitForNextTick()
+
+    actions.updateProfileLink({
+      profileLinkId: firstProfileLinkId,
+      changes: { name: 'Portfolio', url: 'https://example.com/portfolio' },
+    })
+    actions.updateProfileLink({
+      profileLinkId: secondProfileLinkId,
+      changes: { name: 'LinkedIn', url: 'https://linkedin.com/in/example' },
+    })
+
+    actions.reorderProfileLinks({
+      profileId,
+      orderedIds: [secondProfileLinkId, firstProfileLinkId],
+    })
+
+    expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
+    const preview = selectProfilePreviewData(useAppStore.getState().data, profileId)
+    expect(preview?.profileLinks.map((link) => link.name)).toEqual(['LinkedIn', 'Portfolio'])
+    expect(preview?.profileLinks.map((link) => link.url)).toEqual([
+      'https://linkedin.com/in/example',
+      'https://example.com/portfolio',
+    ])
+  })
+
+  it('toggles profile link enabled state and excludes disabled links from preview data', async () => {
     const { actions } = useAppStore.getState()
 
     actions.createBaseProfile('General Profile')
@@ -91,17 +138,20 @@ describe('app store reorder actions', () => {
       changes: { name: 'LinkedIn', url: 'https://linkedin.com/in/example' },
     })
 
-    actions.reorderProfileLinks({
-      profileId,
-      orderedIds: [secondProfileLinkId, firstProfileLinkId],
+    const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
+    await waitForNextTick()
+
+    actions.updateProfileLink({
+      profileLinkId: firstProfileLinkId,
+      changes: { enabled: false },
     })
 
+    expect(useAppStore.getState().data.profileLinks[firstProfileLinkId]?.enabled).toBe(false)
+    expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
+
     const preview = selectProfilePreviewData(useAppStore.getState().data, profileId)
-    expect(preview?.profileLinks.map((link) => link.name)).toEqual(['LinkedIn', 'Portfolio'])
-    expect(preview?.profileLinks.map((link) => link.url)).toEqual([
-      'https://linkedin.com/in/example',
-      'https://example.com/portfolio',
-    ])
+    expect(preview?.profileLinks.map((link) => link.name)).toEqual(['LinkedIn'])
+    expect(preview?.profileLinks.map((link) => link.url)).toEqual(['https://linkedin.com/in/example'])
   })
 
   it('initializes, updates, and reorders per-profile resume settings', () => {
@@ -401,6 +451,7 @@ describe('app store reorder actions', () => {
     expect(duplicatedLinks[0]).toMatchObject({
       name: 'Portfolio',
       url: 'https://example.com/portfolio',
+      enabled: true,
       sortOrder: 1,
     })
     expect(duplicatedLinks[0]?.id).not.toBe(originalLinkId)
@@ -436,7 +487,7 @@ describe('app store reorder actions', () => {
 
     actions.updateProfileLink({
       profileLinkId: firstProfileLinkId,
-      changes: { name: 'GitHub', url: 'https://github.com/example' },
+      changes: { name: 'GitHub', url: 'https://github.com/example', enabled: false },
     })
     actions.updateProfileLink({
       profileLinkId: secondProfileLinkId,
@@ -459,5 +510,6 @@ describe('app store reorder actions', () => {
 
     expect(importedLinks.map((item) => item.name)).toEqual(['Website', 'GitHub'])
     expect(importedLinks.map((item) => item.url)).toEqual(['https://example.com', 'https://github.com/example'])
+    expect(importedLinks.map((item) => item.enabled)).toEqual([true, false])
   })
 })

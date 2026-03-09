@@ -44,7 +44,7 @@ interface AppStoreState {
     createProfileLink: (profileId: Id) => void
     updateProfileLink: (input: {
       profileLinkId: Id
-      changes: Partial<Pick<ProfileLink, 'name' | 'url' | 'sortOrder'>>
+      changes: Partial<Pick<ProfileLink, 'name' | 'url' | 'enabled' | 'sortOrder'>>
     }) => void
     deleteProfileLink: (profileLinkId: Id) => void
     reorderProfileLinks: (input: { profileId: Id; orderedIds: Id[] }) => void
@@ -701,6 +701,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         profileId,
         name: '',
         url: '',
+        enabled: true,
         sortOrder: getNextSortOrder(
           Object.values(get().data.profileLinks)
             .filter((item) => item.profileId === profileId)

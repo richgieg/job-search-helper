@@ -163,7 +163,7 @@ export const selectProfilePreviewData = (data: AppDataState, profileId: Id): Pro
   const job = profile.jobId ? data.jobs[profile.jobId] ?? buildFallbackJob(profile) : buildFallbackJob(profile)
 
   const profileLinks = Object.values(data.profileLinks)
-    .filter((link) => link.profileId === profileId)
+    .filter((link) => link.profileId === profileId && link.enabled)
     .sort(compareSortOrder)
 
   const contacts = Object.values(data.jobContacts)

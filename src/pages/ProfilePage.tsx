@@ -70,6 +70,7 @@ const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
   const reorderProfileLinks = useAppStore((state) => state.actions.reorderProfileLinks)
   const [name, setName] = useState(profileLink?.name ?? '')
   const [url, setUrl] = useState(profileLink?.url ?? '')
+  const [enabled, setEnabled] = useState(profileLink?.enabled ?? true)
 
   const profileLinkIds = profileLink
     ? Object.values(profileLinksById)
@@ -86,6 +87,7 @@ const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
 
     setName(profileLink.name)
     setUrl(profileLink.url)
+    setEnabled(profileLink.enabled)
   }, [profileLink])
 
   if (!profileLink) {
@@ -115,9 +117,25 @@ const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
   }
 
   return (
-    <div className="grid gap-3 rounded-xl border border-slate-200 p-3 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)_auto_auto] md:items-end">
+    <div className="grid gap-3 rounded-xl border border-slate-200 p-3 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto_auto_auto] md:items-end">
       <Field label="Link name" onBlur={commitName} value={name} onChange={setName} />
       <Field label="URL" type="url" onBlur={commitUrl} value={url} onChange={setUrl} />
+      <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 md:self-center md:pb-2">
+        <input
+          checked={enabled}
+          className="h-4 w-4 rounded border-slate-300"
+          onChange={(event) => {
+            const nextEnabled = event.target.checked
+            setEnabled(nextEnabled)
+            updateProfileLink({
+              profileLinkId: profileLink.id,
+              changes: { enabled: nextEnabled },
+            })
+          }}
+          type="checkbox"
+        />
+        Enabled
+      </label>
       <ReorderButtons
         canMoveDown={profileLinkIds.length > 1}
         canMoveUp={profileLinkIds.length > 1}
