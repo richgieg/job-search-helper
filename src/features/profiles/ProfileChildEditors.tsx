@@ -299,36 +299,34 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 p-3">
-      <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-        <TextAreaField hideLabel label="Bullet" minHeightClass="min-h-10" onBlur={commitContent} placeholder="Describe an accomplishment or responsibility" value={content} onChange={setContent} />
-        <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
-          <ToggleField
-            checked={enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setEnabled(value)
-              updateExperienceBullet({ experienceBulletId: bullet.id, changes: { enabled: value } })
-            }}
-          />
-          <ReorderButtons
-            canMoveDown={bulletIds.length > 1}
-            canMoveUp={bulletIds.length > 1}
-            onMoveDown={() =>
-              reorderExperienceBullets({
-                experienceEntryId: bullet.experienceEntryId,
-                orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
-              })
-            }
-            onMoveUp={() =>
-              reorderExperienceBullets({
-                experienceEntryId: bullet.experienceEntryId,
-                orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
-              })
-            }
-          />
-          <DeleteButton onDelete={() => deleteExperienceBullet(bullet.id)} />
-        </div>
+    <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+      <TextAreaField hideLabel label="Bullet" minHeightClass="min-h-10" onBlur={commitContent} placeholder="Describe an accomplishment or responsibility" value={content} onChange={setContent} />
+      <div className="flex flex-wrap items-center justify-end gap-2 md:self-center">
+        <ToggleField
+          checked={enabled}
+          label="Enabled"
+          onChange={(value) => {
+            setEnabled(value)
+            updateExperienceBullet({ experienceBulletId: bullet.id, changes: { enabled: value } })
+          }}
+        />
+        <ReorderButtons
+          canMoveDown={bulletIds.length > 1}
+          canMoveUp={bulletIds.length > 1}
+          onMoveDown={() =>
+            reorderExperienceBullets({
+              experienceEntryId: bullet.experienceEntryId,
+              orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
+            })
+          }
+          onMoveUp={() =>
+            reorderExperienceBullets({
+              experienceEntryId: bullet.experienceEntryId,
+              orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
+            })
+          }
+        />
+        <DeleteButton onDelete={() => deleteExperienceBullet(bullet.id)} />
       </div>
     </div>
   )
