@@ -26,7 +26,7 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
   }
 
   return (
-    <tr className="border-t border-slate-200 first:border-t-0 hover:bg-sky-50/40">
+    <tr className="border-t border-slate-200 first:border-t-0">
       <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
         <div>
           <Link className="font-medium text-slate-900 hover:text-sky-700" to={`/profiles/${profile.id}`}>

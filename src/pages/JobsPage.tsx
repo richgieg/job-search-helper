@@ -35,7 +35,7 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
   }
 
   return (
-    <tr className="border-t border-slate-200 first:border-t-0 hover:bg-sky-50/40">
+    <tr className="border-t border-slate-200 first:border-t-0">
       <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
         <Link className="group inline-block" to={`/jobs/${job.id}`}>
           <p className="font-medium text-slate-900 group-hover:text-sky-700">{job.jobTitle}</p>
