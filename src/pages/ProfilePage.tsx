@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
+import { ActionToggle } from '../components/CompactActionControls'
 import { CollapsiblePanel } from '../components/CollapsiblePanel'
 import { ReorderButtons } from '../components/ReorderButtons'
 import { ProfileChildEditors } from '../features/profiles/ProfileChildEditors'
@@ -265,21 +266,17 @@ export const ProfilePage = () => {
                     </div>
 
                     <div className="flex flex-wrap items-center justify-end gap-2">
-                      <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                        <input
-                          checked={resumeSection.enabled}
-                          className="h-4 w-4 rounded border-slate-300"
-                          onChange={(event) =>
-                            setResumeSectionEnabled({
-                              profileId: profile.id,
-                              section: resumeSection.section,
-                              enabled: event.target.checked,
-                            })
-                          }
-                          type="checkbox"
-                        />
-                        Enabled
-                      </label>
+                      <ActionToggle
+                        checked={resumeSection.enabled}
+                        label={`Enable ${resumeSectionLabels[resumeSection.section]} section`}
+                        onChange={(value) =>
+                          setResumeSectionEnabled({
+                            profileId: profile.id,
+                            section: resumeSection.section,
+                            enabled: value,
+                          })
+                        }
+                      />
 
                       <ReorderButtons
                         canMoveDown={orderedResumeSectionKeys.length > 1}

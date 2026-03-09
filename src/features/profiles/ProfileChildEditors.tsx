@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { ActionToggle, DeleteIconButton } from '../../components/CompactActionControls'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
@@ -134,12 +135,6 @@ const ToggleField = ({
   </label>
 )
 
-const DeleteButton = ({ onDelete }: { onDelete: () => void }) => (
-  <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={onDelete} type="button">
-    Delete
-  </button>
-)
-
 const OrderBadge = ({ value }: { value: number }) => (
   <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-semibold text-slate-600">
     {value}
@@ -234,14 +229,10 @@ const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
         <TextField label="Link name" onBlur={commitName} value={name} onChange={setName} />
         <TextField label="URL" type="url" onBlur={commitUrl} value={url} onChange={setUrl} />
         <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
-          <ToggleField
-            checked={enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setEnabled(value)
-              updateProfileLink({ profileLinkId: profileLink.id, changes: { enabled: value } })
-            }}
-          />
+          <ActionToggle checked={enabled} label="Enable profile link" onChange={(value) => {
+            setEnabled(value)
+            updateProfileLink({ profileLinkId: profileLink.id, changes: { enabled: value } })
+          }} />
           <ReorderButtons
             canMoveDown={profileLinkIds.length > 1}
             canMoveUp={profileLinkIds.length > 1}
@@ -258,7 +249,7 @@ const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
               })
             }
           />
-          <DeleteButton onDelete={() => deleteProfileLink(profileLink.id)} />
+          <DeleteIconButton label="Delete profile link" onDelete={() => deleteProfileLink(profileLink.id)} />
         </div>
       </div>
     </div>
@@ -311,14 +302,10 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
     <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
       <TextAreaField hideLabel label="Bullet" minHeightClass="min-h-10" onBlur={commitContent} placeholder="Describe an accomplishment or responsibility" value={content} onChange={setContent} />
       <div className="flex flex-wrap items-center justify-end gap-2 md:self-center">
-        <ToggleField
-          checked={enabled}
-          label="Enabled"
-          onChange={(value) => {
-            setEnabled(value)
-            updateExperienceBullet({ experienceBulletId: bullet.id, changes: { enabled: value } })
-          }}
-        />
+        <ActionToggle checked={enabled} label="Enable experience bullet" onChange={(value) => {
+          setEnabled(value)
+          updateExperienceBullet({ experienceBulletId: bullet.id, changes: { enabled: value } })
+        }} />
         <ReorderButtons
           canMoveDown={bulletIds.length > 1}
           canMoveUp={bulletIds.length > 1}
@@ -335,7 +322,7 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
             })
           }
         />
-        <DeleteButton onDelete={() => deleteExperienceBullet(bullet.id)} />
+        <DeleteIconButton label="Delete experience bullet" onDelete={() => deleteExperienceBullet(bullet.id)} />
       </div>
     </div>
   )
@@ -393,14 +380,10 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
-          <ToggleField
-            checked={enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setEnabled(value)
-              updateSkill({ skillId: skill.id, changes: { enabled: value } })
-            }}
-          />
+          <ActionToggle checked={enabled} label="Enable skill" onChange={(value) => {
+            setEnabled(value)
+            updateSkill({ skillId: skill.id, changes: { enabled: value } })
+          }} />
           <ReorderButtons
             canMoveDown={skillIds.length > 1}
             canMoveUp={skillIds.length > 1}
@@ -417,7 +400,7 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
               })
             }
           />
-          <DeleteButton onDelete={() => deleteSkill(skill.id)} />
+          <DeleteIconButton label="Delete skill" onDelete={() => deleteSkill(skill.id)} />
         </div>
       </div>
     </div>
@@ -486,14 +469,10 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
     <CollapsiblePanel
       headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <ToggleField
-            checked={enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setEnabled(value)
-              updateSkillCategory({ skillCategoryId: category.id, changes: { enabled: value } })
-            }}
-          />
+          <ActionToggle checked={enabled} label="Enable skill category" onChange={(value) => {
+            setEnabled(value)
+            updateSkillCategory({ skillCategoryId: category.id, changes: { enabled: value } })
+          }} />
           <ReorderButtons
             canMoveDown={skillCategoryIds.length > 1}
             canMoveUp={skillCategoryIds.length > 1}
@@ -510,7 +489,7 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
               })
             }
           />
-          <DeleteButton onDelete={() => deleteSkillCategory(category.id)} />
+          <DeleteIconButton label="Delete skill category" onDelete={() => deleteSkillCategory(category.id)} />
         </div>
       }
       summary={summary}
@@ -604,14 +583,10 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
     <CollapsiblePanel
       headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <ToggleField
-            checked={draft.enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setDraft({ ...draft, enabled: value })
-              updateExperienceEntry({ experienceEntryId: entry.id, changes: { enabled: value } })
-            }}
-          />
+          <ActionToggle checked={draft.enabled} label="Enable experience entry" onChange={(value) => {
+            setDraft({ ...draft, enabled: value })
+            updateExperienceEntry({ experienceEntryId: entry.id, changes: { enabled: value } })
+          }} />
           <ReorderButtons
             canMoveDown={experienceEntryIds.length > 1}
             canMoveUp={experienceEntryIds.length > 1}
@@ -628,7 +603,7 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
               })
             }
           />
-          <DeleteButton onDelete={() => deleteExperienceEntry(entry.id)} />
+          <DeleteIconButton label="Delete experience entry" onDelete={() => deleteExperienceEntry(entry.id)} />
         </div>
       }
       summary={summary}
@@ -790,14 +765,10 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
     <CollapsiblePanel
       headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <ToggleField
-            checked={draft.enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setDraft({ ...draft, enabled: value })
-              updateEducationEntry({ educationEntryId: entry.id, changes: { enabled: value } })
-            }}
-          />
+          <ActionToggle checked={draft.enabled} label="Enable education entry" onChange={(value) => {
+            setDraft({ ...draft, enabled: value })
+            updateEducationEntry({ educationEntryId: entry.id, changes: { enabled: value } })
+          }} />
           <ReorderButtons
             canMoveDown={educationEntryIds.length > 1}
             canMoveUp={educationEntryIds.length > 1}
@@ -814,7 +785,7 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
               })
             }
           />
-          <DeleteButton onDelete={() => deleteEducationEntry(entry.id)} />
+          <DeleteIconButton label="Delete education entry" onDelete={() => deleteEducationEntry(entry.id)} />
         </div>
       }
       summary={summary}
@@ -867,14 +838,10 @@ const CertificationCard = ({ certificationId }: { certificationId: string }) => 
     <CollapsiblePanel
       headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <ToggleField
-            checked={draft.enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setDraft({ ...draft, enabled: value })
-              updateCertification({ certificationId: certification.id, changes: { enabled: value } })
-            }}
-          />
+          <ActionToggle checked={draft.enabled} label="Enable certification" onChange={(value) => {
+            setDraft({ ...draft, enabled: value })
+            updateCertification({ certificationId: certification.id, changes: { enabled: value } })
+          }} />
           <ReorderButtons
             canMoveDown={certificationIds.length > 1}
             canMoveUp={certificationIds.length > 1}
@@ -891,7 +858,7 @@ const CertificationCard = ({ certificationId }: { certificationId: string }) => 
               })
             }
           />
-          <DeleteButton onDelete={() => deleteCertification(certification.id)} />
+          <DeleteIconButton label="Delete certification" onDelete={() => deleteCertification(certification.id)} />
         </div>
       }
       summary={summary}
@@ -946,14 +913,10 @@ const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
     <CollapsiblePanel
       headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <ToggleField
-            checked={draft.enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setDraft({ ...draft, enabled: value })
-              updateReference({ referenceId: reference.id, changes: { enabled: value } })
-            }}
-          />
+          <ActionToggle checked={draft.enabled} label="Enable reference" onChange={(value) => {
+            setDraft({ ...draft, enabled: value })
+            updateReference({ referenceId: reference.id, changes: { enabled: value } })
+          }} />
           <ReorderButtons
             canMoveDown={referenceIds.length > 1}
             canMoveUp={referenceIds.length > 1}
@@ -970,7 +933,7 @@ const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
               })
             }
           />
-          <DeleteButton onDelete={() => deleteReference(reference.id)} />
+          <DeleteIconButton label="Delete reference" onDelete={() => deleteReference(reference.id)} />
         </div>
       }
       summary={summary}
