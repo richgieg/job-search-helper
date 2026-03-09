@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { DocumentProfileHeader } from '../features/documents/DocumentProfileHeader'
-import { PreviewNotFound } from '../features/documents/PreviewNotFound'
-import { formatDateRange, getOrderedResumeSections, selectProfilePreviewData } from '../features/documents/preview-data'
+import { DocumentNotFound } from '../features/documents/DocumentNotFound'
+import { formatDateRange, getOrderedResumeSections, selectProfileDocumentData } from '../features/documents/document-data'
 import { useAppStore } from '../store/app-store'
 
 const formatExperienceMeta = (input: {
@@ -22,21 +22,21 @@ export const ResumePage = () => {
   const { profileId = '' } = useParams()
   const data = useAppStore((state) => state.data)
 
-  const preview = useMemo(() => selectProfilePreviewData(data, profileId), [data, profileId])
+  const documentData = useMemo(() => selectProfileDocumentData(data, profileId), [data, profileId])
 
-  if (!preview) {
-    return <PreviewNotFound message="The selected profile could not be found." />
+  if (!documentData) {
+    return <DocumentNotFound message="The selected profile could not be found." />
   }
-  const summaryParagraphs = preview.profile.summary
+  const summaryParagraphs = documentData.profile.summary
     .split(/\n+/g)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean)
-  const orderedSections = getOrderedResumeSections(preview.profile).filter((section) => section.enabled)
+  const orderedSections = getOrderedResumeSections(documentData.profile).filter((section) => section.enabled)
 
   return (
     <div className="document-preview-shell">
       <article className="document-page">
-        <DocumentProfileHeader preview={preview} />
+        <DocumentProfileHeader documentData={documentData} />
 
         {orderedSections.map((orderedSection) => {
           switch (orderedSection.section) {
@@ -46,17 +46,17 @@ export const ResumePage = () => {
                   <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Summary</h3>
                   <div className="mt-3 space-y-4 text-sm leading-7 text-slate-700">
                     {summaryParagraphs.map((paragraph, index) => (
-                      <p key={`${preview.profile.id}-summary-${index}`}>{paragraph}</p>
+                      <p key={`${documentData.profile.id}-summary-${index}`}>{paragraph}</p>
                     ))}
                   </div>
                 </section>
               ) : null
             case 'skills':
-              return preview.skillCategories.length > 0 ? (
+              return documentData.skillCategories.length > 0 ? (
                 <section key="skills" className="mt-8">
                   <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Skills</h3>
                   <div className="resume-skills-grid mt-4">
-                    {preview.skillCategories.map((item) => (
+                    {documentData.skillCategories.map((item) => (
                       <div key={item.category.id} className="rounded-2xl bg-slate-50 p-4">
                         <p className="text-sm font-semibold text-slate-900">{item.category.name || 'General'}</p>
                         <p className="mt-2 text-sm leading-6 text-slate-700">{item.skills.map((skill) => skill.name).join(' · ') || 'No skills listed yet.'}</p>
@@ -66,11 +66,11 @@ export const ResumePage = () => {
                 </section>
               ) : null
             case 'experience':
-              return preview.experienceEntries.length > 0 ? (
+              return documentData.experienceEntries.length > 0 ? (
                 <section key="experience" className="mt-8">
                   <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Experience</h3>
                   <div className="mt-4 space-y-5">
-                    {preview.experienceEntries.map((entry) => (
+                    {documentData.experienceEntries.map((entry) => (
                       <div key={entry.entry.id}>
                         <div className="resume-experience-header">
                           <div>
@@ -103,10 +103,10 @@ export const ResumePage = () => {
                 <section key="education" className="mt-8">
                   <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Education</h3>
                   <div className="mt-4 space-y-4 text-sm text-slate-700">
-                    {preview.educationEntries.length === 0 ? (
+                    {documentData.educationEntries.length === 0 ? (
                       <p className="text-slate-500">No education entries enabled.</p>
                     ) : (
-                      preview.educationEntries.map((entry) => (
+                      documentData.educationEntries.map((entry) => (
                         <div key={entry.id}>
                           <p className="font-semibold text-slate-900">{entry.school || 'School'}</p>
                           <p>{entry.degree || 'Degree not set'}</p>
@@ -122,10 +122,10 @@ export const ResumePage = () => {
                 <section key="certifications" className="mt-8">
                   <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Certifications</h3>
                   <div className="mt-4 space-y-4 text-sm text-slate-700">
-                    {preview.certifications.length === 0 ? (
+                    {documentData.certifications.length === 0 ? (
                       <p className="text-slate-500">No certifications enabled.</p>
                     ) : (
-                      preview.certifications.map((entry) => (
+                      documentData.certifications.map((entry) => (
                         <div key={entry.id}>
                           <p className="font-semibold text-slate-900">{entry.name || 'Certification'}</p>
                           <p>{entry.issuer || 'Issuer not set'}</p>
@@ -141,10 +141,10 @@ export const ResumePage = () => {
                 <section key="references" className="mt-8">
                   <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">References</h3>
                   <div className="mt-4 space-y-4 text-sm text-slate-700">
-                    {preview.references.length === 0 ? (
+                    {documentData.references.length === 0 ? (
                       <p className="text-slate-500">No references enabled.</p>
                     ) : (
-                      preview.references.map((entry) => (
+                      documentData.references.map((entry) => (
                         <div key={entry.id}>
                           <p className="font-semibold text-slate-900">{entry.name || 'Reference'}</p>
                           <p>{[entry.title, entry.company].filter(Boolean).join(' · ')}</p>

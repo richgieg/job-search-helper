@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { selectProfilePreviewData } from '../features/documents/preview-data'
+import { selectProfileDocumentData } from '../features/documents/document-data'
 import { useAppStore } from '../store/app-store'
 
 interface CopyValueItem {
@@ -165,9 +165,9 @@ export const ApplicationPage = () => {
   const data = useAppStore((state) => state.data)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
 
-  const preview = useMemo(() => selectProfilePreviewData(data, profileId), [data, profileId])
+  const documentData = useMemo(() => selectProfileDocumentData(data, profileId), [data, profileId])
 
-  if (!preview) {
+  if (!documentData) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <h1 className="text-2xl font-semibold text-slate-950">Application unavailable</h1>
@@ -179,8 +179,8 @@ export const ApplicationPage = () => {
     )
   }
 
-  const attachedJob = preview.profile.jobId ? preview.job : null
-  const personalDetails = preview.profile.personalDetails
+  const attachedJob = documentData.profile.jobId ? documentData.job : null
+  const personalDetails = documentData.profile.personalDetails
   const handleCopy = (key: string, value: string) => {
     void copyText(value)
       .then(() => {
@@ -193,7 +193,7 @@ export const ApplicationPage = () => {
   }
 
   const personalInfoRows: FieldRow[] = [
-    { label: 'Full name', values: buildSingleValue(personalDetails.fullName || preview.profile.name) },
+    { label: 'Full name', values: buildSingleValue(personalDetails.fullName || documentData.profile.name) },
     { label: 'Email', values: buildSingleValue(personalDetails.email) },
     { label: 'Phone', values: buildSingleValue(personalDetails.phone) },
     { label: 'Address line 1', values: buildSingleValue(personalDetails.addressLine1) },
@@ -202,7 +202,7 @@ export const ApplicationPage = () => {
     { label: 'City', values: buildSingleValue(personalDetails.city) },
     { label: 'State', values: buildSingleValue(personalDetails.state) },
     { label: 'Postal code', values: buildSingleValue(personalDetails.postalCode) },
-    ...preview.profileLinks.map((link, index) => ({
+    ...documentData.profileLinks.map((link, index) => ({
       label: link.name || `Link ${index + 1}`,
       values: buildSingleValue(link.url),
     })),
@@ -213,7 +213,7 @@ export const ApplicationPage = () => {
       <div>
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Application Content</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{preview.profile.name || 'Unnamed profile'}</h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{documentData.profile.name || 'Unnamed profile'}</h1>
           <p className="mt-2 text-sm text-slate-600">
             {attachedJob ? `Job profile for ${attachedJob.jobTitle || 'Untitled role'} at ${attachedJob.companyName || 'Unknown company'}` : 'Base profile'}
           </p>
@@ -225,10 +225,10 @@ export const ApplicationPage = () => {
 
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-slate-950">Experience Entries</h2>
-          {preview.experienceEntries.length === 0 ? (
+          {documentData.experienceEntries.length === 0 ? (
             <p className="text-sm text-slate-500">No experience entries enabled.</p>
           ) : (
-            preview.experienceEntries.map(({ entry, bullets }, index) => (
+            documentData.experienceEntries.map(({ entry, bullets }, index) => (
               <DataTable
                 key={entry.id}
                 copiedKey={copiedKey}
@@ -274,10 +274,10 @@ export const ApplicationPage = () => {
 
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-slate-950">Education Entries</h2>
-          {preview.educationEntries.length === 0 ? (
+          {documentData.educationEntries.length === 0 ? (
             <p className="text-sm text-slate-500">No education entries enabled.</p>
           ) : (
-            preview.educationEntries.map((entry, index) => (
+            documentData.educationEntries.map((entry, index) => (
               <DataTable
                 key={entry.id}
                 copiedKey={copiedKey}
@@ -296,10 +296,10 @@ export const ApplicationPage = () => {
 
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-slate-950">Certifications</h2>
-          {preview.certifications.length === 0 ? (
+          {documentData.certifications.length === 0 ? (
             <p className="text-sm text-slate-500">No certifications enabled.</p>
           ) : (
-            preview.certifications.map((entry, index) => (
+            documentData.certifications.map((entry, index) => (
               <DataTable
                 key={entry.id}
                 copiedKey={copiedKey}
@@ -321,10 +321,10 @@ export const ApplicationPage = () => {
 
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-slate-950">Skill Categories and Skills</h2>
-          {preview.skillCategories.length === 0 ? (
+          {documentData.skillCategories.length === 0 ? (
             <p className="text-sm text-slate-500">No enabled skill categories or skills.</p>
           ) : (
-            preview.skillCategories.map((item, index) => (
+            documentData.skillCategories.map((item, index) => (
               <DataTable
                 key={item.category.id}
                 copiedKey={copiedKey}
@@ -346,10 +346,10 @@ export const ApplicationPage = () => {
 
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-slate-950">References</h2>
-          {preview.references.length === 0 ? (
+          {documentData.references.length === 0 ? (
             <p className="text-sm text-slate-500">No references enabled.</p>
           ) : (
-            preview.references.map((entry, index) => (
+            documentData.references.map((entry, index) => (
               <DataTable
                 key={entry.id}
                 copiedKey={copiedKey}

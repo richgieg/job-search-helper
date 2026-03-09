@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { getOrderedResumeSections, selectProfilePreviewData } from '../features/documents/preview-data'
+import { getOrderedResumeSections, selectProfileDocumentData } from '../features/documents/document-data'
 import { createDefaultUiState, createEmptyDataState } from './create-initial-state'
 import { useAppStore } from './app-store'
 
@@ -102,7 +102,7 @@ describe('app store reorder actions', () => {
     })
 
     expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
-    const preview = selectProfilePreviewData(useAppStore.getState().data, profileId)
+    const preview = selectProfileDocumentData(useAppStore.getState().data, profileId)
     expect(preview?.profileLinks.map((link) => link.name)).toEqual(['LinkedIn', 'Portfolio'])
     expect(preview?.profileLinks.map((link) => link.url)).toEqual([
       'https://linkedin.com/in/example',
@@ -149,7 +149,7 @@ describe('app store reorder actions', () => {
     expect(useAppStore.getState().data.profileLinks[firstProfileLinkId]?.enabled).toBe(false)
     expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
 
-    const preview = selectProfilePreviewData(useAppStore.getState().data, profileId)
+    const preview = selectProfileDocumentData(useAppStore.getState().data, profileId)
     expect(preview?.profileLinks.map((link) => link.name)).toEqual(['LinkedIn'])
     expect(preview?.profileLinks.map((link) => link.url)).toEqual(['https://linkedin.com/in/example'])
   })
@@ -276,7 +276,7 @@ describe('app store reorder actions', () => {
       orderedIds: [secondBulletId, firstBulletId],
     })
 
-    const preview = selectProfilePreviewData(useAppStore.getState().data, profileId)
+    const preview = selectProfileDocumentData(useAppStore.getState().data, profileId)
     expect(preview?.experienceEntries[0]?.bullets.map((bullet) => bullet.content)).toEqual(['Second bullet', 'First bullet'])
   })
 

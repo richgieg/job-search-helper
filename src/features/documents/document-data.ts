@@ -16,25 +16,25 @@ import type {
   SkillCategory,
 } from '../../types/state'
 
-export interface PreviewSkillCategory {
+export interface DocumentSkillCategory {
   category: SkillCategory
   skills: Skill[]
 }
 
-export interface PreviewExperienceEntry {
+export interface DocumentExperienceEntry {
   entry: ExperienceEntry
   bullets: ExperienceBullet[]
 }
 
-export interface ProfilePreviewData {
+export interface ProfileDocumentData {
   profile: Profile
   profileLinks: ProfileLink[]
   job: Job
   primaryContact: JobContact
   contacts: JobContact[]
   jobLinks: JobLink[]
-  skillCategories: PreviewSkillCategory[]
-  experienceEntries: PreviewExperienceEntry[]
+  skillCategories: DocumentSkillCategory[]
+  experienceEntries: DocumentExperienceEntry[]
   educationEntries: EducationEntry[]
   certifications: AppDataState['certifications'][Id][]
   references: Reference[]
@@ -66,7 +66,7 @@ const replaceTemplateToken = (value: string, token: string, replacement: string)
 const endSentence = (value: string) => (/[.!?]$/.test(value) ? value : `${value}.`)
 
 const buildFallbackJob = (profile: Profile): Job => ({
-  id: `preview-job-${profile.id}`,
+  id: `document-job-${profile.id}`,
   companyName: 'Example Company',
   jobTitle: 'Example Role',
   description: '',
@@ -83,7 +83,7 @@ const buildFallbackJob = (profile: Profile): Job => ({
 })
 
 const buildFallbackContact = (job: Job): JobContact => ({
-  id: `preview-contact-${job.id}`,
+  id: `document-contact-${job.id}`,
   jobId: job.id,
   name: 'Hiring Manager',
   title: '',
@@ -153,7 +153,7 @@ export const getOrderedResumeSections = (profile: Profile): OrderedResumeSection
     }))
     .sort((left, right) => left.sortOrder - right.sortOrder)
 
-export const selectProfilePreviewData = (data: AppDataState, profileId: Id): ProfilePreviewData | null => {
+export const selectProfileDocumentData = (data: AppDataState, profileId: Id): ProfileDocumentData | null => {
   const profile = data.profiles[profileId]
 
   if (!profile) {
@@ -227,13 +227,13 @@ export const selectProfilePreviewData = (data: AppDataState, profileId: Id): Pro
   }
 }
 
-export const buildCoverLetterParagraphs = (preview: ProfilePreviewData) => {
-  const role = preview.job.jobTitle || 'Example Role'
-  const company = preview.job.companyName || 'Example Company'
+export const buildCoverLetterParagraphs = (documentData: ProfileDocumentData) => {
+  const role = documentData.job.jobTitle || 'Example Role'
+  const company = documentData.job.companyName || 'Example Company'
   const replaceJobTokens = (value: string) =>
     replaceTemplateToken(replaceTemplateToken(value, '{{JOB.TITLE}}', role), '{{JOB.COMPANY}}', company)
 
-  const trimmed = preview.profile.coverLetter
+  const trimmed = documentData.profile.coverLetter
     .split(/\n\s*\n/g)
     .map((paragraph) => replaceJobTokens(paragraph.trim()))
     .filter(Boolean)
@@ -242,7 +242,7 @@ export const buildCoverLetterParagraphs = (preview: ProfilePreviewData) => {
     return trimmed
   }
 
-  const summary = preview.profile.summary.trim()
+  const summary = documentData.profile.summary.trim()
 
   return [
     endSentence(`I am excited to submit my application for ${role} at ${company}`),
