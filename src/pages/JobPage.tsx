@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
+import { AddIconButton, DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../components/CompactActionControls'
 import { CollapsiblePanel } from '../components/CollapsiblePanel'
-import { DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../components/CompactActionControls'
 import { JobChildEditors } from '../features/jobs/JobChildEditors'
 import { getJobComputedStatus } from '../features/jobs/job-status'
 import { useAppStore } from '../store/app-store'
@@ -328,9 +328,7 @@ export const JobPage = () => {
                   </option>
                 ))}
               </select>
-              <button className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700" onClick={handleAddJobProfile} type="button">
-                Add profile
-              </button>
+              <AddIconButton label="Add profile" onAdd={handleAddJobProfile} />
             </div>
           )
         }

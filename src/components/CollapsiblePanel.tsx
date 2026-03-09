@@ -1,5 +1,7 @@
 import { Children, type ReactNode, useState } from 'react'
 
+import { AddIconButton } from './CompactActionControls'
+
 interface CollapsiblePanelProps {
   title: string
   description?: string
@@ -10,6 +12,7 @@ interface CollapsiblePanelProps {
   actionLabel?: string
   onAction?: () => void
   expandOnAction?: boolean
+  actionStyle?: 'text' | 'icon'
   headerActions?: ReactNode
   headerActionContent?: ReactNode
   contentClassName?: string
@@ -25,6 +28,7 @@ export const CollapsiblePanel = ({
   actionLabel,
   onAction,
   expandOnAction = true,
+  actionStyle = 'text',
   headerActions,
   headerActionContent,
   contentClassName,
@@ -84,9 +88,13 @@ export const CollapsiblePanel = ({
           {headerActions}
             {(!collapsible || isExpanded) && headerActionContent ? headerActionContent : null}
           {(!collapsible || isExpanded) && actionLabel && onAction ? (
-            <button className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700" onClick={handleAction} type="button">
-              {actionLabel}
-            </button>
+            actionStyle === 'icon' ? (
+              <AddIconButton label={actionLabel} onAdd={handleAction} />
+            ) : (
+              <button className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700" onClick={handleAction} type="button">
+                {actionLabel}
+              </button>
+            )
           ) : null}
         </div>
       </div>

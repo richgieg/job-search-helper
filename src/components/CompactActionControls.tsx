@@ -1,15 +1,19 @@
-type ActionButtonTone = 'neutral' | 'danger'
+type ActionButtonTone = 'neutral' | 'danger' | 'primary'
 
 export const getActionIconButtonClassName = (tone: ActionButtonTone = 'neutral', disabled = false) =>
   [
-    'inline-flex h-10 w-10 items-center justify-center rounded-xl border bg-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
+    'inline-flex h-10 w-10 items-center justify-center rounded-xl border focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
     tone === 'danger'
       ? disabled
         ? 'cursor-not-allowed border-rose-200 bg-rose-50 text-rose-300 focus-visible:outline-rose-500'
         : 'border-rose-300 text-rose-700 hover:bg-rose-50 focus-visible:outline-rose-500'
-      : disabled
-        ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-300 focus-visible:outline-sky-500'
-        : 'border-slate-300 text-slate-700 hover:bg-slate-50 focus-visible:outline-sky-500',
+      : tone === 'primary'
+        ? disabled
+          ? 'cursor-not-allowed border-sky-300 bg-sky-300 text-white focus-visible:outline-sky-500'
+          : 'border-sky-600 bg-sky-600 text-white hover:bg-sky-700 hover:border-sky-700 focus-visible:outline-sky-500'
+        : disabled
+          ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-300 focus-visible:outline-sky-500'
+          : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-sky-500',
   ].join(' ')
 
 interface ActionToggleProps {
@@ -67,6 +71,21 @@ export const DeleteIconButton = ({ onDelete, label }: DeleteIconButtonProps) => 
       <path d="M14 11v6" />
       <path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
       <path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" />
+    </svg>
+  </IconActionButton>
+)
+
+interface AddIconButtonProps {
+  onAdd: () => void
+  label: string
+  disabled?: boolean
+}
+
+export const AddIconButton = ({ onAdd, label, disabled = false }: AddIconButtonProps) => (
+  <IconActionButton disabled={disabled} label={label} onClick={onAdd} tone="primary">
+    <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
     </svg>
   </IconActionButton>
 )

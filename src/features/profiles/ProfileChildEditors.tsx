@@ -1045,6 +1045,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
     <>
       <CollapsiblePanel
         actionLabel="Add link"
+        actionStyle="icon"
         collapsible={hasProfileLinks}
         description="Store the public URLs that should travel with this profile."
         onAction={() => createProfileLink(profileId)}
@@ -1055,6 +1056,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
 
       <CollapsiblePanel
         actionLabel="Add skill category"
+        actionStyle="icon"
         collapsible={hasSkillCategories}
         description="Organize skills into enabled or disabled categories."
         onAction={() => createSkillCategory(profileId)}
@@ -1065,6 +1067,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
 
       <CollapsiblePanel
         actionLabel="Add experience"
+        actionStyle="icon"
         collapsible={hasExperienceEntries}
         description="Capture work history entries used in resumes and applications."
         onAction={() => createExperienceEntry(profileId)}
@@ -1075,6 +1078,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
 
       <CollapsiblePanel
         actionLabel="Add education"
+        actionStyle="icon"
         collapsible={hasEducationEntries}
         description="Store education entries that can be enabled or disabled per profile."
         onAction={() => createEducationEntry(profileId)}
@@ -1085,6 +1089,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
 
       <CollapsiblePanel
         actionLabel="Add certification"
+        actionStyle="icon"
         collapsible={hasCertifications}
         description="Track certifications and their optional credential metadata."
         onAction={() => createCertification(profileId)}
@@ -1095,6 +1100,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
 
       <CollapsiblePanel
         actionLabel="Add reference"
+        actionStyle="icon"
         collapsible={hasReferences}
         description="Maintain both professional and personal references."
         onAction={() => createReference(profileId)}
