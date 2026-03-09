@@ -13,6 +13,7 @@ const TextField = ({
   onBlur,
   placeholder,
   type = 'text',
+  hideLabel = false,
 }: {
   label: string
   value: string
@@ -20,9 +21,10 @@ const TextField = ({
   onBlur?: () => void
   placeholder?: string
   type?: 'text' | 'email' | 'tel' | 'url' | 'date'
+  hideLabel?: boolean
 }) => (
   <label className="flex flex-col gap-2 text-sm text-slate-700">
-    <span className="font-medium">{label}</span>
+    <span className={hideLabel ? 'sr-only' : 'font-medium'}>{label}</span>
     <input
       className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
       placeholder={placeholder}
@@ -129,11 +131,22 @@ const DeleteButton = ({ onDelete }: { onDelete: () => void }) => (
 
 const countLabel = (count: number, singular: string, plural = `${singular}s`) => `${count} ${count === 1 ? singular : plural}`
 
-const formatEnabledState = (enabled: boolean) => (enabled ? 'Enabled' : 'Disabled')
+const formatMonthYear = (value: string | null) => {
+  if (!value) {
+    return ''
+  }
+
+  const date = new Date(`${value}T00:00:00`)
+
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    year: 'numeric',
+  })
+}
 
 const formatDateRange = (startDate: string | null, endDate: string | null, isCurrent?: boolean) => {
-  const start = startDate || 'No start date'
-  const end = isCurrent ? 'Present' : endDate || 'No end date'
+  const start = formatMonthYear(startDate) || 'No start date'
+  const end = isCurrent ? 'Present' : formatMonthYear(endDate) || 'No end date'
 
   return `${start} – ${end}`
 }
@@ -360,7 +373,7 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
   return (
     <div className="rounded-xl border border-slate-200 p-3">
       <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-        <TextField label="Skill name" onBlur={commitName} value={name} onChange={setName} />
+        <TextField hideLabel label="Skill name" onBlur={commitName} value={name} onChange={setName} />
         <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
           <ToggleField
             checked={enabled}
@@ -434,11 +447,7 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
     setEnabled(category.enabled)
   }, [category])
 
-  const summary = summarizeParts([
-    name || 'Untitled category',
-    formatEnabledState(enabled),
-    countLabel(skillIds.length, 'skill'),
-  ])
+  const summary = summarizeParts([countLabel(skillIds.length, 'skill')])
 
   if (!category) {
     return null
@@ -546,10 +555,8 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
   }, [entry])
 
   const summary = summarizeParts([
-    draft?.title || 'Untitled role',
     draft?.company || 'Unknown company',
     formatDateRange(draft?.startDate ?? null, draft?.endDate ?? null, draft?.isCurrent),
-    formatEnabledState(draft?.enabled ?? true),
     countLabel(bulletIds.length, 'bullet'),
   ])
 
@@ -611,12 +618,14 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
             updateExperienceEntry({ experienceEntryId: entry.id, changes: { isCurrent: value } })
           }}
         />
-        <TextField
-          label="Reason for leaving (short)"
-          onBlur={() => draft.reasonForLeavingShort !== entry.reasonForLeavingShort && commitEntryChanges({ reasonForLeavingShort: draft.reasonForLeavingShort })}
-          value={draft.reasonForLeavingShort}
-          onChange={(value) => setDraft({ ...draft, reasonForLeavingShort: value })}
-        />
+        <div className="xl:col-span-3">
+          <TextField
+            label="Reason for leaving (short)"
+            onBlur={() => draft.reasonForLeavingShort !== entry.reasonForLeavingShort && commitEntryChanges({ reasonForLeavingShort: draft.reasonForLeavingShort })}
+            value={draft.reasonForLeavingShort}
+            onChange={(value) => setDraft({ ...draft, reasonForLeavingShort: value })}
+          />
+        </div>
         <div className="xl:col-span-3">
           <TextAreaField
             label="Reason for leaving (details)"
@@ -726,10 +735,8 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
   }, [entry])
 
   const summary = summarizeParts([
-    draft?.degree || 'No degree',
     draft?.school || 'No school',
-    draft?.graduationDate ? `Graduates ${draft.graduationDate}` : null,
-    formatEnabledState(draft?.enabled ?? true),
+    formatMonthYear(draft?.graduationDate ?? null) || null,
   ])
 
   if (!entry || !draft) {
@@ -768,11 +775,11 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
         </div>
       }
       summary={summary}
-      title={draft.school || entry.school || 'Education entry'}
+      title={draft.degree || entry.degree || 'Education entry'}
     >
       <div className="grid gap-4 xl:grid-cols-3">
-        <TextField label="School" onBlur={() => draft.school !== entry.school && updateEducationEntry({ educationEntryId: entry.id, changes: { school: draft.school } })} value={draft.school} onChange={(value) => setDraft({ ...draft, school: value })} />
         <TextField label="Degree" onBlur={() => draft.degree !== entry.degree && updateEducationEntry({ educationEntryId: entry.id, changes: { degree: draft.degree } })} value={draft.degree} onChange={(value) => setDraft({ ...draft, degree: value })} />
+        <TextField label="School" onBlur={() => draft.school !== entry.school && updateEducationEntry({ educationEntryId: entry.id, changes: { school: draft.school } })} value={draft.school} onChange={(value) => setDraft({ ...draft, school: value })} />
         <TextField label="Graduation date" type="date" onBlur={() => draft.graduationDate !== entry.graduationDate && updateEducationEntry({ educationEntryId: entry.id, changes: { graduationDate: draft.graduationDate } })} value={draft.graduationDate ?? ''} onChange={(value) => setDraft({ ...draft, graduationDate: value || null })} />
       </div>
     </CollapsiblePanel>
@@ -804,11 +811,9 @@ const CertificationCard = ({ certificationId }: { certificationId: string }) => 
   }, [certification])
 
   const summary = summarizeParts([
-    draft?.name || 'Unnamed certification',
     draft?.issuer || 'No issuer',
-    draft?.issueDate ? `Issued ${draft.issueDate}` : null,
-    draft?.expiryDate ? `Expires ${draft.expiryDate}` : null,
-    formatEnabledState(draft?.enabled ?? true),
+    formatMonthYear(draft?.issueDate ?? null) || null,
+    draft?.expiryDate ? `Expires ${formatMonthYear(draft.expiryDate)}` : null,
   ])
 
   if (!certification || !draft) {
@@ -887,9 +892,7 @@ const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
 
   const summary = summarizeParts([
     draft?.type === 'professional' ? 'Professional' : 'Personal',
-    draft?.name || 'Unnamed reference',
     draft?.company || draft?.relationship || null,
-    formatEnabledState(draft?.enabled ?? true),
   ])
 
   if (!reference || !draft) {

@@ -182,22 +182,36 @@ export const ProfilePage = () => {
         </div>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap gap-2">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-            {profile.jobId === null ? 'Base profile' : 'Job profile'}
-          </span>
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">Created {new Date(profile.createdAt).toLocaleString()}</span>
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">Updated {new Date(profile.updatedAt).toLocaleString()}</span>
-        </div>
-      </section>
-
       <CollapsiblePanel
         description="Edit the core profile content used across previews and applications."
         title="Profile details"
       >
         <div className="grid gap-4 xl:grid-cols-2">
           <Field label="Profile name" onBlur={commitProfileName} value={name} onChange={setName} />
+
+          <div className="xl:col-span-2">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <Field label="Full name" value={personalDetails.fullName} onBlur={() => commitPersonalDetail('fullName', personalDetails.fullName)} onChange={(value) => setPersonalDetails({ ...personalDetails, fullName: value })} />
+              <Field label="Email" type="email" value={personalDetails.email} onBlur={() => commitPersonalDetail('email', personalDetails.email)} onChange={(value) => setPersonalDetails({ ...personalDetails, email: value })} />
+              <Field label="Phone" type="tel" value={personalDetails.phone} onBlur={() => commitPersonalDetail('phone', personalDetails.phone)} onChange={(value) => setPersonalDetails({ ...personalDetails, phone: value })} />
+            </div>
+          </div>
+
+          <div className="xl:col-span-2">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <Field label="Address line 1" value={personalDetails.addressLine1} onBlur={() => commitPersonalDetail('addressLine1', personalDetails.addressLine1)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine1: value })} />
+              <Field label="Address line 2" value={personalDetails.addressLine2} onBlur={() => commitPersonalDetail('addressLine2', personalDetails.addressLine2)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine2: value })} />
+              <Field label="Address line 3" value={personalDetails.addressLine3} onBlur={() => commitPersonalDetail('addressLine3', personalDetails.addressLine3)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine3: value })} />
+            </div>
+          </div>
+
+          <div className="xl:col-span-2">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <Field label="City" value={personalDetails.city} onBlur={() => commitPersonalDetail('city', personalDetails.city)} onChange={(value) => setPersonalDetails({ ...personalDetails, city: value })} />
+              <Field label="State" value={personalDetails.state} onBlur={() => commitPersonalDetail('state', personalDetails.state)} onChange={(value) => setPersonalDetails({ ...personalDetails, state: value })} />
+              <Field label="Postal code" value={personalDetails.postalCode} onBlur={() => commitPersonalDetail('postalCode', personalDetails.postalCode)} onChange={(value) => setPersonalDetails({ ...personalDetails, postalCode: value })} />
+            </div>
+          </div>
 
           <div className="xl:col-span-2">
             <label className="flex flex-col gap-2 text-sm text-slate-700">
@@ -222,23 +236,6 @@ export const ProfilePage = () => {
               />
             </label>
           </div>
-        </div>
-      </CollapsiblePanel>
-
-      <CollapsiblePanel
-        description="Manage contact and address details used in document headers and applications."
-        title="Personal details"
-      >
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <Field label="Full name" value={personalDetails.fullName} onBlur={() => commitPersonalDetail('fullName', personalDetails.fullName)} onChange={(value) => setPersonalDetails({ ...personalDetails, fullName: value })} />
-          <Field label="Email" type="email" value={personalDetails.email} onBlur={() => commitPersonalDetail('email', personalDetails.email)} onChange={(value) => setPersonalDetails({ ...personalDetails, email: value })} />
-          <Field label="Phone" type="tel" value={personalDetails.phone} onBlur={() => commitPersonalDetail('phone', personalDetails.phone)} onChange={(value) => setPersonalDetails({ ...personalDetails, phone: value })} />
-          <Field label="Address line 1" value={personalDetails.addressLine1} onBlur={() => commitPersonalDetail('addressLine1', personalDetails.addressLine1)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine1: value })} />
-          <Field label="Address line 2" value={personalDetails.addressLine2} onBlur={() => commitPersonalDetail('addressLine2', personalDetails.addressLine2)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine2: value })} />
-          <Field label="Address line 3" value={personalDetails.addressLine3} onBlur={() => commitPersonalDetail('addressLine3', personalDetails.addressLine3)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine3: value })} />
-          <Field label="City" value={personalDetails.city} onBlur={() => commitPersonalDetail('city', personalDetails.city)} onChange={(value) => setPersonalDetails({ ...personalDetails, city: value })} />
-          <Field label="State" value={personalDetails.state} onBlur={() => commitPersonalDetail('state', personalDetails.state)} onChange={(value) => setPersonalDetails({ ...personalDetails, state: value })} />
-          <Field label="Postal code" value={personalDetails.postalCode} onBlur={() => commitPersonalDetail('postalCode', personalDetails.postalCode)} onChange={(value) => setPersonalDetails({ ...personalDetails, postalCode: value })} />
         </div>
       </CollapsiblePanel>
 
