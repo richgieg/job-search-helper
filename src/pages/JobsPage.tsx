@@ -39,8 +39,10 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
       <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
         <Link className="group inline-block" to={`/jobs/${job.id}`}>
           <p className="font-medium text-slate-900 group-hover:text-sky-700">{job.jobTitle}</p>
-          <p className="mt-1 text-sm text-slate-500 group-hover:text-sky-600">{job.companyName}</p>
         </Link>
+      </td>
+      <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
+        <span className="text-sm text-slate-600">{job.companyName}</span>
       </td>
       <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
         <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium capitalize text-sky-700">{computedStatus}</span>
@@ -87,14 +89,16 @@ const JobsTable = ({ jobIds }: { jobIds: string[] }) => {
     <div className="overflow-x-auto">
       <table className="min-w-full border-collapse table-fixed text-sm">
         <colgroup>
-          <col className="w-[46%]" />
-          <col className="w-[14%]" />
-          <col className="w-[22%]" />
+          <col className="w-[31%]" />
+          <col className="w-[23%]" />
+          <col className="w-[12%]" />
           <col className="w-[18%]" />
+          <col className="w-[16%]" />
         </colgroup>
         <thead>
           <tr className="border-b border-slate-300 bg-slate-100 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Job</th>
+            <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Job title</th>
+            <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Company</th>
             <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Status</th>
             <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Links</th>
             <th className="px-4 py-3 text-right">Actions</th>
