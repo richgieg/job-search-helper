@@ -9,6 +9,20 @@ import { moveOrderedItem } from '../../utils/reorder'
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(' • ')
 
+const truncatePanelText = (value: string, maxLength: number) => {
+  const normalized = value.replace(/\s+/g, ' ').trim()
+
+  if (!normalized) {
+    return ''
+  }
+
+  if (normalized.length <= maxLength) {
+    return normalized
+  }
+
+  return `${normalized.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`
+}
+
 const formatRelationshipType = (relationshipType: ContactRelationshipType) => {
   switch (relationshipType) {
     case 'hiring_manager':
@@ -386,11 +400,12 @@ const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestio
     })
   }
 
+  const title = truncatePanelText(draft.question, 96) || 'Application question'
+  const summary = truncatePanelText(draft.answer, 180) || 'No answer'
+
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
-      <div className="grid gap-4 xl:grid-cols-1">
-        <TextAreaField label="Question" value={draft.question} onBlur={() => draft.question !== applicationQuestion.question && commitQuestionChanges({ question: draft.question })} onChange={(value) => setDraft({ ...draft, question: value })} />
-        <TextAreaField label="Answer" value={draft.answer} onBlur={() => draft.answer !== applicationQuestion.answer && commitQuestionChanges({ answer: draft.answer })} onChange={(value) => setDraft({ ...draft, answer: value })} />
+    <CollapsiblePanel
+      headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ReorderButtons
             canMoveDown={applicationQuestionIds.length > 1}
@@ -410,8 +425,15 @@ const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestio
           />
           <DeleteIconButton label="Delete application question" onDelete={() => deleteApplicationQuestion(applicationQuestion.id)} />
         </div>
+      }
+      summary={summary}
+      title={title}
+    >
+      <div className="grid gap-4 xl:grid-cols-2">
+        <TextAreaField label="Question" value={draft.question} onBlur={() => draft.question !== applicationQuestion.question && commitQuestionChanges({ question: draft.question })} onChange={(value) => setDraft({ ...draft, question: value })} />
+        <TextAreaField label="Answer" value={draft.answer} onBlur={() => draft.answer !== applicationQuestion.answer && commitQuestionChanges({ answer: draft.answer })} onChange={(value) => setDraft({ ...draft, answer: value })} />
       </div>
-    </div>
+    </CollapsiblePanel>
   )
 }
 
