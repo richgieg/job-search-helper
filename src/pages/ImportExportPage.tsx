@@ -57,7 +57,7 @@ export const ImportExportPage = () => {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Import / Export</h1>
-        <p className="mt-2 text-sm text-slate-600">Persist the browser-only app state by exporting JSON or overwriting current in-memory state with an import.</p>
+        <p className="mt-2 text-sm text-slate-600">Before you step away, export your progress; when you return, import it to restore your workspace.</p>
       </div>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

@@ -29,12 +29,7 @@ export const DashboardPage = () => {
     <div className="space-y-8">
       <section>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Dashboard</h1>
-        <p className="mt-2 max-w-3xl text-sm text-slate-600">
-          Manage your job search in one place.
-        </p>
-        <p className="mt-2 max-w-3xl text-sm text-slate-600">
-          Track profiles, jobs, contacts, events, and generated application materials.
-        </p>
+        <p className="mt-2 max-w-3xl text-sm text-slate-600">See your job search at a glance and stay on top of next steps.</p>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

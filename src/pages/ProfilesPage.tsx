@@ -82,7 +82,7 @@ export const ProfilesPage = () => {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Profiles</h1>
-        <p className="mt-2 text-sm text-slate-600">Use this page as a lightweight overview of reusable base profiles. Open any profile to edit its details, links, document content, and child records.</p>
+        <p className="mt-2 text-sm text-slate-600">Create and manage the base profiles you can tailor for each opportunity.</p>
       </div>
 
       <section className="max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

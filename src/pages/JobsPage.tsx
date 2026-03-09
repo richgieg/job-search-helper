@@ -153,7 +153,7 @@ export const JobsPage = () => {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Jobs</h1>
-        <p className="mt-2 text-sm text-slate-600">Use this page as a lightweight overview. Open any job to edit its details, profiles, contacts, questions, sources, and events.</p>
+        <p className="mt-2 text-sm text-slate-600">Keep track of the roles you're pursuing and everything connected to each one.</p>
       </div>
 
       <section className="max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
