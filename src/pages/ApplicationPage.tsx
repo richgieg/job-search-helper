@@ -172,6 +172,7 @@ export const ApplicationPage = () => {
     return <PreviewNotFound message="The selected profile could not be found." />
   }
 
+  const attachedJob = preview.profile.jobId ? preview.job : null
   const personalDetails = preview.profile.personalDetails
   const handleCopy = (key: string, value: string) => {
     void copyText(value)
@@ -205,8 +206,10 @@ export const ApplicationPage = () => {
       <div>
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Application Content</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{`${preview.profile.name || 'Profile'} application preview`}</h1>
-          <p className="mt-2 text-sm text-slate-600">Raw, copy-friendly profile data for filling out online application forms. Click any value to copy it.</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{preview.profile.name || 'Unnamed profile'}</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            {attachedJob ? `Job profile for ${attachedJob.jobTitle || 'Untitled role'} at ${attachedJob.companyName || 'Unknown company'}` : 'Base profile'}
+          </p>
         </div>
       </div>
 
