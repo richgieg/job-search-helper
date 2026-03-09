@@ -209,7 +209,7 @@ This allows the user to keep track of custom questions asked during online appli
 4. Jobs list
    - lightweight overview of all jobs
 5. Job create/edit
-6. Job detail
+6. Job editor
    - full job editing and child records
    - includes access to job-specific profiles
 7. Job contacts editor
