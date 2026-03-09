@@ -105,6 +105,9 @@ export const ProfilePage = () => {
     }))
     .sort((left, right) => left.sortOrder - right.sortOrder)
   const orderedResumeSectionKeys = orderedResumeSections.map((section) => section.section)
+  const splitResumeSectionIndex = Math.ceil(orderedResumeSections.length / 2)
+  const leftColumnResumeSections = orderedResumeSections.slice(0, splitResumeSectionIndex)
+  const rightColumnResumeSections = orderedResumeSections.slice(splitResumeSectionIndex)
 
   const commitProfileName = () => {
     const trimmed = name.trim()
@@ -242,41 +245,53 @@ export const ProfilePage = () => {
       <ProfileChildEditors profileId={profile.id} />
 
       <CollapsiblePanel description="Control which sections appear on the resume and the order in which they are shown." title="Resume settings">
-        <div className="space-y-3">
-          {orderedResumeSections.map((resumeSection, index) => (
-            <div key={resumeSection.section} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
-              <label className="inline-flex items-center gap-3 text-sm font-medium text-slate-800">
-                <input
-                  checked={resumeSection.enabled}
-                  className="h-4 w-4 rounded border-slate-300"
-                  onChange={(event) =>
-                    setResumeSectionEnabled({
-                      profileId: profile.id,
-                      section: resumeSection.section,
-                      enabled: event.target.checked,
-                    })
-                  }
-                  type="checkbox"
-                />
-                <span>{resumeSectionLabels[resumeSection.section]}</span>
-              </label>
+        <div className="grid gap-3 md:grid-cols-2">
+          {[leftColumnResumeSections, rightColumnResumeSections].map((column, columnIndex) => (
+            <div key={columnIndex} className="space-y-3">
+              {column.map((resumeSection) => {
+                const index = orderedResumeSections.findIndex((section) => section.section === resumeSection.section)
 
-              <ReorderButtons
-                canMoveDown={orderedResumeSectionKeys.length > 1}
-                canMoveUp={orderedResumeSectionKeys.length > 1}
-                onMoveDown={() =>
-                  reorderResumeSections({
-                    profileId: profile.id,
-                    orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, 1) as ResumeSectionKey[],
-                  })
-                }
-                onMoveUp={() =>
-                  reorderResumeSections({
-                    profileId: profile.id,
-                    orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, -1) as ResumeSectionKey[],
-                  })
-                }
-              />
+                return (
+                  <div key={resumeSection.section} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
+                    <div className="text-sm font-medium text-slate-800">{resumeSectionLabels[resumeSection.section]}</div>
+
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                        <input
+                          checked={resumeSection.enabled}
+                          className="h-4 w-4 rounded border-slate-300"
+                          onChange={(event) =>
+                            setResumeSectionEnabled({
+                              profileId: profile.id,
+                              section: resumeSection.section,
+                              enabled: event.target.checked,
+                            })
+                          }
+                          type="checkbox"
+                        />
+                        Enabled
+                      </label>
+
+                      <ReorderButtons
+                        canMoveDown={orderedResumeSectionKeys.length > 1}
+                        canMoveUp={orderedResumeSectionKeys.length > 1}
+                        onMoveDown={() =>
+                          reorderResumeSections({
+                            profileId: profile.id,
+                            orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, 1) as ResumeSectionKey[],
+                          })
+                        }
+                        onMoveUp={() =>
+                          reorderResumeSections({
+                            profileId: profile.id,
+                            orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, -1) as ResumeSectionKey[],
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           ))}
         </div>
