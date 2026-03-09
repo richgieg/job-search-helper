@@ -377,36 +377,34 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 p-3">
-      <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-        <TextField hideLabel label="Skill name" onBlur={commitName} value={name} onChange={setName} />
-        <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
-          <ToggleField
-            checked={enabled}
-            label="Enabled"
-            onChange={(value) => {
-              setEnabled(value)
-              updateSkill({ skillId: skill.id, changes: { enabled: value } })
-            }}
-          />
-          <ReorderButtons
-            canMoveDown={skillIds.length > 1}
-            canMoveUp={skillIds.length > 1}
-            onMoveDown={() =>
-              reorderSkills({
-                skillCategoryId: skill.skillCategoryId,
-                orderedIds: moveOrderedItem(skillIds, skillIndex, 1),
-              })
-            }
-            onMoveUp={() =>
-              reorderSkills({
-                skillCategoryId: skill.skillCategoryId,
-                orderedIds: moveOrderedItem(skillIds, skillIndex, -1),
-              })
-            }
-          />
-          <DeleteButton onDelete={() => deleteSkill(skill.id)} />
-        </div>
+    <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+      <TextField hideLabel label="Skill name" onBlur={commitName} value={name} onChange={setName} />
+      <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
+        <ToggleField
+          checked={enabled}
+          label="Enabled"
+          onChange={(value) => {
+            setEnabled(value)
+            updateSkill({ skillId: skill.id, changes: { enabled: value } })
+          }}
+        />
+        <ReorderButtons
+          canMoveDown={skillIds.length > 1}
+          canMoveUp={skillIds.length > 1}
+          onMoveDown={() =>
+            reorderSkills({
+              skillCategoryId: skill.skillCategoryId,
+              orderedIds: moveOrderedItem(skillIds, skillIndex, 1),
+            })
+          }
+          onMoveUp={() =>
+            reorderSkills({
+              skillCategoryId: skill.skillCategoryId,
+              orderedIds: moveOrderedItem(skillIds, skillIndex, -1),
+            })
+          }
+        />
+        <DeleteButton onDelete={() => deleteSkill(skill.id)} />
       </div>
     </div>
   )
@@ -443,6 +441,9 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
         .map((item) => item.id),
     [skillCategoryId, skillsById],
   )
+  const splitSkillIndex = Math.ceil(skillIds.length / 2)
+  const leftColumnSkillIds = skillIds.slice(0, splitSkillIndex)
+  const rightColumnSkillIds = skillIds.slice(splitSkillIndex)
 
   useEffect(() => {
     if (!category) {
@@ -517,8 +518,19 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
           </button>
         </div>
 
-        <div className="mt-3 space-y-3">
-        {skillIds.length === 0 ? <p className="text-sm text-slate-500">No skills yet.</p> : skillIds.map((skillId) => <SkillRow key={skillId} skillId={skillId} />)}
+        <div className="mt-3">
+          {skillIds.length === 0 ? (
+            <p className="text-sm text-slate-500">No skills yet.</p>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="space-y-3">
+                {leftColumnSkillIds.map((skillId) => <SkillRow key={skillId} skillId={skillId} />)}
+              </div>
+              <div className="space-y-3">
+                {rightColumnSkillIds.map((skillId) => <SkillRow key={skillId} skillId={skillId} />)}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </CollapsiblePanel>
