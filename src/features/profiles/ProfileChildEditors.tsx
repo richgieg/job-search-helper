@@ -14,6 +14,7 @@ const TextField = ({
   placeholder,
   type = 'text',
   hideLabel = false,
+  disabled = false,
 }: {
   label: string
   value: string
@@ -22,11 +23,13 @@ const TextField = ({
   placeholder?: string
   type?: 'text' | 'email' | 'tel' | 'url' | 'date'
   hideLabel?: boolean
+  disabled?: boolean
 }) => (
   <label className="flex flex-col gap-2 text-sm text-slate-700">
     <span className={hideLabel ? 'sr-only' : 'font-medium'}>{label}</span>
     <input
-      className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+      className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+      disabled={disabled}
       placeholder={placeholder}
       spellCheck={type === 'url' ? false : undefined}
       type={type}
@@ -625,12 +628,23 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
         <SelectField label="Work arrangement" onBlur={() => draft.workArrangement !== entry.workArrangement && commitEntryChanges({ workArrangement: draft.workArrangement })} value={draft.workArrangement} onChange={(value) => setDraft({ ...draft, workArrangement: value })} options={workArrangementOptions} />
         <SelectField label="Employment type" onBlur={() => draft.employmentType !== entry.employmentType && commitEntryChanges({ employmentType: draft.employmentType })} value={draft.employmentType} onChange={(value) => setDraft({ ...draft, employmentType: value })} options={employmentTypeOptions} />
         <TextField label="Start date" type="date" onBlur={() => draft.startDate !== entry.startDate && commitEntryChanges({ startDate: draft.startDate })} value={draft.startDate ?? ''} onChange={(value) => setDraft({ ...draft, startDate: value || null })} />
-        <TextField label="End date" type="date" onBlur={() => draft.endDate !== entry.endDate && commitEntryChanges({ endDate: draft.endDate })} value={draft.endDate ?? ''} onChange={(value) => setDraft({ ...draft, endDate: value || null })} />
+        <TextField
+          disabled={draft.isCurrent}
+          label="End date"
+          type="date"
+          onBlur={() => draft.endDate !== entry.endDate && commitEntryChanges({ endDate: draft.endDate })}
+          value={draft.endDate ?? ''}
+          onChange={(value) => setDraft({ ...draft, endDate: value || null })}
+        />
         <ToggleField
           checked={draft.isCurrent}
           label="Current role"
           onChange={(value) => {
-            setDraft({ ...draft, isCurrent: value })
+            setDraft({
+              ...draft,
+              isCurrent: value,
+              endDate: value ? null : draft.endDate,
+            })
             updateExperienceEntry({ experienceEntryId: entry.id, changes: { isCurrent: value } })
           }}
         />

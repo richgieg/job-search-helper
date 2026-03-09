@@ -1049,6 +1049,15 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         return
       }
 
+      const nextIsCurrent = changes.isCurrent ?? existing.isCurrent
+      const nextChanges: Partial<Omit<ExperienceEntry, 'id' | 'profileId'>> = {
+        ...changes,
+      }
+
+      if (nextIsCurrent) {
+        nextChanges.endDate = null
+      }
+
       set((state) => ({
         data: stampUpdatedProfile(
           {
@@ -1057,7 +1066,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
               ...state.data.experienceEntries,
               [experienceEntryId]: {
                 ...existing,
-                ...changes,
+                ...nextChanges,
               },
             },
           },

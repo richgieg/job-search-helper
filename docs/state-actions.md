@@ -285,6 +285,11 @@ These actions should all:
 - `deleteExperienceEntry(input)`
 - `reorderExperienceEntries(input)`
 
+These actions should:
+
+- clear `endDate` whenever `isCurrent` is set to `true`
+- reject or ignore attempts to set `endDate` while `isCurrent` is `true`
+
 `deleteExperienceEntry()` must also delete all child `ExperienceBullet` records for that experience entry.
 
 ### Experience bullet actions

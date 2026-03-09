@@ -281,6 +281,8 @@ interface ExperienceSupervisor {
 }
 ```
 
+If `ExperienceEntry.isCurrent === true`, then `endDate` must be `null`.
+
 ### EducationEntry
 
 ```ts
@@ -431,6 +433,7 @@ The following relationships should be enforced during normal app operations and 
 - `SkillCategory.profileId` points to an existing `Profile`.
 - `Skill.skillCategoryId` points to an existing `SkillCategory`.
 - `ExperienceEntry.profileId` points to an existing `Profile`.
+- If `ExperienceEntry.isCurrent === true`, then `ExperienceEntry.endDate` must be `null`.
 - `ExperienceBullet.experienceEntryId` points to an existing `ExperienceEntry`.
 - `EducationEntry.profileId` points to an existing `Profile`.
 - `Certification.profileId` points to an existing `Profile`.

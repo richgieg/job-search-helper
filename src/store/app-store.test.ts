@@ -188,6 +188,55 @@ describe('app store reorder actions', () => {
     ])
   })
 
+  it('clears and protects endDate when an experience entry is marked current', async () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    actions.createExperienceEntry(profileId)
+    const experienceEntryId = expectDefined(
+      Object.keys(useAppStore.getState().data.experienceEntries)[0],
+      'Expected an experience entry id',
+    )
+
+    actions.updateExperienceEntry({
+      experienceEntryId,
+      changes: { endDate: '2024-06-01', isCurrent: false },
+    })
+
+    const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
+    await waitForNextTick()
+
+    actions.updateExperienceEntry({
+      experienceEntryId,
+      changes: { isCurrent: true },
+    })
+
+    expect(useAppStore.getState().data.experienceEntries[experienceEntryId]).toMatchObject({
+      isCurrent: true,
+      endDate: null,
+    })
+    expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
+
+    actions.updateExperienceEntry({
+      experienceEntryId,
+      changes: { endDate: '2025-01-01' },
+    })
+
+    expect(useAppStore.getState().data.experienceEntries[experienceEntryId]?.endDate).toBeNull()
+
+    actions.updateExperienceEntry({
+      experienceEntryId,
+      changes: { isCurrent: false, endDate: '2025-01-01' },
+    })
+
+    expect(useAppStore.getState().data.experienceEntries[experienceEntryId]).toMatchObject({
+      isCurrent: false,
+      endDate: '2025-01-01',
+    })
+  })
+
   it('reorders experience bullets and preview data reflects the new order', () => {
     const { actions } = useAppStore.getState()
 
