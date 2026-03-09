@@ -13,16 +13,16 @@ export const DashboardPage = () => {
   const profiles = useAppStore((state) => state.data.profiles)
   const jobs = useAppStore((state) => state.data.jobs)
   const contacts = useAppStore((state) => state.data.jobContacts)
-  const events = useAppStore((state) => state.data.jobEvents)
+  const interviews = useAppStore((state) => state.data.interviews)
 
   const stats = useMemo(
     () => ({
       profileCount: Object.keys(profiles).length,
       jobCount: Object.keys(jobs).length,
       contactCount: Object.keys(contacts).length,
-      eventCount: Object.keys(events).length,
+      interviewCount: Object.keys(interviews).length,
     }),
-    [contacts, events, jobs, profiles],
+    [contacts, interviews, jobs, profiles],
   )
 
   return (
@@ -36,7 +36,7 @@ export const DashboardPage = () => {
         <StatCard label="Profiles" value={stats.profileCount} />
         <StatCard label="Jobs" value={stats.jobCount} />
         <StatCard label="Contacts" value={stats.contactCount} />
-        <StatCard label="Events" value={stats.eventCount} />
+        <StatCard label="Interviews" value={stats.interviewCount} />
       </section>
 
       <section className="rounded-2xl border border-dashed border-slate-300 bg-white/70 p-6">
@@ -44,7 +44,7 @@ export const DashboardPage = () => {
         <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-slate-600">
           <li>Create or update reusable base profiles.</li>
           <li>Add jobs and attach tailored job profiles.</li>
-          <li>Track contacts, application questions, and timeline events.</li>
+          <li>Track contacts, application questions, interviews, and outcomes.</li>
           <li>Generate resume, cover letter, and application previews.</li>
           <li>Export JSON backups or restore from an import.</li>
         </ul>

@@ -76,7 +76,9 @@ interface ActionContext {
 - profile child record actions
 - job actions
 - job child record actions
-- event actions
+- job progress actions
+- interview actions
+- interview-contact actions
 - selection and UI actions
 
 ## App/import-export actions
@@ -371,13 +373,18 @@ interface CreateJobInput {
 Behavior:
 
 - create the job
+- initialize `appliedAt = null`
+- initialize `finalOutcome = null`
 - stamp timestamps
 - do not create a profile automatically
-- optionally create a `job_saved` event separately, not implicitly, unless the product decides otherwise
 
 ### `updateJob(input)`
 
 Updates editable job fields.
+
+This action should update only core editable `Job` fields such as company, title, description, compensation, location, and notes.
+
+It should not be responsible for updating `appliedAt` or `finalOutcome`.
 
 ### `deleteJob(input)`
 
@@ -393,7 +400,7 @@ Behavior:
 
 1. Find all job profiles where `profile.jobId === jobId`.
 2. Delete each job profile using `deleteProfile()`.
-3. Delete all `JobLink`, `JobContact`, `ApplicationQuestion`, and `JobEvent` records for the job.
+3. Delete all `JobLink`, `JobContact`, `Interview`, `InterviewContact`, and `ApplicationQuestion` records for the job.
 4. Delete the job.
 5. Clear related UI selection if needed.
 
@@ -411,6 +418,113 @@ Behavior:
 - `deleteJobContact(input)`
 - `reorderJobContacts(input)`
 
+`deleteJobContact()` must also delete any `InterviewContact` association records that point to that job contact.
+
+## Job progress actions
+
+### `setJobAppliedAt(input)`
+
+Sets or updates the timestamp indicating when the user applied to a job.
+
+```ts
+interface SetJobAppliedAtInput {
+  jobId: Id;
+  appliedAt: IsoTimestamp;
+}
+```
+
+Behavior:
+
+- require an existing job
+- validate `appliedAt`
+- set `Job.appliedAt`
+- update `Job.updatedAt`
+
+### `clearJobAppliedAt(input)`
+
+Clears the application timestamp for a job.
+
+```ts
+interface ClearJobAppliedAtInput {
+  jobId: Id;
+}
+```
+
+Behavior:
+
+- require an existing job
+- set `Job.appliedAt = null`
+- update `Job.updatedAt`
+
+### `setJobFinalOutcome(input)`
+
+Sets the final outcome for a job.
+
+```ts
+interface SetJobFinalOutcomeInput {
+  jobId: Id;
+  status: FinalOutcomeStatus;
+  setAt: IsoTimestamp;
+}
+```
+
+Behavior:
+
+- require an existing job
+- validate `status`
+- validate `setAt`
+- set `Job.finalOutcome = { status, setAt }`
+- update `Job.updatedAt`
+
+### `clearJobFinalOutcome(input)`
+
+Clears the final outcome for a job.
+
+```ts
+interface ClearJobFinalOutcomeInput {
+  jobId: Id;
+}
+```
+
+Behavior:
+
+- require an existing job
+- set `Job.finalOutcome = null`
+- update `Job.updatedAt`
+
+## Interview actions
+
+- `createInterview(input)`
+- `updateInterview(input)`
+- `deleteInterview(input)`
+
+These actions should:
+
+- require an existing job
+- validate `startAt`
+- allow `endAt = null`
+- require `endAt >= startAt` when `endAt` is provided
+- update `Job.updatedAt`
+
+`deleteInterview()` must also delete all child `InterviewContact` records for that interview.
+
+Interviews should not support manual reordering in the MVP. Display order should be derived from `startAt` ascending.
+
+## Interview-contact actions
+
+- `addInterviewContact(input)`
+- `removeInterviewContact(input)`
+- `reorderInterviewContacts(input)`
+
+These actions should:
+
+- require an existing `Interview`
+- require an existing `JobContact`
+- require the `Interview.jobId` and `JobContact.jobId` to match
+- prevent duplicate interview-contact associations for the same interview and contact
+- maintain unique sequential `sortOrder` values where ordering applies
+- update `Job.updatedAt`
+
 ## Application question actions
 
 - `createApplicationQuestion(input)`
@@ -424,37 +538,6 @@ These actions should:
 - maintain `sortOrder`
 - update `Job.updatedAt`
 - preserve the question/answer text exactly as entered by the user
-
-## Job event actions
-
-### `createJobEvent(input)`
-
-Creates a new event for a job.
-
-```ts
-interface CreateJobEventInput {
-  jobId: Id;
-  eventType: JobEventType;
-  occurredAt?: IsoTimestamp | null;
-  scheduledFor?: IsoTimestamp | null;
-  notes?: string;
-  metadata?: Record<string, unknown>;
-}
-```
-
-Behavior:
-
-- require an existing job
-- create the event
-- update `Job.updatedAt`
-
-### `updateJobEvent(input)`
-
-Updates editable event fields.
-
-### `deleteJobEvent(input)`
-
-Deletes a single event.
 
 ## UI actions
 
@@ -502,6 +585,9 @@ Import validation should additionally verify:
 - referenced entities exist
 - no dangling relationships remain
 - every profile has a complete and valid `resumeSettings.sections` object
+- every `InterviewContact` references an existing `Interview` and `JobContact`
+- every `InterviewContact` connects records belonging to the same job
+- every `Interview.endAt` is `null` or greater than or equal to `Interview.startAt`
 
 ## Timestamp rules
 
@@ -519,7 +605,7 @@ Actions should not store computed status directly on `Job`.
 
 Instead:
 
-- write `JobEvent` records
+- write `Job.appliedAt`, `Job.finalOutcome`, and `Interview` records
 - derive current job status through selectors
 
 Actions also should not persist generated outputs.
@@ -541,11 +627,12 @@ Instead:
 7. child CRUD for profile records
 8. `duplicateProfile()`
 9. job contact, job link, and application question actions
-10. job event actions
-11. `deleteProfile()`
-12. `deleteJob()`
-13. `exportAppData()`
-14. `importAppData()`
+10. job progress actions
+11. interview and interview-contact actions
+12. `deleteProfile()`
+13. `deleteJob()`
+14. `exportAppData()`
+15. `importAppData()`
 
 ## Testing recommendations
 
@@ -563,9 +650,15 @@ High-priority tests:
 - resume section visibility toggles update the correct section only
 - resume section reordering produces unique sequential `sortOrder` values
 - deleting a job deletes attached job profiles and job-owned records
+- setting and clearing `appliedAt` updates the correct job and timestamp
+- setting and clearing `finalOutcome` updates the correct job and timestamp
+- creating or updating an interview enforces `endAt >= startAt`
+- deleting an interview deletes its `InterviewContact` associations
+- interview-contact associations reject cross-job links
+- reordering interview contacts produces unique sequential `sortOrder` values
 - importing valid JSON replaces state
 - importing invalid JSON is rejected without mutating state
-- computed status changes correctly as events are added or removed
+- computed status changes correctly as `appliedAt`, interviews, and `finalOutcome` change
 
 ## Recommended next step
 

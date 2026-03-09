@@ -15,7 +15,7 @@ This document turns the higher-level model in [docs/mvp-plan.md](docs/mvp-plan.m
 
 1. Keep all persisted domain data in a single serializable object.
 2. Normalize entities by `id` to avoid deep nested updates.
-3. Use foreign keys plus `sort_order` to express relationships and ordering.
+3. Use foreign keys plus explicit ordering fields where needed to express relationships and ordering.
 4. Store only source-of-truth data; compute derived values such as job status.
 5. Keep transient UI state separate from exported/imported data.
 6. Prefer typed nested objects over raw `*_json` blobs in application code.
@@ -58,8 +58,9 @@ interface AppDataState {
   jobs: Record<Id, Job>;
   jobLinks: Record<Id, JobLink>;
   jobContacts: Record<Id, JobContact>;
+  interviews: Record<Id, Interview>;
+  interviewContacts: Record<Id, InterviewContact>;
   applicationQuestions: Record<Id, ApplicationQuestion>;
-  jobEvents: Record<Id, JobEvent>;
 }
 
 interface AppUiState {
@@ -133,14 +134,11 @@ type ContactRelationshipType =
 
 type ReferenceType = 'professional' | 'personal';
 
-type JobEventType =
-  | 'job_saved'
-  | 'applied'
-  | 'interview_scheduled'
-  | 'interview_completed'
-  | 'offer_received'
+type FinalOutcomeStatus =
+  | 'withdrew'
   | 'rejected'
-  | 'withdrew';
+  | 'offer_received'
+  | 'offer_accepted';
 
 type JobComputedStatus =
   | 'interested'
@@ -348,9 +346,16 @@ interface Job {
   workArrangement: WorkArrangement;
   employmentType: EmploymentType;
   datePosted: IsoDate | null;
+  appliedAt: IsoTimestamp | null;
+  finalOutcome: FinalOutcome | null;
   notes: string;
   createdAt: IsoTimestamp;
   updatedAt: IsoTimestamp;
+}
+
+interface FinalOutcome {
+  status: FinalOutcomeStatus;
+  setAt: IsoTimestamp;
 }
 ```
 
@@ -388,6 +393,32 @@ interface JobContact {
 }
 ```
 
+### Interview
+
+```ts
+interface Interview {
+  id: Id;
+  jobId: Id;
+  startAt: IsoTimestamp;
+  endAt: IsoTimestamp | null;
+  completed: boolean;
+  notes: string;
+}
+```
+
+`Interview` records should be displayed sorted by `startAt` ascending.
+
+### InterviewContact
+
+```ts
+interface InterviewContact {
+  id: Id;
+  interviewId: Id;
+  jobContactId: Id;
+  sortOrder: number;
+}
+```
+
 ### ApplicationQuestion
 
 ```ts
@@ -397,21 +428,6 @@ interface ApplicationQuestion {
   question: string;
   answer: string;
   sortOrder: number;
-}
-```
-
-### JobEvent
-
-```ts
-interface JobEvent {
-  id: Id;
-  jobId: Id;
-  eventType: JobEventType;
-  occurredAt: IsoTimestamp | null;
-  scheduledFor: IsoTimestamp | null;
-  notes: string;
-  metadata: Record<string, unknown>;
-  createdAt: IsoTimestamp;
 }
 ```
 
@@ -443,8 +459,12 @@ The following relationships should be enforced during normal app operations and 
 
 - `JobLink.jobId` points to an existing `Job`.
 - `JobContact.jobId` points to an existing `Job`.
+- `Interview.jobId` points to an existing `Job`.
+- `InterviewContact.interviewId` points to an existing `Interview`.
+- `InterviewContact.jobContactId` points to an existing `JobContact`.
 - `ApplicationQuestion.jobId` points to an existing `Job`.
-- `JobEvent.jobId` points to an existing `Job`.
+- `Job.appliedAt` is either `null` or a valid `IsoTimestamp`.
+- `Job.finalOutcome` is either `null` or an object containing a valid `FinalOutcomeStatus` and `setAt` timestamp.
 
 ## Duplication rules
 
@@ -517,14 +537,15 @@ Cascade delete these records:
 - all profile-owned child records of those job profiles
 - `JobLink`
 - `JobContact`
+- `Interview`
+- `InterviewContact`
 - `ApplicationQuestion`
-- `JobEvent`
 
 Rules:
 
 1. Find all job profiles attached to the job.
 2. Delete each job profile using the normal profile deletion rules.
-3. Delete all job-owned links, contacts, application questions, and events.
+3. Delete all job-owned links, contacts, interviews, interview-contact associations, and application questions.
 4. Delete the job last.
 
 ### Child record deletion
@@ -539,13 +560,15 @@ The following records can be hard deleted directly:
 - `Reference`
 - `JobLink`
 - `JobContact`
+- `Interview`
+- `InterviewContact`
 - `ApplicationQuestion`
-- `JobEvent`
 
 Additional rule:
 
 - deleting a `SkillCategory` should also delete all `Skill` records that belong to that category
 - deleting an `ExperienceEntry` should also delete all `ExperienceBullet` records that belong to that entry
+- deleting an `Interview` should also delete all `InterviewContact` records that belong to that interview
 
 ### Generated outputs and deletion
 
@@ -566,7 +589,7 @@ Confirmation dialogs should summarize cascade impact.
 
 Examples:
 
-- deleting a job removes its job profiles, links, contacts, and events
+- deleting a job removes its job profiles, links, contacts, interviews, and interview-contact associations
 - deleting a profile removes its skill categories, skills, experience entries, education entries, certifications, and references
 
 Recommended improvement for the MVP:
@@ -600,32 +623,30 @@ These values should be computed, not stored.
 
 - `getJobLinks(jobId)`
 - `getOrderedJobContacts(jobId)`
-- `getJobEvents(jobId)`
+- `getOrderedInterviews(jobId)`
+- `getInterviewContacts(interviewId)`
 - `getCurrentJobStatus(jobId)`
-- `getMostRecentJobEvent(jobId)`
 
 ### Status computation
 
 Recommended precedence for computed status:
 
-1. `withdrew`
-2. `rejected`
-3. `offer_received`
-4. `interview_scheduled` or `interview_completed`
-5. `applied`
+1. `Job.finalOutcome.status === 'withdrew'`
+2. `Job.finalOutcome.status === 'rejected'`
+3. `Job.finalOutcome.status === 'offer_received'` or `Job.finalOutcome.status === 'offer_accepted'`
+4. the job has one or more `Interview` records
+5. `Job.appliedAt !== null`
 6. otherwise `interested`
 
 ## Notes on naming
 
-The MVP plan used names like `personal_details_json`, `links_json`, and `metadata_json` to communicate structured data.
+The MVP plan used names like `personal_details_json` and `links_json` to communicate structured data.
 
 In TypeScript application state, prefer typed objects and arrays instead:
 
 - `personalDetails` instead of `personal_details_json`
 - `links` instead of `links_json`
 - `ExperienceBullet.content` instead of embedding `bullets_json` on `ExperienceEntry`
-- `metadata: Record<string, unknown>` instead of `metadata_json`
-
 This provides stronger type-safety and simpler component code.
 
 ## Resume settings notes
@@ -651,4 +672,4 @@ Use this document to define:
 
 1. exact TypeScript types in the app
 2. import/export validation rules
-3. reducer or store actions for CRUD, duplication, and event updates
+3. reducer or store actions for CRUD, duplication, and job progress updates

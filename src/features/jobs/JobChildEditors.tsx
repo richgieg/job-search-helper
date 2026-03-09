@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
-import { DeleteIconButton } from '../../components/CompactActionControls'
+import { ActionToggle, AddIconButton, DeleteIconButton } from '../../components/CompactActionControls'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
-import type { ContactRelationshipType, JobEventType } from '../../types/state'
+import type { ContactRelationshipType, FinalOutcomeStatus } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(' • ')
@@ -35,6 +35,21 @@ const formatRelationshipType = (relationshipType: ContactRelationshipType) => {
       return 'Interviewer'
     default:
       return 'Other'
+  }
+}
+
+const formatFinalOutcomeStatus = (status: FinalOutcomeStatus) => {
+  switch (status) {
+    case 'offer_received':
+      return 'Offer received'
+    case 'offer_accepted':
+      return 'Offer accepted'
+    case 'rejected':
+      return 'Rejected'
+    case 'withdrew':
+      return 'Withdrew'
+    default:
+      return status
   }
 }
 
@@ -136,6 +151,13 @@ const toDateTimeLocal = (value: string | null) => {
 }
 
 const fromDateTimeLocal = (value: string) => (value ? new Date(value).toISOString() : null)
+
+const formatInterviewSummary = (startAt: string, endAt: string | null, completed: boolean) => {
+  const start = toDateTimeLocal(startAt).replace('T', ' ')
+  const end = endAt ? toDateTimeLocal(endAt).replace('T', ' ') : ''
+
+  return summarizeParts([start || 'Start time not set', end ? `Ends ${end}` : null, completed ? 'Completed' : 'Planned'])
+}
 
 const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
   const link = useAppStore((state) => state.data.jobLinks[jobLinkId])
@@ -301,67 +323,303 @@ const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
   )
 }
 
-const JobEventCard = ({ jobEventId }: { jobEventId: string }) => {
-  const jobEvent = useAppStore((state) => state.data.jobEvents[jobEventId])
-  const updateJobEvent = useAppStore((state) => state.actions.updateJobEvent)
-  const deleteJobEvent = useAppStore((state) => state.actions.deleteJobEvent)
-  const [draft, setDraft] = useState(jobEvent)
+type FinalOutcomeDraftStatus = '' | FinalOutcomeStatus
+
+const JobProgressPanel = ({ jobId }: { jobId: string }) => {
+  const job = useAppStore((state) => state.data.jobs[jobId])
+  const setJobAppliedAt = useAppStore((state) => state.actions.setJobAppliedAt)
+  const clearJobAppliedAt = useAppStore((state) => state.actions.clearJobAppliedAt)
+  const setJobFinalOutcome = useAppStore((state) => state.actions.setJobFinalOutcome)
+  const clearJobFinalOutcome = useAppStore((state) => state.actions.clearJobFinalOutcome)
+  const [appliedAtDraft, setAppliedAtDraft] = useState('')
+  const [finalOutcomeStatusDraft, setFinalOutcomeStatusDraft] = useState<FinalOutcomeDraftStatus>('')
+  const [finalOutcomeSetAtDraft, setFinalOutcomeSetAtDraft] = useState('')
 
   useEffect(() => {
-    setDraft(jobEvent)
-  }, [jobEvent])
+    if (!job) {
+      setAppliedAtDraft('')
+      setFinalOutcomeStatusDraft('')
+      setFinalOutcomeSetAtDraft('')
+      return
+    }
 
-  if (!jobEvent || !draft) {
+    setAppliedAtDraft(toDateTimeLocal(job.appliedAt))
+    setFinalOutcomeStatusDraft(job.finalOutcome?.status ?? '')
+    setFinalOutcomeSetAtDraft(toDateTimeLocal(job.finalOutcome?.setAt ?? null))
+  }, [job])
+
+  if (!job) {
     return null
   }
 
-  const commitEventChanges = (changes: Partial<typeof jobEvent>) => {
-    updateJobEvent({
-      jobEventId: jobEvent.id,
+  const commitAppliedAt = () => {
+    const nextValue = fromDateTimeLocal(appliedAtDraft)
+
+    if (nextValue === job.appliedAt) {
+      return
+    }
+
+    if (nextValue) {
+      setJobAppliedAt({ jobId: job.id, appliedAt: nextValue })
+      return
+    }
+
+    clearJobAppliedAt(job.id)
+  }
+
+  const commitFinalOutcome = () => {
+    if (!finalOutcomeStatusDraft) {
+      if (job.finalOutcome) {
+        clearJobFinalOutcome(job.id)
+      }
+      return
+    }
+
+    const nextSetAt = fromDateTimeLocal(finalOutcomeSetAtDraft)
+
+    if (!nextSetAt) {
+      setFinalOutcomeSetAtDraft(toDateTimeLocal(job.finalOutcome?.setAt ?? new Date().toISOString()))
+      return
+    }
+
+    if (job.finalOutcome?.status === finalOutcomeStatusDraft && job.finalOutcome?.setAt === nextSetAt) {
+      return
+    }
+
+    setJobFinalOutcome({
+      jobId: job.id,
+      status: finalOutcomeStatusDraft,
+      setAt: nextSetAt,
+    })
+  }
+
+  const summary = summarizeParts([
+    job.appliedAt ? `Applied ${toDateTimeLocal(job.appliedAt).replace('T', ' ')}` : 'Not yet applied',
+    job.finalOutcome ? `${formatFinalOutcomeStatus(job.finalOutcome.status)} ${toDateTimeLocal(job.finalOutcome.setAt).replace('T', ' ')}` : 'No final outcome',
+  ])
+
+  return (
+    <CollapsiblePanel defaultExpanded summary={summary} title="Progress">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TextField label="Applied at" type="datetime-local" value={appliedAtDraft} onBlur={commitAppliedAt} onChange={setAppliedAtDraft} />
+        <div className="flex items-end gap-2">
+          <button className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => { setAppliedAtDraft(''); clearJobAppliedAt(job.id) }} type="button">
+            Clear applied date
+          </button>
+        </div>
+        <SelectField
+          label="Final outcome"
+          options={[
+            { value: '', label: 'None' },
+            { value: 'withdrew', label: 'Withdrew' },
+            { value: 'rejected', label: 'Rejected' },
+            { value: 'offer_received', label: 'Offer received' },
+            { value: 'offer_accepted', label: 'Offer accepted' },
+          ]}
+          value={finalOutcomeStatusDraft}
+          onBlur={commitFinalOutcome}
+          onChange={setFinalOutcomeStatusDraft}
+        />
+        <div className="flex items-end gap-2">
+          <TextField label="Outcome set at" type="datetime-local" value={finalOutcomeSetAtDraft} onBlur={commitFinalOutcome} onChange={setFinalOutcomeSetAtDraft} />
+          <button className="mb-[1px] rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => { setFinalOutcomeStatusDraft(''); setFinalOutcomeSetAtDraft(''); clearJobFinalOutcome(job.id) }} type="button">
+            Clear outcome
+          </button>
+        </div>
+      </div>
+    </CollapsiblePanel>
+  )
+}
+
+const InterviewCard = ({ interviewId }: { interviewId: string }) => {
+  const interview = useAppStore((state) => state.data.interviews[interviewId])
+  const interviewContactsById = useAppStore((state) => state.data.interviewContacts)
+  const jobContactsById = useAppStore((state) => state.data.jobContacts)
+  const updateInterview = useAppStore((state) => state.actions.updateInterview)
+  const deleteInterview = useAppStore((state) => state.actions.deleteInterview)
+  const addInterviewContact = useAppStore((state) => state.actions.addInterviewContact)
+  const removeInterviewContact = useAppStore((state) => state.actions.removeInterviewContact)
+  const reorderInterviewContacts = useAppStore((state) => state.actions.reorderInterviewContacts)
+  const [draft, setDraft] = useState(interview)
+  const [selectedContactId, setSelectedContactId] = useState('')
+
+  useEffect(() => {
+    setDraft(interview)
+  }, [interview])
+
+  const interviewContactIds = useMemo(
+    () =>
+      interview
+        ? Object.values(interviewContactsById)
+            .filter((item) => item.interviewId === interview.id)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [interview, interviewContactsById],
+  )
+
+  const availableContacts = useMemo(() => {
+    if (!interview) {
+      return []
+    }
+
+    const associatedContactIds = new Set(
+      Object.values(interviewContactsById)
+        .filter((item) => item.interviewId === interview.id)
+        .map((item) => item.jobContactId),
+    )
+
+    return Object.values(jobContactsById)
+      .filter((contact) => contact.jobId === interview.jobId && !associatedContactIds.has(contact.id))
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+  }, [interview, interviewContactsById, jobContactsById])
+
+  useEffect(() => {
+    setSelectedContactId((current) => {
+      if (current && availableContacts.some((contact) => contact.id === current)) {
+        return current
+      }
+
+      return availableContacts[0]?.id ?? ''
+    })
+  }, [availableContacts])
+
+  if (!interview || !draft) {
+    return null
+  }
+
+  const commitInterviewChanges = (changes: Partial<typeof interview>) => {
+    updateInterview({
+      interviewId: interview.id,
       changes,
     })
   }
 
+  const associatedContacts = interviewContactIds
+    .map((associationId) => {
+      const association = interviewContactsById[associationId]
+      const contact = association ? jobContactsById[association.jobContactId] : null
+
+      return association && contact ? { association, contact } : null
+    })
+    .filter(Boolean) as Array<{
+    association: NonNullable<(typeof interviewContactsById)[string]>
+    contact: NonNullable<(typeof jobContactsById)[string]>
+  }>
+
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
-      <div className="grid gap-4 xl:grid-cols-3">
-        <SelectField
-          label="Event type"
-          options={[
-            { value: 'job_saved', label: 'Job saved' },
-            { value: 'applied', label: 'Applied' },
-            { value: 'interview_scheduled', label: 'Interview scheduled' },
-            { value: 'interview_completed', label: 'Interview completed' },
-            { value: 'offer_received', label: 'Offer received' },
-            { value: 'rejected', label: 'Rejected' },
-            { value: 'withdrew', label: 'Withdrew' },
-          ]}
-          value={draft.eventType}
-          onBlur={() => draft.eventType !== jobEvent.eventType && commitEventChanges({ eventType: draft.eventType })}
-          onChange={(value) => setDraft({ ...draft, eventType: value as JobEventType })}
-        />
-        <TextField
-          label="Occurred at"
-          type="datetime-local"
-          value={toDateTimeLocal(draft.occurredAt)}
-          onBlur={() => draft.occurredAt !== jobEvent.occurredAt && commitEventChanges({ occurredAt: draft.occurredAt })}
-          onChange={(value) => setDraft({ ...draft, occurredAt: fromDateTimeLocal(value) })}
-        />
-        <TextField
-          label="Scheduled for"
-          type="datetime-local"
-          value={toDateTimeLocal(draft.scheduledFor)}
-          onBlur={() => draft.scheduledFor !== jobEvent.scheduledFor && commitEventChanges({ scheduledFor: draft.scheduledFor })}
-          onChange={(value) => setDraft({ ...draft, scheduledFor: fromDateTimeLocal(value) })}
-        />
-        <div className="xl:col-span-3">
-          <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== jobEvent.notes && commitEventChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
+    <CollapsiblePanel
+      summary={formatInterviewSummary(draft.startAt, draft.endAt, draft.completed)}
+      title={truncatePanelText(draft.notes, 64) || `Interview ${toDateTimeLocal(draft.startAt).replace('T', ' ') || ''}`.trim() || 'Interview'}
+      headerActions={<DeleteIconButton label="Delete interview" onDelete={() => deleteInterview(interview.id)} />}
+    >
+      <div className="space-y-5">
+        <div className="grid gap-4 xl:grid-cols-3">
+          <TextField
+            label="Start at"
+            type="datetime-local"
+            value={toDateTimeLocal(draft.startAt)}
+            onBlur={() => draft.startAt !== interview.startAt && commitInterviewChanges({ startAt: draft.startAt })}
+            onChange={(value) => {
+              const nextValue = fromDateTimeLocal(value)
+              if (nextValue) {
+                setDraft({ ...draft, startAt: nextValue })
+              }
+            }}
+          />
+          <TextField
+            label="End at"
+            type="datetime-local"
+            value={toDateTimeLocal(draft.endAt)}
+            onBlur={() => draft.endAt !== interview.endAt && commitInterviewChanges({ endAt: draft.endAt })}
+            onChange={(value) => setDraft({ ...draft, endAt: fromDateTimeLocal(value) })}
+          />
+          <div className="flex items-end justify-between rounded-xl border border-slate-200 px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-slate-900">Completed</p>
+              <p className="mt-1 text-xs text-slate-500">Mark whether the interview has already happened.</p>
+            </div>
+            <ActionToggle
+              checked={draft.completed}
+              label="Interview completed"
+              onChange={(checked) => {
+                setDraft({ ...draft, completed: checked })
+                if (checked !== interview.completed) {
+                  commitInterviewChanges({ completed: checked })
+                }
+              }}
+            />
+          </div>
+          <div className="xl:col-span-3">
+            <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== interview.notes && commitInterviewChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
+          </div>
         </div>
-        <div className="xl:col-span-3 flex justify-end">
-          <DeleteIconButton label="Delete event" onDelete={() => deleteJobEvent(jobEvent.id)} />
+
+        <div className="rounded-xl border border-slate-200 p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <SelectField
+                label="Add associated contact"
+                options={[
+                  { value: '', label: availableContacts.length === 0 ? 'No remaining contacts' : 'Select a contact' },
+                  ...availableContacts.map((contact) => ({
+                    value: contact.id,
+                    label: contact.name || contact.title || contact.company || 'Unnamed contact',
+                  })),
+                ]}
+                value={selectedContactId}
+                onChange={setSelectedContactId}
+              />
+            </div>
+            <AddIconButton
+              disabled={!selectedContactId}
+              label="Add contact to interview"
+              onAdd={() => {
+                if (!selectedContactId) {
+                  return
+                }
+
+                addInterviewContact({ interviewId: interview.id, jobContactId: selectedContactId })
+              }}
+            />
+          </div>
+
+          {associatedContacts.length > 0 ? (
+            <div className="mt-4 space-y-3">
+              {associatedContacts.map(({ association, contact }, index) => (
+                <div key={association.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-slate-900">{contact.name || 'Unnamed contact'}</p>
+                    <p className="truncate text-xs text-slate-500">{summarizeParts([formatRelationshipType(contact.relationshipType), contact.title, contact.company]) || 'No details yet'}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <ReorderButtons
+                      canMoveDown={associatedContacts.length > 1 && index < associatedContacts.length - 1}
+                      canMoveUp={associatedContacts.length > 1 && index > 0}
+                      onMoveDown={() =>
+                        reorderInterviewContacts({
+                          interviewId: interview.id,
+                          orderedIds: moveOrderedItem(interviewContactIds, index, 1),
+                        })
+                      }
+                      onMoveUp={() =>
+                        reorderInterviewContacts({
+                          interviewId: interview.id,
+                          orderedIds: moveOrderedItem(interviewContactIds, index, -1),
+                        })
+                      }
+                    />
+                    <DeleteIconButton label="Remove contact from interview" onDelete={() => removeInterviewContact(association.id)} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-slate-500">No contacts associated with this interview yet.</p>
+          )}
         </div>
       </div>
-    </div>
+    </CollapsiblePanel>
   )
 }
 
@@ -440,12 +698,12 @@ const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestio
 export const JobChildEditors = ({ jobId }: { jobId: string }) => {
   const jobLinksById = useAppStore((state) => state.data.jobLinks)
   const jobContactsById = useAppStore((state) => state.data.jobContacts)
+  const interviewsById = useAppStore((state) => state.data.interviews)
   const applicationQuestionsById = useAppStore((state) => state.data.applicationQuestions)
-  const jobEventsById = useAppStore((state) => state.data.jobEvents)
   const createJobLink = useAppStore((state) => state.actions.createJobLink)
   const createJobContact = useAppStore((state) => state.actions.createJobContact)
+  const createInterview = useAppStore((state) => state.actions.createInterview)
   const createApplicationQuestion = useAppStore((state) => state.actions.createApplicationQuestion)
-  const createJobEvent = useAppStore((state) => state.actions.createJobEvent)
 
   const jobLinkIds = useMemo(
     () =>
@@ -465,12 +723,13 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
     [jobContactsById, jobId],
   )
 
-  const jobEvents = useMemo(
+  const interviewIds = useMemo(
     () =>
-      Object.values(jobEventsById)
+      Object.values(interviewsById)
         .filter((item) => item.jobId === jobId)
-        .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
-    [jobEventsById, jobId],
+        .sort((left, right) => left.startAt.localeCompare(right.startAt))
+        .map((item) => item.id),
+    [interviewsById, jobId],
   )
 
   const applicationQuestionIds = useMemo(
@@ -484,17 +743,23 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
 
   const hasJobLinks = jobLinkIds.length > 0
   const hasJobContacts = jobContactIds.length > 0
+  const hasInterviews = interviewIds.length > 0
   const hasApplicationQuestions = applicationQuestionIds.length > 0
-  const hasJobEvents = jobEvents.length > 0
 
   return (
     <>
+      <JobProgressPanel jobId={jobId} />
+
       <CollapsiblePanel actionLabel="Add link" actionStyle="icon" collapsible={hasJobLinks} description="Track the relevant job URLs for this role." onAction={() => createJobLink(jobId)} title="Links">
         {hasJobLinks ? <div className="space-y-4">{jobLinkIds.map((id) => <JobLinkCard key={id} jobLinkId={id} />)}</div> : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel actionLabel="Add contact" actionStyle="icon" collapsible={hasJobContacts} description="Maintain recruiters, hiring managers, referrals, and interviewers for the job." onAction={() => createJobContact(jobId)} title="Contacts">
         {hasJobContacts ? <div className="space-y-4">{jobContactIds.map((id) => <JobContactCard key={id} jobContactId={id} />)}</div> : null}
+      </CollapsiblePanel>
+
+      <CollapsiblePanel actionLabel="Add interview" actionStyle="icon" collapsible={hasInterviews} description="Track scheduled and completed interviews in chronological order." onAction={() => createInterview(jobId)} title="Interviews">
+        {hasInterviews ? <div className="space-y-4">{interviewIds.map((id) => <InterviewCard key={id} interviewId={id} />)}</div> : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel
@@ -508,10 +773,6 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
         {hasApplicationQuestions ? (
           <div className="space-y-4">{applicationQuestionIds.map((id) => <ApplicationQuestionCard key={id} applicationQuestionId={id} />)}</div>
         ) : null}
-      </CollapsiblePanel>
-
-      <CollapsiblePanel actionLabel="Add event" actionStyle="icon" collapsible={hasJobEvents} description="Events drive the job's computed pipeline status." onAction={() => createJobEvent({ jobId })} title="Events">
-        {hasJobEvents ? <div className="space-y-4">{jobEvents.map((item) => <JobEventCard key={item.id} jobEventId={item.id} />)}</div> : null}
       </CollapsiblePanel>
     </>
   )

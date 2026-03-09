@@ -37,8 +37,9 @@ export const createEmptyDataState = (): AppDataState => ({
   jobs: {},
   jobLinks: {},
   jobContacts: {},
+  interviews: {},
+  interviewContacts: {},
   applicationQuestions: {},
-  jobEvents: {},
 })
 
 export const createDefaultUiState = (): AppUiState => ({

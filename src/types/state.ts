@@ -20,14 +20,11 @@ export type ContactRelationshipType =
 
 export type ReferenceType = 'professional' | 'personal'
 
-export type JobEventType =
-  | 'job_saved'
-  | 'applied'
-  | 'interview_scheduled'
-  | 'interview_completed'
-  | 'offer_received'
-  | 'rejected'
+export type FinalOutcomeStatus =
   | 'withdrew'
+  | 'rejected'
+  | 'offer_received'
+  | 'offer_accepted'
 
 export type JobComputedStatus =
   | 'interested'
@@ -189,9 +186,16 @@ export interface Job {
   workArrangement: WorkArrangement
   employmentType: EmploymentType
   datePosted: IsoDate | null
+  appliedAt: IsoTimestamp | null
+  finalOutcome: FinalOutcome | null
   notes: string
   createdAt: IsoTimestamp
   updatedAt: IsoTimestamp
+}
+
+export interface FinalOutcome {
+  status: FinalOutcomeStatus
+  setAt: IsoTimestamp
 }
 
 export interface JobLink {
@@ -228,15 +232,20 @@ export interface ApplicationQuestion {
   sortOrder: number
 }
 
-export interface JobEvent {
+export interface Interview {
   id: Id
   jobId: Id
-  eventType: JobEventType
-  occurredAt: IsoTimestamp | null
-  scheduledFor: IsoTimestamp | null
+  startAt: IsoTimestamp
+  endAt: IsoTimestamp | null
+  completed: boolean
   notes: string
-  metadata: Record<string, unknown>
-  createdAt: IsoTimestamp
+}
+
+export interface InterviewContact {
+  id: Id
+  interviewId: Id
+  jobContactId: Id
+  sortOrder: number
 }
 
 export interface AppDataState {
@@ -254,8 +263,9 @@ export interface AppDataState {
   jobs: Record<Id, Job>
   jobLinks: Record<Id, JobLink>
   jobContacts: Record<Id, JobContact>
+  interviews: Record<Id, Interview>
+  interviewContacts: Record<Id, InterviewContact>
   applicationQuestions: Record<Id, ApplicationQuestion>
-  jobEvents: Record<Id, JobEvent>
 }
 
 export interface JobsListUiState {

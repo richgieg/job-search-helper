@@ -136,7 +136,7 @@ export const JobPage = () => {
   const { jobId = '' } = useParams()
   const job = useAppStore((state) => state.data.jobs[jobId])
   const profilesById = useAppStore((state) => state.data.profiles)
-  const jobEventsById = useAppStore((state) => state.data.jobEvents)
+  const interviewsById = useAppStore((state) => state.data.interviews)
   const updateJob = useAppStore((state) => state.actions.updateJob)
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
   const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
@@ -153,8 +153,19 @@ export const JobPage = () => {
     [jobId, profiles],
   )
   const hasAttachedProfiles = attachedProfiles.length > 0
-  const jobEvents = useMemo(() => Object.values(jobEventsById).filter((event) => event.jobId === jobId), [jobEventsById, jobId])
-  const computedStatus = useMemo(() => getJobComputedStatus(jobEvents.map((event) => event.eventType)), [jobEvents])
+  const interviewCount = useMemo(
+    () => Object.values(interviewsById).filter((interview) => interview.jobId === jobId).length,
+    [interviewsById, jobId],
+  )
+  const computedStatus = useMemo(
+    () =>
+      getJobComputedStatus({
+        appliedAt: job?.appliedAt ?? null,
+        finalOutcome: job?.finalOutcome ?? null,
+        interviewCount,
+      }),
+    [interviewCount, job?.appliedAt, job?.finalOutcome],
+  )
 
   useEffect(() => {
     if (!job) {

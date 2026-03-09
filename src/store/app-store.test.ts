@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { getOrderedResumeSections, selectProfileDocumentData } from '../features/documents/document-data'
+import { getJobComputedStatus } from '../features/jobs/job-status'
 import { createDefaultUiState, createEmptyDataState } from './create-initial-state'
 import { useAppStore } from './app-store'
 
@@ -329,7 +330,11 @@ describe('app store reorder actions', () => {
       initialLinkUrl: 'https://example.com/job',
     })
 
-    expect(useAppStore.getState().data.jobs[jobId]?.jobTitle).toBe('Engineer')
+    expect(useAppStore.getState().data.jobs[jobId]).toMatchObject({
+      jobTitle: 'Engineer',
+      appliedAt: null,
+      finalOutcome: null,
+    })
 
     const jobLinks = Object.values(useAppStore.getState().data.jobLinks)
       .filter((item) => item.jobId === jobId)
@@ -337,6 +342,152 @@ describe('app store reorder actions', () => {
 
     expect(jobLinks).toHaveLength(1)
     expect(jobLinks[0]?.url).toBe('https://example.com/job')
+  })
+
+  it('sets and clears job progress fields', async () => {
+    const { actions } = useAppStore.getState()
+
+    const jobId = actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
+    const updatedAtBefore = useAppStore.getState().data.jobs[jobId]?.updatedAt
+    await waitForNextTick()
+
+    actions.setJobAppliedAt({ jobId, appliedAt: '2026-03-09T12:00:00.000Z' })
+    actions.setJobFinalOutcome({ jobId, status: 'offer_received', setAt: '2026-03-10T09:30:00.000Z' })
+
+    expect(useAppStore.getState().data.jobs[jobId]).toMatchObject({
+      appliedAt: '2026-03-09T12:00:00.000Z',
+      finalOutcome: {
+        status: 'offer_received',
+        setAt: '2026-03-10T09:30:00.000Z',
+      },
+    })
+    expect(useAppStore.getState().data.jobs[jobId]?.updatedAt).not.toBe(updatedAtBefore)
+
+    actions.clearJobAppliedAt(jobId)
+    actions.clearJobFinalOutcome(jobId)
+
+    expect(useAppStore.getState().data.jobs[jobId]).toMatchObject({
+      appliedAt: null,
+      finalOutcome: null,
+    })
+  })
+
+  it('creates interviews, manages associated contacts, and preserves interview contact order through export/import', () => {
+    const { actions } = useAppStore.getState()
+
+    const jobId = actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
+
+    actions.createJobContact(jobId)
+    actions.createJobContact(jobId)
+
+    const contactIds = getOrderedIds(
+      Object.fromEntries(
+        Object.values(useAppStore.getState().data.jobContacts)
+          .filter((item) => item.jobId === jobId)
+          .map((item) => [item.id, item]),
+      ),
+    )
+    const firstContactId = expectDefined(contactIds[0], 'Expected first contact id')
+    const secondContactId = expectDefined(contactIds[1], 'Expected second contact id')
+
+    actions.updateJobContact({ jobContactId: firstContactId, changes: { name: 'Contact One' } })
+    actions.updateJobContact({ jobContactId: secondContactId, changes: { name: 'Contact Two' } })
+
+    const interviewId = expectDefined(actions.createInterview(jobId), 'Expected interview id')
+
+    actions.updateInterview({
+      interviewId,
+      changes: {
+        startAt: '2026-03-12T15:00:00.000Z',
+        endAt: '2026-03-12T16:00:00.000Z',
+        notes: 'Team screen',
+      },
+    })
+
+    actions.addInterviewContact({ interviewId, jobContactId: firstContactId })
+    actions.addInterviewContact({ interviewId, jobContactId: secondContactId })
+
+    const interviewContactIds = getOrderedIds(
+      Object.fromEntries(
+        Object.values(useAppStore.getState().data.interviewContacts)
+          .filter((item) => item.interviewId === interviewId)
+          .map((item) => [item.id, item]),
+      ),
+    )
+    const firstInterviewContactId = expectDefined(interviewContactIds[0], 'Expected first interview contact id')
+    const secondInterviewContactId = expectDefined(interviewContactIds[1], 'Expected second interview contact id')
+
+    actions.reorderInterviewContacts({
+      interviewId,
+      orderedIds: [secondInterviewContactId, firstInterviewContactId],
+    })
+
+    const exported = actions.exportAppData()
+
+    resetStore()
+    useAppStore.getState().actions.importAppData(exported)
+
+    const importedInterviewContacts = Object.values(useAppStore.getState().data.interviewContacts)
+      .filter((item) => item.interviewId === interviewId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+
+    expect(importedInterviewContacts.map((item) => useAppStore.getState().data.jobContacts[item.jobContactId]?.name)).toEqual([
+      'Contact Two',
+      'Contact One',
+    ])
+  })
+
+  it('cascades interview associations when deleting a contact, interview, or job', () => {
+    const { actions } = useAppStore.getState()
+
+    const jobId = actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
+    actions.createJobContact(jobId)
+    const contactId = expectDefined(Object.keys(useAppStore.getState().data.jobContacts)[0], 'Expected contact id')
+    const interviewId = expectDefined(actions.createInterview(jobId), 'Expected interview id')
+
+    actions.addInterviewContact({ interviewId, jobContactId: contactId })
+    const interviewContactId = expectDefined(Object.keys(useAppStore.getState().data.interviewContacts)[0], 'Expected interview contact id')
+
+    actions.deleteJobContact(contactId)
+    expect(useAppStore.getState().data.interviewContacts[interviewContactId]).toBeUndefined()
+
+    actions.createJobContact(jobId)
+    const replacementContactId = expectDefined(Object.keys(useAppStore.getState().data.jobContacts)[0], 'Expected replacement contact id')
+    actions.addInterviewContact({ interviewId, jobContactId: replacementContactId })
+    const replacementAssociationId = expectDefined(Object.keys(useAppStore.getState().data.interviewContacts)[0], 'Expected replacement interview contact id')
+
+    actions.deleteInterview(interviewId)
+    expect(useAppStore.getState().data.interviews[interviewId]).toBeUndefined()
+    expect(useAppStore.getState().data.interviewContacts[replacementAssociationId]).toBeUndefined()
+
+    const secondInterviewId = expectDefined(actions.createInterview(jobId), 'Expected second interview id')
+    actions.addInterviewContact({ interviewId: secondInterviewId, jobContactId: replacementContactId })
+    expect(Object.keys(useAppStore.getState().data.interviewContacts)).toHaveLength(1)
+
+    actions.deleteJob(jobId)
+    expect(useAppStore.getState().data.jobs[jobId]).toBeUndefined()
+    expect(Object.keys(useAppStore.getState().data.interviews)).toHaveLength(0)
+    expect(Object.keys(useAppStore.getState().data.interviewContacts)).toHaveLength(0)
+  })
+
+  it('computes job status from appliedAt, interviews, and finalOutcome', () => {
+    expect(getJobComputedStatus({ appliedAt: null, finalOutcome: null, interviewCount: 0 })).toBe('interested')
+    expect(getJobComputedStatus({ appliedAt: '2026-03-09T12:00:00.000Z', finalOutcome: null, interviewCount: 0 })).toBe('applied')
+    expect(getJobComputedStatus({ appliedAt: '2026-03-09T12:00:00.000Z', finalOutcome: null, interviewCount: 1 })).toBe('interview')
+    expect(
+      getJobComputedStatus({
+        appliedAt: '2026-03-09T12:00:00.000Z',
+        finalOutcome: { status: 'offer_accepted', setAt: '2026-03-11T12:00:00.000Z' },
+        interviewCount: 2,
+      }),
+    ).toBe('offer')
+    expect(
+      getJobComputedStatus({
+        appliedAt: '2026-03-09T12:00:00.000Z',
+        finalOutcome: { status: 'rejected', setAt: '2026-03-11T12:00:00.000Z' },
+        interviewCount: 2,
+      }),
+    ).toBe('rejected')
   })
 
   it('preserves job link order through export and import', () => {

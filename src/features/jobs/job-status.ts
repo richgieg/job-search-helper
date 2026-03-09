@@ -1,19 +1,23 @@
-import type { JobComputedStatus, JobEventType } from '../../types/state'
+import type { FinalOutcome, JobComputedStatus } from '../../types/state'
 
-export const getJobComputedStatus = (eventTypes: JobEventType[]): JobComputedStatus => {
-  if (eventTypes.includes('withdrew')) {
+export const getJobComputedStatus = (input: {
+  appliedAt: string | null
+  finalOutcome: FinalOutcome | null
+  interviewCount: number
+}): JobComputedStatus => {
+  if (input.finalOutcome?.status === 'withdrew') {
     return 'withdrew'
   }
-  if (eventTypes.includes('rejected')) {
+  if (input.finalOutcome?.status === 'rejected') {
     return 'rejected'
   }
-  if (eventTypes.includes('offer_received')) {
+  if (input.finalOutcome?.status === 'offer_received' || input.finalOutcome?.status === 'offer_accepted') {
     return 'offer'
   }
-  if (eventTypes.includes('interview_scheduled') || eventTypes.includes('interview_completed')) {
+  if (input.interviewCount > 0) {
     return 'interview'
   }
-  if (eventTypes.includes('applied')) {
+  if (input.appliedAt) {
     return 'applied'
   }
 

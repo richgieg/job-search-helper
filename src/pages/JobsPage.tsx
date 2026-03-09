@@ -8,7 +8,7 @@ import { useAppStore } from '../store/app-store'
 const JobListItem = ({ jobId }: { jobId: string }) => {
   const job = useAppStore((state) => state.data.jobs[jobId])
   const jobLinksById = useAppStore((state) => state.data.jobLinks)
-  const jobEventsById = useAppStore((state) => state.data.jobEvents)
+  const interviewsById = useAppStore((state) => state.data.interviews)
   const deleteJob = useAppStore((state) => state.actions.deleteJob)
 
   const jobLinks = useMemo(
@@ -18,13 +18,20 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
         .sort((left, right) => left.sortOrder - right.sortOrder),
     [jobId, jobLinksById],
   )
-  const jobEvents = useMemo(() => Object.values(jobEventsById).filter((event) => event.jobId === jobId), [jobEventsById, jobId])
+  const interviewCount = useMemo(
+    () => Object.values(interviewsById).filter((interview) => interview.jobId === jobId).length,
+    [interviewsById, jobId],
+  )
 
   if (!job) {
     return null
   }
 
-  const computedStatus = getJobComputedStatus(jobEvents.map((event) => event.eventType))
+  const computedStatus = getJobComputedStatus({
+    appliedAt: job.appliedAt,
+    finalOutcome: job.finalOutcome,
+    interviewCount,
+  })
 
   const handleDelete = () => {
     const confirmed = window.confirm(`Delete job "${job.jobTitle}" at "${job.companyName}"? This removes attached job profiles too.`)

@@ -12,7 +12,7 @@ The first version should let a user:
 2. Save jobs they want to pursue.
 3. Add one or more job-specific profiles to a job later, only when needed.
 4. Duplicate base profiles and job profiles.
-5. Track job application status and key dates.
+5. Track `applied_at`, interviews, and final job outcomes.
 6. Store contacts related to each job.
 7. Configure resume section visibility and section order per profile.
 8. Generate a cover letter, resume, and copy-friendly application page from either a base profile or a selected job-specific profile.
@@ -29,7 +29,8 @@ Keep the MVP focused on a single primary user: an individual job seeker, with no
 - CRUD for jobs
 - CRUD for job contacts
 - Profile duplication workflows
-- Job status tracking
+- Job application progress tracking
+- Interview tracking
 - Resume generation from structured profile data
 - Per-profile resume section visibility and ordering
 - Cover letter generation from structured profile data
@@ -69,7 +70,7 @@ This keeps job creation lightweight while still enabling tailored resumes, cover
    - a resume
    - a cover letter
    - an application page for easy copy/paste
-8. User updates job status over time: interested, applied, interview, offer, rejected, withdrew.
+8. User updates the job over time by setting `applied_at`, adding interviews, and optionally setting `final_outcome`.
 
 ## MVP features by area
 
@@ -118,25 +119,39 @@ Each job should support:
 - Work arrangement: onsite, hybrid, remote
 - Employment type: full-time, part-time, contract, internship, temporary, other
 - Date posted
+- `applied_at`
 - Notes
+- Zero or more interviews
+- `final_outcome`
 - Zero or more linked job-specific profiles
 - Zero or more saved application questions and answers
 
-Recommendation: model job progress from events instead of storing a standalone status field.
+`applied_at` should be nullable and represent the timestamp when the user submitted the application.
 
-Examples:
+`final_outcome` should be either:
 
-- `job_saved`
-- `applied`
-- `interview_scheduled`
-- `interview_completed`
-- `offer_received`
-- `rejected`
-- `withdrew`
+- `null`, or
+- an object with:
+   - `status`: `withdrew`, `rejected`, `offer_received`, or `offer_accepted`
+   - `set_at`
 
-The UI can still show a computed current status such as Interested, Applied, Interview, Offer, Rejected, or Withdrew based on the most relevant event.
+The UI can still show a computed current status such as Interested, Applied, Interview, Offer, Rejected, or Withdrew, but that status should be derived from source-of-truth job data instead of stored as a generic event stream.
 
-### 3. Contacts
+### 3. Interviews
+
+Each job can have zero or more interviews:
+
+- `start_at`
+- `end_at` (optional)
+- `completed`
+- Zero or more associated job contacts
+- Notes
+
+Interviews should be first-class records associated with a job.
+
+On `JobPage`, the job should show a collapsible Interviews panel containing collapsible Interview panels sorted by `start_at` ascending.
+
+### 4. Contacts
 
 Each job can have multiple contacts:
 
@@ -153,7 +168,9 @@ Each job can have multiple contacts:
 - Relationship type: recruiter, hiring manager, referral, interviewer, other
 - Notes
 
-### 4. Application questions
+Contacts should be reusable across interviews through interview-to-contact associations.
+
+### 5. Application questions
 
 Each job can have zero or more saved application questions:
 
@@ -163,7 +180,7 @@ Each job can have zero or more saved application questions:
 
 This allows the user to keep track of custom questions asked during online application forms and the answers they submitted.
 
-### 5. Generated outputs
+### 6. Generated outputs
 
 #### Resume
 
@@ -188,7 +205,7 @@ This allows the user to keep track of custom questions asked during online appli
 - Every answer/value can be clicked to copy to clipboard
 - Includes common sections used in application forms
 
-### 6. Data portability
+### 7. Data portability
 
 - Export the full app state as a JSON file
 - Import a previously exported JSON file to restore the app state
@@ -211,13 +228,15 @@ This allows the user to keep track of custom questions asked during online appli
 5. Job create/edit
 6. Job editor
    - full job editing and child records
+   - includes interview management
    - includes access to job-specific profiles
 7. Job contacts editor
-8. Job profiles list/editor
-9. Resume preview
-10. Cover letter preview
-11. Application page
-12. Import/export page or settings section
+8. Job interviews editor
+9. Job profiles list/editor
+10. Resume preview
+11. Cover letter preview
+12. Application page
+13. Import/export page or settings section
 
 ## Minimal state model
 
@@ -348,9 +367,18 @@ The copied related records include:
 - work_arrangement
 - employment_type
 - date_posted
+- applied_at
+- final_outcome
 - notes
 - created_at
 - updated_at
+
+`applied_at` should be nullable.
+
+`final_outcome` should be nullable and, when present, should contain:
+
+- status
+- set_at
 
 ### JobLink
 - id
@@ -375,24 +403,28 @@ The copied related records include:
 - notes
 - sort_order
 
+### Interview
+- id
+- job_id
+- start_at
+- end_at
+- completed
+- notes
+
+`end_at` is optional.
+
+### InterviewContact
+- id
+- interview_id
+- job_contact_id
+- sort_order
+
 ### ApplicationQuestion
 - id
 - job_id
 - question
 - answer
 - sort_order
-
-### JobEvent
-- id
-- job_id
-- event_type
-- occurred_at
-- scheduled_for
-- notes
-- metadata_json
-- created_at
-
-Examples for `event_type`: `job_saved`, `applied`, `interview_scheduled`, `interview_completed`, `offer_received`, `rejected`, `withdrew`.
 
 ## Recommended technical approach
 
@@ -433,7 +465,7 @@ The MVP is successful if a user can:
 2. Add a job without being forced to create a profile.
 3. Create one or more job-specific profiles for a job by duplicating a base profile.
 4. Add at least one contact to the job.
-5. Add job events and see the current job status inferred from them.
+5. Set `applied_at`, add one or more interviews, and optionally set `final_outcome` for a job.
 6. Duplicate an existing base profile or job profile.
 7. Open a generated resume from either a base profile or a selected job-specific profile.
 8. Open a generated cover letter from either a base profile or a selected job-specific profile.
@@ -447,7 +479,7 @@ The MVP is successful if a user can:
 - In-memory state model
 - Profile CRUD
 - Job CRUD
-- Status tracking
+- Application progress tracking
 - JSON export/import design
 
 ### Phase 2: Tailoring workflow
@@ -456,6 +488,7 @@ The MVP is successful if a user can:
 - Support multiple profiles per job
 - Job profile editor
 - Contacts
+- Interviews
 
 ### Phase 3: Outputs
 - Resume generation

@@ -11,11 +11,13 @@ import type {
   EducationEntry,
   ExperienceBullet,
   ExperienceEntry,
+  FinalOutcome,
+  FinalOutcomeStatus,
   Id,
+  Interview,
+  InterviewContact,
   Job,
   JobContact,
-  JobEvent,
-  JobEventType,
   JobLink,
   PersonalDetails,
   Profile,
@@ -95,7 +97,7 @@ interface AppStoreState {
     deleteReference: (referenceId: Id) => void
     reorderReferences: (input: { profileId: Id; orderedIds: Id[] }) => void
     createJob: (input: Pick<Job, 'companyName' | 'jobTitle'> & Partial<Job> & { initialLinkUrl?: string }) => Id
-    updateJob: (input: { jobId: Id; changes: Partial<Omit<Job, 'id' | 'createdAt' | 'updatedAt'>> }) => void
+    updateJob: (input: { jobId: Id; changes: Partial<Omit<Job, 'id' | 'createdAt' | 'updatedAt' | 'appliedAt' | 'finalOutcome'>> }) => void
     deleteJob: (jobId: Id) => void
     createJobLink: (jobId: Id) => void
     updateJobLink: (input: {
@@ -115,9 +117,16 @@ interface AppStoreState {
     }) => void
     deleteApplicationQuestion: (applicationQuestionId: Id) => void
     reorderApplicationQuestions: (input: { jobId: Id; orderedIds: Id[] }) => void
-    createJobEvent: (input: { jobId: Id; eventType?: JobEventType }) => void
-    updateJobEvent: (input: { jobEventId: Id; changes: Partial<Omit<JobEvent, 'id' | 'jobId' | 'createdAt'>> }) => void
-    deleteJobEvent: (jobEventId: Id) => void
+    setJobAppliedAt: (input: { jobId: Id; appliedAt: string }) => void
+    clearJobAppliedAt: (jobId: Id) => void
+    setJobFinalOutcome: (input: { jobId: Id; status: FinalOutcomeStatus; setAt: string }) => void
+    clearJobFinalOutcome: (jobId: Id) => void
+    createInterview: (jobId: Id) => Id | null
+    updateInterview: (input: { interviewId: Id; changes: Partial<Omit<Interview, 'id' | 'jobId'>> }) => void
+    deleteInterview: (interviewId: Id) => void
+    addInterviewContact: (input: { interviewId: Id; jobContactId: Id }) => void
+    removeInterviewContact: (interviewContactId: Id) => void
+    reorderInterviewContacts: (input: { interviewId: Id; orderedIds: Id[] }) => void
     importAppData: (file: AppExportFile) => void
     exportAppData: () => AppExportFile
     resetUiState: () => void
@@ -501,6 +510,25 @@ const deleteSkillCategoryCascade = (data: AppDataState, skillCategoryId: Id): Ap
     ...data,
     skillCategories: nextSkillCategories,
     skills: nextSkills,
+  }
+}
+
+const deleteInterviewCascade = (data: AppDataState, interviewId: Id): AppDataState => {
+  const nextInterviews = { ...data.interviews }
+  const nextInterviewContacts = { ...data.interviewContacts }
+
+  delete nextInterviews[interviewId]
+
+  Object.values(data.interviewContacts).forEach((item) => {
+    if (item.interviewId === interviewId) {
+      delete nextInterviewContacts[item.id]
+    }
+  })
+
+  return {
+    ...data,
+    interviews: nextInterviews,
+    interviewContacts: nextInterviewContacts,
   }
 }
 
@@ -1553,6 +1581,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         workArrangement: input.workArrangement ?? 'unknown',
         employmentType: input.employmentType ?? 'other',
         datePosted: input.datePosted ?? null,
+        appliedAt: null,
+        finalOutcome: null,
         notes: input.notes ?? '',
         createdAt: timestamp,
         updatedAt: timestamp,
@@ -1624,8 +1654,9 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         const nextJobs = { ...nextData.jobs }
         const nextJobLinks = { ...nextData.jobLinks }
         const nextJobContacts = { ...nextData.jobContacts }
+        const nextInterviews = { ...nextData.interviews }
+        const nextInterviewContacts = { ...nextData.interviewContacts }
         const nextApplicationQuestions = { ...nextData.applicationQuestions }
-        const nextJobEvents = { ...nextData.jobEvents }
 
         delete nextJobs[jobId]
 
@@ -1641,15 +1672,23 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           }
         })
 
-        Object.values(nextData.applicationQuestions).forEach((item) => {
+        Object.values(nextData.interviews).forEach((item) => {
           if (item.jobId === jobId) {
-            delete nextApplicationQuestions[item.id]
+            delete nextInterviews[item.id]
           }
         })
 
-        Object.values(nextData.jobEvents).forEach((item) => {
+        Object.values(nextData.interviewContacts).forEach((item) => {
+          const interview = nextData.interviews[item.interviewId]
+
+          if (interview?.jobId === jobId) {
+            delete nextInterviewContacts[item.id]
+          }
+        })
+
+        Object.values(nextData.applicationQuestions).forEach((item) => {
           if (item.jobId === jobId) {
-            delete nextJobEvents[item.id]
+            delete nextApplicationQuestions[item.id]
           }
         })
 
@@ -1659,8 +1698,9 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
             jobs: nextJobs,
             jobLinks: nextJobLinks,
             jobContacts: nextJobContacts,
+            interviews: nextInterviews,
+            interviewContacts: nextInterviewContacts,
             applicationQuestions: nextApplicationQuestions,
-            jobEvents: nextJobEvents,
           },
           ui: {
             ...state.ui,
@@ -1849,13 +1889,21 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
 
       set((state) => {
         const nextJobContacts = { ...state.data.jobContacts }
+        const nextInterviewContacts = { ...state.data.interviewContacts }
         delete nextJobContacts[jobContactId]
+
+        Object.values(state.data.interviewContacts).forEach((item) => {
+          if (item.jobContactId === jobContactId) {
+            delete nextInterviewContacts[item.id]
+          }
+        })
 
         return {
           data: stampUpdatedJob(
             {
               ...state.data,
               jobContacts: nextJobContacts,
+              interviewContacts: nextInterviewContacts,
             },
             existing.jobId,
             now(),
@@ -1983,43 +2031,136 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         ),
       }))
     },
-    createJobEvent: ({ jobId, eventType = 'job_saved' }) => {
-      const job = get().data.jobs[jobId]
+    setJobAppliedAt: ({ jobId, appliedAt }) => {
+      const existingJob = get().data.jobs[jobId]
 
-      if (!job) {
+      if (!existingJob) {
         return
       }
 
+      set((state) => ({
+        data: {
+          ...state.data,
+          jobs: {
+            ...state.data.jobs,
+            [jobId]: {
+              ...existingJob,
+              appliedAt,
+              updatedAt: now(),
+            },
+          },
+        },
+      }))
+    },
+    clearJobAppliedAt: (jobId) => {
+      const existingJob = get().data.jobs[jobId]
+
+      if (!existingJob) {
+        return
+      }
+
+      set((state) => ({
+        data: {
+          ...state.data,
+          jobs: {
+            ...state.data.jobs,
+            [jobId]: {
+              ...existingJob,
+              appliedAt: null,
+              updatedAt: now(),
+            },
+          },
+        },
+      }))
+    },
+    setJobFinalOutcome: ({ jobId, status, setAt }) => {
+      const existingJob = get().data.jobs[jobId]
+
+      if (!existingJob) {
+        return
+      }
+
+      const finalOutcome: FinalOutcome = { status, setAt }
+
+      set((state) => ({
+        data: {
+          ...state.data,
+          jobs: {
+            ...state.data.jobs,
+            [jobId]: {
+              ...existingJob,
+              finalOutcome,
+              updatedAt: now(),
+            },
+          },
+        },
+      }))
+    },
+    clearJobFinalOutcome: (jobId) => {
+      const existingJob = get().data.jobs[jobId]
+
+      if (!existingJob) {
+        return
+      }
+
+      set((state) => ({
+        data: {
+          ...state.data,
+          jobs: {
+            ...state.data.jobs,
+            [jobId]: {
+              ...existingJob,
+              finalOutcome: null,
+              updatedAt: now(),
+            },
+          },
+        },
+      }))
+    },
+    createInterview: (jobId) => {
+      const job = get().data.jobs[jobId]
+
+      if (!job) {
+        return null
+      }
+
       const timestamp = now()
-      const jobEvent: JobEvent = {
+      const interview: Interview = {
         id: createId(),
         jobId,
-        eventType,
-        occurredAt: timestamp,
-        scheduledFor: null,
+        startAt: timestamp,
+        endAt: null,
+        completed: false,
         notes: '',
-        metadata: {},
-        createdAt: timestamp,
       }
 
       set((state) => ({
         data: stampUpdatedJob(
           {
             ...state.data,
-            jobEvents: {
-              ...state.data.jobEvents,
-              [jobEvent.id]: jobEvent,
+            interviews: {
+              ...state.data.interviews,
+              [interview.id]: interview,
             },
           },
           jobId,
           timestamp,
         ),
       }))
+
+      return interview.id
     },
-    updateJobEvent: ({ jobEventId, changes }) => {
-      const existing = get().data.jobEvents[jobEventId]
+    updateInterview: ({ interviewId, changes }) => {
+      const existing = get().data.interviews[interviewId]
 
       if (!existing) {
+        return
+      }
+
+      const nextStartAt = changes.startAt ?? existing.startAt
+      const nextEndAt = changes.endAt === undefined ? existing.endAt : changes.endAt
+
+      if (nextEndAt && nextEndAt < nextStartAt) {
         return
       }
 
@@ -2027,9 +2168,9 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         data: stampUpdatedJob(
           {
             ...state.data,
-            jobEvents: {
-              ...state.data.jobEvents,
-              [jobEventId]: {
+            interviews: {
+              ...state.data.interviews,
+              [interviewId]: {
                 ...existing,
                 ...changes,
               },
@@ -2040,28 +2181,112 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         ),
       }))
     },
-    deleteJobEvent: (jobEventId) => {
-      const existing = get().data.jobEvents[jobEventId]
+    deleteInterview: (interviewId) => {
+      const existing = get().data.interviews[interviewId]
 
       if (!existing) {
         return
       }
 
+      set((state) => ({
+        data: stampUpdatedJob(deleteInterviewCascade(state.data, interviewId), existing.jobId, now()),
+      }))
+    },
+    addInterviewContact: ({ interviewId, jobContactId }) => {
+      const interview = get().data.interviews[interviewId]
+      const jobContact = get().data.jobContacts[jobContactId]
+
+      if (!interview || !jobContact || interview.jobId !== jobContact.jobId) {
+        return
+      }
+
+      const hasExistingAssociation = Object.values(get().data.interviewContacts).some(
+        (item) => item.interviewId === interviewId && item.jobContactId === jobContactId,
+      )
+
+      if (hasExistingAssociation) {
+        return
+      }
+
+      const interviewContact: InterviewContact = {
+        id: createId(),
+        interviewId,
+        jobContactId,
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.interviewContacts)
+            .filter((item) => item.interviewId === interviewId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            interviewContacts: {
+              ...state.data.interviewContacts,
+              [interviewContact.id]: interviewContact,
+            },
+          },
+          interview.jobId,
+          now(),
+        ),
+      }))
+    },
+    removeInterviewContact: (interviewContactId) => {
+      const existing = get().data.interviewContacts[interviewContactId]
+
+      if (!existing) {
+        return
+      }
+
+      const interview = get().data.interviews[existing.interviewId]
+
+      if (!interview) {
+        return
+      }
+
       set((state) => {
-        const nextJobEvents = { ...state.data.jobEvents }
-        delete nextJobEvents[jobEventId]
+        const nextInterviewContacts = { ...state.data.interviewContacts }
+        delete nextInterviewContacts[interviewContactId]
 
         return {
           data: stampUpdatedJob(
             {
               ...state.data,
-              jobEvents: nextJobEvents,
+              interviewContacts: nextInterviewContacts,
             },
-            existing.jobId,
+            interview.jobId,
             now(),
           ),
         }
       })
+    },
+    reorderInterviewContacts: ({ interviewId, orderedIds }) => {
+      const interview = get().data.interviews[interviewId]
+
+      if (!interview) {
+        return
+      }
+
+      const existingIds = Object.values(get().data.interviewContacts)
+        .filter((item) => item.interviewId === interviewId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedJob(
+          {
+            ...state.data,
+            interviewContacts: reorderSortableEntities(state.data.interviewContacts, orderedIds),
+          },
+          interview.jobId,
+          now(),
+        ),
+      }))
     },
     importAppData: (file) => {
       set({

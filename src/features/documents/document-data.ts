@@ -78,6 +78,8 @@ const buildFallbackJob = (profile: Profile): Job => ({
   workArrangement: 'unknown',
   employmentType: 'other',
   datePosted: null,
+  appliedAt: null,
+  finalOutcome: null,
   notes: '',
   createdAt: profile.createdAt,
   updatedAt: profile.updatedAt,
@@ -175,9 +177,7 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
     .filter((link) => link.jobId === profile.jobId)
     .sort(compareSortOrder)
 
-  const jobEvents = Object.values(data.jobEvents)
-    .filter((event) => event.jobId === profile.jobId)
-    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+  const interviews = Object.values(data.interviews).filter((interview) => interview.jobId === profile.jobId)
 
   const skillCategories = Object.values(data.skillCategories)
     .filter((category) => category.profileId === profileId && category.enabled)
@@ -224,7 +224,11 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
     educationEntries,
     certifications,
     references,
-    computedStatus: getJobComputedStatus(jobEvents.map((event) => event.eventType)),
+    computedStatus: getJobComputedStatus({
+      appliedAt: job.appliedAt,
+      finalOutcome: job.finalOutcome,
+      interviewCount: interviews.length,
+    }),
   }
 }
 
