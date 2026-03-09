@@ -117,48 +117,52 @@ const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
   }
 
   return (
-    <div className="grid gap-3 rounded-xl border border-slate-200 p-3 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto_auto_auto] md:items-end">
-      <Field label="Link name" onBlur={commitName} value={name} onChange={setName} />
-      <Field label="URL" type="url" onBlur={commitUrl} value={url} onChange={setUrl} />
-      <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 md:self-center md:pb-2">
-        <input
-          checked={enabled}
-          className="h-4 w-4 rounded border-slate-300"
-          onChange={(event) => {
-            const nextEnabled = event.target.checked
-            setEnabled(nextEnabled)
-            updateProfileLink({
-              profileLinkId: profileLink.id,
-              changes: { enabled: nextEnabled },
-            })
-          }}
-          type="checkbox"
-        />
-        Enabled
-      </label>
-      <ReorderButtons
-        canMoveDown={profileLinkIds.length > 1}
-        canMoveUp={profileLinkIds.length > 1}
-        onMoveDown={() =>
-          reorderProfileLinks({
-            profileId: profileLink.profileId,
-            orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, 1),
-          })
-        }
-        onMoveUp={() =>
-          reorderProfileLinks({
-            profileId: profileLink.profileId,
-            orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, -1),
-          })
-        }
-      />
-      <button
-        className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50"
-        onClick={() => deleteProfileLink(profileLink.id)}
-        type="button"
-      >
-        Delete
-      </button>
+    <div className="rounded-xl border border-slate-200 p-3">
+      <div className="grid gap-3 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto] md:items-end">
+        <Field label="Link name" onBlur={commitName} value={name} onChange={setName} />
+        <Field label="URL" type="url" onBlur={commitUrl} value={url} onChange={setUrl} />
+        <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
+          <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+            <input
+              checked={enabled}
+              className="h-4 w-4 rounded border-slate-300"
+              onChange={(event) => {
+                const nextEnabled = event.target.checked
+                setEnabled(nextEnabled)
+                updateProfileLink({
+                  profileLinkId: profileLink.id,
+                  changes: { enabled: nextEnabled },
+                })
+              }}
+              type="checkbox"
+            />
+            Enabled
+          </label>
+          <ReorderButtons
+            canMoveDown={profileLinkIds.length > 1}
+            canMoveUp={profileLinkIds.length > 1}
+            onMoveDown={() =>
+              reorderProfileLinks({
+                profileId: profileLink.profileId,
+                orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderProfileLinks({
+                profileId: profileLink.profileId,
+                orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, -1),
+              })
+            }
+          />
+          <button
+            className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50"
+            onClick={() => deleteProfileLink(profileLink.id)}
+            type="button"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
