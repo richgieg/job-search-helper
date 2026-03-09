@@ -202,16 +202,10 @@ export const ApplicationPreviewPage = () => {
 
   return (
     <DocumentPageLayout
-      activeDocument="application"
-      profileId={preview.profile.id}
       subtitle="Raw, copy-friendly profile data for filling out online application forms. Click any value to copy it."
       title={`${preview.profile.name || 'Profile'} application preview`}
     >
       <div className="space-y-6">
-        <div className="rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm text-sky-900">
-          Click any value to copy it. Date fields include multiple formats so you can choose the one an application form expects.
-        </div>
-
         <DataTable copiedKey={copiedKey} description="Personal details and links from the selected profile." onCopy={handleCopy} rows={personalInfoRows} title="Personal Info" />
 
         <section className="space-y-4">
@@ -241,6 +235,11 @@ export const ApplicationPreviewPage = () => {
                   buildDateRow('Start date', entry.startDate),
                   buildDateRow('End date', entry.endDate),
                   { label: 'Current role', values: buildSingleValue(entry.isCurrent ? 'Yes' : 'No') },
+                  ...bullets.map((bullet, bulletIndex) => ({
+                    label: `Bullet ${bulletIndex + 1}`,
+                    values: buildSingleValue(bullet.content),
+                    multiline: true,
+                  })),
                   { label: 'Reason for leaving (short)', values: buildSingleValue(entry.reasonForLeavingShort) },
                   {
                     label: 'Reason for leaving (details)',
@@ -251,11 +250,6 @@ export const ApplicationPreviewPage = () => {
                   { label: 'Supervisor title', values: buildSingleValue(entry.supervisor.title) },
                   { label: 'Supervisor phone', values: buildSingleValue(entry.supervisor.phone) },
                   { label: 'Supervisor email', values: buildSingleValue(entry.supervisor.email) },
-                  ...bullets.map((bullet, bulletIndex) => ({
-                    label: `Bullet ${bulletIndex + 1}`,
-                    values: buildSingleValue(bullet.content),
-                    multiline: true,
-                  })),
                 ]}
                 title={`${entry.title || 'Untitled role'}${entry.company ? ` · ${entry.company}` : ''}`}
               />
