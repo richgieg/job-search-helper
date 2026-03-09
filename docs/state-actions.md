@@ -135,7 +135,6 @@ interface CreateBaseProfileInput {
   summary?: string;
   coverLetter?: string;
   personalDetails?: Partial<PersonalDetails>;
-  links?: Partial<ProfileLinks>;
 }
 ```
 
@@ -156,7 +155,6 @@ interface UpdateProfileInput {
   profileId: Id;
   changes: Partial<Pick<Profile, 'name' | 'summary' | 'coverLetter'>>;
   personalDetails?: Partial<PersonalDetails>;
-  links?: Partial<ProfileLinks>;
 }
 ```
 
@@ -287,6 +285,8 @@ These actions should all:
 - `deleteExperienceEntry(input)`
 - `reorderExperienceEntries(input)`
 
+`deleteExperienceEntry()` must also delete all child `ExperienceBullet` records for that experience entry.
+
 ### Experience bullet actions
 
 - `createExperienceBullet(input)`
@@ -314,6 +314,21 @@ These actions should all:
 - `updateReference(input)`
 - `deleteReference(input)`
 - `reorderReferences(input)`
+
+### Profile link actions
+
+- `createProfileLink(input)`
+- `updateProfileLink(input)`
+- `deleteProfileLink(input)`
+- `reorderProfileLinks(input)`
+
+These actions should:
+
+- require an existing profile
+- maintain sequential `sortOrder`
+- update `Profile.updatedAt`
+- preserve `name` exactly as entered by the user
+- preserve normalized state shape
 
 ### Common child action shape
 
@@ -471,6 +486,12 @@ Each action should validate:
 - required fields
 - basic shape constraints
 
+Profile link actions should additionally validate:
+
+- non-empty `name`
+- valid `url` shape
+- unique ordered ids during reordering
+
 Resume settings actions should additionally validate:
 
 - valid `ResumeSectionKey` values
@@ -537,6 +558,7 @@ High-priority tests:
 - duplicate profile copies `resumeSettings`
 - deleting a profile cascades child deletion
 - deleting a profile clears descendant `clonedFromProfileId`
+- reordering profile links produces unique sequential `sortOrder` values
 - resume section visibility toggles update the correct section only
 - resume section reordering produces unique sequential `sortOrder` values
 - deleting a job deletes attached job profiles and job-owned records

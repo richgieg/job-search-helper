@@ -68,13 +68,6 @@ export interface PersonalDetails {
   postalCode: string
 }
 
-export interface ProfileLinks {
-  linkedinUrl: string
-  githubUrl: string
-  portfolioUrl: string
-  websiteUrl: string
-}
-
 export interface Profile {
   id: Id
   name: string
@@ -82,11 +75,18 @@ export interface Profile {
   coverLetter: string
   resumeSettings: ResumeSettings
   personalDetails: PersonalDetails
-  links: ProfileLinks
   jobId: Id | null
   clonedFromProfileId: Id | null
   createdAt: IsoTimestamp
   updatedAt: IsoTimestamp
+}
+
+export interface ProfileLink {
+  id: Id
+  profileId: Id
+  name: string
+  url: string
+  sortOrder: number
 }
 
 export interface SkillCategory {
@@ -242,6 +242,7 @@ export interface AppDataState {
   version: 1
   exportedAt?: IsoTimestamp
   profiles: Record<Id, Profile>
+  profileLinks: Record<Id, ProfileLink>
   skillCategories: Record<Id, SkillCategory>
   skills: Record<Id, Skill>
   experienceEntries: Record<Id, ExperienceEntry>

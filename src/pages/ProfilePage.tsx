@@ -5,15 +5,11 @@ import { CollapsiblePanel } from '../components/CollapsiblePanel'
 import { ReorderButtons } from '../components/ReorderButtons'
 import { ProfileChildEditors } from '../features/profiles/ProfileChildEditors'
 import { useAppStore } from '../store/app-store'
-import type { PersonalDetails, ProfileLinks, ResumeSectionKey } from '../types/state'
+import type { PersonalDetails, ResumeSectionKey } from '../types/state'
 import { moveOrderedItem } from '../utils/reorder'
 
 const createPersonalDetailsDraft = (personalDetails: PersonalDetails): PersonalDetails => ({
   ...personalDetails,
-})
-
-const createLinksDraft = (links: ProfileLinks): ProfileLinks => ({
-  ...links,
 })
 
 const emptyPersonalDetails: PersonalDetails = {
@@ -26,13 +22,6 @@ const emptyPersonalDetails: PersonalDetails = {
   city: '',
   state: '',
   postalCode: '',
-}
-
-const emptyLinks: ProfileLinks = {
-  linkedinUrl: '',
-  githubUrl: '',
-  portfolioUrl: '',
-  websiteUrl: '',
 }
 
 const resumeSectionLabels: Record<ResumeSectionKey, string> = {
@@ -64,6 +53,7 @@ const Field = ({
     <input
       className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
       placeholder={placeholder}
+      spellCheck={type === 'url' ? false : undefined}
       type={type}
       value={value}
       onBlur={onBlur}
@@ -72,18 +62,102 @@ const Field = ({
   </label>
 )
 
+const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
+  const profileLink = useAppStore((state) => state.data.profileLinks[profileLinkId])
+  const profileLinksById = useAppStore((state) => state.data.profileLinks)
+  const updateProfileLink = useAppStore((state) => state.actions.updateProfileLink)
+  const deleteProfileLink = useAppStore((state) => state.actions.deleteProfileLink)
+  const reorderProfileLinks = useAppStore((state) => state.actions.reorderProfileLinks)
+  const [name, setName] = useState(profileLink?.name ?? '')
+  const [url, setUrl] = useState(profileLink?.url ?? '')
+
+  const profileLinkIds = profileLink
+    ? Object.values(profileLinksById)
+        .filter((item) => item.profileId === profileLink.profileId)
+        .sort((left, right) => left.sortOrder - right.sortOrder)
+        .map((item) => item.id)
+    : []
+  const profileLinkIndex = profileLinkIds.indexOf(profileLinkId)
+
+  useEffect(() => {
+    if (!profileLink) {
+      return
+    }
+
+    setName(profileLink.name)
+    setUrl(profileLink.url)
+  }, [profileLink])
+
+  if (!profileLink) {
+    return null
+  }
+
+  const commitName = () => {
+    if (name === profileLink.name) {
+      return
+    }
+
+    updateProfileLink({
+      profileLinkId: profileLink.id,
+      changes: { name },
+    })
+  }
+
+  const commitUrl = () => {
+    if (url === profileLink.url) {
+      return
+    }
+
+    updateProfileLink({
+      profileLinkId: profileLink.id,
+      changes: { url },
+    })
+  }
+
+  return (
+    <div className="grid gap-3 rounded-xl border border-slate-200 p-3 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)_auto_auto] md:items-end">
+      <Field label="Link name" onBlur={commitName} value={name} onChange={setName} />
+      <Field label="URL" type="url" onBlur={commitUrl} value={url} onChange={setUrl} />
+      <ReorderButtons
+        canMoveDown={profileLinkIds.length > 1}
+        canMoveUp={profileLinkIds.length > 1}
+        onMoveDown={() =>
+          reorderProfileLinks({
+            profileId: profileLink.profileId,
+            orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, 1),
+          })
+        }
+        onMoveUp={() =>
+          reorderProfileLinks({
+            profileId: profileLink.profileId,
+            orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, -1),
+          })
+        }
+      />
+      <button
+        className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50"
+        onClick={() => deleteProfileLink(profileLink.id)}
+        type="button"
+      >
+        Delete
+      </button>
+    </div>
+  )
+}
+
 export const ProfilePage = () => {
   const { profileId = '' } = useParams()
   const profile = useAppStore((state) => state.data.profiles[profileId])
+  const profileLinksById = useAppStore((state) => state.data.profileLinks)
   const jobsById = useAppStore((state) => state.data.jobs)
   const updateProfile = useAppStore((state) => state.actions.updateProfile)
+  const createProfileLink = useAppStore((state) => state.actions.createProfileLink)
   const setResumeSectionEnabled = useAppStore((state) => state.actions.setResumeSectionEnabled)
   const reorderResumeSections = useAppStore((state) => state.actions.reorderResumeSections)
   const [name, setName] = useState(profile?.name ?? '')
   const [summary, setSummary] = useState(profile?.summary ?? '')
   const [coverLetter, setCoverLetter] = useState(profile?.coverLetter ?? '')
   const [personalDetails, setPersonalDetails] = useState(profile ? createPersonalDetailsDraft(profile.personalDetails) : emptyPersonalDetails)
-  const [links, setLinks] = useState(profile ? createLinksDraft(profile.links) : emptyLinks)
 
   useEffect(() => {
     if (!profile) {
@@ -94,7 +168,6 @@ export const ProfilePage = () => {
     setSummary(profile.summary)
     setCoverLetter(profile.coverLetter)
     setPersonalDetails(createPersonalDetailsDraft(profile.personalDetails))
-    setLinks(createLinksDraft(profile.links))
   }, [profile])
 
   if (!profile) {
@@ -117,6 +190,10 @@ export const ProfilePage = () => {
     }))
     .sort((left, right) => left.sortOrder - right.sortOrder)
   const orderedResumeSectionKeys = orderedResumeSections.map((section) => section.section)
+  const orderedProfileLinkIds = Object.values(profileLinksById)
+    .filter((item) => item.profileId === profile.id)
+    .sort((left, right) => left.sortOrder - right.sortOrder)
+    .map((item) => item.id)
 
   const commitProfileName = () => {
     const trimmed = name.trim()
@@ -165,20 +242,6 @@ export const ProfilePage = () => {
       profileId: profile.id,
       changes: {},
       personalDetails: {
-        [key]: value,
-      },
-    })
-  }
-
-  const commitLink = <K extends keyof ProfileLinks>(key: K, value: ProfileLinks[K]) => {
-    if (value === profile.links[key]) {
-      return
-    }
-
-    updateProfile({
-      profileId: profile.id,
-      changes: {},
-      links: {
         [key]: value,
       },
     })
@@ -270,13 +333,20 @@ export const ProfilePage = () => {
 
       <CollapsiblePanel
         description="Store the public URLs that should travel with this profile."
+        headerActions={
+          <button
+            className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            onClick={() => createProfileLink(profile.id)}
+            type="button"
+          >
+            Add link
+          </button>
+        }
         title="Links"
       >
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="LinkedIn" type="url" value={links.linkedinUrl} onBlur={() => commitLink('linkedinUrl', links.linkedinUrl)} onChange={(value) => setLinks({ ...links, linkedinUrl: value })} />
-          <Field label="GitHub" type="url" value={links.githubUrl} onBlur={() => commitLink('githubUrl', links.githubUrl)} onChange={(value) => setLinks({ ...links, githubUrl: value })} />
-          <Field label="Portfolio" type="url" value={links.portfolioUrl} onBlur={() => commitLink('portfolioUrl', links.portfolioUrl)} onChange={(value) => setLinks({ ...links, portfolioUrl: value })} />
-          <Field label="Website" type="url" value={links.websiteUrl} onBlur={() => commitLink('websiteUrl', links.websiteUrl)} onChange={(value) => setLinks({ ...links, websiteUrl: value })} />
+        <div className="space-y-3">
+          {orderedProfileLinkIds.length === 0 ? <p className="text-sm text-slate-500">No links added yet.</p> : null}
+          {orderedProfileLinkIds.map((id) => <ProfileLinkRow key={id} profileLinkId={id} />)}
         </div>
       </CollapsiblePanel>
 

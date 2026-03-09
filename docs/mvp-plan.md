@@ -89,7 +89,7 @@ Each reusable profile should support:
 - Education entries
 - Certifications
 - References (professional and personal)
-- Optional links: LinkedIn, portfolio, GitHub, website
+- Zero or more profile links with user-defined names and URLs
 - Personal details used in applications
 
 Profiles can be either base profiles or job profiles:
@@ -238,6 +238,8 @@ If `job_id` is null, the profile is a base profile. If `job_id` is not null, the
 
 `resume_settings_json` stores the profile's single resume settings configuration for the MVP, including whether each resume section is shown and the order in which sections should appear.
 
+`links_json` stores an ordered collection of profile link records, where each link has a user-defined name and URL.
+
 `cloned_from_profile_id` is null for profiles created from scratch and points to the profile that was duplicated when a profile is copied.
 
 When a profile is duplicated, the system should duplicate the source `Profile` and all related records so the new profile can be edited independently.
@@ -251,6 +253,14 @@ The copied related records include:
 - `EducationEntry`
 - `Certification`
 - `Reference`
+- `ProfileLink`
+
+### ProfileLink
+- id
+- profile_id
+- name
+- url
+- sort_order
 
 ### SkillCategory
 - id

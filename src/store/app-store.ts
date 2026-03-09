@@ -19,7 +19,7 @@ import type {
   JobLink,
   PersonalDetails,
   Profile,
-  ProfileLinks,
+  ProfileLink,
   Reference,
   ResumeSectionKey,
   ResumeSettings,
@@ -36,12 +36,18 @@ interface AppStoreState {
       profileId: Id
       changes: Partial<Pick<Profile, 'name' | 'summary' | 'coverLetter'>>
       personalDetails?: Partial<PersonalDetails>
-      links?: Partial<ProfileLinks>
     }) => void
     setResumeSectionEnabled: (input: { profileId: Id; section: ResumeSectionKey; enabled: boolean }) => void
     reorderResumeSections: (input: { profileId: Id; orderedSections: ResumeSectionKey[] }) => void
     duplicateProfile: (input: { sourceProfileId: Id; targetJobId?: Id | null; name?: string }) => Id | null
     deleteProfile: (profileId: Id) => void
+    createProfileLink: (profileId: Id) => void
+    updateProfileLink: (input: {
+      profileLinkId: Id
+      changes: Partial<Pick<ProfileLink, 'name' | 'url' | 'sortOrder'>>
+    }) => void
+    deleteProfileLink: (profileLinkId: Id) => void
+    reorderProfileLinks: (input: { profileId: Id; orderedIds: Id[] }) => void
     createSkillCategory: (profileId: Id) => void
     updateSkillCategory: (input: {
       skillCategoryId: Id
@@ -259,6 +265,7 @@ const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetPro
   const clonedExperienceEntryIds = new Map<Id, Id>()
   const nextData: AppDataState = {
     ...data,
+    profileLinks: { ...data.profileLinks },
     skillCategories: { ...data.skillCategories },
     skills: { ...data.skills },
     experienceEntries: { ...data.experienceEntries },
@@ -268,6 +275,17 @@ const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetPro
     references: { ...data.references },
   }
   const timestamp = now()
+
+  Object.values(data.profileLinks)
+    .filter((item) => item.profileId === sourceProfileId)
+    .forEach((item) => {
+      const cloned: ProfileLink = {
+        ...item,
+        id: createId(),
+        profileId: targetProfileId,
+      }
+      nextData.profileLinks[cloned.id] = cloned
+    })
 
   Object.values(data.skillCategories)
     .filter((item) => item.profileId === sourceProfileId)
@@ -366,6 +384,7 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
   )
 
   const nextProfiles = { ...data.profiles }
+  const nextProfileLinks = { ...data.profileLinks }
   const nextSkillCategories = { ...data.skillCategories }
   const nextSkills = { ...data.skills }
   const nextExperienceEntries = { ...data.experienceEntries }
@@ -388,6 +407,12 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
   Object.values(data.skillCategories).forEach((item) => {
     if (item.profileId === profileId) {
       delete nextSkillCategories[item.id]
+    }
+  })
+
+  Object.values(data.profileLinks).forEach((item) => {
+    if (item.profileId === profileId) {
+      delete nextProfileLinks[item.id]
     }
   })
 
@@ -430,6 +455,7 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
   return {
     ...data,
     profiles: nextProfiles,
+    profileLinks: nextProfileLinks,
     skillCategories: nextSkillCategories,
     skills: nextSkills,
     experienceEntries: nextExperienceEntries,
@@ -490,9 +516,6 @@ const createProfileRecord = (name: string): Profile => {
     personalDetails: {
       ...emptyProfileDefaults.personalDetails,
     },
-    links: {
-      ...emptyProfileDefaults.links,
-    },
     jobId: null,
     clonedFromProfileId: null,
     createdAt: timestamp,
@@ -521,7 +544,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         },
       }))
     },
-    updateProfile: ({ profileId, changes, personalDetails, links }) => {
+    updateProfile: ({ profileId, changes, personalDetails }) => {
       const existingProfile = get().data.profiles[profileId]
 
       if (!existingProfile) {
@@ -539,10 +562,6 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
               personalDetails: {
                 ...existingProfile.personalDetails,
                 ...personalDetails,
-              },
-              links: {
-                ...existingProfile.links,
-                ...links,
               },
               updatedAt: now(),
             },
@@ -668,6 +687,106 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           ...state.ui,
           selectedProfileId: state.ui.selectedProfileId === profileId ? null : state.ui.selectedProfileId,
         },
+      }))
+    },
+    createProfileLink: (profileId) => {
+      const profile = get().data.profiles[profileId]
+
+      if (!profile) {
+        return
+      }
+
+      const profileLink: ProfileLink = {
+        id: createId(),
+        profileId,
+        name: '',
+        url: '',
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.profileLinks)
+            .filter((item) => item.profileId === profileId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            profileLinks: {
+              ...state.data.profileLinks,
+              [profileLink.id]: profileLink,
+            },
+          },
+          profileId,
+          now(),
+        ),
+      }))
+    },
+    updateProfileLink: ({ profileLinkId, changes }) => {
+      const existing = get().data.profileLinks[profileLinkId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            profileLinks: {
+              ...state.data.profileLinks,
+              [profileLinkId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          existing.profileId,
+          now(),
+        ),
+      }))
+    },
+    deleteProfileLink: (profileLinkId) => {
+      const existing = get().data.profileLinks[profileLinkId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => {
+        const nextProfileLinks = { ...state.data.profileLinks }
+        delete nextProfileLinks[profileLinkId]
+
+        return {
+          data: stampUpdatedProfile(
+            {
+              ...state.data,
+              profileLinks: nextProfileLinks,
+            },
+            existing.profileId,
+            now(),
+          ),
+        }
+      })
+    },
+    reorderProfileLinks: ({ profileId, orderedIds }) => {
+      const existingIds = Object.values(get().data.profileLinks)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            profileLinks: reorderSortableEntities(state.data.profileLinks, orderedIds),
+          },
+          profileId,
+          now(),
+        ),
       }))
     },
     createSkillCategory: (profileId) => {
@@ -1949,6 +2068,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
               },
             ]),
           ),
+          profileLinks: file.data.profileLinks ?? {},
           jobLinks: file.data.jobLinks ?? {},
           applicationQuestions: file.data.applicationQuestions ?? {},
         },

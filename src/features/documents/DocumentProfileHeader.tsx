@@ -15,12 +15,9 @@ export const DocumentProfileHeader = ({ preview }: DocumentProfileHeaderProps) =
     preview.profile.personalDetails.state,
     preview.profile.personalDetails.postalCode,
   )
-  const links = [
-    preview.profile.links.linkedinUrl,
-    preview.profile.links.githubUrl,
-    preview.profile.links.portfolioUrl,
-    preview.profile.links.websiteUrl,
-  ].filter(Boolean)
+  const links = preview.profileLinks
+    .map((link) => `${link.name}: ${link.url}`.trim())
+    .filter(Boolean)
 
   return (
     <header className="border-b border-slate-200 pb-6">

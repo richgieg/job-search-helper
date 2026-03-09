@@ -47,6 +47,7 @@ interface AppDataState {
   version: 1;
   exportedAt?: IsoTimestamp;
   profiles: Record<Id, Profile>;
+  profileLinks: Record<Id, ProfileLink>;
   skillCategories: Record<Id, SkillCategory>;
   skills: Record<Id, Skill>;
   experienceEntries: Record<Id, ExperienceEntry>;
@@ -178,7 +179,6 @@ interface Profile {
   coverLetter: string;
   resumeSettings: ResumeSettings;
   personalDetails: PersonalDetails;
-  links: ProfileLinks;
   jobId: Id | null;
   clonedFromProfileId: Id | null;
   createdAt: IsoTimestamp;
@@ -197,19 +197,24 @@ interface PersonalDetails {
   postalCode: string;
 }
 
-interface ProfileLinks {
-  linkedinUrl: string;
-  githubUrl: string;
-  portfolioUrl: string;
-  websiteUrl: string;
-}
-
 interface ResumeSettings {
   sections: Record<ResumeSectionKey, ResumeSectionSettings>;
 }
 
 interface ResumeSectionSettings {
   enabled: boolean;
+  sortOrder: number;
+}
+```
+
+### ProfileLink
+
+```ts
+interface ProfileLink {
+  id: Id;
+  profileId: Id;
+  name: string;
+  url: string;
   sortOrder: number;
 }
 ```
@@ -421,6 +426,7 @@ The following relationships should be enforced during normal app operations and 
 
 ### Child entity relationships
 
+- `ProfileLink.profileId` points to an existing `Profile`.
 - `SkillCategory.profileId` points to an existing `Profile`.
 - `Skill.skillCategoryId` points to an existing `SkillCategory`.
 - `ExperienceEntry.profileId` points to an existing `Profile`.
@@ -440,6 +446,7 @@ The following relationships should be enforced during normal app operations and 
 
 When duplicating a profile, create a new `Profile` and duplicate all profile-owned child records:
 
+- `ProfileLink`
 - `SkillCategory`
 - `Skill`
 - `ExperienceEntry`
@@ -478,6 +485,7 @@ Deleting a profile should permanently remove that `Profile` and all profile-owne
 
 Cascade delete these records:
 
+- `ProfileLink`
 - `SkillCategory`
 - `Skill`
 - `ExperienceEntry`
@@ -519,6 +527,7 @@ Rules:
 
 The following records can be hard deleted directly:
 
+- `ProfileLink`
 - `ExperienceEntry`
 - `ExperienceBullet`
 - `EducationEntry`
@@ -573,6 +582,7 @@ These values should be computed, not stored.
 - `getBaseProfiles()`
 - `getJobProfiles(jobId)`
 - `getProfileKind(profile)`
+- `getOrderedProfileLinks(profileId)`
 - `getOrderedResumeSections(profileId)`
 - `getOrderedSkillCategories(profileId)`
 - `getOrderedSkills(skillCategoryId)`

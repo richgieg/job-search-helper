@@ -1,4 +1,4 @@
-import type { AppDataState, AppUiState, PersonalDetails, ProfileLinks, ResumeSettings } from '../types/state'
+import type { AppDataState, AppUiState, PersonalDetails, ResumeSettings } from '../types/state'
 
 const createEmptyPersonalDetails = (): PersonalDetails => ({
   fullName: '',
@@ -10,13 +10,6 @@ const createEmptyPersonalDetails = (): PersonalDetails => ({
   city: '',
   state: '',
   postalCode: '',
-})
-
-const createEmptyProfileLinks = (): ProfileLinks => ({
-  linkedinUrl: '',
-  githubUrl: '',
-  portfolioUrl: '',
-  websiteUrl: '',
 })
 
 export const createDefaultResumeSettings = (): ResumeSettings => ({
@@ -33,6 +26,7 @@ export const createDefaultResumeSettings = (): ResumeSettings => ({
 export const createEmptyDataState = (): AppDataState => ({
   version: 1,
   profiles: {},
+  profileLinks: {},
   skillCategories: {},
   skills: {},
   experienceEntries: {},
@@ -74,5 +68,4 @@ export const emptyProfileDefaults = {
   coverLetter: '',
   resumeSettings: createDefaultResumeSettings(),
   personalDetails: createEmptyPersonalDetails(),
-  links: createEmptyProfileLinks(),
 }

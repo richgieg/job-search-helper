@@ -9,6 +9,7 @@ import type {
   JobContact,
   JobLink,
   Profile,
+  ProfileLink,
   Reference,
   ResumeSectionKey,
   Skill,
@@ -27,6 +28,7 @@ export interface PreviewExperienceEntry {
 
 export interface ProfilePreviewData {
   profile: Profile
+  profileLinks: ProfileLink[]
   job: Job
   primaryContact: JobContact
   contacts: JobContact[]
@@ -160,6 +162,10 @@ export const selectProfilePreviewData = (data: AppDataState, profileId: Id): Pro
 
   const job = profile.jobId ? data.jobs[profile.jobId] ?? buildFallbackJob(profile) : buildFallbackJob(profile)
 
+  const profileLinks = Object.values(data.profileLinks)
+    .filter((link) => link.profileId === profileId)
+    .sort(compareSortOrder)
+
   const contacts = Object.values(data.jobContacts)
     .filter((contact) => contact.jobId === profile.jobId)
     .sort(compareSortOrder)
@@ -207,6 +213,7 @@ export const selectProfilePreviewData = (data: AppDataState, profileId: Id): Pro
 
   return {
     profile,
+    profileLinks,
     job,
     primaryContact: contacts[0] ?? buildFallbackContact(job),
     contacts,

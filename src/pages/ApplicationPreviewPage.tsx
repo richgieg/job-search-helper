@@ -194,10 +194,10 @@ export const ApplicationPreviewPage = () => {
     { label: 'City', values: buildSingleValue(personalDetails.city) },
     { label: 'State', values: buildSingleValue(personalDetails.state) },
     { label: 'Postal code', values: buildSingleValue(personalDetails.postalCode) },
-    { label: 'LinkedIn', values: buildSingleValue(preview.profile.links.linkedinUrl) },
-    { label: 'GitHub', values: buildSingleValue(preview.profile.links.githubUrl) },
-    { label: 'Portfolio', values: buildSingleValue(preview.profile.links.portfolioUrl) },
-    { label: 'Website', values: buildSingleValue(preview.profile.links.websiteUrl) },
+    ...preview.profileLinks.map((link, index) => ({
+      label: link.name || `Link ${index + 1}`,
+      values: buildSingleValue(link.url),
+    })),
   ]
 
   return (
