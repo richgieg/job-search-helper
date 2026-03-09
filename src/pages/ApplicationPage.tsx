@@ -161,7 +161,7 @@ const DataTable = ({
   )
 }
 
-export const ApplicationPreviewPage = () => {
+export const ApplicationPage = () => {
   const { profileId = '' } = useParams()
   const data = useAppStore((state) => state.data)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)

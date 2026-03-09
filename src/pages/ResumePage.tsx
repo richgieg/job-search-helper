@@ -18,7 +18,7 @@ const formatExperienceMeta = (input: {
   return [input.company, input.location, workArrangement, employmentType].filter(Boolean).join(' · ')
 }
 
-export const ResumePreviewPage = () => {
+export const ResumePage = () => {
   const { profileId = '' } = useParams()
   const data = useAppStore((state) => state.data)
 

@@ -6,7 +6,7 @@ import { PreviewNotFound } from '../features/documents/DocumentPageLayout'
 import { buildCoverLetterParagraphs, formatAddressLines, selectProfilePreviewData } from '../features/documents/preview-data'
 import { useAppStore } from '../store/app-store'
 
-export const CoverLetterPreviewPage = () => {
+export const CoverLetterPage = () => {
   const { profileId = '' } = useParams()
   const data = useAppStore((state) => state.data)
 
