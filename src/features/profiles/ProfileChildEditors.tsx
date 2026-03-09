@@ -26,6 +26,7 @@ const TextField = ({
     <input
       className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
       placeholder={placeholder}
+      spellCheck={type === 'url' ? false : undefined}
       type={type}
       value={value}
       onBlur={onBlur}
@@ -138,6 +139,101 @@ const formatDateRange = (startDate: string | null, endDate: string | null, isCur
 }
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter((part): part is string => Boolean(part && part.trim())).join(' • ')
+
+const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
+  const profileLink = useAppStore((state) => state.data.profileLinks[profileLinkId])
+  const profileLinksById = useAppStore((state) => state.data.profileLinks)
+  const updateProfileLink = useAppStore((state) => state.actions.updateProfileLink)
+  const deleteProfileLink = useAppStore((state) => state.actions.deleteProfileLink)
+  const reorderProfileLinks = useAppStore((state) => state.actions.reorderProfileLinks)
+  const [name, setName] = useState(profileLink?.name ?? '')
+  const [url, setUrl] = useState(profileLink?.url ?? '')
+  const [enabled, setEnabled] = useState(profileLink?.enabled ?? true)
+
+  const profileLinkIds = useMemo(
+    () =>
+      profileLink
+        ? Object.values(profileLinksById)
+            .filter((item) => item.profileId === profileLink.profileId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [profileLink, profileLinksById],
+  )
+  const profileLinkIndex = profileLinkIds.indexOf(profileLinkId)
+
+  useEffect(() => {
+    if (!profileLink) {
+      return
+    }
+
+    setName(profileLink.name)
+    setUrl(profileLink.url)
+    setEnabled(profileLink.enabled)
+  }, [profileLink])
+
+  if (!profileLink) {
+    return null
+  }
+
+  const commitName = () => {
+    if (name === profileLink.name) {
+      return
+    }
+
+    updateProfileLink({
+      profileLinkId: profileLink.id,
+      changes: { name },
+    })
+  }
+
+  const commitUrl = () => {
+    if (url === profileLink.url) {
+      return
+    }
+
+    updateProfileLink({
+      profileLinkId: profileLink.id,
+      changes: { url },
+    })
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-200 p-3">
+      <div className="grid gap-3 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto] md:items-end">
+        <TextField label="Link name" onBlur={commitName} value={name} onChange={setName} />
+        <TextField label="URL" type="url" onBlur={commitUrl} value={url} onChange={setUrl} />
+        <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
+          <ToggleField
+            checked={enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setEnabled(value)
+              updateProfileLink({ profileLinkId: profileLink.id, changes: { enabled: value } })
+            }}
+          />
+          <ReorderButtons
+            canMoveDown={profileLinkIds.length > 1}
+            canMoveUp={profileLinkIds.length > 1}
+            onMoveDown={() =>
+              reorderProfileLinks({
+                profileId: profileLink.profileId,
+                orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderProfileLinks({
+                profileId: profileLink.profileId,
+                orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, -1),
+              })
+            }
+          />
+          <DeleteButton onDelete={() => deleteProfileLink(profileLink.id)} />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
   const bullet = useAppStore((state) => state.data.experienceBullets[bulletId])
@@ -862,16 +958,27 @@ const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
 }
 
 export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
+  const profileLinksById = useAppStore((state) => state.data.profileLinks)
   const skillCategoriesById = useAppStore((state) => state.data.skillCategories)
   const experienceEntriesById = useAppStore((state) => state.data.experienceEntries)
   const educationEntriesById = useAppStore((state) => state.data.educationEntries)
   const certificationsById = useAppStore((state) => state.data.certifications)
   const referencesById = useAppStore((state) => state.data.references)
+  const createProfileLink = useAppStore((state) => state.actions.createProfileLink)
   const createSkillCategory = useAppStore((state) => state.actions.createSkillCategory)
   const createExperienceEntry = useAppStore((state) => state.actions.createExperienceEntry)
   const createEducationEntry = useAppStore((state) => state.actions.createEducationEntry)
   const createCertification = useAppStore((state) => state.actions.createCertification)
   const createReference = useAppStore((state) => state.actions.createReference)
+
+  const profileLinkIds = useMemo(
+    () =>
+      Object.values(profileLinksById)
+        .filter((item) => item.profileId === profileId)
+        .sort((left, right) => left.sortOrder - right.sortOrder)
+        .map((item) => item.id),
+    [profileId, profileLinksById],
+  )
 
   const skillCategoryIds = useMemo(
     () =>
@@ -918,6 +1025,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
     [profileId, referencesById],
   )
 
+  const hasProfileLinks = profileLinkIds.length > 0
   const hasSkillCategories = skillCategoryIds.length > 0
   const hasExperienceEntries = experienceEntryIds.length > 0
   const hasEducationEntries = educationEntryIds.length > 0
@@ -926,6 +1034,16 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
 
   return (
     <>
+      <CollapsiblePanel
+        actionLabel="Add link"
+        collapsible={hasProfileLinks}
+        description="Store the public URLs that should travel with this profile."
+        onAction={() => createProfileLink(profileId)}
+        title="Links"
+      >
+        {hasProfileLinks ? <div className="space-y-4">{profileLinkIds.map((id) => <ProfileLinkRow key={id} profileLinkId={id} />)}</div> : null}
+      </CollapsiblePanel>
+
       <CollapsiblePanel
         actionLabel="Add skill category"
         collapsible={hasSkillCategories}

@@ -62,118 +62,11 @@ const Field = ({
   </label>
 )
 
-const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
-  const profileLink = useAppStore((state) => state.data.profileLinks[profileLinkId])
-  const profileLinksById = useAppStore((state) => state.data.profileLinks)
-  const updateProfileLink = useAppStore((state) => state.actions.updateProfileLink)
-  const deleteProfileLink = useAppStore((state) => state.actions.deleteProfileLink)
-  const reorderProfileLinks = useAppStore((state) => state.actions.reorderProfileLinks)
-  const [name, setName] = useState(profileLink?.name ?? '')
-  const [url, setUrl] = useState(profileLink?.url ?? '')
-  const [enabled, setEnabled] = useState(profileLink?.enabled ?? true)
-
-  const profileLinkIds = profileLink
-    ? Object.values(profileLinksById)
-        .filter((item) => item.profileId === profileLink.profileId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id)
-    : []
-  const profileLinkIndex = profileLinkIds.indexOf(profileLinkId)
-
-  useEffect(() => {
-    if (!profileLink) {
-      return
-    }
-
-    setName(profileLink.name)
-    setUrl(profileLink.url)
-    setEnabled(profileLink.enabled)
-  }, [profileLink])
-
-  if (!profileLink) {
-    return null
-  }
-
-  const commitName = () => {
-    if (name === profileLink.name) {
-      return
-    }
-
-    updateProfileLink({
-      profileLinkId: profileLink.id,
-      changes: { name },
-    })
-  }
-
-  const commitUrl = () => {
-    if (url === profileLink.url) {
-      return
-    }
-
-    updateProfileLink({
-      profileLinkId: profileLink.id,
-      changes: { url },
-    })
-  }
-
-  return (
-    <div className="rounded-xl border border-slate-200 p-3">
-      <div className="grid gap-3 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto] md:items-end">
-        <Field label="Link name" onBlur={commitName} value={name} onChange={setName} />
-        <Field label="URL" type="url" onBlur={commitUrl} value={url} onChange={setUrl} />
-        <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
-          <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-            <input
-              checked={enabled}
-              className="h-4 w-4 rounded border-slate-300"
-              onChange={(event) => {
-                const nextEnabled = event.target.checked
-                setEnabled(nextEnabled)
-                updateProfileLink({
-                  profileLinkId: profileLink.id,
-                  changes: { enabled: nextEnabled },
-                })
-              }}
-              type="checkbox"
-            />
-            Enabled
-          </label>
-          <ReorderButtons
-            canMoveDown={profileLinkIds.length > 1}
-            canMoveUp={profileLinkIds.length > 1}
-            onMoveDown={() =>
-              reorderProfileLinks({
-                profileId: profileLink.profileId,
-                orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, 1),
-              })
-            }
-            onMoveUp={() =>
-              reorderProfileLinks({
-                profileId: profileLink.profileId,
-                orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, -1),
-              })
-            }
-          />
-          <button
-            className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50"
-            onClick={() => deleteProfileLink(profileLink.id)}
-            type="button"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export const ProfilePage = () => {
   const { profileId = '' } = useParams()
   const profile = useAppStore((state) => state.data.profiles[profileId])
-  const profileLinksById = useAppStore((state) => state.data.profileLinks)
   const jobsById = useAppStore((state) => state.data.jobs)
   const updateProfile = useAppStore((state) => state.actions.updateProfile)
-  const createProfileLink = useAppStore((state) => state.actions.createProfileLink)
   const setResumeSectionEnabled = useAppStore((state) => state.actions.setResumeSectionEnabled)
   const reorderResumeSections = useAppStore((state) => state.actions.reorderResumeSections)
   const [name, setName] = useState(profile?.name ?? '')
@@ -212,10 +105,6 @@ export const ProfilePage = () => {
     }))
     .sort((left, right) => left.sortOrder - right.sortOrder)
   const orderedResumeSectionKeys = orderedResumeSections.map((section) => section.section)
-  const orderedProfileLinkIds = Object.values(profileLinksById)
-    .filter((item) => item.profileId === profile.id)
-    .sort((left, right) => left.sortOrder - right.sortOrder)
-    .map((item) => item.id)
 
   const commitProfileName = () => {
     const trimmed = name.trim()
@@ -350,25 +239,6 @@ export const ProfilePage = () => {
           <Field label="City" value={personalDetails.city} onBlur={() => commitPersonalDetail('city', personalDetails.city)} onChange={(value) => setPersonalDetails({ ...personalDetails, city: value })} />
           <Field label="State" value={personalDetails.state} onBlur={() => commitPersonalDetail('state', personalDetails.state)} onChange={(value) => setPersonalDetails({ ...personalDetails, state: value })} />
           <Field label="Postal code" value={personalDetails.postalCode} onBlur={() => commitPersonalDetail('postalCode', personalDetails.postalCode)} onChange={(value) => setPersonalDetails({ ...personalDetails, postalCode: value })} />
-        </div>
-      </CollapsiblePanel>
-
-      <CollapsiblePanel
-        description="Store the public URLs that should travel with this profile."
-        headerActions={
-          <button
-            className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            onClick={() => createProfileLink(profile.id)}
-            type="button"
-          >
-            Add link
-          </button>
-        }
-        title="Links"
-      >
-        <div className="space-y-3">
-          {orderedProfileLinkIds.length === 0 ? <p className="text-sm text-slate-500">No links added yet.</p> : null}
-          {orderedProfileLinkIds.map((id) => <ProfileLinkRow key={id} profileLinkId={id} />)}
         </div>
       </CollapsiblePanel>
 
