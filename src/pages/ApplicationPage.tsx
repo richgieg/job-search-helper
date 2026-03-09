@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
-import { DocumentPageLayout, PreviewNotFound } from '../features/documents/DocumentPageLayout'
+import { PreviewNotFound } from '../features/documents/PreviewNotFound'
 import { selectProfilePreviewData } from '../features/documents/preview-data'
 import { useAppStore } from '../store/app-store'
 
@@ -201,11 +201,15 @@ export const ApplicationPage = () => {
   ]
 
   return (
-    <DocumentPageLayout
-      eyebrow="Application Content"
-      subtitle="Raw, copy-friendly profile data for filling out online application forms. Click any value to copy it."
-      title={`${preview.profile.name || 'Profile'} application preview`}
-    >
+    <div className="space-y-8">
+      <div>
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Application Content</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{`${preview.profile.name || 'Profile'} application preview`}</h1>
+          <p className="mt-2 text-sm text-slate-600">Raw, copy-friendly profile data for filling out online application forms. Click any value to copy it.</p>
+        </div>
+      </div>
+
       <div className="space-y-6">
         <DataTable copiedKey={copiedKey} description="Personal details and links from the selected profile." onCopy={handleCopy} rows={personalInfoRows} title="Personal Info" />
 
@@ -357,6 +361,6 @@ export const ApplicationPage = () => {
           )}
         </section>
       </div>
-    </DocumentPageLayout>
+    </div>
   )
 }

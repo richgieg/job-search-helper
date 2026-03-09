@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { DocumentProfileHeader } from '../features/documents/DocumentProfileHeader'
-import { PreviewNotFound } from '../features/documents/DocumentPageLayout'
+import { PreviewNotFound } from '../features/documents/PreviewNotFound'
 import { formatDateRange, getOrderedResumeSections, selectProfilePreviewData } from '../features/documents/preview-data'
 import { useAppStore } from '../store/app-store'
 
