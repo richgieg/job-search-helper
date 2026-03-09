@@ -230,7 +230,6 @@ export const ProfilePage = () => {
               <span className="font-medium">Professional summary</span>
               <textarea
                 className="min-h-28 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
-                placeholder="Professional summary"
                 value={summary}
                 onBlur={() => commitProfileTextField('summary', summary)}
                 onChange={(event) => setSummary(event.target.value)}
@@ -243,7 +242,6 @@ export const ProfilePage = () => {
               <span className="font-medium">Cover letter content</span>
               <textarea
                 className="min-h-40 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
-                placeholder="Cover letter content"
                 value={coverLetter}
                 onBlur={() => commitProfileTextField('coverLetter', coverLetter)}
                 onChange={(event) => setCoverLetter(event.target.value)}
