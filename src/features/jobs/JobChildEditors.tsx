@@ -1,10 +1,28 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
+import { DeleteIconButton } from '../../components/CompactActionControls'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
 import type { ContactRelationshipType, JobEventType } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
+
+const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(' • ')
+
+const formatRelationshipType = (relationshipType: ContactRelationshipType) => {
+  switch (relationshipType) {
+    case 'hiring_manager':
+      return 'Hiring manager'
+    case 'recruiter':
+      return 'Recruiter'
+    case 'referral':
+      return 'Referral'
+    case 'interviewer':
+      return 'Interviewer'
+    default:
+      return 'Other'
+  }
+}
 
 const TextField = ({
   label,
@@ -211,8 +229,38 @@ const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
     })
   }
 
+  const summary = summarizeParts([
+    formatRelationshipType(draft.relationshipType),
+    draft.title || null,
+    draft.company || null,
+  ])
+
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
+    <CollapsiblePanel
+      headerActions={
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ReorderButtons
+            canMoveDown={jobContactIds.length > 1}
+            canMoveUp={jobContactIds.length > 1}
+            onMoveDown={() =>
+              reorderJobContacts({
+                jobId: contact.jobId,
+                orderedIds: moveOrderedItem(jobContactIds, jobContactIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderJobContacts({
+                jobId: contact.jobId,
+                orderedIds: moveOrderedItem(jobContactIds, jobContactIndex, -1),
+              })
+            }
+          />
+          <DeleteIconButton label="Delete contact" onDelete={() => deleteJobContact(contact.id)} />
+        </div>
+      }
+      summary={summary}
+      title={draft.name || contact.name || 'Contact'}
+    >
       <div className="grid gap-4 xl:grid-cols-3">
         <TextField label="Name" value={draft.name} onBlur={() => draft.name !== contact.name && commitContactChanges({ name: draft.name })} onChange={(value) => setDraft({ ...draft, name: value })} />
         <TextField label="Title" value={draft.title} onBlur={() => draft.title !== contact.title && commitContactChanges({ title: draft.title })} onChange={(value) => setDraft({ ...draft, title: value })} />
@@ -240,27 +288,8 @@ const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
         <div className="xl:col-span-3">
           <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== contact.notes && commitContactChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
         </div>
-        <div className="xl:col-span-3 flex flex-wrap items-center justify-end gap-2">
-          <ReorderButtons
-            canMoveDown={jobContactIds.length > 1}
-            canMoveUp={jobContactIds.length > 1}
-            onMoveDown={() =>
-              reorderJobContacts({
-                jobId: contact.jobId,
-                orderedIds: moveOrderedItem(jobContactIds, jobContactIndex, 1),
-              })
-            }
-            onMoveUp={() =>
-              reorderJobContacts({
-                jobId: contact.jobId,
-                orderedIds: moveOrderedItem(jobContactIds, jobContactIndex, -1),
-              })
-            }
-          />
-          <DeleteButton onDelete={() => deleteJobContact(contact.id)} />
-        </div>
       </div>
-    </div>
+    </CollapsiblePanel>
   )
 }
 
