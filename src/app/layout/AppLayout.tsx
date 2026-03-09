@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 const navigationItems = [
@@ -13,7 +14,7 @@ const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
     isActive ? 'bg-sky-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
   ].join(' ')
 
-export const AppLayout = () => {
+export const AppShell = ({ children }: { children: ReactNode }) => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white">
@@ -33,8 +34,10 @@ export const AppLayout = () => {
       </header>
 
       <main className="mx-auto min-w-0 max-w-7xl p-6 lg:p-10">
-        <Outlet />
+        {children}
       </main>
     </div>
   )
 }
+
+export const AppLayout = () => <AppShell><Outlet /></AppShell>

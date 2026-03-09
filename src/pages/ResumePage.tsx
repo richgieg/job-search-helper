@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
+import { AppShell } from '../app/layout/AppLayout'
 import { DocumentProfileHeader } from '../features/documents/DocumentProfileHeader'
 import { DocumentNotFound } from '../features/documents/DocumentNotFound'
 import { formatDateRange, getOrderedResumeSections, selectProfileDocumentData } from '../features/documents/document-data'
@@ -25,7 +26,11 @@ export const ResumePage = () => {
   const documentData = useMemo(() => selectProfileDocumentData(data, profileId), [data, profileId])
 
   if (!documentData) {
-    return <DocumentNotFound message="The selected profile could not be found." />
+    return (
+      <AppShell>
+        <DocumentNotFound message="The selected profile could not be found." />
+      </AppShell>
+    )
   }
   const summaryParagraphs = documentData.profile.summary
     .split(/\n+/g)
