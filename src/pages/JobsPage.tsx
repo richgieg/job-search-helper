@@ -1,6 +1,7 @@
 import { SubmitEvent, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { DeleteIconButton, getActionIconButtonClassName } from '../components/CompactActionControls'
 import { getJobComputedStatus } from '../features/jobs/job-status'
 import { useAppStore } from '../store/app-store'
 
@@ -68,12 +69,13 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
       </td>
       <td className="px-4 py-3 align-middle">
         <div className="flex flex-nowrap justify-end gap-2 whitespace-nowrap">
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/jobs/${job.id}`}>
-            Open
+          <Link aria-label={`Open job ${job.jobTitle} at ${job.companyName}`} className={getActionIconButtonClassName()} to={`/jobs/${job.id}`}>
+            <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
+              <path d="M7 17 17 7" />
+              <path d="M9 7h8v8" />
+            </svg>
           </Link>
-          <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={handleDelete} type="button">
-            Delete
-          </button>
+          <DeleteIconButton label={`Delete job ${job.jobTitle} at ${job.companyName}`} onDelete={handleDelete} />
         </div>
       </td>
     </tr>

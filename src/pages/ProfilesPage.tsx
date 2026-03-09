@@ -1,6 +1,7 @@
 import { SubmitEvent, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../components/CompactActionControls'
 import { useAppStore } from '../store/app-store'
 
 const ProfileListItem = ({ profileId }: { profileId: string }) => {
@@ -37,15 +38,19 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
       <td className="border-r border-slate-200 px-4 py-3 align-middle text-sm text-slate-600 last:border-r-0 whitespace-nowrap">{new Date(profile.updatedAt).toLocaleString()}</td>
       <td className="px-4 py-3 align-middle">
         <div className="flex flex-wrap justify-end gap-2">
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}`}>
-            Open
+          <Link aria-label={`Open profile ${profile.name}`} className={getActionIconButtonClassName()} to={`/profiles/${profile.id}`}>
+            <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
+              <path d="M7 17 17 7" />
+              <path d="M9 7h8v8" />
+            </svg>
           </Link>
-          <button className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={handleDuplicate} type="button">
-            Duplicate
-          </button>
-          <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={handleDelete} type="button">
-            Delete
-          </button>
+          <IconActionButton label={`Duplicate profile ${profile.name}`} onClick={handleDuplicate}>
+            <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+              <rect height="10" rx="2" width="10" x="9" y="9" />
+              <path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+            </svg>
+          </IconActionButton>
+          <DeleteIconButton label={`Delete profile ${profile.name}`} onDelete={handleDelete} />
         </div>
       </td>
     </tr>
