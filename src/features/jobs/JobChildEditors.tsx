@@ -105,12 +105,6 @@ const SelectField = <T extends string>({
   </label>
 )
 
-const DeleteButton = ({ onDelete }: { onDelete: () => void }) => (
-  <button className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50" onClick={onDelete} type="button">
-    Delete
-  </button>
-)
-
 const toDateTimeLocal = (value: string | null) => {
   if (!value) {
     return ''
@@ -187,7 +181,7 @@ const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
               })
             }
           />
-          <DeleteButton onDelete={() => deleteJobLink(link.id)} />
+          <DeleteIconButton label="Delete link" onDelete={() => deleteJobLink(link.id)} />
         </div>
       </div>
     </div>
@@ -350,7 +344,7 @@ const JobEventCard = ({ jobEventId }: { jobEventId: string }) => {
           <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== jobEvent.notes && commitEventChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
         </div>
         <div className="xl:col-span-3 flex justify-end">
-          <DeleteButton onDelete={() => deleteJobEvent(jobEvent.id)} />
+          <DeleteIconButton label="Delete event" onDelete={() => deleteJobEvent(jobEvent.id)} />
         </div>
       </div>
     </div>
@@ -414,7 +408,7 @@ const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestio
               })
             }
           />
-          <DeleteButton onDelete={() => deleteApplicationQuestion(applicationQuestion.id)} />
+          <DeleteIconButton label="Delete application question" onDelete={() => deleteApplicationQuestion(applicationQuestion.id)} />
         </div>
       </div>
     </div>

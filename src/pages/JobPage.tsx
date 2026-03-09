@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { CollapsiblePanel } from '../components/CollapsiblePanel'
+import { DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../components/CompactActionControls'
 import { JobChildEditors } from '../features/jobs/JobChildEditors'
 import { getJobComputedStatus } from '../features/jobs/job-status'
 import { useAppStore } from '../store/app-store'
@@ -344,15 +345,21 @@ export const JobPage = () => {
                     <p className="mt-1 text-sm text-slate-500">Updated {new Date(profile.updatedAt).toLocaleString()}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}`}>
-                      Open
+                    <Link aria-label={`Open profile ${profile.name}`} className={getActionIconButtonClassName()} to={`/profiles/${profile.id}`}>
+                      <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
+                        <path d="M7 17 17 7" />
+                        <path d="M9 7h8v8" />
+                      </svg>
                     </Link>
-                    <button className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => duplicateProfile({ sourceProfileId: profile.id })} type="button">
-                      Duplicate
-                    </button>
-                    <button
-                      className="rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50"
-                      onClick={() => {
+                    <IconActionButton label={`Duplicate profile ${profile.name}`} onClick={() => duplicateProfile({ sourceProfileId: profile.id })}>
+                      <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+                        <rect height="10" rx="2" width="10" x="9" y="9" />
+                        <path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+                      </svg>
+                    </IconActionButton>
+                    <DeleteIconButton
+                      label={`Delete profile ${profile.name}`}
+                      onDelete={() => {
                         const confirmed = window.confirm(`Delete profile "${profile.name}"? This cannot be undone.`)
                         if (!confirmed) {
                           return
@@ -360,10 +367,7 @@ export const JobPage = () => {
 
                         deleteProfile(profile.id)
                       }}
-                      type="button"
-                    >
-                      Delete
-                    </button>
+                    />
                   </div>
                 </div>
               ))}
