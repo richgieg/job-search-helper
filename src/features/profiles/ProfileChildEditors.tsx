@@ -140,6 +140,12 @@ const DeleteButton = ({ onDelete }: { onDelete: () => void }) => (
   </button>
 )
 
+const OrderBadge = ({ value }: { value: number }) => (
+  <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-semibold text-slate-600">
+    {value}
+  </span>
+)
+
 const countLabel = (count: number, singular: string, plural = `${singular}s`) => `${count} ${count === 1 ? singular : plural}`
 
 const formatMonthYear = (value: string | null) => {
@@ -378,34 +384,41 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
   }
 
   return (
-    <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-      <TextField hideLabel label="Skill name" onBlur={commitName} value={name} onChange={setName} />
-      <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
-        <ToggleField
-          checked={enabled}
-          label="Enabled"
-          onChange={(value) => {
-            setEnabled(value)
-            updateSkill({ skillId: skill.id, changes: { enabled: value } })
-          }}
-        />
-        <ReorderButtons
-          canMoveDown={skillIds.length > 1}
-          canMoveUp={skillIds.length > 1}
-          onMoveDown={() =>
-            reorderSkills({
-              skillCategoryId: skill.skillCategoryId,
-              orderedIds: moveOrderedItem(skillIds, skillIndex, 1),
-            })
-          }
-          onMoveUp={() =>
-            reorderSkills({
-              skillCategoryId: skill.skillCategoryId,
-              orderedIds: moveOrderedItem(skillIds, skillIndex, -1),
-            })
-          }
-        />
-        <DeleteButton onDelete={() => deleteSkill(skill.id)} />
+    <div className="rounded-xl border border-slate-200 p-3">
+      <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+        <div className="flex items-center gap-3">
+          <OrderBadge value={skillIndex + 1} />
+          <div className="min-w-0 flex-1">
+            <TextField hideLabel label="Skill name" onBlur={commitName} value={name} onChange={setName} />
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
+          <ToggleField
+            checked={enabled}
+            label="Enabled"
+            onChange={(value) => {
+              setEnabled(value)
+              updateSkill({ skillId: skill.id, changes: { enabled: value } })
+            }}
+          />
+          <ReorderButtons
+            canMoveDown={skillIds.length > 1}
+            canMoveUp={skillIds.length > 1}
+            onMoveDown={() =>
+              reorderSkills({
+                skillCategoryId: skill.skillCategoryId,
+                orderedIds: moveOrderedItem(skillIds, skillIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderSkills({
+                skillCategoryId: skill.skillCategoryId,
+                orderedIds: moveOrderedItem(skillIds, skillIndex, -1),
+              })
+            }
+          />
+          <DeleteButton onDelete={() => deleteSkill(skill.id)} />
+        </div>
       </div>
     </div>
   )

@@ -62,6 +62,12 @@ const Field = ({
   </label>
 )
 
+const OrderBadge = ({ value }: { value: number }) => (
+  <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-semibold text-slate-600">
+    {value}
+  </span>
+)
+
 export const ProfilePage = () => {
   const { profileId = '' } = useParams()
   const profile = useAppStore((state) => state.data.profiles[profileId])
@@ -253,7 +259,10 @@ export const ProfilePage = () => {
 
                 return (
                   <div key={resumeSection.section} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
-                    <div className="text-sm font-medium text-slate-800">{resumeSectionLabels[resumeSection.section]}</div>
+                    <div className="flex items-center gap-3 text-sm font-medium text-slate-800">
+                      <OrderBadge value={index + 1} />
+                      <span>{resumeSectionLabels[resumeSection.section]}</span>
+                    </div>
 
                     <div className="flex flex-wrap items-center justify-end gap-2">
                       <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
