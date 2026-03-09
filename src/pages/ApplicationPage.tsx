@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 
-import { PreviewNotFound } from '../features/documents/PreviewNotFound'
 import { selectProfilePreviewData } from '../features/documents/preview-data'
 import { useAppStore } from '../store/app-store'
 
@@ -169,7 +168,15 @@ export const ApplicationPage = () => {
   const preview = useMemo(() => selectProfilePreviewData(data, profileId), [data, profileId])
 
   if (!preview) {
-    return <PreviewNotFound message="The selected profile could not be found." />
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h1 className="text-2xl font-semibold text-slate-950">Application unavailable</h1>
+        <p className="mt-3 text-sm text-slate-600">The selected profile could not be found.</p>
+        <Link className="mt-5 inline-flex rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to="/profiles">
+          Return to profiles
+        </Link>
+      </div>
+    )
   }
 
   const attachedJob = preview.profile.jobId ? preview.job : null
