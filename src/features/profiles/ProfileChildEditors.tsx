@@ -43,17 +43,25 @@ const TextAreaField = ({
   onChange,
   onBlur,
   placeholder,
+  hideLabel = false,
+  className,
+  minHeightClass = 'min-h-24',
 }: {
   label: string
   value: string
   onChange: (value: string) => void
   onBlur?: () => void
   placeholder?: string
+  hideLabel?: boolean
+  className?: string
+  minHeightClass?: string
 }) => (
   <label className="flex flex-col gap-2 text-sm text-slate-700">
-    <span className="font-medium">{label}</span>
+    <span className={hideLabel ? 'sr-only' : 'font-medium'}>{label}</span>
     <textarea
-      className="min-h-24 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+      className={[minHeightClass, 'rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500', className]
+        .filter(Boolean)
+        .join(' ')}
       placeholder={placeholder}
       value={value}
       onBlur={onBlur}
@@ -293,8 +301,8 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
   return (
     <div className="rounded-xl border border-slate-200 p-3">
       <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-        <TextAreaField label="Bullet" onBlur={commitContent} placeholder="Describe an accomplishment or responsibility" value={content} onChange={setContent} />
-        <div className="flex flex-wrap items-center justify-between gap-3 md:flex-col md:items-end">
+        <TextAreaField hideLabel label="Bullet" minHeightClass="min-h-10" onBlur={commitContent} placeholder="Describe an accomplishment or responsibility" value={content} onChange={setContent} />
+        <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
           <ToggleField
             checked={enabled}
             label="Enabled"
@@ -303,25 +311,23 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
               updateExperienceBullet({ experienceBulletId: bullet.id, changes: { enabled: value } })
             }}
           />
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <ReorderButtons
-              canMoveDown={bulletIds.length > 1}
-              canMoveUp={bulletIds.length > 1}
-              onMoveDown={() =>
-                reorderExperienceBullets({
-                  experienceEntryId: bullet.experienceEntryId,
-                  orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
-                })
-              }
-              onMoveUp={() =>
-                reorderExperienceBullets({
-                  experienceEntryId: bullet.experienceEntryId,
-                  orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
-                })
-              }
-            />
-            <DeleteButton onDelete={() => deleteExperienceBullet(bullet.id)} />
-          </div>
+          <ReorderButtons
+            canMoveDown={bulletIds.length > 1}
+            canMoveUp={bulletIds.length > 1}
+            onMoveDown={() =>
+              reorderExperienceBullets({
+                experienceEntryId: bullet.experienceEntryId,
+                orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
+              })
+            }
+            onMoveUp={() =>
+              reorderExperienceBullets({
+                experienceEntryId: bullet.experienceEntryId,
+                orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
+              })
+            }
+          />
+          <DeleteButton onDelete={() => deleteExperienceBullet(bullet.id)} />
         </div>
       </div>
     </div>
