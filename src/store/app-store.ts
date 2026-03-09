@@ -2060,18 +2060,6 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           version: 1,
           exportedAt: file.exportedAt,
           ...file.data,
-          profiles: Object.fromEntries(
-            Object.entries(file.data.profiles ?? {}).map(([profileId, profile]) => [
-              profileId,
-              {
-                ...profile,
-                resumeSettings: normalizeResumeSettings(profile.resumeSettings),
-              },
-            ]),
-          ),
-          profileLinks: file.data.profileLinks ?? {},
-          jobLinks: file.data.jobLinks ?? {},
-          applicationQuestions: file.data.applicationQuestions ?? {},
         },
         ui: createDefaultUiState(),
       })
