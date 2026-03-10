@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "test:build": "npm run test -- --run && npm run build"
+    "test:build": "npm run test -- --run && npm run build",
+    "validate:sample-data": "node -e \"JSON.parse(require('fs').readFileSync('sample-data/sample-data.json', 'utf8')); console.log('sample-data.json is valid JSON')\""
   },
   "dependencies": {
     "react": "^19.0.0",
