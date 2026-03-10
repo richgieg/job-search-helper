@@ -364,11 +364,34 @@ describe('app store reorder actions', () => {
     expect(useAppStore.getState().data.jobs[jobId]?.updatedAt).not.toBe(updatedAtBefore)
 
     actions.clearJobAppliedAt(jobId)
-    actions.clearJobFinalOutcome(jobId)
 
     expect(useAppStore.getState().data.jobs[jobId]).toMatchObject({
       appliedAt: null,
       finalOutcome: null,
+    })
+  })
+
+  it('does not allow a final outcome when the job is not applied', () => {
+    const { actions } = useAppStore.getState()
+
+    const jobId = actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
+
+    actions.setJobFinalOutcome({ jobId, status: 'rejected', setAt: '2026-03-10T09:30:00.000Z' })
+
+    expect(useAppStore.getState().data.jobs[jobId]).toMatchObject({
+      appliedAt: null,
+      finalOutcome: null,
+    })
+
+    actions.setJobAppliedAt({ jobId, appliedAt: '2026-03-09T12:00:00.000Z' })
+    actions.setJobFinalOutcome({ jobId, status: 'rejected', setAt: '2026-03-10T09:30:00.000Z' })
+
+    expect(useAppStore.getState().data.jobs[jobId]).toMatchObject({
+      appliedAt: '2026-03-09T12:00:00.000Z',
+      finalOutcome: {
+        status: 'rejected',
+        setAt: '2026-03-10T09:30:00.000Z',
+      },
     })
   })
 

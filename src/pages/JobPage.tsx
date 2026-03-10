@@ -329,7 +329,12 @@ export const JobPage = () => {
             <ActionToggle checked={job.appliedAt !== null} label="Applied" showLabel onChange={handleAppliedToggle} />
           </div>
           <div className="min-w-0 flex-1">
-            <FinalOutcomeStrip name={`job-${job.id}-final-outcome`} value={job.finalOutcome?.status ?? ''} onChange={handleFinalOutcomeChange} />
+            <FinalOutcomeStrip
+              disabled={job.appliedAt === null}
+              name={`job-${job.id}-final-outcome`}
+              value={job.appliedAt ? (job.finalOutcome?.status ?? '') : ''}
+              onChange={handleFinalOutcomeChange}
+            />
           </div>
         </div>
       </section>

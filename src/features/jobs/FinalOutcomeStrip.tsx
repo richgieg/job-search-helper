@@ -13,10 +13,12 @@ const finalOutcomeOptions: Array<{ value: FinalOutcomeDraftStatus; label: string
 export const FinalOutcomeStrip = ({
   name,
   value,
+  disabled = false,
   onChange,
 }: {
   name: string
   value: FinalOutcomeDraftStatus
+  disabled?: boolean
   onChange: (value: FinalOutcomeDraftStatus) => void
 }) => (
   <fieldset>
@@ -31,7 +33,8 @@ export const FinalOutcomeStrip = ({
             <label
               key={option.value}
               className={[
-                'relative flex min-w-0 flex-1 cursor-pointer',
+                'relative flex min-w-0 flex-1',
+                disabled ? 'cursor-not-allowed' : 'cursor-pointer',
                 !isFirst ? '-ml-px' : '',
               ]
                 .filter(Boolean)
@@ -40,6 +43,7 @@ export const FinalOutcomeStrip = ({
               <input
                 checked={checked}
                 className="peer sr-only"
+                disabled={disabled}
                 name={name}
                 type="radio"
                 value={option.value}
@@ -51,7 +55,13 @@ export const FinalOutcomeStrip = ({
                   'peer-focus-visible:z-10 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-sky-500',
                   isFirst ? 'rounded-l-xl' : '',
                   isLast ? 'rounded-r-xl' : '',
-                  checked ? 'border-sky-600 bg-sky-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50',
+                  disabled
+                    ? checked
+                      ? 'border-slate-300 bg-slate-200 text-slate-500'
+                      : 'bg-slate-50 text-slate-400'
+                    : checked
+                      ? 'border-sky-600 bg-sky-600 text-white'
+                      : 'bg-white text-slate-700 hover:bg-slate-50',
                 ]
                   .filter(Boolean)
                   .join(' ')}

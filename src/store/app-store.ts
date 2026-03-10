@@ -2067,6 +2067,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
             [jobId]: {
               ...existingJob,
               appliedAt: null,
+              finalOutcome: null,
               updatedAt: now(),
             },
           },
@@ -2076,7 +2077,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
     setJobFinalOutcome: ({ jobId, status, setAt }) => {
       const existingJob = get().data.jobs[jobId]
 
-      if (!existingJob) {
+      if (!existingJob || !existingJob.appliedAt) {
         return
       }
 
