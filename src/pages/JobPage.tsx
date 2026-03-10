@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { AddIconButton, DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../components/CompactActionControls'
+import { ActionToggle, AddIconButton, DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../components/CompactActionControls'
 import { CollapsiblePanel } from '../components/CollapsiblePanel'
 import { JobChildEditors } from '../features/jobs/JobChildEditors'
 import { getJobComputedStatus } from '../features/jobs/job-status'
@@ -137,6 +137,8 @@ export const JobPage = () => {
   const job = useAppStore((state) => state.data.jobs[jobId])
   const profilesById = useAppStore((state) => state.data.profiles)
   const interviewsById = useAppStore((state) => state.data.interviews)
+  const setJobAppliedAt = useAppStore((state) => state.actions.setJobAppliedAt)
+  const clearJobAppliedAt = useAppStore((state) => state.actions.clearJobAppliedAt)
   const updateJob = useAppStore((state) => state.actions.updateJob)
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
   const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
@@ -280,6 +282,18 @@ export const JobPage = () => {
     })
   }
 
+  const handleAppliedToggle = (checked: boolean) => {
+    if (checked) {
+      setJobAppliedAt({
+        jobId: job.id,
+        appliedAt: new Date().toISOString(),
+      })
+      return
+    }
+
+    clearJobAppliedAt(job.id)
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -290,6 +304,10 @@ export const JobPage = () => {
             <span>{job.companyName || 'Unknown company'}</span>
             <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium capitalize text-sky-700">{computedStatus}</span>
           </div>
+        </div>
+
+        <div className="flex justify-end lg:self-center">
+          <ActionToggle checked={job.appliedAt !== null} label="Applied" showLabel onChange={handleAppliedToggle} />
         </div>
       </div>
 
