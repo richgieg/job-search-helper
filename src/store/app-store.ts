@@ -2128,7 +2128,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const interview: Interview = {
         id: createId(),
         jobId,
-        startAt: timestamp,
+        startAt: null,
         endAt: null,
         completed: false,
         notes: '',
@@ -2157,10 +2157,10 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         return
       }
 
-      const nextStartAt = changes.startAt ?? existing.startAt
+      const nextStartAt = changes.startAt === undefined ? existing.startAt : changes.startAt
       const nextEndAt = changes.endAt === undefined ? existing.endAt : changes.endAt
 
-      if (nextEndAt && nextEndAt < nextStartAt) {
+      if (nextStartAt && nextEndAt && nextEndAt < nextStartAt) {
         return
       }
 

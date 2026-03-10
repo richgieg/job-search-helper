@@ -152,11 +152,62 @@ const toDateTimeLocal = (value: string | null) => {
 
 const fromDateTimeLocal = (value: string) => (value ? new Date(value).toISOString() : null)
 
-const formatInterviewSummary = (startAt: string, endAt: string | null, completed: boolean) => {
-  const start = toDateTimeLocal(startAt).replace('T', ' ')
-  const end = endAt ? toDateTimeLocal(endAt).replace('T', ' ') : ''
+const formatInterviewTitleDate = (value: string | null) => {
+  if (!value) {
+    return 'Not scheduled yet'
+  }
 
-  return summarizeParts([start || 'Start time not set', end ? `Ends ${end}` : null, completed ? 'Completed' : 'Planned'])
+  return new Date(value).toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+const formatInterviewTime = (value: string | null) => {
+  if (!value) {
+    return ''
+  }
+
+  return new Date(value).toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}
+
+const isSameCalendarDay = (left: string | null, right: string | null) => {
+  if (!left || !right) {
+    return false
+  }
+
+  const leftDate = new Date(left)
+  const rightDate = new Date(right)
+
+  return (
+    leftDate.getFullYear() === rightDate.getFullYear() &&
+    leftDate.getMonth() === rightDate.getMonth() &&
+    leftDate.getDate() === rightDate.getDate()
+  )
+}
+
+const formatInterviewTitle = (startAt: string | null, endAt: string | null) => {
+  if (!startAt) {
+    return 'Not scheduled yet'
+  }
+
+  if (endAt && !isSameCalendarDay(startAt, endAt)) {
+    return `${formatInterviewTitleDate(startAt)} to ${formatInterviewTitleDate(endAt)}`
+  }
+
+  return formatInterviewTitleDate(startAt)
+}
+
+const formatInterviewSummary = (startAt: string | null, endAt: string | null, completed: boolean) => {
+  const start = formatInterviewTime(startAt)
+  const end = formatInterviewTime(endAt)
+
+  return summarizeParts([start || null, end || null, completed ? 'Completed' : 'Planned'])
 }
 
 const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
@@ -510,7 +561,7 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
   return (
     <CollapsiblePanel
       summary={formatInterviewSummary(draft.startAt, draft.endAt, draft.completed)}
-      title={truncatePanelText(draft.notes, 64) || `Interview ${toDateTimeLocal(draft.startAt).replace('T', ' ') || ''}`.trim() || 'Interview'}
+      title={formatInterviewTitle(draft.startAt, draft.endAt)}
       headerActions={<DeleteIconButton label="Delete interview" onDelete={() => deleteInterview(interview.id)} />}
     >
       <div className="space-y-5">
@@ -520,12 +571,7 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
             type="datetime-local"
             value={toDateTimeLocal(draft.startAt)}
             onBlur={() => draft.startAt !== interview.startAt && commitInterviewChanges({ startAt: draft.startAt })}
-            onChange={(value) => {
-              const nextValue = fromDateTimeLocal(value)
-              if (nextValue) {
-                setDraft({ ...draft, startAt: nextValue })
-              }
-            }}
+            onChange={(value) => setDraft({ ...draft, startAt: fromDateTimeLocal(value) })}
           />
           <TextField
             label="End at"
@@ -727,7 +773,21 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
     () =>
       Object.values(interviewsById)
         .filter((item) => item.jobId === jobId)
-        .sort((left, right) => left.startAt.localeCompare(right.startAt))
+        .sort((left, right) => {
+          if (!left.startAt && !right.startAt) {
+            return 0
+          }
+
+          if (!left.startAt) {
+            return 1
+          }
+
+          if (!right.startAt) {
+            return -1
+          }
+
+          return left.startAt.localeCompare(right.startAt)
+        })
         .map((item) => item.id),
     [interviewsById, jobId],
   )

@@ -235,7 +235,7 @@ export interface ApplicationQuestion {
 export interface Interview {
   id: Id
   jobId: Id
-  startAt: IsoTimestamp
+  startAt: IsoTimestamp | null
   endAt: IsoTimestamp | null
   completed: boolean
   notes: string

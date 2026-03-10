@@ -395,6 +395,12 @@ describe('app store reorder actions', () => {
 
     const interviewId = expectDefined(actions.createInterview(jobId), 'Expected interview id')
 
+    expect(useAppStore.getState().data.interviews[interviewId]).toMatchObject({
+      startAt: null,
+      endAt: null,
+      completed: false,
+    })
+
     actions.updateInterview({
       interviewId,
       changes: {
@@ -435,6 +441,27 @@ describe('app store reorder actions', () => {
       'Contact Two',
       'Contact One',
     ])
+  })
+
+  it('allows an interview to remain unscheduled while still storing an optional end time', () => {
+    const { actions } = useAppStore.getState()
+
+    const jobId = actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
+    const interviewId = expectDefined(actions.createInterview(jobId), 'Expected interview id')
+
+    actions.updateInterview({
+      interviewId,
+      changes: {
+        endAt: '2026-03-12T16:00:00.000Z',
+        notes: 'Awaiting scheduling confirmation',
+      },
+    })
+
+    expect(useAppStore.getState().data.interviews[interviewId]).toMatchObject({
+      startAt: null,
+      endAt: '2026-03-12T16:00:00.000Z',
+      notes: 'Awaiting scheduling confirmation',
+    })
   })
 
   it('cascades interview associations when deleting a contact, interview, or job', () => {
