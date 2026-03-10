@@ -65,7 +65,7 @@ export const ResumePage = () => {
               return summaryParagraphs.length > 0 ? (
                 <section key="summary" className={index === 0 ? '' : 'mt-5'}>
                   <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Summary</h3>
-                  <div className="mt-3 space-y-4 text-sm leading-[1.125rem] text-black">
+                  <div className="mt-3 space-y-[0.625rem] text-sm leading-[1.125rem] text-black">
                     {summaryParagraphs.map((paragraph, paragraphIndex) => (
                       <p key={`${documentData.profile.id}-summary-${paragraphIndex}`} className={paragraphIndex === 0 ? 'print-keep-together' : undefined}>
                         {paragraph}
