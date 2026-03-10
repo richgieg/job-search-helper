@@ -53,17 +53,22 @@ export const CoverLetterPage = () => {
       documentData.primaryContact.addressLine4,
     ]),
   }
+  const formattedDate = new Date().toLocaleDateString(undefined, {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
   const paragraphs = buildCoverLetterParagraphs(documentData)
 
   return (
     <div className="document-preview-shell">
-      <article className="document-page text-sm leading-7 text-black">
+      <article className="document-page text-sm leading-[1.125rem] text-black">
         <DocumentProfileHeader documentData={documentData} />
 
-        <div className="cover-letter-inside-address mt-10">
-          <p>{new Date().toLocaleDateString()}</p>
-          <div className="mt-4">
-            <p className="font-semibold text-black">{recipient.name}</p>
+        <div className="cover-letter-inside-address mt-5">
+          <p>{formattedDate}</p>
+          <div className="mt-6">
+            <p className="text-black">{recipient.name}</p>
             <p>{recipient.title}</p>
             <p>{recipient.company}</p>
             {recipient.addressLines.map((line) => (
@@ -72,7 +77,7 @@ export const CoverLetterPage = () => {
           </div>
         </div>
 
-        <div className="mt-10 leading-8 text-black">
+        <div className="mt-6 leading-[1.125rem] text-black">
           <p>Dear {recipient.name === 'Hiring Team' ? 'Hiring Team' : recipient.name},</p>
 
           <div className="mt-6 space-y-5">
@@ -83,7 +88,7 @@ export const CoverLetterPage = () => {
 
           <div className="mt-8">
             <p>Sincerely,</p>
-            <p className="mt-6 font-semibold text-black">{personalDetails.fullName || documentData.profile.name || 'Unnamed candidate'}</p>
+            <p className="mt-6 text-black">{personalDetails.fullName || documentData.profile.name || 'Unnamed candidate'}</p>
           </div>
         </div>
       </article>
