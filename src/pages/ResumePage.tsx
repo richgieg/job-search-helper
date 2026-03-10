@@ -110,7 +110,7 @@ export const ResumePage = () => {
                           <div className="print-keep-together">
                             <div className="resume-experience-header">
                               <div>
-                                <h4 className="text-base font-semibold text-black">{entry.entry.title || 'Untitled role'}</h4>
+                                <h4 className="text-sm font-semibold text-black">{entry.entry.title || 'Untitled role'}</h4>
                                 <p className="text-sm italic text-black">
                                   {formatExperienceMeta({
                                     company: entry.entry.company,
@@ -123,13 +123,13 @@ export const ResumePage = () => {
                               <p className="resume-experience-date text-sm text-black">{formatDateRange(entry.entry.startDate, entry.entry.endDate, entry.entry.isCurrent)}</p>
                             </div>
                             {firstBullet ? (
-                              <ul className="mt-3 list-disc pl-5 text-sm leading-[1.125rem] text-black">
+                              <ul className="mt-3 list-disc pl-10 text-sm leading-[1.125rem] text-black">
                                 <li>{firstBullet.content}</li>
                               </ul>
                             ) : null}
                           </div>
                           {remainingBullets.length > 0 ? (
-                            <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-[1.125rem] text-black">
+                            <ul className="mt-2 list-disc space-y-2 pl-10 text-sm leading-[1.125rem] text-black">
                               {remainingBullets.map((bullet) => (
                                 <li key={bullet.id}>{bullet.content}</li>
                               ))}
