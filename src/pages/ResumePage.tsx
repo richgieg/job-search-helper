@@ -48,8 +48,8 @@ export const ResumePage = () => {
             case 'summary':
               return summaryParagraphs.length > 0 ? (
                 <section key="summary" className="mt-6">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black">Summary</h3>
-                  <div className="mt-3 space-y-4 text-sm leading-7 text-black">
+                  <h3 className="border-b border-black pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-black">Summary</h3>
+                  <div className="mt-3 space-y-4 text-sm leading-5 text-black">
                     {summaryParagraphs.map((paragraph, index) => (
                       <p key={`${documentData.profile.id}-summary-${index}`}>{paragraph}</p>
                     ))}
@@ -59,12 +59,12 @@ export const ResumePage = () => {
             case 'skills':
               return documentData.skillCategories.length > 0 ? (
                 <section key="skills" className="mt-8">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black">Skills</h3>
-                  <div className="resume-skills-grid mt-4">
+                  <h3 className="border-b border-black pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-black">Skills</h3>
+                  <div className="mt-4 space-y-4">
                     {documentData.skillCategories.map((item) => (
-                      <div key={item.category.id} className="rounded-2xl border border-black bg-white p-4">
+                      <div key={item.category.id}>
                         <p className="text-sm font-semibold text-black">{item.category.name || 'General'}</p>
-                        <p className="mt-2 text-sm leading-6 text-black">{item.skills.map((skill) => skill.name).join(' · ') || 'No skills listed yet.'}</p>
+                        <p className="mt-2 text-sm leading-5 text-black">{item.skills.map((skill) => skill.name).join(' · ') || 'No skills listed yet.'}</p>
                       </div>
                     ))}
                   </div>
@@ -73,7 +73,7 @@ export const ResumePage = () => {
             case 'experience':
               return documentData.experienceEntries.length > 0 ? (
                 <section key="experience" className="mt-8">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black">Experience</h3>
+                  <h3 className="border-b border-black pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-black">Experience</h3>
                   <div className="mt-4 space-y-5">
                     {documentData.experienceEntries.map((entry) => (
                       <div key={entry.entry.id}>
@@ -92,7 +92,7 @@ export const ResumePage = () => {
                           <p className="resume-experience-date text-sm text-black">{formatDateRange(entry.entry.startDate, entry.entry.endDate, entry.entry.isCurrent)}</p>
                         </div>
                         {entry.bullets.length > 0 ? (
-                          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-black">
+                          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-5 text-black">
                             {entry.bullets.map((bullet) => (
                               <li key={bullet.id}>{bullet.content}</li>
                             ))}
@@ -106,7 +106,7 @@ export const ResumePage = () => {
             case 'education':
               return (
                 <section key="education" className="mt-8">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black">Education</h3>
+                  <h3 className="border-b border-black pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-black">Education</h3>
                   <div className="mt-4 space-y-4 text-sm text-black">
                     {documentData.educationEntries.length === 0 ? (
                       <p className="text-black">No education entries enabled.</p>
@@ -125,7 +125,7 @@ export const ResumePage = () => {
             case 'certifications':
               return (
                 <section key="certifications" className="mt-8">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black">Certifications</h3>
+                  <h3 className="border-b border-black pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-black">Certifications</h3>
                   <div className="mt-4 space-y-4 text-sm text-black">
                     {documentData.certifications.length === 0 ? (
                       <p className="text-black">No certifications enabled.</p>
@@ -144,7 +144,7 @@ export const ResumePage = () => {
             case 'references':
               return (
                 <section key="references" className="mt-8">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black">References</h3>
+                  <h3 className="border-b border-black pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-black">References</h3>
                   <div className="mt-4 space-y-4 text-sm text-black">
                     {documentData.references.length === 0 ? (
                       <p className="text-black">No references enabled.</p>

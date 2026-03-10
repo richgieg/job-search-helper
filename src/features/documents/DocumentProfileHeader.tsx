@@ -18,7 +18,7 @@ export const DocumentProfileHeader = ({ documentData }: DocumentProfileHeaderPro
     .filter(Boolean)
 
   return (
-    <header className="border-b border-black pb-6 text-black">
+    <header className="pb-6 text-black">
       <div className="flex items-start justify-between gap-8">
         <h2 className="text-3xl font-semibold tracking-tight text-black">
           {documentData.profile.personalDetails.fullName || documentData.profile.name || 'Unnamed candidate'}
