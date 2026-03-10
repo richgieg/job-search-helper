@@ -6,6 +6,7 @@ import { DocumentProfileHeader } from '../features/documents/DocumentProfileHead
 import { DocumentNotFound } from '../features/documents/DocumentNotFound'
 import { formatDateRange, getOrderedResumeSections, selectProfileDocumentData } from '../features/documents/document-data'
 import { useAppStore } from '../store/app-store'
+import { formatEmploymentType, formatWorkArrangement } from '../utils/job-field-options'
 
 const formatExperienceMeta = (input: {
   company: string
@@ -13,8 +14,8 @@ const formatExperienceMeta = (input: {
   workArrangement: string
   employmentType: string
 }) => {
-  const workArrangement = input.workArrangement !== 'unknown' ? input.workArrangement.replace('_', ' ') : ''
-  const employmentType = input.employmentType !== 'other' ? input.employmentType.replace('_', ' ') : ''
+  const workArrangement = input.workArrangement !== 'unknown' ? formatWorkArrangement(input.workArrangement as Parameters<typeof formatWorkArrangement>[0]) : ''
+  const employmentType = input.employmentType !== 'other' ? formatEmploymentType(input.employmentType as Parameters<typeof formatEmploymentType>[0]) : ''
 
   return [input.company, input.location, workArrangement, employmentType].filter(Boolean).join(' · ')
 }

@@ -7,14 +7,14 @@ type SelectOption<T extends string> = {
 
 export const workArrangementLabels: Record<WorkArrangement, string> = {
   unknown: 'Unknown',
-  onsite: 'On-site',
+  onsite: 'On-Site',
   hybrid: 'Hybrid',
   remote: 'Remote',
 }
 
 export const employmentTypeLabels: Record<EmploymentType, string> = {
-  full_time: 'Full-time',
-  part_time: 'Part-time',
+  full_time: 'Full-Time',
+  part_time: 'Part-Time',
   contract: 'Contract',
   internship: 'Internship',
   temporary: 'Temporary',
