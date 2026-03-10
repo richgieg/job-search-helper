@@ -67,7 +67,14 @@ export const ResumePage = () => {
                       <div key={item.category.id}>
                         <p className="text-sm leading-[1.125rem] text-black">
                           <span className="font-semibold">{item.category.name || 'General'}:</span>{' '}
-                          {item.skills.map((skill) => skill.name).join(' · ') || 'No skills listed yet.'}
+                          {item.skills.length > 0
+                            ? item.skills.map((skill, index) => (
+                                <span key={skill.id}>
+                                  {index > 0 ? <span>{' · '}</span> : null}
+                                  <span className="whitespace-nowrap">{skill.name}</span>
+                                </span>
+                              ))
+                            : 'No skills listed yet.'}
                         </p>
                       </div>
                     ))}
