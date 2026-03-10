@@ -135,20 +135,17 @@ const SelectField = <T extends string>({
 )
 
 const SegmentedRadioStrip = <T extends string>({
-  label,
   name,
   value,
   options,
   onChange,
 }: {
-  label: string
   name: string
   value: T
   options: Array<{ value: T; label: string }>
   onChange: (value: T) => void
 }) => (
-  <fieldset className="space-y-2">
-    <legend className="text-sm font-medium text-slate-700">{label}</legend>
+  <fieldset>
     <div className="mx-auto flex w-full max-w-4xl justify-center">
       <div className="flex w-full items-stretch justify-center gap-0">
         {options.map((option, index) => {
@@ -461,7 +458,6 @@ const JobFinalOutcomePanel = ({ jobId }: { jobId: string }) => {
     <CollapsiblePanel description={summary} title="Final outcome">
       <div className="space-y-4">
         <SegmentedRadioStrip
-          label="Final outcome"
           name={`job-${job.id}-final-outcome`}
           options={[
             { value: '', label: 'None' },
