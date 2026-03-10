@@ -241,7 +241,7 @@
           "name": "Maren Solis",
           "title": "Director of Platform Engineering",
           "phone": "(555) 014-3010",
-          "email": "jamie.carter@northstar-example.com"
+          "email": "maren.solis@northstar-example.com"
         },
         "enabled": true,
         "sortOrder": 1
@@ -263,7 +263,7 @@
           "name": "Soren Vale",
           "title": "Engineering Manager",
           "phone": "(555) 014-3020",
-          "email": "priya.desai@blueridge-example.com"
+          "email": "soren.vale@blueridge-example.com"
         },
         "enabled": true,
         "sortOrder": 2
@@ -285,7 +285,7 @@
           "name": "Tobin Calder",
           "title": "Infrastructure Manager",
           "phone": "(555) 014-3030",
-          "email": "marcus.lee@harbor-example.com"
+          "email": "tobin.calder@harbor-example.com"
         },
         "enabled": true,
         "sortOrder": 3
@@ -307,7 +307,7 @@
           "name": "Maren Solis",
           "title": "Director of Platform Engineering",
           "phone": "(555) 014-3010",
-          "email": "jamie.carter@northstar-example.com"
+          "email": "maren.solis@northstar-example.com"
         },
         "enabled": true,
         "sortOrder": 1
@@ -329,7 +329,7 @@
           "name": "Soren Vale",
           "title": "Engineering Manager",
           "phone": "(555) 014-3020",
-          "email": "priya.desai@blueridge-example.com"
+          "email": "soren.vale@blueridge-example.com"
         },
         "enabled": true,
         "sortOrder": 2
@@ -351,7 +351,7 @@
           "name": "Tobin Calder",
           "title": "Infrastructure Manager",
           "phone": "(555) 014-3030",
-          "email": "marcus.lee@harbor-example.com"
+          "email": "tobin.calder@harbor-example.com"
         },
         "enabled": true,
         "sortOrder": 3
@@ -373,7 +373,7 @@
           "name": "Maren Solis",
           "title": "Director of Platform Engineering",
           "phone": "(555) 014-3010",
-          "email": "jamie.carter@northstar-example.com"
+          "email": "maren.solis@northstar-example.com"
         },
         "enabled": true,
         "sortOrder": 1
@@ -395,7 +395,7 @@
           "name": "Soren Vale",
           "title": "Engineering Manager",
           "phone": "(555) 014-3020",
-          "email": "priya.desai@blueridge-example.com"
+          "email": "soren.vale@blueridge-example.com"
         },
         "enabled": true,
         "sortOrder": 2
@@ -417,7 +417,7 @@
           "name": "Tobin Calder",
           "title": "Infrastructure Manager",
           "phone": "(555) 014-3030",
-          "email": "marcus.lee@harbor-example.com"
+          "email": "tobin.calder@harbor-example.com"
         },
         "enabled": true,
         "sortOrder": 3
