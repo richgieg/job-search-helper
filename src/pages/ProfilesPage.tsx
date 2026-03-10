@@ -27,15 +27,15 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
   }
 
   return (
-    <tr className="border-t border-slate-200 first:border-t-0">
-      <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
+    <tr className="border-t border-app-border-muted first:border-t-0">
+      <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
         <div>
-          <Link className="font-medium text-slate-900 hover:text-sky-700" to={`/profiles/${profile.id}`}>
+          <Link className="font-medium text-app-text hover:text-app-primary-hover" to={`/profiles/${profile.id}`}>
             {profile.name}
           </Link>
         </div>
       </td>
-      <td className="border-r border-slate-200 px-4 py-3 align-middle text-sm text-slate-600 last:border-r-0 whitespace-nowrap">{new Date(profile.updatedAt).toLocaleString()}</td>
+      <td className="border-r border-app-border-muted px-4 py-3 align-middle text-sm text-app-text-subtle last:border-r-0 whitespace-nowrap">{new Date(profile.updatedAt).toLocaleString()}</td>
       <td className="px-4 py-3 align-middle">
         <div className="flex flex-wrap justify-end gap-2">
           <Link aria-label={`Open profile ${profile.name}`} className={getActionIconButtonClassName()} to={`/profiles/${profile.id}`}>
@@ -81,32 +81,32 @@ export const ProfilesPage = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Profiles</h1>
-        <p className="mt-2 text-sm text-slate-600">Create and manage the base profiles you can tailor for each opportunity.</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-app-heading">Profiles</h1>
+        <p className="mt-2 text-sm text-app-text-subtle">Create and manage the base profiles you can tailor for each opportunity.</p>
       </div>
 
-      <section className="max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="max-w-xl rounded-2xl border border-app-border-muted bg-app-surface p-6 shadow-sm">
         <form className="space-y-3" onSubmit={handleSubmit}>
-          <label className="flex min-w-0 flex-1 flex-col gap-2 text-sm text-slate-700">
+          <label className="flex min-w-0 flex-1 flex-col gap-2 text-sm text-app-text-muted">
             <span className="font-medium">Profile name</span>
             <input
-              className="min-w-0 flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none ring-0 transition focus:border-sky-500"
+              className="min-w-0 flex-1 rounded-xl border border-app-border px-3 py-2 text-sm outline-none ring-0 transition focus:border-app-focus-ring"
               value={name}
               onChange={(event) => setName(event.target.value)}
             />
           </label>
 
           <div className="flex justify-end">
-            <button className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700" type="submit">
+            <button className="rounded-xl bg-app-primary px-3 py-2 text-sm font-medium text-app-primary-contrast hover:bg-app-primary-hover" type="submit">
               Add profile
             </button>
           </div>
         </form>
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-app-border bg-app-surface shadow-sm">
         {sortedProfileIds.length === 0 ? (
-          <p className="p-6 text-sm text-slate-500">No profiles yet.</p>
+          <p className="p-6 text-sm text-app-text-subtle">No profiles yet.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse table-fixed text-sm">
@@ -116,9 +116,9 @@ export const ProfilesPage = () => {
                 <col className="w-[24%]" />
               </colgroup>
               <thead>
-                <tr className="border-b border-slate-300 bg-slate-100 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Profile</th>
-                  <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Updated</th>
+                <tr className="border-b border-app-border bg-app-surface-subtle text-left text-xs font-semibold uppercase tracking-[0.18em] text-app-text-subtle">
+                  <th className="border-r border-app-border px-4 py-3 last:border-r-0">Profile</th>
+                  <th className="border-r border-app-border px-4 py-3 last:border-r-0">Updated</th>
                   <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>

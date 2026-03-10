@@ -84,18 +84,18 @@ const CopyValueButton = ({
 }) => (
   <button
     className={[
-      'relative min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-sm text-slate-800 transition hover:border-sky-300 hover:bg-sky-50',
+      'relative min-w-0 overflow-hidden rounded-lg border border-app-border-muted bg-app-surface-muted px-3 py-2 text-left text-sm text-app-text transition hover:border-app-primary-muted hover:bg-app-primary-soft',
       inline ? 'inline-flex w-auto max-w-full items-center' : 'w-full',
-      multiline ? 'max-h-24 whitespace-pre-wrap break-words' : 'truncate whitespace-nowrap',
-      copiedKey === copyKey ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : '',
+      multiline ? 'max-h-24 whitespace-pre-wrap wrap-break-word' : 'truncate whitespace-nowrap',
+      copiedKey === copyKey ? 'border-app-success-muted bg-app-success-soft text-app-success-contrast' : '',
     ].join(' ')}
     onClick={() => onCopy(copyKey, item.copyValue)}
     title={item.copyValue}
     type="button"
   >
-    <span className={['block min-w-0 pr-16', multiline ? 'break-words' : 'truncate'].join(' ')}>{item.display}</span>
+    <span className={['block min-w-0 pr-16', multiline ? 'wrap-break-word' : 'truncate'].join(' ')}>{item.display}</span>
     {copiedKey === copyKey ? (
-      <span className="absolute inset-0 flex items-center justify-center bg-emerald-50/95 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+      <span className="absolute inset-0 flex items-center justify-center bg-app-success-soft/95 text-xs font-semibold uppercase tracking-[0.18em] text-app-success">
         Copied!
       </span>
     ) : null}
@@ -120,20 +120,20 @@ const DataTable = ({
   const populatedRows = rows.filter((row) => row.values.length > 0)
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
-        <h3 className="break-words text-base font-semibold text-slate-950">{title}</h3>
-        {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
+    <div className="overflow-hidden rounded-2xl border border-app-border-muted bg-app-surface shadow-sm">
+      <div className="border-b border-app-border-muted bg-app-surface-muted px-5 py-4">
+        <h3 className="wrap-break-word text-base font-semibold text-app-heading">{title}</h3>
+        {description ? <p className="mt-1 text-sm text-app-text-subtle">{description}</p> : null}
       </div>
 
       {populatedRows.length === 0 ? (
-        <p className="px-5 py-4 text-sm text-slate-500">{emptyMessage || 'No data available.'}</p>
+        <p className="px-5 py-4 text-sm text-app-text-subtle">{emptyMessage || 'No data available.'}</p>
       ) : (
         <table className="w-full table-fixed border-collapse">
           <tbody>
             {populatedRows.map((row) => (
-              <tr key={row.label} className="border-t border-slate-200 align-top first:border-t-0">
-                <th className="w-56 break-words bg-slate-50 px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <tr key={row.label} className="border-t border-app-border-muted align-top first:border-t-0">
+                <th className="w-56 wrap-break-word bg-app-surface-muted px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em] text-app-text-subtle">
                   {row.label}
                 </th>
                 <td className="min-w-0 px-5 py-4">
@@ -169,10 +169,10 @@ export const ApplicationPage = () => {
 
   if (!documentData) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-950">Application unavailable</h1>
-        <p className="mt-3 text-sm text-slate-600">The selected profile could not be found.</p>
-        <Link className="mt-5 inline-flex rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to="/profiles">
+      <div className="rounded-2xl border border-app-border-muted bg-app-surface p-8 shadow-sm">
+        <h1 className="text-2xl font-semibold text-app-heading">Application unavailable</h1>
+        <p className="mt-3 text-sm text-app-text-subtle">The selected profile could not be found.</p>
+        <Link className="mt-5 inline-flex rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to="/profiles">
           Return to profiles
         </Link>
       </div>
@@ -212,9 +212,9 @@ export const ApplicationPage = () => {
     <div className="space-y-8">
       <div>
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Application Content</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{documentData.profile.name || 'Unnamed profile'}</h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-app-primary">Application Content</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-app-heading">{documentData.profile.name || 'Unnamed profile'}</h1>
+          <p className="mt-2 text-sm text-app-text-subtle">
             {attachedJob ? `Job profile for ${attachedJob.jobTitle || 'Untitled role'} at ${attachedJob.companyName || 'Unknown company'}` : 'Base profile'}
           </p>
         </div>
@@ -224,9 +224,9 @@ export const ApplicationPage = () => {
         <DataTable copiedKey={copiedKey} description="Personal details and links from the selected profile." onCopy={handleCopy} rows={personalInfoRows} title="Personal Info" />
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-slate-950">Experience Entries</h2>
+          <h2 className="text-lg font-semibold text-app-heading">Experience Entries</h2>
           {documentData.experienceEntries.length === 0 ? (
-            <p className="text-sm text-slate-500">No experience entries enabled.</p>
+            <p className="text-sm text-app-text-subtle">No experience entries enabled.</p>
           ) : (
             documentData.experienceEntries.map(({ entry, bullets }, index) => (
               <DataTable
@@ -273,9 +273,9 @@ export const ApplicationPage = () => {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-slate-950">Education Entries</h2>
+          <h2 className="text-lg font-semibold text-app-heading">Education Entries</h2>
           {documentData.educationEntries.length === 0 ? (
-            <p className="text-sm text-slate-500">No education entries enabled.</p>
+            <p className="text-sm text-app-text-subtle">No education entries enabled.</p>
           ) : (
             documentData.educationEntries.map((entry, index) => (
               <DataTable
@@ -295,9 +295,9 @@ export const ApplicationPage = () => {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-slate-950">Certifications</h2>
+          <h2 className="text-lg font-semibold text-app-heading">Certifications</h2>
           {documentData.certifications.length === 0 ? (
-            <p className="text-sm text-slate-500">No certifications enabled.</p>
+            <p className="text-sm text-app-text-subtle">No certifications enabled.</p>
           ) : (
             documentData.certifications.map((entry, index) => (
               <DataTable
@@ -320,9 +320,9 @@ export const ApplicationPage = () => {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-slate-950">Skill Categories and Skills</h2>
+          <h2 className="text-lg font-semibold text-app-heading">Skill Categories and Skills</h2>
           {documentData.skillCategories.length === 0 ? (
-            <p className="text-sm text-slate-500">No enabled skill categories or skills.</p>
+            <p className="text-sm text-app-text-subtle">No enabled skill categories or skills.</p>
           ) : (
             documentData.skillCategories.map((item, index) => (
               <DataTable
@@ -345,9 +345,9 @@ export const ApplicationPage = () => {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-slate-950">References</h2>
+          <h2 className="text-lg font-semibold text-app-heading">References</h2>
           {documentData.references.length === 0 ? (
-            <p className="text-sm text-slate-500">No references enabled.</p>
+            <p className="text-sm text-app-text-subtle">No references enabled.</p>
           ) : (
             documentData.references.map((entry, index) => (
               <DataTable

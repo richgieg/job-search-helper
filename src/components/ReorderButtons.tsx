@@ -7,10 +7,10 @@ interface ReorderButtonsProps {
 
 const buttonClassName = (disabled: boolean) =>
   [
-    'inline-flex h-10 w-10 items-center justify-center rounded-xl border bg-white transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500',
+    'inline-flex h-10 w-10 items-center justify-center rounded-xl border bg-app-surface transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-focus-ring',
     disabled
-      ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400'
-      : 'border-slate-300 text-slate-700 hover:bg-slate-50',
+      ? 'cursor-not-allowed border-app-border-muted bg-app-surface-subtle text-app-text-subtle'
+      : 'border-app-border text-app-text-muted hover:bg-app-surface-muted',
   ].join(' ')
 
 export const ReorderButtons = ({ canMoveUp, canMoveDown, onMoveUp, onMoveDown }: ReorderButtonsProps) => {

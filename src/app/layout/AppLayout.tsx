@@ -11,16 +11,16 @@ const navigationItems = [
 const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   [
     'rounded-lg px-3 py-2 text-sm font-medium transition',
-    isActive ? 'bg-sky-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+    isActive ? 'bg-app-primary text-app-primary-contrast' : 'text-app-text-subtle hover:bg-app-surface-subtle hover:text-app-text',
   ].join(' ')
 
 export const AppShell = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="min-h-screen bg-app-canvas text-app-text">
+      <header className="border-b border-app-border-muted bg-app-surface">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div className="min-w-0">
-            <p className="text-lg font-semibold uppercase tracking-[0.24em] text-sky-600 sm:text-xl">Job Search Helper</p>
+            <p className="text-lg font-semibold uppercase tracking-[0.24em] text-app-primary sm:text-xl">Job Search Helper</p>
           </div>
 
           <nav className="flex flex-wrap gap-2">

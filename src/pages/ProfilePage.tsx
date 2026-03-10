@@ -49,10 +49,10 @@ const Field = ({
   placeholder?: string
   type?: 'text' | 'email' | 'tel' | 'url'
 }) => (
-  <label className="flex flex-col gap-2 text-sm text-slate-700">
+  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
     <span className="font-medium">{label}</span>
     <input
-      className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+      className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
       placeholder={placeholder}
       spellCheck={type === 'url' ? false : undefined}
       type={type}
@@ -64,7 +64,7 @@ const Field = ({
 )
 
 const OrderBadge = ({ value }: { value: number }) => (
-  <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-semibold text-slate-600">
+  <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-app-surface-subtle px-2 text-xs font-semibold text-app-text-subtle">
     {value}
   </span>
 )
@@ -94,10 +94,10 @@ export const ProfilePage = () => {
 
   if (!profile) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-950">Profile not found</h1>
-        <p className="mt-3 text-sm text-slate-600">The selected profile could not be found.</p>
-        <Link className="mt-5 inline-flex rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to="/profiles">
+      <div className="rounded-2xl border border-app-border-muted bg-app-surface p-8 shadow-sm">
+        <h1 className="text-2xl font-semibold text-app-heading">Profile not found</h1>
+        <p className="mt-3 text-sm text-app-text-subtle">The selected profile could not be found.</p>
+        <Link className="mt-5 inline-flex rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to="/profiles">
           Back to profiles
         </Link>
       </div>
@@ -172,27 +172,27 @@ export const ProfilePage = () => {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Profile editor</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{profile.name || 'Unnamed profile'}</h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-app-primary">Profile editor</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-app-heading">{profile.name || 'Unnamed profile'}</h1>
+          <p className="mt-2 text-sm text-app-text-subtle">
             {attachedJob ? `Job profile for ${attachedJob.jobTitle || 'Untitled role'} at ${attachedJob.companyName || 'Unknown company'}` : 'Base profile'}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}/cover-letter`}>
+          <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/cover-letter`}>
             Cover letter
           </Link>
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}/resume`}>
+          <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/resume`}>
             Resume
           </Link>
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}/references`}>
+          <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/references`}>
             References
           </Link>
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}/combined`}>
+          <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/combined`}>
             Cover letter + resume
           </Link>
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}/application`}>
+          <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/application`}>
             Application
           </Link>
         </div>
@@ -233,7 +233,7 @@ export const ProfilePage = () => {
             <label className="flex flex-col gap-2 text-sm text-slate-700">
               <span className="font-medium">Professional summary</span>
               <textarea
-                className="min-h-28 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+                className="min-h-28 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
                 value={summary}
                 onBlur={() => commitProfileTextField('summary', summary)}
                 onChange={(event) => setSummary(event.target.value)}
@@ -242,10 +242,10 @@ export const ProfilePage = () => {
           </div>
 
           <div className="xl:col-span-2">
-            <label className="flex flex-col gap-2 text-sm text-slate-700">
+            <label className="flex flex-col gap-2 text-sm text-app-text-muted">
               <span className="font-medium">Cover letter content</span>
               <textarea
-                className="min-h-40 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+                className="min-h-40 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
                 value={coverLetter}
                 onBlur={() => commitProfileTextField('coverLetter', coverLetter)}
                 onChange={(event) => setCoverLetter(event.target.value)}
@@ -265,8 +265,8 @@ export const ProfilePage = () => {
                 const index = orderedResumeSections.findIndex((section) => section.section === resumeSection.section)
 
                 return (
-                  <div key={resumeSection.section} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
-                    <div className="flex items-center gap-3 text-sm font-medium text-slate-800">
+                  <div key={resumeSection.section} className="flex flex-col gap-3 rounded-xl border border-app-border-muted p-4 md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-center gap-3 text-sm font-medium text-app-text">
                       <OrderBadge value={index + 1} />
                       <span>{resumeSectionLabels[resumeSection.section]}</span>
                     </div>

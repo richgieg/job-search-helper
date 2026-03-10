@@ -5,15 +5,15 @@ export const getActionIconButtonClassName = (tone: ActionButtonTone = 'neutral',
     'inline-flex h-10 w-10 items-center justify-center rounded-xl border focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
     tone === 'danger'
       ? disabled
-        ? 'cursor-not-allowed border-rose-200 bg-rose-50 text-rose-300 focus-visible:outline-rose-500'
-        : 'border-rose-300 text-rose-700 hover:bg-rose-50 focus-visible:outline-rose-500'
+        ? 'cursor-not-allowed border-app-danger-muted bg-app-danger-soft text-app-danger-contrast focus-visible:outline-app-danger'
+        : 'border-app-danger-muted text-app-danger hover:bg-app-danger-soft focus-visible:outline-app-danger'
       : tone === 'primary'
         ? disabled
-          ? 'cursor-not-allowed border-sky-300 bg-sky-300 text-white focus-visible:outline-sky-500'
-          : 'border-sky-600 bg-sky-600 text-white hover:bg-sky-700 hover:border-sky-700 focus-visible:outline-sky-500'
+          ? 'cursor-not-allowed border-app-primary-muted bg-app-primary-muted text-app-primary-contrast focus-visible:outline-app-focus-ring'
+          : 'border-app-primary bg-app-primary text-app-primary-contrast hover:bg-app-primary-hover hover:border-app-primary-hover focus-visible:outline-app-focus-ring'
         : disabled
-          ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-300 focus-visible:outline-sky-500'
-          : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-sky-500',
+          ? 'cursor-not-allowed border-app-border-muted bg-app-surface-subtle text-app-text-disabled focus-visible:outline-app-focus-ring'
+          : 'border-app-border bg-app-surface text-app-text-muted hover:bg-app-surface-muted focus-visible:outline-app-focus-ring',
   ].join(' ')
 
 interface ActionToggleProps {
@@ -26,7 +26,7 @@ interface ActionToggleProps {
 
 export const ActionToggle = ({ checked, onChange, label, disabled = false, showLabel = false }: ActionToggleProps) => (
   <label className={['inline-flex items-center gap-3', disabled ? 'cursor-not-allowed' : 'cursor-pointer'].join(' ')}>
-    <span className={showLabel ? 'text-sm font-medium text-slate-700' : 'sr-only'}>{label}</span>
+    <span className={showLabel ? 'text-sm font-medium text-app-text-muted' : 'sr-only'}>{label}</span>
     <input
       checked={checked}
       className="peer sr-only"
@@ -37,9 +37,9 @@ export const ActionToggle = ({ checked, onChange, label, disabled = false, showL
     />
     <span
       aria-hidden="true"
-      className="inline-flex h-7 w-12 shrink-0 items-center justify-start rounded-full border border-slate-300 bg-slate-200 p-0.5 transition peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-sky-500 peer-checked:justify-end peer-checked:border-sky-600 peer-checked:bg-sky-600 peer-disabled:cursor-not-allowed peer-disabled:border-slate-200 peer-disabled:bg-slate-200/80"
+      className="inline-flex h-7 w-12 shrink-0 items-center justify-start rounded-full border border-app-border bg-app-surface-subtle p-0.5 transition peer-focus-visible:ring-2 peer-focus-visible:ring-app-focus-ring peer-focus-visible:ring-offset-2 peer-checked:justify-end peer-checked:border-app-primary peer-checked:bg-app-primary peer-disabled:cursor-not-allowed peer-disabled:border-app-border-muted peer-disabled:bg-app-surface-subtle/80"
     >
-      <span className="inline-flex h-5.5 w-5.5 rounded-full bg-white shadow-sm transition peer-disabled:bg-slate-50" />
+      <span className="inline-flex h-5.5 w-5.5 rounded-full bg-app-surface shadow-sm transition peer-disabled:bg-app-surface-muted" />
     </span>
   </label>
 )

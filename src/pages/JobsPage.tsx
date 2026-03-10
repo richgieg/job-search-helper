@@ -43,27 +43,27 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
   }
 
   return (
-    <tr className="border-t border-slate-200 first:border-t-0">
-      <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
+    <tr className="border-t border-app-border-muted first:border-t-0">
+      <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
         <Link className="group inline-block" to={`/jobs/${job.id}`}>
-          <p className="font-medium text-slate-900 group-hover:text-sky-700">{job.jobTitle}</p>
+          <p className="font-medium text-app-text group-hover:text-app-primary-hover">{job.jobTitle}</p>
         </Link>
       </td>
-      <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
-        <span className="text-sm text-slate-600">{job.companyName}</span>
+      <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
+        <span className="text-sm text-app-text-subtle">{job.companyName}</span>
       </td>
-      <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
+      <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
         <span className={['rounded-full px-3 py-1 text-xs font-medium', getJobComputedStatusBadgeClassName(computedStatus)].join(' ')}>{formatJobComputedStatus(computedStatus)}</span>
       </td>
-      <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
+      <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
         {jobLinks.length === 0 ? (
-          <span className="text-sm text-slate-400">—</span>
+          <span className="text-sm text-app-text-disabled">—</span>
         ) : (
           <div className="flex flex-wrap gap-2">
             {jobLinks.map((jobLink, index) => (
               <a
                 key={jobLink.id}
-                className="text-sm font-medium text-sky-700 underline-offset-2 hover:text-sky-800 hover:underline"
+                className="text-sm font-medium text-app-primary-hover underline-offset-2 hover:text-app-primary-hover hover:underline"
                 href={jobLink.url}
                 rel="noopener noreferrer"
                 target="_blank"
@@ -91,7 +91,7 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
 
 const JobsTable = ({ jobIds }: { jobIds: string[] }) => {
   if (jobIds.length === 0) {
-    return <p className="p-6 text-sm text-slate-500">No jobs yet.</p>
+    return <p className="p-6 text-sm text-app-text-subtle">No jobs yet.</p>
   }
 
   return (
@@ -105,11 +105,11 @@ const JobsTable = ({ jobIds }: { jobIds: string[] }) => {
           <col className="w-[16%]" />
         </colgroup>
         <thead>
-          <tr className="border-b border-slate-300 bg-slate-100 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Job title</th>
-            <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Company</th>
-            <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Status</th>
-            <th className="border-r border-slate-300 px-4 py-3 last:border-r-0">Links</th>
+          <tr className="border-b border-app-border bg-app-surface-subtle text-left text-xs font-semibold uppercase tracking-[0.18em] text-app-text-subtle">
+            <th className="border-r border-app-border px-4 py-3 last:border-r-0">Job title</th>
+            <th className="border-r border-app-border px-4 py-3 last:border-r-0">Company</th>
+            <th className="border-r border-app-border px-4 py-3 last:border-r-0">Status</th>
+            <th className="border-r border-app-border px-4 py-3 last:border-r-0">Links</th>
             <th className="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
@@ -159,36 +159,36 @@ export const JobsPage = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Jobs</h1>
-        <p className="mt-2 text-sm text-slate-600">Keep track of the roles you're pursuing and everything connected to each one.</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-app-heading">Jobs</h1>
+        <p className="mt-2 text-sm text-app-text-subtle">Keep track of the roles you're pursuing and everything connected to each one.</p>
       </div>
 
-      <section className="max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="max-w-4xl rounded-2xl border border-app-border-muted bg-app-surface p-6 shadow-sm">
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div className="grid gap-3 md:grid-cols-2">
-            <label className="flex min-w-0 flex-col gap-2 text-sm text-slate-700">
+            <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
               <span className="font-medium">Job title</span>
               <input
-                className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+                className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
                 ref={jobTitleInputRef}
                 value={jobTitle}
                 onChange={(event) => setJobTitle(event.target.value)}
               />
             </label>
-            <label className="flex min-w-0 flex-col gap-2 text-sm text-slate-700">
+            <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
               <span className="font-medium">Company name</span>
               <input
-                className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+                className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
                 value={companyName}
                 onChange={(event) => setCompanyName(event.target.value)}
               />
             </label>
           </div>
 
-          <label className="flex min-w-0 flex-col gap-2 text-sm text-slate-700">
+          <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
             <span className="font-medium">URL (optional)</span>
             <input
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+              className="w-full rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
               spellCheck={false}
               type="url"
               value={initialLinkUrl}
@@ -197,14 +197,14 @@ export const JobsPage = () => {
           </label>
 
           <div className="flex justify-end">
-            <button className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700" type="submit">
+            <button className="rounded-xl bg-app-primary px-3 py-2 text-sm font-medium text-app-primary-contrast hover:bg-app-primary-hover" type="submit">
               Add job
             </button>
           </div>
         </form>
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-app-border bg-app-surface shadow-sm">
         <JobsTable jobIds={sortedJobIds} />
       </section>
     </div>
