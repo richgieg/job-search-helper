@@ -194,7 +194,8 @@ export const ResumePage = () => {
                         <div key={entry.id} className="print-keep-together">
                           <p className="font-semibold text-black">{entry.name || 'Reference'}</p>
                           <p>{[entry.title, entry.company].filter(Boolean).join(' · ')}</p>
-                          <p className="text-black">{entry.email || entry.phone || 'Contact details not set'}</p>
+                          {entry.phone ? <p className="text-black">{entry.phone}</p> : null}
+                          {entry.email ? <p className="text-black">{entry.email}</p> : null}
                         </div>
                       ))
                     )}
