@@ -60,6 +60,7 @@
   --color-app-status-offer-muted: var(--app-status-offer-muted);
   --color-app-status-offer-contrast: var(--app-status-offer-contrast);
   --color-app-status-accepted: var(--app-status-accepted);
+  --color-app-status-accepted-border: var(--app-status-accepted-border);
   --color-app-status-accepted-soft: var(--app-status-accepted-soft);
   --color-app-status-accepted-muted: var(--app-status-accepted-muted);
   --color-app-status-accepted-contrast: var(--app-status-accepted-contrast);
@@ -147,6 +148,7 @@
   --app-status-offer-contrast: var(--color-emerald-800);
 
   --app-status-accepted: var(--color-teal-700);
+  --app-status-accepted-border: var(--color-teal-300);
   --app-status-accepted-soft: var(--color-teal-50);
   --app-status-accepted-muted: var(--color-teal-100);
   --app-status-accepted-contrast: var(--color-teal-800);

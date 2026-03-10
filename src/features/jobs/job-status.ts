@@ -21,19 +21,19 @@ const jobStatusColorClasses: Record<
   },
   withdrew: {
     badge: 'bg-app-status-withdrew-soft text-app-status-withdrew',
-    stripSelected: 'border-app-status-withdrew-muted bg-app-status-withdrew-muted text-app-status-withdrew-contrast',
+    stripSelected: 'border-app-border bg-app-status-withdrew-muted text-app-status-withdrew-contrast',
   },
   rejected: {
     badge: 'bg-app-status-rejected-soft text-app-status-rejected',
-    stripSelected: 'border-app-status-rejected-muted bg-app-status-rejected-muted text-app-status-rejected-contrast',
+    stripSelected: 'border-app-border bg-app-status-rejected-muted text-app-status-rejected-contrast',
   },
   offer_received: {
     badge: 'bg-app-status-offer-soft text-app-status-offer',
-    stripSelected: 'border-app-status-offer-muted bg-app-status-offer-muted text-app-status-offer-contrast',
+    stripSelected: 'border-app-border bg-app-status-offer-muted text-app-status-offer-contrast',
   },
   offer_accepted: {
     badge: 'bg-app-status-accepted-soft text-app-status-accepted',
-    stripSelected: 'border-app-status-accepted-muted bg-app-status-accepted-muted text-app-status-accepted-contrast',
+    stripSelected: 'border-app-status-accepted-border bg-app-status-accepted-muted text-app-status-accepted-contrast',
   },
 }
 
