@@ -30,7 +30,8 @@ export type JobComputedStatus =
   | 'interested'
   | 'applied'
   | 'interview'
-  | 'offer'
+  | 'offer_received'
+  | 'offer_accepted'
   | 'rejected'
   | 'withdrew'
 

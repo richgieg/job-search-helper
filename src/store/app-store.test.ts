@@ -499,10 +499,17 @@ describe('app store reorder actions', () => {
     expect(
       getJobComputedStatus({
         appliedAt: '2026-03-09T12:00:00.000Z',
+        finalOutcome: { status: 'offer_received', setAt: '2026-03-10T12:00:00.000Z' },
+        interviewCount: 1,
+      }),
+    ).toBe('offer_received')
+    expect(
+      getJobComputedStatus({
+        appliedAt: '2026-03-09T12:00:00.000Z',
         finalOutcome: { status: 'offer_accepted', setAt: '2026-03-11T12:00:00.000Z' },
         interviewCount: 2,
       }),
-    ).toBe('offer')
+    ).toBe('offer_accepted')
     expect(
       getJobComputedStatus({
         appliedAt: '2026-03-09T12:00:00.000Z',
