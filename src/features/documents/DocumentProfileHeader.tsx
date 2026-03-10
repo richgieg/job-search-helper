@@ -26,7 +26,7 @@ export const DocumentProfileHeader = ({ documentData }: DocumentProfileHeaderPro
         <div className="shrink-0 text-right">
           {contactLine.length > 0 ? <p className="text-sm text-black">{contactLine.join(' | ')}</p> : null}
           {links.length > 0 ? (
-            <div className="mt-2 space-y-1 text-sm text-black">
+            <div className="mt-2 space-y-0.5 text-sm leading-4 text-black">
               {links.map((link) => (
                 <p key={link}>{link}</p>
               ))}

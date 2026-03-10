@@ -20,6 +20,19 @@ const formatExperienceMeta = (input: {
   return [input.company, input.location, workArrangement, employmentType].filter(Boolean).join(' · ')
 }
 
+const formatMonthYear = (value: string | null) => {
+  if (!value) {
+    return 'Date not set'
+  }
+
+  const date = new Date(`${value}T00:00:00`)
+
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
 export const ResumePage = () => {
   const { profileId = '' } = useParams()
   const data = useAppStore((state) => state.data)
@@ -92,7 +105,7 @@ export const ResumePage = () => {
                         <div className="resume-experience-header">
                           <div>
                             <h4 className="text-base font-semibold text-black">{entry.entry.title || 'Untitled role'}</h4>
-                            <p className="text-sm text-black">
+                            <p className="text-sm italic text-black">
                               {formatExperienceMeta({
                                 company: entry.entry.company,
                                 location: entry.entry.location,
@@ -125,9 +138,11 @@ export const ResumePage = () => {
                     ) : (
                       documentData.educationEntries.map((entry) => (
                         <div key={entry.id}>
-                          <p className="font-semibold text-black">{entry.school || 'School'}</p>
-                          <p>{entry.degree || 'Degree not set'}</p>
-                          <p className="text-black">{entry.graduationDate || 'Date not set'}</p>
+                          <div className="resume-experience-header">
+                            <p className="font-semibold text-black">{entry.degree || 'Degree not set'}</p>
+                            <p className="resume-experience-date text-black">{formatMonthYear(entry.graduationDate)}</p>
+                          </div>
+                          <p className="italic">{entry.school || 'School'}</p>
                         </div>
                       ))
                     )}
@@ -138,17 +153,18 @@ export const ResumePage = () => {
               return (
                 <section key="certifications" className={sectionClassName}>
                   <h3 className="border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Certifications</h3>
-                  <div className="mt-4 space-y-4 text-sm text-black">
+                  <div className="mt-4 text-sm leading-[1.125rem] text-black">
                     {documentData.certifications.length === 0 ? (
                       <p className="text-black">No certifications enabled.</p>
                     ) : (
-                      documentData.certifications.map((entry) => (
-                        <div key={entry.id}>
-                          <p className="font-semibold text-black">{entry.name || 'Certification'}</p>
-                          <p>{entry.issuer || 'Issuer not set'}</p>
-                          <p className="text-black">{entry.issueDate || 'Issue date not set'}</p>
-                        </div>
-                      ))
+                      <p>
+                        {documentData.certifications.map((entry, index) => (
+                          <span key={entry.id}>
+                            {index > 0 ? <span>{' · '}</span> : null}
+                            <span className="whitespace-nowrap">{entry.name || 'Certification'}</span>
+                          </span>
+                        ))}
+                      </p>
                     )}
                   </div>
                 </section>
