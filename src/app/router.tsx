@@ -14,18 +14,18 @@ import { ResumePage } from '../pages/ResumePage'
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/cover-letter/:profileId" element={<CoverLetterPage />} />
-      <Route path="/resume/:profileId" element={<ResumePage />} />
+      <Route path="/profiles/:profileId/cover-letter" element={<CoverLetterPage />} />
+      <Route path="/profiles/:profileId/resume" element={<ResumePage />} />
 
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profiles" element={<ProfilesPage />} />
         <Route path="/profiles/:profileId" element={<ProfilePage />} />
+        <Route path="/profiles/:profileId/application" element={<ApplicationPage />} />
         <Route path="/jobs" element={<JobsPage />} />
         <Route path="/jobs/:jobId" element={<JobPage />} />
         <Route path="/import-export" element={<ImportExportPage />} />
-        <Route path="/application/:profileId" element={<ApplicationPage />} />
       </Route>
     </Routes>
   )

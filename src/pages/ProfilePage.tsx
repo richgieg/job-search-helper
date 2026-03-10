@@ -180,13 +180,13 @@ export const ProfilePage = () => {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/cover-letter/${profile.id}`}>
+          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}/cover-letter`}>
             Cover letter
           </Link>
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/resume/${profile.id}`}>
+          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}/resume`}>
             Resume
           </Link>
-          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/application/${profile.id}`}>
+          <Link className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to={`/profiles/${profile.id}/application`}>
             Application
           </Link>
         </div>
