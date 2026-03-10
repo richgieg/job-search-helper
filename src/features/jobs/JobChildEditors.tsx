@@ -204,6 +204,10 @@ const formatInterviewTitle = (startAt: string | null, endAt: string | null) => {
 }
 
 const formatInterviewSummary = (startAt: string | null, endAt: string | null) => {
+  if (!startAt) {
+    return 'Please set the start date and time'
+  }
+
   const start = formatInterviewTime(startAt)
   const end = formatInterviewTime(endAt)
 
