@@ -126,6 +126,23 @@ const OrderBadge = ({ value }: { value: number }) => (
   </span>
 )
 
+const ToggleField = ({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+}) => (
+  <div className="flex flex-col gap-2 text-sm text-slate-700">
+    <p className="font-medium">{label}</p>
+    <div>
+      <ActionToggle checked={checked} label={label} onChange={onChange} />
+    </div>
+  </div>
+)
+
 const countLabel = (count: number, singular: string, plural = `${singular}s`) => `${count} ${count === 1 ? singular : plural}`
 
 const formatMonthYear = (value: string | null) => {
@@ -609,10 +626,9 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
           value={draft.endDate ?? ''}
           onChange={(value) => setDraft({ ...draft, endDate: value || null })}
         />
-        <ActionToggle
+        <ToggleField
           checked={draft.isCurrent}
           label="Current role"
-          showLabel
           onChange={(value) => {
             setDraft({
               ...draft,
