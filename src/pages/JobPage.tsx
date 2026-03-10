@@ -306,7 +306,7 @@ export const JobPage = () => {
           </div>
         </div>
 
-        <div className="flex justify-end lg:self-center">
+        <div className="flex justify-end lg:self-end">
           <ActionToggle checked={job.appliedAt !== null} label="Applied" showLabel onChange={handleAppliedToggle} />
         </div>
       </div>
