@@ -798,14 +798,6 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
         {hasJobLinks ? <div className="space-y-4">{jobLinkIds.map((id) => <JobLinkCard key={id} jobLinkId={id} />)}</div> : null}
       </CollapsiblePanel>
 
-      <CollapsiblePanel actionLabel="Add contact" actionStyle="icon" collapsible={hasJobContacts} description="Maintain recruiters, hiring managers, referrals, and interviewers for the job." onAction={() => createJobContact(jobId)} title="Contacts">
-        {hasJobContacts ? <div className="space-y-4">{jobContactIds.map((id) => <JobContactCard key={id} jobContactId={id} />)}</div> : null}
-      </CollapsiblePanel>
-
-      <CollapsiblePanel actionLabel="Add interview" actionStyle="icon" collapsible={hasInterviews} description="Track interviews in chronological order." onAction={() => createInterview(jobId)} title="Interviews">
-        {hasInterviews ? <div className="space-y-4">{interviewIds.map((id) => <InterviewCard key={id} interviewId={id} />)}</div> : null}
-      </CollapsiblePanel>
-
       <CollapsiblePanel
         actionLabel="Add application question"
         actionStyle="icon"
@@ -817,6 +809,14 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
         {hasApplicationQuestions ? (
           <div className="space-y-4">{applicationQuestionIds.map((id) => <ApplicationQuestionCard key={id} applicationQuestionId={id} />)}</div>
         ) : null}
+      </CollapsiblePanel>
+
+      <CollapsiblePanel actionLabel="Add contact" actionStyle="icon" collapsible={hasJobContacts} description="Maintain recruiters, hiring managers, referrals, and interviewers for the job." onAction={() => createJobContact(jobId)} title="Contacts">
+        {hasJobContacts ? <div className="space-y-4">{jobContactIds.map((id) => <JobContactCard key={id} jobContactId={id} />)}</div> : null}
+      </CollapsiblePanel>
+
+      <CollapsiblePanel actionLabel="Add interview" actionStyle="icon" collapsible={hasInterviews} description="Track interviews in chronological order." onAction={() => createInterview(jobId)} title="Interviews">
+        {hasInterviews ? <div className="space-y-4">{interviewIds.map((id) => <InterviewCard key={id} interviewId={id} />)}</div> : null}
       </CollapsiblePanel>
     </>
   )
