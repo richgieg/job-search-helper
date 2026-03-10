@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
-import { AddIconButton, DeleteIconButton } from '../../components/CompactActionControls'
+import { AddIconButton, DeleteIconButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
 import type { ContactRelationshipType } from '../../types/state'
@@ -214,6 +214,9 @@ const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
     })
   }
 
+  const trimmedUrl = draft.url.trim()
+  const hasUrl = trimmedUrl.length > 0
+
   return (
     <div className="rounded-xl border border-slate-200 p-4">
       <div className="flex items-end gap-4">
@@ -221,6 +224,27 @@ const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
           <TextField placeholder="https://example.com/job" type="url" value={draft.url} onBlur={() => draft.url !== link.url && commitLinkChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
         </div>
         <div className="flex shrink-0 items-center justify-end gap-2 self-end">
+          {hasUrl ? (
+            <a
+              aria-label="Open link in new tab"
+              className={getActionIconButtonClassName()}
+              href={trimmedUrl}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
+                <path d="M7 17 17 7" />
+                <path d="M9 7h8v8" />
+              </svg>
+            </a>
+          ) : (
+            <button aria-label="Open link in new tab" className={getActionIconButtonClassName('neutral', true)} disabled type="button">
+              <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
+                <path d="M7 17 17 7" />
+                <path d="M9 7h8v8" />
+              </svg>
+            </button>
+          )}
           <ReorderButtons
             canMoveDown={jobLinkIds.length > 1}
             canMoveUp={jobLinkIds.length > 1}
