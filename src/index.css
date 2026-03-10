@@ -1,12 +1,144 @@
 @import 'tailwindcss';
 
+@theme inline {
+  --color-app-canvas: var(--app-canvas);
+  --color-app-surface: var(--app-surface);
+  --color-app-surface-muted: var(--app-surface-muted);
+  --color-app-surface-subtle: var(--app-surface-subtle);
+  --color-app-surface-overlay: var(--app-surface-overlay);
+  --color-app-border: var(--app-border);
+  --color-app-border-muted: var(--app-border-muted);
+  --color-app-border-strong: var(--app-border-strong);
+  --color-app-text: var(--app-text);
+  --color-app-text-muted: var(--app-text-muted);
+  --color-app-text-subtle: var(--app-text-subtle);
+  --color-app-text-disabled: var(--app-text-disabled);
+  --color-app-heading: var(--app-heading);
+  --color-app-primary: var(--app-primary);
+  --color-app-primary-hover: var(--app-primary-hover);
+  --color-app-primary-soft: var(--app-primary-soft);
+  --color-app-primary-muted: var(--app-primary-muted);
+  --color-app-primary-contrast: var(--app-primary-contrast);
+  --color-app-focus-ring: var(--app-focus-ring);
+  --color-app-danger: var(--app-danger);
+  --color-app-danger-hover: var(--app-danger-hover);
+  --color-app-danger-soft: var(--app-danger-soft);
+  --color-app-danger-muted: var(--app-danger-muted);
+  --color-app-danger-contrast: var(--app-danger-contrast);
+  --color-app-success: var(--app-success);
+  --color-app-success-soft: var(--app-success-soft);
+  --color-app-success-muted: var(--app-success-muted);
+  --color-app-success-contrast: var(--app-success-contrast);
+  --color-app-status-interested: var(--app-status-interested);
+  --color-app-status-interested-soft: var(--app-status-interested-soft);
+  --color-app-status-interested-muted: var(--app-status-interested-muted);
+  --color-app-status-interested-contrast: var(--app-status-interested-contrast);
+  --color-app-status-applied: var(--app-status-applied);
+  --color-app-status-applied-soft: var(--app-status-applied-soft);
+  --color-app-status-applied-muted: var(--app-status-applied-muted);
+  --color-app-status-applied-contrast: var(--app-status-applied-contrast);
+  --color-app-status-interview: var(--app-status-interview);
+  --color-app-status-interview-soft: var(--app-status-interview-soft);
+  --color-app-status-interview-muted: var(--app-status-interview-muted);
+  --color-app-status-interview-contrast: var(--app-status-interview-contrast);
+  --color-app-status-withdrew: var(--app-status-withdrew);
+  --color-app-status-withdrew-soft: var(--app-status-withdrew-soft);
+  --color-app-status-withdrew-muted: var(--app-status-withdrew-muted);
+  --color-app-status-withdrew-contrast: var(--app-status-withdrew-contrast);
+  --color-app-status-rejected: var(--app-status-rejected);
+  --color-app-status-rejected-soft: var(--app-status-rejected-soft);
+  --color-app-status-rejected-muted: var(--app-status-rejected-muted);
+  --color-app-status-rejected-contrast: var(--app-status-rejected-contrast);
+  --color-app-status-offer: var(--app-status-offer);
+  --color-app-status-offer-soft: var(--app-status-offer-soft);
+  --color-app-status-offer-muted: var(--app-status-offer-muted);
+  --color-app-status-offer-contrast: var(--app-status-offer-contrast);
+  --color-app-status-accepted: var(--app-status-accepted);
+  --color-app-status-accepted-soft: var(--app-status-accepted-soft);
+  --color-app-status-accepted-muted: var(--app-status-accepted-muted);
+  --color-app-status-accepted-contrast: var(--app-status-accepted-contrast);
+}
+
 :root {
   color-scheme: light;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #111827;
-  background: #f8fafc;
+
+  /* Base app surfaces and text */
+  --app-canvas: var(--color-slate-50);
+  --app-surface: var(--color-white);
+  --app-surface-muted: var(--color-slate-50);
+  --app-surface-subtle: var(--color-slate-100);
+  --app-surface-overlay: color-mix(in oklab, var(--color-white) 70%, transparent);
+  --app-border: var(--color-slate-300);
+  --app-border-muted: var(--color-slate-200);
+  --app-border-strong: var(--color-slate-900);
+  --app-text: var(--color-slate-900);
+  --app-text-muted: var(--color-slate-700);
+  --app-text-subtle: var(--color-slate-500);
+  --app-text-disabled: var(--color-slate-300);
+  --app-heading: var(--color-slate-950);
+
+  /* Primary interactive color */
+  --app-primary: var(--color-sky-600);
+  --app-primary-hover: var(--color-sky-700);
+  --app-primary-soft: var(--color-sky-50);
+  --app-primary-muted: var(--color-sky-100);
+  --app-primary-contrast: var(--color-white);
+  --app-focus-ring: var(--color-sky-500);
+
+  /* Danger and destructive actions */
+  --app-danger: var(--color-rose-700);
+  --app-danger-hover: var(--color-rose-800);
+  --app-danger-soft: var(--color-rose-50);
+  --app-danger-muted: var(--color-rose-100);
+  --app-danger-contrast: var(--color-rose-300);
+
+  /* Positive / success states */
+  --app-success: var(--color-emerald-700);
+  --app-success-soft: var(--color-emerald-50);
+  --app-success-muted: var(--color-emerald-100);
+  --app-success-contrast: var(--color-emerald-800);
+
+  /* Job pipeline statuses */
+  --app-status-interested: var(--color-sky-700);
+  --app-status-interested-soft: var(--color-sky-50);
+  --app-status-interested-muted: var(--color-sky-100);
+  --app-status-interested-contrast: var(--color-sky-800);
+
+  --app-status-applied: var(--color-indigo-700);
+  --app-status-applied-soft: var(--color-indigo-50);
+  --app-status-applied-muted: var(--color-indigo-100);
+  --app-status-applied-contrast: var(--color-indigo-800);
+
+  --app-status-interview: var(--color-violet-700);
+  --app-status-interview-soft: var(--color-violet-50);
+  --app-status-interview-muted: var(--color-violet-100);
+  --app-status-interview-contrast: var(--color-violet-800);
+
+  --app-status-withdrew: var(--color-amber-800);
+  --app-status-withdrew-soft: var(--color-amber-50);
+  --app-status-withdrew-muted: var(--color-amber-100);
+  --app-status-withdrew-contrast: var(--color-amber-900);
+
+  --app-status-rejected: var(--color-rose-700);
+  --app-status-rejected-soft: var(--color-rose-50);
+  --app-status-rejected-muted: var(--color-rose-100);
+  --app-status-rejected-contrast: var(--color-rose-800);
+
+  --app-status-offer: var(--color-emerald-700);
+  --app-status-offer-soft: var(--color-emerald-50);
+  --app-status-offer-muted: var(--color-emerald-100);
+  --app-status-offer-contrast: var(--color-emerald-800);
+
+  --app-status-accepted: var(--color-teal-700);
+  --app-status-accepted-soft: var(--color-teal-50);
+  --app-status-accepted-muted: var(--color-teal-100);
+  --app-status-accepted-contrast: var(--color-teal-800);
+
+  color: var(--app-text);
+  background: var(--app-canvas);
 }
 
 body {
@@ -48,7 +180,7 @@ a[class*='border-rose-300']:not(:hover):not(:focus-visible):not(:active) {
   display: flex;
   justify-content: center;
   padding: 2rem;
-  background: #e2e8f0;
+  background: var(--app-surface-subtle);
 }
 
 .document-page {
