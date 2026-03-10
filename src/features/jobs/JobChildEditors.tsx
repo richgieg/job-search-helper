@@ -360,46 +360,26 @@ const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
 
 type FinalOutcomeDraftStatus = '' | FinalOutcomeStatus
 
-const JobProgressPanel = ({ jobId }: { jobId: string }) => {
+const JobFinalOutcomePanel = ({ jobId }: { jobId: string }) => {
   const job = useAppStore((state) => state.data.jobs[jobId])
-  const setJobAppliedAt = useAppStore((state) => state.actions.setJobAppliedAt)
-  const clearJobAppliedAt = useAppStore((state) => state.actions.clearJobAppliedAt)
   const setJobFinalOutcome = useAppStore((state) => state.actions.setJobFinalOutcome)
   const clearJobFinalOutcome = useAppStore((state) => state.actions.clearJobFinalOutcome)
-  const [appliedAtDraft, setAppliedAtDraft] = useState('')
   const [finalOutcomeStatusDraft, setFinalOutcomeStatusDraft] = useState<FinalOutcomeDraftStatus>('')
   const [finalOutcomeSetAtDraft, setFinalOutcomeSetAtDraft] = useState('')
 
   useEffect(() => {
     if (!job) {
-      setAppliedAtDraft('')
       setFinalOutcomeStatusDraft('')
       setFinalOutcomeSetAtDraft('')
       return
     }
 
-    setAppliedAtDraft(toDateTimeLocal(job.appliedAt))
     setFinalOutcomeStatusDraft(job.finalOutcome?.status ?? '')
     setFinalOutcomeSetAtDraft(toDateTimeLocal(job.finalOutcome?.setAt ?? null))
   }, [job])
 
   if (!job) {
     return null
-  }
-
-  const commitAppliedAt = () => {
-    const nextValue = fromDateTimeLocal(appliedAtDraft)
-
-    if (nextValue === job.appliedAt) {
-      return
-    }
-
-    if (nextValue) {
-      setJobAppliedAt({ jobId: job.id, appliedAt: nextValue })
-      return
-    }
-
-    clearJobAppliedAt(job.id)
   }
 
   const commitFinalOutcome = () => {
@@ -428,20 +408,11 @@ const JobProgressPanel = ({ jobId }: { jobId: string }) => {
     })
   }
 
-  const summary = summarizeParts([
-    job.appliedAt ? `Applied ${toDateTimeLocal(job.appliedAt).replace('T', ' ')}` : 'Not yet applied',
-    job.finalOutcome ? `${formatFinalOutcomeStatus(job.finalOutcome.status)} ${toDateTimeLocal(job.finalOutcome.setAt).replace('T', ' ')}` : 'No final outcome',
-  ])
+  const summary = job.finalOutcome ? `${formatFinalOutcomeStatus(job.finalOutcome.status)} ${toDateTimeLocal(job.finalOutcome.setAt).replace('T', ' ')}` : 'No final outcome'
 
   return (
-    <CollapsiblePanel defaultExpanded summary={summary} title="Progress">
+    <CollapsiblePanel description={summary} title="Final outcome">
       <div className="grid gap-4 lg:grid-cols-2">
-        <TextField label="Applied at" type="datetime-local" value={appliedAtDraft} onBlur={commitAppliedAt} onChange={setAppliedAtDraft} />
-        <div className="flex items-end gap-2">
-          <button className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => { setAppliedAtDraft(''); clearJobAppliedAt(job.id) }} type="button">
-            Clear applied date
-          </button>
-        </div>
         <SelectField
           label="Final outcome"
           options={[
@@ -769,8 +740,6 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
 
   return (
     <>
-      <JobProgressPanel jobId={jobId} />
-
       <CollapsiblePanel actionLabel="Add link" actionStyle="icon" collapsible={hasJobLinks} description="Track the relevant job URLs for this role." onAction={() => createJobLink(jobId)} title="Links">
         {hasJobLinks ? <div className="space-y-4">{jobLinkIds.map((id) => <JobLinkCard key={id} jobLinkId={id} />)}</div> : null}
       </CollapsiblePanel>
@@ -795,6 +764,8 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
       <CollapsiblePanel actionLabel="Add interview" actionStyle="icon" collapsible={hasInterviews} description="Track interviews in chronological order." onAction={() => createInterview(jobId)} title="Interviews">
         {hasInterviews ? <div className="space-y-4">{interviewIds.map((id) => <InterviewCard key={id} interviewId={id} />)}</div> : null}
       </CollapsiblePanel>
+
+      <JobFinalOutcomePanel jobId={jobId} />
     </>
   )
 }
