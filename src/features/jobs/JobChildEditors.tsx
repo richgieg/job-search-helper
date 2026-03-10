@@ -134,6 +134,67 @@ const SelectField = <T extends string>({
   </label>
 )
 
+const SegmentedRadioStrip = <T extends string>({
+  label,
+  name,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  name: string
+  value: T
+  options: Array<{ value: T; label: string }>
+  onChange: (value: T) => void
+}) => (
+  <fieldset className="space-y-2">
+    <legend className="text-sm font-medium text-slate-700">{label}</legend>
+    <div className="mx-auto flex w-full max-w-4xl justify-center">
+      <div className="flex w-full items-stretch justify-center gap-0">
+        {options.map((option, index) => {
+          const checked = option.value === value
+          const isFirst = index === 0
+          const isLast = index === options.length - 1
+
+          return (
+            <label
+              key={option.value}
+              className={[
+                'relative flex min-w-0 flex-1 cursor-pointer',
+                !isFirst ? '-ml-px' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              <input
+                checked={checked}
+                className="peer sr-only"
+                name={name}
+                type="radio"
+                value={option.value}
+                onChange={() => onChange(option.value)}
+              />
+              <span
+                className={[
+                  'flex w-full items-center justify-center border border-slate-300 px-3 py-2 text-center text-xs font-medium transition sm:text-sm',
+                  'peer-focus-visible:z-10 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-sky-500',
+                  isFirst ? 'rounded-l-xl' : '',
+                  isLast ? 'rounded-r-xl' : '',
+                  checked ? 'border-sky-600 bg-sky-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
+                {option.label}
+              </span>
+            </label>
+          )
+        })}
+      </div>
+    </div>
+  </fieldset>
+)
+
 const toDateTimeLocal = (value: string | null) => {
   if (!value) {
     return ''
@@ -398,9 +459,10 @@ const JobFinalOutcomePanel = ({ jobId }: { jobId: string }) => {
 
   return (
     <CollapsiblePanel description={summary} title="Final outcome">
-      <div className="grid gap-4 lg:grid-cols-2">
-        <SelectField
+      <div className="space-y-4">
+        <SegmentedRadioStrip
           label="Final outcome"
+          name={`job-${job.id}-final-outcome`}
           options={[
             { value: '', label: 'None' },
             { value: 'withdrew', label: 'Withdrew' },
