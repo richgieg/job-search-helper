@@ -40,7 +40,7 @@ export const ResumePage = () => {
 
   return (
     <div className="document-preview-shell">
-      <article className="document-page">
+      <article className="document-page text-black">
         <DocumentProfileHeader documentData={documentData} />
 
         {orderedSections.map((orderedSection) => {
@@ -48,8 +48,8 @@ export const ResumePage = () => {
             case 'summary':
               return summaryParagraphs.length > 0 ? (
                 <section key="summary" className="mt-6">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Summary</h3>
-                  <div className="mt-3 space-y-4 text-sm leading-7 text-slate-700">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black">Summary</h3>
+                  <div className="mt-3 space-y-4 text-sm leading-7 text-black">
                     {summaryParagraphs.map((paragraph, index) => (
                       <p key={`${documentData.profile.id}-summary-${index}`}>{paragraph}</p>
                     ))}
@@ -59,12 +59,12 @@ export const ResumePage = () => {
             case 'skills':
               return documentData.skillCategories.length > 0 ? (
                 <section key="skills" className="mt-8">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Skills</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black">Skills</h3>
                   <div className="resume-skills-grid mt-4">
                     {documentData.skillCategories.map((item) => (
-                      <div key={item.category.id} className="rounded-2xl bg-slate-50 p-4">
-                        <p className="text-sm font-semibold text-slate-900">{item.category.name || 'General'}</p>
-                        <p className="mt-2 text-sm leading-6 text-slate-700">{item.skills.map((skill) => skill.name).join(' · ') || 'No skills listed yet.'}</p>
+                      <div key={item.category.id} className="rounded-2xl border border-black bg-white p-4">
+                        <p className="text-sm font-semibold text-black">{item.category.name || 'General'}</p>
+                        <p className="mt-2 text-sm leading-6 text-black">{item.skills.map((skill) => skill.name).join(' · ') || 'No skills listed yet.'}</p>
                       </div>
                     ))}
                   </div>
@@ -73,14 +73,14 @@ export const ResumePage = () => {
             case 'experience':
               return documentData.experienceEntries.length > 0 ? (
                 <section key="experience" className="mt-8">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Experience</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black">Experience</h3>
                   <div className="mt-4 space-y-5">
                     {documentData.experienceEntries.map((entry) => (
                       <div key={entry.entry.id}>
                         <div className="resume-experience-header">
                           <div>
-                            <h4 className="text-base font-semibold text-slate-950">{entry.entry.title || 'Untitled role'}</h4>
-                            <p className="text-sm text-slate-700">
+                            <h4 className="text-base font-semibold text-black">{entry.entry.title || 'Untitled role'}</h4>
+                            <p className="text-sm text-black">
                               {formatExperienceMeta({
                                 company: entry.entry.company,
                                 location: entry.entry.location,
@@ -89,10 +89,10 @@ export const ResumePage = () => {
                               })}
                             </p>
                           </div>
-                          <p className="resume-experience-date text-sm text-slate-500">{formatDateRange(entry.entry.startDate, entry.entry.endDate, entry.entry.isCurrent)}</p>
+                          <p className="resume-experience-date text-sm text-black">{formatDateRange(entry.entry.startDate, entry.entry.endDate, entry.entry.isCurrent)}</p>
                         </div>
                         {entry.bullets.length > 0 ? (
-                          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-slate-700">
+                          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-black">
                             {entry.bullets.map((bullet) => (
                               <li key={bullet.id}>{bullet.content}</li>
                             ))}
@@ -106,16 +106,16 @@ export const ResumePage = () => {
             case 'education':
               return (
                 <section key="education" className="mt-8">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Education</h3>
-                  <div className="mt-4 space-y-4 text-sm text-slate-700">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black">Education</h3>
+                  <div className="mt-4 space-y-4 text-sm text-black">
                     {documentData.educationEntries.length === 0 ? (
-                      <p className="text-slate-500">No education entries enabled.</p>
+                      <p className="text-black">No education entries enabled.</p>
                     ) : (
                       documentData.educationEntries.map((entry) => (
                         <div key={entry.id}>
-                          <p className="font-semibold text-slate-900">{entry.school || 'School'}</p>
+                          <p className="font-semibold text-black">{entry.school || 'School'}</p>
                           <p>{entry.degree || 'Degree not set'}</p>
-                          <p className="text-slate-500">{entry.graduationDate || 'Date not set'}</p>
+                          <p className="text-black">{entry.graduationDate || 'Date not set'}</p>
                         </div>
                       ))
                     )}
@@ -125,16 +125,16 @@ export const ResumePage = () => {
             case 'certifications':
               return (
                 <section key="certifications" className="mt-8">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Certifications</h3>
-                  <div className="mt-4 space-y-4 text-sm text-slate-700">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black">Certifications</h3>
+                  <div className="mt-4 space-y-4 text-sm text-black">
                     {documentData.certifications.length === 0 ? (
-                      <p className="text-slate-500">No certifications enabled.</p>
+                      <p className="text-black">No certifications enabled.</p>
                     ) : (
                       documentData.certifications.map((entry) => (
                         <div key={entry.id}>
-                          <p className="font-semibold text-slate-900">{entry.name || 'Certification'}</p>
+                          <p className="font-semibold text-black">{entry.name || 'Certification'}</p>
                           <p>{entry.issuer || 'Issuer not set'}</p>
-                          <p className="text-slate-500">{entry.issueDate || 'Issue date not set'}</p>
+                          <p className="text-black">{entry.issueDate || 'Issue date not set'}</p>
                         </div>
                       ))
                     )}
@@ -144,16 +144,16 @@ export const ResumePage = () => {
             case 'references':
               return (
                 <section key="references" className="mt-8">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">References</h3>
-                  <div className="mt-4 space-y-4 text-sm text-slate-700">
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black">References</h3>
+                  <div className="mt-4 space-y-4 text-sm text-black">
                     {documentData.references.length === 0 ? (
-                      <p className="text-slate-500">No references enabled.</p>
+                      <p className="text-black">No references enabled.</p>
                     ) : (
                       documentData.references.map((entry) => (
                         <div key={entry.id}>
-                          <p className="font-semibold text-slate-900">{entry.name || 'Reference'}</p>
+                          <p className="font-semibold text-black">{entry.name || 'Reference'}</p>
                           <p>{[entry.title, entry.company].filter(Boolean).join(' · ')}</p>
-                          <p className="text-slate-500">{entry.email || entry.phone || 'Contact details not set'}</p>
+                          <p className="text-black">{entry.email || entry.phone || 'Contact details not set'}</p>
                         </div>
                       ))
                     )}

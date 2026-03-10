@@ -37,13 +37,13 @@ export const CoverLetterPage = () => {
 
   return (
     <div className="document-preview-shell">
-      <article className="document-page text-sm leading-7 text-slate-700">
+      <article className="document-page text-sm leading-7 text-black">
         <DocumentProfileHeader documentData={documentData} />
 
         <div className="cover-letter-inside-address mt-10">
           <p>{new Date().toLocaleDateString()}</p>
           <div className="mt-4">
-            <p className="font-semibold text-slate-950">{recipient.name}</p>
+            <p className="font-semibold text-black">{recipient.name}</p>
             <p>{recipient.title}</p>
             <p>{recipient.company}</p>
             {recipient.addressLines.map((line) => (
@@ -52,7 +52,7 @@ export const CoverLetterPage = () => {
           </div>
         </div>
 
-        <div className="mt-10 leading-8 text-slate-800">
+        <div className="mt-10 leading-8 text-black">
           <p>Dear {recipient.name === 'Hiring Team' ? 'Hiring Team' : recipient.name},</p>
 
           <div className="mt-6 space-y-5">
@@ -63,7 +63,7 @@ export const CoverLetterPage = () => {
 
           <div className="mt-8">
             <p>Sincerely,</p>
-            <p className="mt-6 font-semibold text-slate-950">{personalDetails.fullName || documentData.profile.name || 'Unnamed candidate'}</p>
+            <p className="mt-6 font-semibold text-black">{personalDetails.fullName || documentData.profile.name || 'Unnamed candidate'}</p>
           </div>
         </div>
       </article>

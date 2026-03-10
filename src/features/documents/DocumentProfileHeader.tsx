@@ -18,15 +18,15 @@ export const DocumentProfileHeader = ({ documentData }: DocumentProfileHeaderPro
     .filter(Boolean)
 
   return (
-    <header className="border-b border-slate-200 pb-6">
+    <header className="border-b border-black pb-6 text-black">
       <div className="flex items-start justify-between gap-8">
-        <h2 className="text-3xl font-semibold tracking-tight text-slate-950">
+        <h2 className="text-3xl font-semibold tracking-tight text-black">
           {documentData.profile.personalDetails.fullName || documentData.profile.name || 'Unnamed candidate'}
         </h2>
         <div className="shrink-0 text-right">
-          {contactLine.length > 0 ? <p className="text-sm text-slate-600">{contactLine.join(' | ')}</p> : null}
+          {contactLine.length > 0 ? <p className="text-sm text-black">{contactLine.join(' | ')}</p> : null}
           {links.length > 0 ? (
-            <div className="mt-2 space-y-1 text-sm text-slate-600">
+            <div className="mt-2 space-y-1 text-sm text-black">
               {links.map((link) => (
                 <p key={link}>{link}</p>
               ))}
