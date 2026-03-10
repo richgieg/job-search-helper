@@ -23,6 +23,7 @@
   --color-app-primary-contrast: var(--app-primary-contrast);
   --color-app-focus-ring: var(--app-focus-ring);
   --color-app-danger: var(--app-danger);
+  --color-app-danger-border: var(--app-danger-border);
   --color-app-danger-hover: var(--app-danger-hover);
   --color-app-danger-soft: var(--app-danger-soft);
   --color-app-danger-muted: var(--app-danger-muted);
@@ -99,6 +100,7 @@
 
   /* Danger and destructive actions */
   --app-danger: var(--color-rose-700);
+  --app-danger-border: var(--color-rose-300);
   --app-danger-hover: var(--color-rose-800);
   --app-danger-soft: var(--color-rose-50);
   --app-danger-muted: var(--color-rose-100);

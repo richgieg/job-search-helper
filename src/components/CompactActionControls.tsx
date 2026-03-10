@@ -5,8 +5,8 @@ export const getActionIconButtonClassName = (tone: ActionButtonTone = 'neutral',
     'inline-flex h-10 w-10 items-center justify-center rounded-xl border focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
     tone === 'danger'
       ? disabled
-        ? 'cursor-not-allowed border-app-danger-muted bg-app-danger-soft text-app-danger-contrast focus-visible:outline-app-danger'
-        : 'border-app-danger-muted text-app-danger hover:bg-app-danger-soft focus-visible:outline-app-danger'
+        ? 'cursor-not-allowed border-app-danger-border bg-app-danger-soft text-app-danger-contrast focus-visible:outline-app-danger'
+        : 'border-app-danger-border text-app-danger hover:bg-app-danger-soft focus-visible:outline-app-danger'
       : tone === 'primary'
         ? disabled
           ? 'cursor-not-allowed border-app-primary-muted bg-app-primary-muted text-app-primary-contrast focus-visible:outline-app-focus-ring'
