@@ -37,7 +37,7 @@ export const ActionToggle = ({ checked, onChange, label, disabled = false, showL
     />
     <span
       aria-hidden="true"
-      className="inline-flex h-7 w-12 shrink-0 items-center justify-start rounded-full border border-app-border bg-app-surface-subtle p-0.5 transition peer-focus-visible:ring-2 peer-focus-visible:ring-app-focus-ring peer-focus-visible:ring-offset-2 peer-checked:justify-end peer-checked:border-app-primary peer-checked:bg-app-primary peer-disabled:cursor-not-allowed peer-disabled:border-app-border-muted peer-disabled:bg-app-surface-subtle/80"
+      className="inline-flex h-7 w-12 shrink-0 items-center justify-start rounded-full border border-app-border bg-app-control-muted p-0.5 transition peer-focus-visible:ring-2 peer-focus-visible:ring-app-focus-ring peer-focus-visible:ring-offset-2 peer-checked:justify-end peer-checked:border-app-primary peer-checked:bg-app-primary peer-disabled:cursor-not-allowed peer-disabled:border-app-border-muted peer-disabled:bg-app-control-disabled"
     >
       <span className="inline-flex h-5.5 w-5.5 rounded-full bg-app-surface shadow-sm transition peer-disabled:bg-app-surface-muted" />
     </span>

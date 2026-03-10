@@ -6,6 +6,8 @@
   --color-app-surface-muted: var(--app-surface-muted);
   --color-app-surface-subtle: var(--app-surface-subtle);
   --color-app-surface-overlay: var(--app-surface-overlay);
+  --color-app-control-muted: var(--app-control-muted);
+  --color-app-control-disabled: var(--app-control-disabled);
   --color-app-border: var(--app-border);
   --color-app-border-muted: var(--app-border-muted);
   --color-app-border-strong: var(--app-border-strong);
@@ -75,6 +77,8 @@
   --app-surface-muted: var(--color-slate-50);
   --app-surface-subtle: var(--color-slate-100);
   --app-surface-overlay: color-mix(in oklab, var(--color-white) 70%, transparent);
+  --app-control-muted: var(--color-slate-200);
+  --app-control-disabled: color-mix(in oklab, var(--color-slate-200) 80%, transparent);
   --app-border: var(--color-slate-300);
   --app-border-muted: var(--color-slate-200);
   --app-border-strong: var(--color-slate-900);
