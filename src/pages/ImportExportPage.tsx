@@ -56,26 +56,26 @@ export const ImportExportPage = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Import / Export</h1>
-        <p className="mt-2 text-sm text-slate-600">Before you step away, export your progress; when you return, import it to restore your workspace.</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-app-heading">Import / Export</h1>
+        <p className="mt-2 text-sm text-app-text-subtle">Before you step away, export your progress; when you return, import it to restore your workspace.</p>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-sm text-slate-500">Current state</p>
-        <p className="mt-2 text-lg font-semibold text-slate-900">{summary}</p>
+      <section className="rounded-2xl border border-app-border-muted bg-app-surface p-6 shadow-sm">
+        <p className="text-sm text-app-text-subtle">Current state</p>
+        <p className="mt-2 text-lg font-semibold text-app-text">{summary}</p>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <button className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700" onClick={handleExport} type="button">
+          <button className="rounded-xl bg-app-text px-3 py-2 text-sm font-medium text-app-primary-contrast hover:bg-app-text-muted" onClick={handleExport} type="button">
             Export JSON
           </button>
-          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted">
             Import JSON
             <input accept="application/json" className="hidden" onChange={handleImport} type="file" />
           </label>
         </div>
 
-        <p className="mt-4 text-xs text-amber-700">Import replaces the current in-memory state. Merge behavior is intentionally not supported in the MVP.</p>
-        {error ? <p className="mt-3 text-sm text-rose-600">Import failed: {error}</p> : null}
+        <p className="mt-4 text-xs text-app-warning">Import replaces the current in-memory state. Merge behavior is intentionally not supported in the MVP.</p>
+        {error ? <p className="mt-3 text-sm text-app-danger">Import failed: {error}</p> : null}
       </section>
     </div>
   )

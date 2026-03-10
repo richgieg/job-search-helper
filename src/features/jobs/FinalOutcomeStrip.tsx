@@ -29,7 +29,7 @@ export const FinalOutcomeStrip = ({
           const checked = option.value === value
           const isFirst = index === 0
           const isLast = index === finalOutcomeOptions.length - 1
-          const selectedClassName = option.value ? getFinalOutcomeSelectedClassName(option.value) : 'border-slate-300 bg-slate-100 text-slate-700'
+          const selectedClassName = option.value ? getFinalOutcomeSelectedClassName(option.value) : 'border-app-border bg-app-surface-subtle text-app-text-muted'
 
           return (
             <label
@@ -53,17 +53,17 @@ export const FinalOutcomeStrip = ({
               />
               <span
                 className={[
-                  'flex w-full items-center justify-center border border-slate-300 px-3 py-2 text-center text-xs font-medium transition sm:text-sm',
-                  'peer-focus-visible:z-10 peer-focus-visible:ring-2 peer-focus-visible:ring-sky-500 peer-focus-visible:ring-offset-2',
+                  'flex w-full items-center justify-center border border-app-border px-3 py-2 text-center text-xs font-medium transition sm:text-sm',
+                  'peer-focus-visible:z-10 peer-focus-visible:ring-2 peer-focus-visible:ring-app-focus-ring peer-focus-visible:ring-offset-2',
                   isFirst ? 'rounded-l-xl' : '',
                   isLast ? 'rounded-r-xl' : '',
                   disabled
                     ? checked
-                      ? 'border-slate-300 bg-slate-200 text-slate-500'
-                      : 'bg-slate-50 text-slate-400'
+                      ? 'border-app-border bg-app-surface-subtle text-app-text-subtle'
+                      : 'bg-app-surface-muted text-app-text-disabled'
                     : checked
                       ? selectedClassName
-                      : 'bg-white text-slate-700 hover:bg-slate-50',
+                      : 'bg-app-surface text-app-text-muted hover:bg-app-surface-muted',
                 ]
                   .filter(Boolean)
                   .join(' ')}

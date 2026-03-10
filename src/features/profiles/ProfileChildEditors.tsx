@@ -27,10 +27,10 @@ const TextField = ({
   hideLabel?: boolean
   disabled?: boolean
 }) => (
-  <label className="flex flex-col gap-2 text-sm text-slate-700">
+  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
     <span className={hideLabel ? 'sr-only' : 'font-medium'}>{label}</span>
     <input
-      className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+      className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring disabled:cursor-not-allowed disabled:bg-app-surface-subtle disabled:text-app-text-subtle"
       disabled={disabled}
       placeholder={placeholder}
       spellCheck={type === 'url' ? false : undefined}
@@ -61,10 +61,10 @@ const TextAreaField = ({
   className?: string
   minHeightClass?: string
 }) => (
-  <label className="flex flex-col gap-2 text-sm text-slate-700">
+  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
     <span className={hideLabel ? 'sr-only' : 'font-medium'}>{label}</span>
     <textarea
-      className={[minHeightClass, 'rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500', className]
+      className={[minHeightClass, 'rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring', className]
         .filter(Boolean)
         .join(' ')}
       placeholder={placeholder}
@@ -88,10 +88,10 @@ const SelectField = <T extends string>({
   onBlur?: () => void
   options: Array<{ value: T; label: string }>
 }) => (
-  <label className="flex flex-col gap-2 text-sm text-slate-700">
+  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
     <span className="font-medium">{label}</span>
     <select
-      className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+      className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
       value={value}
       onBlur={onBlur}
       onChange={(event) => onChange(event.target.value as T)}
@@ -106,7 +106,7 @@ const SelectField = <T extends string>({
 )
 
 const OrderBadge = ({ value }: { value: number }) => (
-  <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-semibold text-slate-600">
+  <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-app-surface-subtle px-2 text-xs font-semibold text-app-text-subtle">
     {value}
   </span>
 )
@@ -120,7 +120,7 @@ const ToggleField = ({
   checked: boolean
   onChange: (checked: boolean) => void
 }) => (
-  <div className="flex flex-col gap-2 text-sm text-slate-700">
+  <div className="flex flex-col gap-2 text-sm text-app-text-muted">
     <p className="font-medium">{label}</p>
     <div>
       <ActionToggle checked={checked} label={label} onChange={onChange} />
@@ -214,7 +214,7 @@ const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
   const hasUrl = trimmedUrl.length > 0
 
   return (
-    <div className="rounded-xl border border-slate-200 p-3">
+    <div className="rounded-xl border border-app-border-muted p-3">
       <div className="grid gap-3 md:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)_auto] md:items-end">
         <TextField label="Link name" onBlur={commitName} value={name} onChange={setName} />
         <TextField label="URL" type="url" onBlur={commitUrl} value={url} onChange={setUrl} />
@@ -382,7 +382,7 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 p-3">
+    <div className="rounded-xl border border-app-border-muted p-3">
       <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
         <div className="flex items-center gap-3">
           <OrderBadge value={skillIndex + 1} />
@@ -512,9 +512,9 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
 
       <div className="mt-4">
         <div className="flex items-center justify-between gap-3">
-          <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Skills</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Skills</h4>
           <button
-            className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted"
             onClick={() => createSkill(category.id)}
             type="button"
           >
@@ -524,7 +524,7 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
 
         <div className="mt-3">
           {skillIds.length === 0 ? (
-            <p className="text-sm text-slate-500">No skills yet.</p>
+            <p className="text-sm text-app-text-subtle">No skills yet.</p>
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-3">
@@ -665,7 +665,7 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
           />
         </div>
         <div className="xl:col-span-3">
-          <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Supervisor</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Supervisor</h4>
           <div className="mt-3 grid gap-4 xl:grid-cols-3">
             <TextField
               label="Supervisor name"
@@ -717,9 +717,9 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
         </div>
         <div className="xl:col-span-3">
           <div className="flex items-center justify-between gap-3">
-            <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Bullets</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Bullets</h4>
             <button
-              className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted"
               onClick={() => createExperienceBullet(entry.id)}
               type="button"
             >
@@ -728,7 +728,7 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
           </div>
           <div className="mt-3 space-y-3">
             {bulletIds.length === 0 ? (
-              <p className="text-sm text-slate-500">No bullets yet.</p>
+              <p className="text-sm text-app-text-subtle">No bullets yet.</p>
             ) : (
               bulletIds.map((bulletId) => <ExperienceBulletRow key={bulletId} bulletId={bulletId} />)
             )}
@@ -951,10 +951,10 @@ const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
       title={draft.name || reference.name || 'Reference'}
     >
       <div className="grid gap-4 xl:grid-cols-3">
-        <label className="flex flex-col gap-2 text-sm text-slate-700">
+        <label className="flex flex-col gap-2 text-sm text-app-text-muted">
           <span className="font-medium">Type</span>
           <select
-            className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+            className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
             onBlur={() => draft.type !== reference.type && updateReference({ referenceId: reference.id, changes: { type: draft.type } })}
             value={draft.type}
             onChange={(event) => setDraft({ ...draft, type: event.target.value as ReferenceType })}

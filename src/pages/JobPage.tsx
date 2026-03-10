@@ -25,10 +25,10 @@ const TextField = ({
   placeholder?: string
   type?: 'text' | 'date'
 }) => (
-  <label className="flex flex-col gap-2 text-sm text-slate-700">
+  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
     <span className="font-medium">{label}</span>
     <input
-      className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+      className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
       placeholder={placeholder}
       type={type}
       value={value}
@@ -49,10 +49,10 @@ const TextAreaField = ({
   onChange: (value: string) => void
   onBlur?: () => void
 }) => (
-  <label className="flex flex-col gap-2 text-sm text-slate-700">
+  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
     <span className="font-medium">{label}</span>
     <textarea
-      className="min-h-24 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+      className="min-h-24 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
       value={value}
       onBlur={onBlur}
       onChange={(event) => onChange(event.target.value)}
@@ -73,10 +73,10 @@ const SelectField = <T extends string>({
   onBlur?: () => void
   options: Array<{ value: T; label: string }>
 }) => (
-  <label className="flex flex-col gap-2 text-sm text-slate-700">
+  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
     <span className="font-medium">{label}</span>
     <select
-      className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+      className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
       value={value}
       onBlur={onBlur}
       onChange={(event) => onChange(event.target.value as T)}
@@ -178,10 +178,10 @@ export const JobPage = () => {
 
   if (!job || !draft) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-950">Job not found</h1>
-        <p className="mt-3 text-sm text-slate-600">The selected job could not be found.</p>
-        <Link className="mt-5 inline-flex rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to="/jobs">
+      <div className="rounded-2xl border border-app-border-muted bg-app-surface p-8 shadow-sm">
+        <h1 className="text-2xl font-semibold text-app-heading">Job not found</h1>
+        <p className="mt-3 text-sm text-app-text-subtle">The selected job could not be found.</p>
+        <Link className="mt-5 inline-flex rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to="/jobs">
           Back to jobs
         </Link>
       </div>
@@ -299,16 +299,16 @@ export const JobPage = () => {
     <div className="space-y-8">
       <div className="flex flex-col gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Job editor</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{job.jobTitle || 'Untitled role'}</h1>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-app-primary">Job editor</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-app-heading">{job.jobTitle || 'Untitled role'}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-app-text-subtle">
             <span>{job.companyName || 'Unknown company'}</span>
             <span className={['rounded-full px-3 py-1 text-xs font-medium', getJobComputedStatusBadgeClassName(computedStatus)].join(' ')}>{formatJobComputedStatus(computedStatus)}</span>
           </div>
         </div>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-9 shadow-sm">
+      <section className="rounded-2xl border border-app-border-muted bg-app-surface p-9 shadow-sm">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
           <div className="flex justify-start lg:shrink-0">
             <ActionToggle checked={job.appliedAt !== null} label="Applied" showLabel onChange={handleAppliedToggle} />
@@ -351,11 +351,11 @@ export const JobPage = () => {
         description="Create job-specific profiles from base profiles and manage the profiles already attached to this job."
         headerActionContent={
           baseProfiles.length === 0 ? (
-            <p className="text-sm text-slate-500">Create a base profile first.</p>
+            <p className="text-sm text-app-text-subtle">Create a base profile first.</p>
           ) : (
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <select
-                className="min-w-0 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500 sm:w-64"
+                className="min-w-0 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring sm:w-64"
                 value={selectedBaseProfileId}
                 onChange={(event) => setSelectedBaseProfileId(event.target.value)}
               >
@@ -374,10 +374,10 @@ export const JobPage = () => {
         {hasAttachedProfiles ? (
           <div className="space-y-3">
             {attachedProfiles.map((profile) => (
-                <div key={profile.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <div key={profile.id} className="flex flex-col gap-3 rounded-xl border border-app-border-muted px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="font-medium text-slate-900">{profile.name}</p>
-                    <p className="mt-1 text-sm text-slate-500">Updated {new Date(profile.updatedAt).toLocaleString()}</p>
+                    <p className="font-medium text-app-text">{profile.name}</p>
+                    <p className="mt-1 text-sm text-app-text-subtle">Updated {new Date(profile.updatedAt).toLocaleString()}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Link aria-label={`Open profile ${profile.name}`} className={getActionIconButtonClassName()} to={`/profiles/${profile.id}`}>

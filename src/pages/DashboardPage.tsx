@@ -3,9 +3,9 @@ import { useMemo } from 'react'
 import { useAppStore } from '../store/app-store'
 
 const StatCard = ({ label, value }: { label: string; value: number }) => (
-  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-    <p className="text-sm font-medium text-slate-500">{label}</p>
-    <p className="mt-2 text-3xl font-semibold text-slate-900">{value}</p>
+  <div className="rounded-2xl border border-app-border-muted bg-app-surface p-5 shadow-sm">
+    <p className="text-sm font-medium text-app-text-subtle">{label}</p>
+    <p className="mt-2 text-3xl font-semibold text-app-text">{value}</p>
   </div>
 )
 
@@ -28,8 +28,8 @@ export const DashboardPage = () => {
   return (
     <div className="space-y-8">
       <section>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Dashboard</h1>
-        <p className="mt-2 max-w-3xl text-sm text-slate-600">See your job search at a glance and stay on top of next steps.</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-app-heading">Dashboard</h1>
+        <p className="mt-2 max-w-3xl text-sm text-app-text-subtle">See your job search at a glance and stay on top of next steps.</p>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -39,9 +39,9 @@ export const DashboardPage = () => {
         <StatCard label="Interviews" value={stats.interviewCount} />
       </section>
 
-      <section className="rounded-2xl border border-dashed border-slate-300 bg-white/70 p-6">
-        <h2 className="text-lg font-semibold text-slate-900">How to use this dashboard</h2>
-        <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-slate-600">
+      <section className="rounded-2xl border border-dashed border-app-border bg-app-surface-overlay p-6">
+        <h2 className="text-lg font-semibold text-app-text">How to use this dashboard</h2>
+        <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-app-text-subtle">
           <li>Create or update reusable base profiles.</li>
           <li>Add jobs and attach tailored job profiles.</li>
           <li>Track contacts, application questions, interviews, and outcomes.</li>

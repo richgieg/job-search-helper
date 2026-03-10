@@ -230,7 +230,7 @@ export const ProfilePage = () => {
           </div>
 
           <div className="xl:col-span-2">
-            <label className="flex flex-col gap-2 text-sm text-slate-700">
+            <label className="flex flex-col gap-2 text-sm text-app-text-muted">
               <span className="font-medium">Professional summary</span>
               <textarea
                 className="min-h-28 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"

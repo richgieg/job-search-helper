@@ -8,32 +8,32 @@ const jobStatusColorClasses: Record<
   }
 > = {
   interested: {
-    badge: 'bg-sky-50 text-sky-700',
-    stripSelected: 'border-sky-300 bg-sky-100 text-sky-800',
+    badge: 'bg-app-status-interested-soft text-app-status-interested',
+    stripSelected: 'border-app-status-interested-muted bg-app-status-interested-muted text-app-status-interested-contrast',
   },
   applied: {
-    badge: 'bg-indigo-50 text-indigo-700',
-    stripSelected: 'border-indigo-300 bg-indigo-100 text-indigo-800',
+    badge: 'bg-app-status-applied-soft text-app-status-applied',
+    stripSelected: 'border-app-status-applied-muted bg-app-status-applied-muted text-app-status-applied-contrast',
   },
   interview: {
-    badge: 'bg-violet-50 text-violet-700',
-    stripSelected: 'border-violet-300 bg-violet-100 text-violet-800',
+    badge: 'bg-app-status-interview-soft text-app-status-interview',
+    stripSelected: 'border-app-status-interview-muted bg-app-status-interview-muted text-app-status-interview-contrast',
   },
   withdrew: {
-    badge: 'bg-amber-50 text-amber-800',
-    stripSelected: 'border-amber-300 bg-amber-100 text-amber-900',
+    badge: 'bg-app-status-withdrew-soft text-app-status-withdrew',
+    stripSelected: 'border-app-status-withdrew-muted bg-app-status-withdrew-muted text-app-status-withdrew-contrast',
   },
   rejected: {
-    badge: 'bg-rose-50 text-rose-700',
-    stripSelected: 'border-rose-300 bg-rose-100 text-rose-800',
+    badge: 'bg-app-status-rejected-soft text-app-status-rejected',
+    stripSelected: 'border-app-status-rejected-muted bg-app-status-rejected-muted text-app-status-rejected-contrast',
   },
   offer_received: {
-    badge: 'bg-emerald-50 text-emerald-700',
-    stripSelected: 'border-emerald-300 bg-emerald-100 text-emerald-800',
+    badge: 'bg-app-status-offer-soft text-app-status-offer',
+    stripSelected: 'border-app-status-offer-muted bg-app-status-offer-muted text-app-status-offer-contrast',
   },
   offer_accepted: {
-    badge: 'bg-teal-50 text-teal-700',
-    stripSelected: 'border-teal-300 bg-teal-100 text-teal-800',
+    badge: 'bg-app-status-accepted-soft text-app-status-accepted',
+    stripSelected: 'border-app-status-accepted-muted bg-app-status-accepted-muted text-app-status-accepted-contrast',
   },
 }
 

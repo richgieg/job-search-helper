@@ -53,10 +53,10 @@ const TextField = ({
   placeholder?: string
   type?: 'text' | 'email' | 'tel' | 'url' | 'date' | 'datetime-local'
 }) => (
-  <label className="flex flex-col gap-2 text-sm text-slate-700">
+  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
     {label ? <span className="font-medium">{label}</span> : null}
     <input
-      className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+      className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
       placeholder={placeholder}
       spellCheck={type === 'url' ? false : undefined}
       type={type}
@@ -78,10 +78,10 @@ const TextAreaField = ({
   onChange: (value: string) => void
   onBlur?: () => void
 }) => (
-  <label className="flex flex-col gap-2 text-sm text-slate-700">
+  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
     <span className="font-medium">{label}</span>
     <textarea
-      className="min-h-24 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+      className="min-h-24 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
       value={value}
       onBlur={onBlur}
       onChange={(event) => onChange(event.target.value)}
@@ -102,10 +102,10 @@ const SelectField = <T extends string>({
   onBlur?: () => void
   options: Array<{ value: T; label: string }>
 }) => (
-  <label className="flex flex-col gap-2 text-sm text-slate-700">
+  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
     <span className="font-medium">{label}</span>
     <select
-      className="rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-sky-500"
+      className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
       value={value}
       onBlur={onBlur}
       onChange={(event) => onChange(event.target.value as T)}
@@ -218,7 +218,7 @@ const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
   const hasUrl = trimmedUrl.length > 0
 
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
+    <div className="rounded-xl border border-app-border-muted p-4">
       <div className="flex items-end gap-4">
         <div className="min-w-0 flex-1">
           <TextField placeholder="https://example.com/job" type="url" value={draft.url} onBlur={() => draft.url !== link.url && commitLinkChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
@@ -463,7 +463,7 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 p-4">
+        <div className="rounded-xl border border-app-border-muted p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0 flex-1">
               <SelectField
@@ -495,10 +495,10 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
           {associatedContacts.length > 0 ? (
             <div className="mt-4 space-y-3">
               {associatedContacts.map(({ association, contact }, index) => (
-                <div key={association.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-3">
+                <div key={association.id} className="flex items-center justify-between gap-3 rounded-xl border border-app-border-muted px-3 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-900">{contact.name || 'Unnamed contact'}</p>
-                    <p className="truncate text-xs text-slate-500">{summarizeParts([formatRelationshipType(contact.relationshipType), contact.title, contact.company]) || 'No details yet'}</p>
+                    <p className="truncate text-sm font-medium text-app-text">{contact.name || 'Unnamed contact'}</p>
+                    <p className="truncate text-xs text-app-text-subtle">{summarizeParts([formatRelationshipType(contact.relationshipType), contact.title, contact.company]) || 'No details yet'}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <ReorderButtons
@@ -523,7 +523,7 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
               ))}
             </div>
           ) : (
-            <p className="mt-4 text-sm text-slate-500">No contacts associated with this interview yet.</p>
+            <p className="mt-4 text-sm text-app-text-subtle">No contacts associated with this interview yet.</p>
           )}
         </div>
       </div>
