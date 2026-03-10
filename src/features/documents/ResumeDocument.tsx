@@ -47,7 +47,7 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
             return summaryParagraphs.length > 0 ? (
               <section key="summary" className={index === 0 ? '' : 'mt-5'}>
                 <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Summary</h3>
-                <div className="mt-3 space-y-[0.625rem] text-sm leading-[1.125rem] text-black">
+                <div className="mt-3 space-y-2.5 text-sm leading-4.5 text-black">
                   {summaryParagraphs.map((paragraph, paragraphIndex) => (
                     <p key={`${documentData.profile.id}-summary-${paragraphIndex}`} className={paragraphIndex === 0 ? 'print-keep-together' : undefined}>
                       {paragraph}
@@ -63,7 +63,7 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
                 <div className="mt-4 space-y-2">
                   {documentData.skillCategories.map((item) => (
                     <div key={item.category.id} className="print-keep-together">
-                      <p className="text-sm leading-[1.125rem] text-black">
+                      <p className="text-sm leading-4.5 text-black">
                         <span className="font-semibold">{item.category.name || 'General'}:</span>{' '}
                         {item.skills.length > 0
                           ? item.skills.map((skill, skillIndex) => (
@@ -105,13 +105,13 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
                             <p className="resume-experience-date text-sm text-black">{formatDateRange(entry.entry.startDate, entry.entry.endDate, entry.entry.isCurrent)}</p>
                           </div>
                           {firstBullet ? (
-                            <ul className="mt-3 list-disc pl-10 text-sm leading-[1.125rem] text-black">
+                            <ul className="mt-3 list-disc pl-10 text-sm leading-4.5 text-black">
                               <li>{firstBullet.content}</li>
                             </ul>
                           ) : null}
                         </div>
                         {remainingBullets.length > 0 ? (
-                          <ul className="mt-2 list-disc space-y-2 pl-10 text-sm leading-[1.125rem] text-black">
+                          <ul className="mt-2 list-disc space-y-2 pl-10 text-sm leading-4.5 text-black">
                             {remainingBullets.map((bullet) => (
                               <li key={bullet.id}>{bullet.content}</li>
                             ))}
@@ -148,7 +148,7 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
             return (
               <section key="certifications" className={sectionClassName}>
                 <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Certifications</h3>
-                <div className="mt-4 text-sm leading-[1.125rem] text-black">
+                <div className="mt-4 text-sm leading-4.5 text-black">
                   {documentData.certifications.length === 0 ? (
                     <p className="text-black">No certifications enabled.</p>
                   ) : (

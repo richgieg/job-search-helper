@@ -39,7 +39,7 @@ export const CoverLetterDocument = ({ documentData }: { documentData: ProfileDoc
         </div>
       </div>
 
-      <div className="mt-6 leading-[1.125rem] text-black">
+      <div className="mt-6 leading-4.5 text-black">
         <p>Dear {recipient.name === 'Hiring Team' ? 'Hiring Team' : recipient.name},</p>
 
         <div className="mt-6 space-y-5">

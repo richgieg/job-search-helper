@@ -35,7 +35,7 @@ export const CoverLetterPage = () => {
 
   return (
     <div className="document-preview-shell">
-      <article className="document-page text-sm leading-[1.125rem] text-black">
+      <article className="document-page text-sm leading-4.5 text-black">
         <CoverLetterDocument documentData={documentData} />
       </article>
     </div>
