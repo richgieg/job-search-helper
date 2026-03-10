@@ -4,7 +4,8 @@ import { ActionToggle, DeleteIconButton, getActionIconButtonClassName } from '..
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
-import type { EmploymentType, ExperienceEntry, ReferenceType, WorkArrangement } from '../../types/state'
+import type { ExperienceEntry, ReferenceType } from '../../types/state'
+import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 import { moveOrderedItem } from '../../utils/reorder'
 
 const TextField = ({
@@ -103,22 +104,6 @@ const SelectField = <T extends string>({
     </select>
   </label>
 )
-
-const workArrangementOptions: Array<{ value: WorkArrangement; label: string }> = [
-  { value: 'unknown', label: 'Unknown' },
-  { value: 'onsite', label: 'On-site' },
-  { value: 'hybrid', label: 'Hybrid' },
-  { value: 'remote', label: 'Remote' },
-]
-
-const employmentTypeOptions: Array<{ value: EmploymentType; label: string }> = [
-  { value: 'full_time', label: 'Full-time' },
-  { value: 'part_time', label: 'Part-time' },
-  { value: 'contract', label: 'Contract' },
-  { value: 'internship', label: 'Internship' },
-  { value: 'temporary', label: 'Temporary' },
-  { value: 'other', label: 'Other' },
-]
 
 const OrderBadge = ({ value }: { value: number }) => (
   <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-semibold text-slate-600">

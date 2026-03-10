@@ -8,6 +8,7 @@ import { JobChildEditors } from '../features/jobs/JobChildEditors'
 import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadgeClassName } from '../features/jobs/job-status'
 import { useAppStore } from '../store/app-store'
 import type { EmploymentType, Job, WorkArrangement } from '../types/state'
+import { employmentTypeOptions, workArrangementOptions } from '../utils/job-field-options'
 
 const TextField = ({
   label,
@@ -116,22 +117,6 @@ const createJobDraft = (job: Job): JobDraftState => ({
   datePosted: job.datePosted ?? '',
   notes: job.notes,
 })
-
-const workArrangementOptions: Array<{ value: WorkArrangement; label: string }> = [
-  { value: 'unknown', label: 'Unknown' },
-  { value: 'onsite', label: 'On-site' },
-  { value: 'hybrid', label: 'Hybrid' },
-  { value: 'remote', label: 'Remote' },
-]
-
-const employmentTypeOptions: Array<{ value: EmploymentType; label: string }> = [
-  { value: 'other', label: 'Other' },
-  { value: 'full_time', label: 'Full-time' },
-  { value: 'part_time', label: 'Part-time' },
-  { value: 'contract', label: 'Contract' },
-  { value: 'internship', label: 'Internship' },
-  { value: 'temporary', label: 'Temporary' },
-]
 
 export const JobPage = () => {
   const { jobId = '' } = useParams()
