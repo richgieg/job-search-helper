@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { AppShell } from '../app/layout/AppLayout'
@@ -6,6 +6,16 @@ import { DocumentProfileHeader } from '../features/documents/DocumentProfileHead
 import { DocumentNotFound } from '../features/documents/DocumentNotFound'
 import { buildCoverLetterParagraphs, formatAddressLines, selectProfileDocumentData } from '../features/documents/document-data'
 import { useAppStore } from '../store/app-store'
+
+const createCoverLetterDocumentTitle = (fullName: string, profileName: string) => {
+  const baseName = (fullName || profileName).trim()
+
+  if (!baseName) {
+    return 'Cover_Letter'
+  }
+
+  return `${baseName.replace(/\s+/g, '_')}_Cover_Letter`
+}
 
 export const CoverLetterPage = () => {
   const { profileId = '' } = useParams()
@@ -22,6 +32,16 @@ export const CoverLetterPage = () => {
   }
 
   const personalDetails = documentData.profile.personalDetails
+
+  useEffect(() => {
+    const previousTitle = document.title
+    document.title = createCoverLetterDocumentTitle(personalDetails.fullName, documentData.profile.name)
+
+    return () => {
+      document.title = previousTitle
+    }
+  }, [documentData.profile.name, personalDetails.fullName])
+
   const recipient = {
     name: documentData.primaryContact.name || 'Hiring Team',
     title: documentData.primaryContact.title,
