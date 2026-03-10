@@ -31,3 +31,13 @@ export const createCoverLetterResumeDocumentTitle = (fullName: string, profileNa
 
   return `${sanitizeDocumentTitleName(baseName)}_Cover_Letter_and_Resume`
 }
+
+export const createReferencesDocumentTitle = (fullName: string, profileName: string) => {
+  const baseName = createDocumentTitleBaseName(fullName, profileName)
+
+  if (!baseName) {
+    return 'References'
+  }
+
+  return `${sanitizeDocumentTitleName(baseName)}_References`
+}

@@ -10,6 +10,7 @@ import { JobPage } from '../pages/JobPage'
 import { JobsPage } from '../pages/JobsPage'
 import { ProfilePage } from '../pages/ProfilePage'
 import { ProfilesPage } from '../pages/ProfilesPage'
+import { ReferencesPage } from '../pages/ReferencesPage'
 import { ResumePage } from '../pages/ResumePage'
 
 export const AppRoutes = () => {
@@ -17,6 +18,7 @@ export const AppRoutes = () => {
     <Routes>
       <Route path="/profiles/:profileId/cover-letter" element={<CoverLetterPage />} />
       <Route path="/profiles/:profileId/combined" element={<CoverLetterResumePage />} />
+      <Route path="/profiles/:profileId/references" element={<ReferencesPage />} />
       <Route path="/profiles/:profileId/resume" element={<ResumePage />} />
 
       <Route element={<AppLayout />}>
