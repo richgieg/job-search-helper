@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { ActionToggle, DeleteIconButton } from '../../components/CompactActionControls'
+import { ActionToggle, DeleteIconButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
@@ -225,9 +225,12 @@ const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
     })
   }
 
+  const trimmedUrl = url.trim()
+  const hasUrl = trimmedUrl.length > 0
+
   return (
     <div className="rounded-xl border border-slate-200 p-3">
-      <div className="grid gap-3 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto] md:items-end">
+      <div className="grid gap-3 md:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)_auto] md:items-end">
         <TextField label="Link name" onBlur={commitName} value={name} onChange={setName} />
         <TextField label="URL" type="url" onBlur={commitUrl} value={url} onChange={setUrl} />
         <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
@@ -235,6 +238,27 @@ const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
             setEnabled(value)
             updateProfileLink({ profileLinkId: profileLink.id, changes: { enabled: value } })
           }} />
+          {hasUrl ? (
+            <a
+              aria-label="Open link in new tab"
+              className={getActionIconButtonClassName()}
+              href={trimmedUrl}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
+                <path d="M7 17 17 7" />
+                <path d="M9 7h8v8" />
+              </svg>
+            </a>
+          ) : (
+            <button aria-label="Open link in new tab" className={getActionIconButtonClassName('neutral', true)} disabled type="button">
+              <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
+                <path d="M7 17 17 7" />
+                <path d="M9 7h8v8" />
+              </svg>
+            </button>
+          )}
           <ReorderButtons
             canMoveDown={profileLinkIds.length > 1}
             canMoveUp={profileLinkIds.length > 1}
