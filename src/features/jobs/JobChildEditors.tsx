@@ -365,46 +365,32 @@ const JobFinalOutcomePanel = ({ jobId }: { jobId: string }) => {
   const setJobFinalOutcome = useAppStore((state) => state.actions.setJobFinalOutcome)
   const clearJobFinalOutcome = useAppStore((state) => state.actions.clearJobFinalOutcome)
   const [finalOutcomeStatusDraft, setFinalOutcomeStatusDraft] = useState<FinalOutcomeDraftStatus>('')
-  const [finalOutcomeSetAtDraft, setFinalOutcomeSetAtDraft] = useState('')
 
   useEffect(() => {
     if (!job) {
       setFinalOutcomeStatusDraft('')
-      setFinalOutcomeSetAtDraft('')
       return
     }
 
     setFinalOutcomeStatusDraft(job.finalOutcome?.status ?? '')
-    setFinalOutcomeSetAtDraft(toDateTimeLocal(job.finalOutcome?.setAt ?? null))
   }, [job])
 
   if (!job) {
     return null
   }
 
-  const commitFinalOutcome = () => {
-    if (!finalOutcomeStatusDraft) {
-      if (job.finalOutcome) {
-        clearJobFinalOutcome(job.id)
-      }
-      return
-    }
+  const handleFinalOutcomeChange = (value: FinalOutcomeDraftStatus) => {
+    setFinalOutcomeStatusDraft(value)
 
-    const nextSetAt = fromDateTimeLocal(finalOutcomeSetAtDraft)
-
-    if (!nextSetAt) {
-      setFinalOutcomeSetAtDraft(toDateTimeLocal(job.finalOutcome?.setAt ?? new Date().toISOString()))
-      return
-    }
-
-    if (job.finalOutcome?.status === finalOutcomeStatusDraft && job.finalOutcome?.setAt === nextSetAt) {
+    if (!value) {
+      clearJobFinalOutcome(job.id)
       return
     }
 
     setJobFinalOutcome({
       jobId: job.id,
-      status: finalOutcomeStatusDraft,
-      setAt: nextSetAt,
+      status: value,
+      setAt: new Date().toISOString(),
     })
   }
 
@@ -423,15 +409,8 @@ const JobFinalOutcomePanel = ({ jobId }: { jobId: string }) => {
             { value: 'offer_accepted', label: 'Offer accepted' },
           ]}
           value={finalOutcomeStatusDraft}
-          onBlur={commitFinalOutcome}
-          onChange={setFinalOutcomeStatusDraft}
+          onChange={handleFinalOutcomeChange}
         />
-        <div className="flex items-end gap-2">
-          <TextField label="Outcome set at" type="datetime-local" value={finalOutcomeSetAtDraft} onBlur={commitFinalOutcome} onChange={setFinalOutcomeSetAtDraft} />
-          <button className="mb-[1px] rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" onClick={() => { setFinalOutcomeStatusDraft(''); setFinalOutcomeSetAtDraft(''); clearJobFinalOutcome(job.id) }} type="button">
-            Clear outcome
-          </button>
-        </div>
       </div>
     </CollapsiblePanel>
   )
