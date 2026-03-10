@@ -120,21 +120,6 @@ const employmentTypeOptions: Array<{ value: EmploymentType; label: string }> = [
   { value: 'other', label: 'Other' },
 ]
 
-const ToggleField = ({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) => (
-  <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-    <input checked={checked} className="h-4 w-4 rounded border-slate-300" onChange={(event) => onChange(event.target.checked)} type="checkbox" />
-    {label}
-  </label>
-)
-
 const OrderBadge = ({ value }: { value: number }) => (
   <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-semibold text-slate-600">
     {value}
@@ -624,9 +609,10 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
           value={draft.endDate ?? ''}
           onChange={(value) => setDraft({ ...draft, endDate: value || null })}
         />
-        <ToggleField
+        <ActionToggle
           checked={draft.isCurrent}
           label="Current role"
+          showLabel
           onChange={(value) => {
             setDraft({
               ...draft,

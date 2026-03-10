@@ -21,25 +21,25 @@ interface ActionToggleProps {
   onChange: (checked: boolean) => void
   label: string
   disabled?: boolean
+  showLabel?: boolean
 }
 
-export const ActionToggle = ({ checked, onChange, label, disabled = false }: ActionToggleProps) => (
-  <label className={['relative inline-flex', disabled ? 'cursor-not-allowed' : 'cursor-pointer'].join(' ')}>
-    <span className="sr-only">{label}</span>
+export const ActionToggle = ({ checked, onChange, label, disabled = false, showLabel = false }: ActionToggleProps) => (
+  <label className={['inline-flex items-center gap-3', disabled ? 'cursor-not-allowed' : 'cursor-pointer'].join(' ')}>
+    <span className={showLabel ? 'text-sm font-medium text-slate-700' : 'sr-only'}>{label}</span>
     <input
       checked={checked}
       className="peer sr-only"
       disabled={disabled}
       onChange={(event) => onChange(event.target.checked)}
+      role="switch"
       type="checkbox"
     />
     <span
       aria-hidden="true"
-      className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-400 transition hover:bg-slate-50 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-sky-500 peer-checked:border-sky-500 peer-checked:bg-sky-50 peer-checked:text-sky-700 peer-disabled:cursor-not-allowed peer-disabled:border-slate-200 peer-disabled:bg-slate-100 peer-disabled:text-slate-300"
+      className="inline-flex h-7 w-12 shrink-0 items-center justify-start rounded-full border border-slate-300 bg-slate-200 p-0.5 transition peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-sky-500 peer-checked:justify-end peer-checked:border-sky-600 peer-checked:bg-sky-600 peer-disabled:cursor-not-allowed peer-disabled:border-slate-200 peer-disabled:bg-slate-200/80"
     >
-      <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
-        <path d="M5 12.5 9.5 17 19 7" />
-      </svg>
+      <span className="inline-flex h-5.5 w-5.5 rounded-full bg-white shadow-sm transition peer-disabled:bg-slate-50" />
     </span>
   </label>
 )
