@@ -4,7 +4,7 @@ import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { AddIconButton, DeleteIconButton } from '../../components/CompactActionControls'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
-import type { ContactRelationshipType, FinalOutcomeStatus } from '../../types/state'
+import type { ContactRelationshipType } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(' • ')
@@ -35,21 +35,6 @@ const formatRelationshipType = (relationshipType: ContactRelationshipType) => {
       return 'Interviewer'
     default:
       return 'Other'
-  }
-}
-
-const formatFinalOutcomeStatus = (status: FinalOutcomeStatus) => {
-  switch (status) {
-    case 'offer_received':
-      return 'Offer received'
-    case 'offer_accepted':
-      return 'Offer accepted'
-    case 'rejected':
-      return 'Rejected'
-    case 'withdrew':
-      return 'Withdrew'
-    default:
-      return status
   }
 }
 
@@ -132,64 +117,6 @@ const SelectField = <T extends string>({
       ))}
     </select>
   </label>
-)
-
-const SegmentedRadioStrip = <T extends string>({
-  name,
-  value,
-  options,
-  onChange,
-}: {
-  name: string
-  value: T
-  options: Array<{ value: T; label: string }>
-  onChange: (value: T) => void
-}) => (
-  <fieldset>
-    <div className="mx-auto flex w-full max-w-4xl justify-center">
-      <div className="flex w-full items-stretch justify-center gap-0">
-        {options.map((option, index) => {
-          const checked = option.value === value
-          const isFirst = index === 0
-          const isLast = index === options.length - 1
-
-          return (
-            <label
-              key={option.value}
-              className={[
-                'relative flex min-w-0 flex-1 cursor-pointer',
-                !isFirst ? '-ml-px' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              <input
-                checked={checked}
-                className="peer sr-only"
-                name={name}
-                type="radio"
-                value={option.value}
-                onChange={() => onChange(option.value)}
-              />
-              <span
-                className={[
-                  'flex w-full items-center justify-center border border-slate-300 px-3 py-2 text-center text-xs font-medium transition sm:text-sm',
-                  'peer-focus-visible:z-10 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-sky-500',
-                  isFirst ? 'rounded-l-xl' : '',
-                  isLast ? 'rounded-r-xl' : '',
-                  checked ? 'border-sky-600 bg-sky-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-              >
-                {option.label}
-              </span>
-            </label>
-          )
-        })}
-      </div>
-    </div>
-  </fieldset>
 )
 
 const toDateTimeLocal = (value: string | null) => {
@@ -411,64 +338,6 @@ const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
         <div className="xl:col-span-3">
           <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== contact.notes && commitContactChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
         </div>
-      </div>
-    </CollapsiblePanel>
-  )
-}
-
-type FinalOutcomeDraftStatus = '' | FinalOutcomeStatus
-
-const JobFinalOutcomePanel = ({ jobId }: { jobId: string }) => {
-  const job = useAppStore((state) => state.data.jobs[jobId])
-  const setJobFinalOutcome = useAppStore((state) => state.actions.setJobFinalOutcome)
-  const clearJobFinalOutcome = useAppStore((state) => state.actions.clearJobFinalOutcome)
-  const [finalOutcomeStatusDraft, setFinalOutcomeStatusDraft] = useState<FinalOutcomeDraftStatus>('')
-
-  useEffect(() => {
-    if (!job) {
-      setFinalOutcomeStatusDraft('')
-      return
-    }
-
-    setFinalOutcomeStatusDraft(job.finalOutcome?.status ?? '')
-  }, [job])
-
-  if (!job) {
-    return null
-  }
-
-  const handleFinalOutcomeChange = (value: FinalOutcomeDraftStatus) => {
-    setFinalOutcomeStatusDraft(value)
-
-    if (!value) {
-      clearJobFinalOutcome(job.id)
-      return
-    }
-
-    setJobFinalOutcome({
-      jobId: job.id,
-      status: value,
-      setAt: new Date().toISOString(),
-    })
-  }
-
-  const summary = job.finalOutcome ? `${formatFinalOutcomeStatus(job.finalOutcome.status)} ${toDateTimeLocal(job.finalOutcome.setAt).replace('T', ' ')}` : 'No final outcome'
-
-  return (
-    <CollapsiblePanel description={summary} title="Final outcome">
-      <div className="space-y-4">
-        <SegmentedRadioStrip
-          name={`job-${job.id}-final-outcome`}
-          options={[
-            { value: '', label: 'None' },
-            { value: 'withdrew', label: 'Withdrew' },
-            { value: 'rejected', label: 'Rejected' },
-            { value: 'offer_received', label: 'Offer received' },
-            { value: 'offer_accepted', label: 'Offer accepted' },
-          ]}
-          value={finalOutcomeStatusDraft}
-          onChange={handleFinalOutcomeChange}
-        />
       </div>
     </CollapsiblePanel>
   )
@@ -801,8 +670,6 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
       <CollapsiblePanel actionLabel="Add interview" actionStyle="icon" collapsible={hasInterviews} description="Track interviews in chronological order." onAction={() => createInterview(jobId)} title="Interviews">
         {hasInterviews ? <div className="space-y-4">{interviewIds.map((id) => <InterviewCard key={id} interviewId={id} />)}</div> : null}
       </CollapsiblePanel>
-
-      <JobFinalOutcomePanel jobId={jobId} />
     </>
   )
 }

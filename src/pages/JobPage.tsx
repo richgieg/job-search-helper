@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { ActionToggle, AddIconButton, DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../components/CompactActionControls'
+import { FinalOutcomeStrip, type FinalOutcomeDraftStatus } from '../features/jobs/FinalOutcomeStrip'
 import { CollapsiblePanel } from '../components/CollapsiblePanel'
 import { JobChildEditors } from '../features/jobs/JobChildEditors'
 import { formatJobComputedStatus, getJobComputedStatus } from '../features/jobs/job-status'
@@ -139,6 +140,8 @@ export const JobPage = () => {
   const interviewsById = useAppStore((state) => state.data.interviews)
   const setJobAppliedAt = useAppStore((state) => state.actions.setJobAppliedAt)
   const clearJobAppliedAt = useAppStore((state) => state.actions.clearJobAppliedAt)
+  const setJobFinalOutcome = useAppStore((state) => state.actions.setJobFinalOutcome)
+  const clearJobFinalOutcome = useAppStore((state) => state.actions.clearJobFinalOutcome)
   const updateJob = useAppStore((state) => state.actions.updateJob)
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
   const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
@@ -294,9 +297,22 @@ export const JobPage = () => {
     clearJobAppliedAt(job.id)
   }
 
+  const handleFinalOutcomeChange = (value: FinalOutcomeDraftStatus) => {
+    if (!value) {
+      clearJobFinalOutcome(job.id)
+      return
+    }
+
+    setJobFinalOutcome({
+      jobId: job.id,
+      status: value,
+      setAt: new Date().toISOString(),
+    })
+  }
+
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-600">Job editor</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{job.jobTitle || 'Untitled role'}</h1>
@@ -305,11 +321,18 @@ export const JobPage = () => {
             <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">{formatJobComputedStatus(computedStatus)}</span>
           </div>
         </div>
-
-        <div className="flex justify-end lg:self-end">
-          <ActionToggle checked={job.appliedAt !== null} label="Applied" showLabel onChange={handleAppliedToggle} />
-        </div>
       </div>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+          <div className="flex justify-start lg:shrink-0">
+            <ActionToggle checked={job.appliedAt !== null} label="Applied" showLabel onChange={handleAppliedToggle} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <FinalOutcomeStrip name={`job-${job.id}-final-outcome`} value={job.finalOutcome?.status ?? ''} onChange={handleFinalOutcomeChange} />
+          </div>
+        </div>
+      </section>
 
       <CollapsiblePanel description="Capture the core job details used across the app." title="Job details">
         <div className="grid gap-4 xl:grid-cols-2">
