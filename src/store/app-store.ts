@@ -2129,7 +2129,6 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         id: createId(),
         jobId,
         startAt: null,
-        endAt: null,
         notes: '',
       }
 
@@ -2153,13 +2152,6 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const existing = get().data.interviews[interviewId]
 
       if (!existing) {
-        return
-      }
-
-      const nextStartAt = changes.startAt === undefined ? existing.startAt : changes.startAt
-      const nextEndAt = changes.endAt === undefined ? existing.endAt : changes.endAt
-
-      if (nextStartAt && nextEndAt && nextEndAt < nextStartAt) {
         return
       }
 

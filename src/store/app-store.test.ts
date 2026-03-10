@@ -397,14 +397,12 @@ describe('app store reorder actions', () => {
 
     expect(useAppStore.getState().data.interviews[interviewId]).toMatchObject({
       startAt: null,
-      endAt: null,
     })
 
     actions.updateInterview({
       interviewId,
       changes: {
         startAt: '2026-03-12T15:00:00.000Z',
-        endAt: '2026-03-12T16:00:00.000Z',
         notes: 'Team screen',
       },
     })
@@ -442,7 +440,7 @@ describe('app store reorder actions', () => {
     ])
   })
 
-  it('allows an interview to remain unscheduled while still storing an optional end time', () => {
+  it('allows an interview to remain unscheduled', () => {
     const { actions } = useAppStore.getState()
 
     const jobId = actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
@@ -451,14 +449,12 @@ describe('app store reorder actions', () => {
     actions.updateInterview({
       interviewId,
       changes: {
-        endAt: '2026-03-12T16:00:00.000Z',
         notes: 'Awaiting scheduling confirmation',
       },
     })
 
     expect(useAppStore.getState().data.interviews[interviewId]).toMatchObject({
       startAt: null,
-      endAt: '2026-03-12T16:00:00.000Z',
       notes: 'Awaiting scheduling confirmation',
     })
   })

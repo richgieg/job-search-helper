@@ -501,9 +501,7 @@ Behavior:
 These actions should:
 
 - require an existing job
-- validate `startAt`
-- allow `endAt = null`
-- require `endAt >= startAt` when `endAt` is provided
+- allow `startAt = null`
 - update `Job.updatedAt`
 
 `deleteInterview()` must also delete all child `InterviewContact` records for that interview.
@@ -587,7 +585,6 @@ Import validation should additionally verify:
 - every profile has a complete and valid `resumeSettings.sections` object
 - every `InterviewContact` references an existing `Interview` and `JobContact`
 - every `InterviewContact` connects records belonging to the same job
-- every `Interview.endAt` is `null` or greater than or equal to `Interview.startAt`
 
 ## Timestamp rules
 
@@ -652,7 +649,7 @@ High-priority tests:
 - deleting a job deletes attached job profiles and job-owned records
 - setting and clearing `appliedAt` updates the correct job and timestamp
 - setting and clearing `finalOutcome` updates the correct job and timestamp
-- creating or updating an interview enforces `endAt >= startAt`
+- creating or updating an interview allows `startAt` to be unset
 - deleting an interview deletes its `InterviewContact` associations
 - interview-contact associations reject cross-job links
 - reordering interview contacts produces unique sequential `sortOrder` values

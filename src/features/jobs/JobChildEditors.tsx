@@ -176,42 +176,22 @@ const formatInterviewTime = (value: string | null) => {
   })
 }
 
-const isSameCalendarDay = (left: string | null, right: string | null) => {
-  if (!left || !right) {
-    return false
-  }
-
-  const leftDate = new Date(left)
-  const rightDate = new Date(right)
-
-  return (
-    leftDate.getFullYear() === rightDate.getFullYear() &&
-    leftDate.getMonth() === rightDate.getMonth() &&
-    leftDate.getDate() === rightDate.getDate()
-  )
-}
-
-const formatInterviewTitle = (startAt: string | null, endAt: string | null) => {
+const formatInterviewTitle = (startAt: string | null) => {
   if (!startAt) {
     return 'Not scheduled yet'
-  }
-
-  if (endAt && !isSameCalendarDay(startAt, endAt)) {
-    return `${formatInterviewTitleDate(startAt)} to ${formatInterviewTitleDate(endAt)}`
   }
 
   return formatInterviewTitleDate(startAt)
 }
 
-const formatInterviewSummary = (startAt: string | null, endAt: string | null) => {
+const formatInterviewSummary = (startAt: string | null) => {
   if (!startAt) {
     return 'Please set the start date and time'
   }
 
   const start = formatInterviewTime(startAt)
-  const end = formatInterviewTime(endAt)
 
-  return summarizeParts([start || null, end || null])
+  return summarizeParts([start || null])
 }
 
 const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
@@ -564,12 +544,12 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
 
   return (
     <CollapsiblePanel
-      summary={formatInterviewSummary(draft.startAt, draft.endAt)}
-      title={formatInterviewTitle(draft.startAt, draft.endAt)}
+      summary={formatInterviewSummary(draft.startAt)}
+      title={formatInterviewTitle(draft.startAt)}
       headerActions={<DeleteIconButton label="Delete interview" onDelete={() => deleteInterview(interview.id)} />}
     >
       <div className="space-y-5">
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid gap-4 xl:grid-cols-1">
           <TextField
             label="Start at"
             type="datetime-local"
@@ -577,14 +557,7 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
             onBlur={() => draft.startAt !== interview.startAt && commitInterviewChanges({ startAt: draft.startAt })}
             onChange={(value) => setDraft({ ...draft, startAt: fromDateTimeLocal(value) })}
           />
-          <TextField
-            label="End at"
-            type="datetime-local"
-            value={toDateTimeLocal(draft.endAt)}
-            onBlur={() => draft.endAt !== interview.endAt && commitInterviewChanges({ endAt: draft.endAt })}
-            onChange={(value) => setDraft({ ...draft, endAt: fromDateTimeLocal(value) })}
-          />
-          <div className="xl:col-span-2">
+          <div className="xl:col-span-1">
             <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== interview.notes && commitInterviewChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
           </div>
         </div>

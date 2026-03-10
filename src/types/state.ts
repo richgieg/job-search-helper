@@ -236,7 +236,6 @@ export interface Interview {
   id: Id
   jobId: Id
   startAt: IsoTimestamp | null
-  endAt: IsoTimestamp | null
   notes: string
 }
 

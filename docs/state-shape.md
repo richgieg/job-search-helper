@@ -399,8 +399,7 @@ interface JobContact {
 interface Interview {
   id: Id;
   jobId: Id;
-  startAt: IsoTimestamp;
-  endAt: IsoTimestamp | null;
+  startAt: IsoTimestamp | null;
   notes: string;
 }
 ```
