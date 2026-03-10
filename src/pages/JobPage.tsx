@@ -5,7 +5,7 @@ import { ActionToggle, AddIconButton, DeleteIconButton, IconActionButton, getAct
 import { FinalOutcomeStrip, type FinalOutcomeDraftStatus } from '../features/jobs/FinalOutcomeStrip'
 import { CollapsiblePanel } from '../components/CollapsiblePanel'
 import { JobChildEditors } from '../features/jobs/JobChildEditors'
-import { formatJobComputedStatus, getJobComputedStatus } from '../features/jobs/job-status'
+import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadgeClassName } from '../features/jobs/job-status'
 import { useAppStore } from '../store/app-store'
 import type { EmploymentType, Job, WorkArrangement } from '../types/state'
 
@@ -318,7 +318,7 @@ export const JobPage = () => {
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{job.jobTitle || 'Untitled role'}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-600">
             <span>{job.companyName || 'Unknown company'}</span>
-            <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">{formatJobComputedStatus(computedStatus)}</span>
+            <span className={['rounded-full px-3 py-1 text-xs font-medium', getJobComputedStatusBadgeClassName(computedStatus)].join(' ')}>{formatJobComputedStatus(computedStatus)}</span>
           </div>
         </div>
       </div>

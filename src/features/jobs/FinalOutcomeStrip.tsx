@@ -1,4 +1,5 @@
 import type { FinalOutcomeStatus } from '../../types/state'
+import { getFinalOutcomeSelectedClassName } from './job-status'
 
 export type FinalOutcomeDraftStatus = '' | FinalOutcomeStatus
 
@@ -28,6 +29,7 @@ export const FinalOutcomeStrip = ({
           const checked = option.value === value
           const isFirst = index === 0
           const isLast = index === finalOutcomeOptions.length - 1
+          const selectedClassName = option.value ? getFinalOutcomeSelectedClassName(option.value) : 'border-slate-300 bg-slate-100 text-slate-700'
 
           return (
             <label
@@ -60,7 +62,7 @@ export const FinalOutcomeStrip = ({
                       ? 'border-slate-300 bg-slate-200 text-slate-500'
                       : 'bg-slate-50 text-slate-400'
                     : checked
-                      ? 'border-sky-600 bg-sky-600 text-white'
+                      ? selectedClassName
                       : 'bg-white text-slate-700 hover:bg-slate-50',
                 ]
                   .filter(Boolean)

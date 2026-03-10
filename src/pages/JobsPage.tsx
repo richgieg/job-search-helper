@@ -2,7 +2,7 @@ import { SubmitEvent, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { DeleteIconButton, getActionIconButtonClassName } from '../components/CompactActionControls'
-import { formatJobComputedStatus, getJobComputedStatus } from '../features/jobs/job-status'
+import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadgeClassName } from '../features/jobs/job-status'
 import { useAppStore } from '../store/app-store'
 
 const JobListItem = ({ jobId }: { jobId: string }) => {
@@ -53,7 +53,7 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
         <span className="text-sm text-slate-600">{job.companyName}</span>
       </td>
       <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
-        <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">{formatJobComputedStatus(computedStatus)}</span>
+        <span className={['rounded-full px-3 py-1 text-xs font-medium', getJobComputedStatusBadgeClassName(computedStatus)].join(' ')}>{formatJobComputedStatus(computedStatus)}</span>
       </td>
       <td className="border-r border-slate-200 px-4 py-3 align-middle last:border-r-0">
         {jobLinks.length === 0 ? (
