@@ -398,7 +398,6 @@ describe('app store reorder actions', () => {
     expect(useAppStore.getState().data.interviews[interviewId]).toMatchObject({
       startAt: null,
       endAt: null,
-      completed: false,
     })
 
     actions.updateInterview({

@@ -401,7 +401,6 @@ interface Interview {
   jobId: Id;
   startAt: IsoTimestamp;
   endAt: IsoTimestamp | null;
-  completed: boolean;
   notes: string;
 }
 ```

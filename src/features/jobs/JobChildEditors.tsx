@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
-import { ActionToggle, AddIconButton, DeleteIconButton } from '../../components/CompactActionControls'
+import { AddIconButton, DeleteIconButton } from '../../components/CompactActionControls'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
 import type { ContactRelationshipType, FinalOutcomeStatus } from '../../types/state'
@@ -203,11 +203,11 @@ const formatInterviewTitle = (startAt: string | null, endAt: string | null) => {
   return formatInterviewTitleDate(startAt)
 }
 
-const formatInterviewSummary = (startAt: string | null, endAt: string | null, completed: boolean) => {
+const formatInterviewSummary = (startAt: string | null, endAt: string | null) => {
   const start = formatInterviewTime(startAt)
   const end = formatInterviewTime(endAt)
 
-  return summarizeParts([start || null, end || null, completed ? 'Completed' : 'Planned'])
+  return summarizeParts([start || null, end || null])
 }
 
 const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
@@ -560,12 +560,12 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
 
   return (
     <CollapsiblePanel
-      summary={formatInterviewSummary(draft.startAt, draft.endAt, draft.completed)}
+      summary={formatInterviewSummary(draft.startAt, draft.endAt)}
       title={formatInterviewTitle(draft.startAt, draft.endAt)}
       headerActions={<DeleteIconButton label="Delete interview" onDelete={() => deleteInterview(interview.id)} />}
     >
       <div className="space-y-5">
-        <div className="grid gap-4 xl:grid-cols-3">
+        <div className="grid gap-4 xl:grid-cols-2">
           <TextField
             label="Start at"
             type="datetime-local"
@@ -580,23 +580,7 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
             onBlur={() => draft.endAt !== interview.endAt && commitInterviewChanges({ endAt: draft.endAt })}
             onChange={(value) => setDraft({ ...draft, endAt: fromDateTimeLocal(value) })}
           />
-          <div className="flex items-end justify-between rounded-xl border border-slate-200 px-4 py-3">
-            <div>
-              <p className="text-sm font-medium text-slate-900">Completed</p>
-              <p className="mt-1 text-xs text-slate-500">Mark whether the interview has already happened.</p>
-            </div>
-            <ActionToggle
-              checked={draft.completed}
-              label="Interview completed"
-              onChange={(checked) => {
-                setDraft({ ...draft, completed: checked })
-                if (checked !== interview.completed) {
-                  commitInterviewChanges({ completed: checked })
-                }
-              }}
-            />
-          </div>
-          <div className="xl:col-span-3">
+          <div className="xl:col-span-2">
             <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== interview.notes && commitInterviewChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
           </div>
         </div>
@@ -818,7 +802,7 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
         {hasJobContacts ? <div className="space-y-4">{jobContactIds.map((id) => <JobContactCard key={id} jobContactId={id} />)}</div> : null}
       </CollapsiblePanel>
 
-      <CollapsiblePanel actionLabel="Add interview" actionStyle="icon" collapsible={hasInterviews} description="Track scheduled and completed interviews in chronological order." onAction={() => createInterview(jobId)} title="Interviews">
+      <CollapsiblePanel actionLabel="Add interview" actionStyle="icon" collapsible={hasInterviews} description="Track interviews in chronological order." onAction={() => createInterview(jobId)} title="Interviews">
         {hasInterviews ? <div className="space-y-4">{interviewIds.map((id) => <InterviewCard key={id} interviewId={id} />)}</div> : null}
       </CollapsiblePanel>
 

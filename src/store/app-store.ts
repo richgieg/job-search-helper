@@ -2130,7 +2130,6 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         jobId,
         startAt: null,
         endAt: null,
-        completed: false,
         notes: '',
       }
 

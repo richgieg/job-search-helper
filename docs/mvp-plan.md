@@ -141,9 +141,8 @@ The UI can still show a computed current status such as Interested, Applied, Int
 
 Each job can have zero or more interviews:
 
-- `start_at`
+- `start_at` (optional)
 - `end_at` (optional)
-- `completed`
 - Zero or more associated job contacts
 - Notes
 
@@ -408,10 +407,9 @@ The copied related records include:
 - job_id
 - start_at
 - end_at
-- completed
 - notes
 
-`end_at` is optional.
+`start_at` and `end_at` are optional.
 
 ### InterviewContact
 - id

@@ -237,7 +237,6 @@ export interface Interview {
   jobId: Id
   startAt: IsoTimestamp | null
   endAt: IsoTimestamp | null
-  completed: boolean
   notes: string
 }
 
