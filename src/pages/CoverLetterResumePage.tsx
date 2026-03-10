@@ -4,11 +4,12 @@ import { useParams } from 'react-router-dom'
 import { AppShell } from '../app/layout/AppLayout'
 import { CoverLetterDocument } from '../features/documents/CoverLetterDocument'
 import { DocumentNotFound } from '../features/documents/DocumentNotFound'
+import { ResumeDocument } from '../features/documents/ResumeDocument'
 import { selectProfileDocumentData } from '../features/documents/document-data'
-import { createCoverLetterDocumentTitle } from '../features/documents/document-titles'
+import { createCoverLetterResumeDocumentTitle } from '../features/documents/document-titles'
 import { useAppStore } from '../store/app-store'
 
-export const CoverLetterPage = () => {
+export const CoverLetterResumePage = () => {
   const { profileId = '' } = useParams()
   const data = useAppStore((state) => state.data)
 
@@ -22,21 +23,23 @@ export const CoverLetterPage = () => {
     )
   }
 
-  const personalDetails = documentData.profile.personalDetails
-
   useEffect(() => {
     const previousTitle = document.title
-    document.title = createCoverLetterDocumentTitle(personalDetails.fullName, documentData.profile.name)
+    document.title = createCoverLetterResumeDocumentTitle(documentData.profile.personalDetails.fullName, documentData.profile.name)
 
     return () => {
       document.title = previousTitle
     }
-  }, [documentData.profile.name, personalDetails.fullName])
+  }, [documentData.profile.name, documentData.profile.personalDetails.fullName])
 
   return (
-    <div className="document-preview-shell">
+    <div className="document-preview-shell document-preview-stack">
       <article className="document-page text-sm leading-[1.125rem] text-black">
         <CoverLetterDocument documentData={documentData} />
+      </article>
+
+      <article className="document-page document-page-break text-black">
+        <ResumeDocument documentData={documentData} />
       </article>
     </div>
   )

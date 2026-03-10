@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { AppLayout } from './layout/AppLayout'
 import { ApplicationPage } from '../pages/ApplicationPage'
+import { CoverLetterResumePage } from '../pages/CoverLetterResumePage'
 import { CoverLetterPage } from '../pages/CoverLetterPage'
 import { DashboardPage } from '../pages/DashboardPage'
 import { ImportExportPage } from '../pages/ImportExportPage'
@@ -15,6 +16,7 @@ export const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/profiles/:profileId/cover-letter" element={<CoverLetterPage />} />
+      <Route path="/profiles/:profileId/combined" element={<CoverLetterResumePage />} />
       <Route path="/profiles/:profileId/resume" element={<ResumePage />} />
 
       <Route element={<AppLayout />}>

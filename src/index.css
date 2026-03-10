@@ -60,6 +60,16 @@ a[class*='border-rose-300']:not(:hover):not(:focus-visible):not(:active) {
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
 }
 
+.document-page-break {
+  margin-top: 2rem;
+}
+
+.document-preview-stack {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 .resume-skills-grid {
   display: grid;
   gap: 1rem;
@@ -140,11 +150,21 @@ a[class*='border-rose-300']:not(:hover):not(:focus-visible):not(:active) {
     background: white;
   }
 
+  .document-preview-stack {
+    display: block;
+  }
+
   .document-page {
     width: auto;
     min-height: 0;
     padding: 0;
     box-shadow: none;
+  }
+
+  .document-page-break {
+    margin-top: 0;
+    break-before: page;
+    page-break-before: always;
   }
 
   .resume-skills-grid {
