@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { AppShell } from '../app/layout/AppLayout'
@@ -33,6 +33,16 @@ const formatMonthYear = (value: string | null) => {
   })
 }
 
+const createResumeDocumentTitle = (fullName: string, profileName: string) => {
+  const baseName = (fullName || profileName).trim()
+
+  if (!baseName) {
+    return 'Resume'
+  }
+
+  return `${baseName.replace(/\s+/g, '_')}_Resume`
+}
+
 export const ResumePage = () => {
   const { profileId = '' } = useParams()
   const data = useAppStore((state) => state.data)
@@ -51,6 +61,15 @@ export const ResumePage = () => {
     .map((paragraph) => paragraph.trim())
     .filter(Boolean)
   const orderedSections = getOrderedResumeSections(documentData.profile).filter((section) => section.enabled)
+
+  useEffect(() => {
+    const previousTitle = document.title
+    document.title = createResumeDocumentTitle(documentData.profile.personalDetails.fullName, documentData.profile.name)
+
+    return () => {
+      document.title = previousTitle
+    }
+  }, [documentData.profile.name, documentData.profile.personalDetails.fullName])
 
   return (
     <div className="document-preview-shell">
