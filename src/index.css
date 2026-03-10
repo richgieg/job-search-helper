@@ -84,6 +84,18 @@ a[class*='border-rose-300']:not(:hover):not(:focus-visible):not(:active) {
   max-width: 18rem;
 }
 
+@media print {
+  .resume-section-heading {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .print-keep-together {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
 @media (min-width: 48rem) {
   .resume-skills-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

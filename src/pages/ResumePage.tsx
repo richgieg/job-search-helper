@@ -64,10 +64,12 @@ export const ResumePage = () => {
             case 'summary':
               return summaryParagraphs.length > 0 ? (
                 <section key="summary" className={index === 0 ? '' : 'mt-5'}>
-                  <h3 className="border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Summary</h3>
+                  <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Summary</h3>
                   <div className="mt-3 space-y-4 text-sm leading-[1.125rem] text-black">
-                    {summaryParagraphs.map((paragraph, index) => (
-                      <p key={`${documentData.profile.id}-summary-${index}`}>{paragraph}</p>
+                    {summaryParagraphs.map((paragraph, paragraphIndex) => (
+                      <p key={`${documentData.profile.id}-summary-${paragraphIndex}`} className={paragraphIndex === 0 ? 'print-keep-together' : undefined}>
+                        {paragraph}
+                      </p>
                     ))}
                   </div>
                 </section>
@@ -75,10 +77,10 @@ export const ResumePage = () => {
             case 'skills':
               return documentData.skillCategories.length > 0 ? (
                 <section key="skills" className={sectionClassName}>
-                  <h3 className="border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Skills</h3>
+                  <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Skills</h3>
                   <div className="mt-4 space-y-2">
                     {documentData.skillCategories.map((item) => (
-                      <div key={item.category.id}>
+                      <div key={item.category.id} className="print-keep-together">
                         <p className="text-sm leading-[1.125rem] text-black">
                           <span className="font-semibold">{item.category.name || 'General'}:</span>{' '}
                           {item.skills.length > 0
@@ -98,46 +100,57 @@ export const ResumePage = () => {
             case 'experience':
               return documentData.experienceEntries.length > 0 ? (
                 <section key="experience" className={sectionClassName}>
-                  <h3 className="border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Experience</h3>
+                  <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Experience</h3>
                   <div className="mt-4 space-y-5">
-                    {documentData.experienceEntries.map((entry) => (
-                      <div key={entry.entry.id}>
-                        <div className="resume-experience-header">
-                          <div>
-                            <h4 className="text-base font-semibold text-black">{entry.entry.title || 'Untitled role'}</h4>
-                            <p className="text-sm italic text-black">
-                              {formatExperienceMeta({
-                                company: entry.entry.company,
-                                location: entry.entry.location,
-                                workArrangement: entry.entry.workArrangement,
-                                employmentType: entry.entry.employmentType,
-                              })}
-                            </p>
+                    {documentData.experienceEntries.map((entry) => {
+                      const [firstBullet, ...remainingBullets] = entry.bullets
+
+                      return (
+                        <div key={entry.entry.id}>
+                          <div className="print-keep-together">
+                            <div className="resume-experience-header">
+                              <div>
+                                <h4 className="text-base font-semibold text-black">{entry.entry.title || 'Untitled role'}</h4>
+                                <p className="text-sm italic text-black">
+                                  {formatExperienceMeta({
+                                    company: entry.entry.company,
+                                    location: entry.entry.location,
+                                    workArrangement: entry.entry.workArrangement,
+                                    employmentType: entry.entry.employmentType,
+                                  })}
+                                </p>
+                              </div>
+                              <p className="resume-experience-date text-sm text-black">{formatDateRange(entry.entry.startDate, entry.entry.endDate, entry.entry.isCurrent)}</p>
+                            </div>
+                            {firstBullet ? (
+                              <ul className="mt-3 list-disc pl-5 text-sm leading-[1.125rem] text-black">
+                                <li>{firstBullet.content}</li>
+                              </ul>
+                            ) : null}
                           </div>
-                          <p className="resume-experience-date text-sm text-black">{formatDateRange(entry.entry.startDate, entry.entry.endDate, entry.entry.isCurrent)}</p>
+                          {remainingBullets.length > 0 ? (
+                            <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-[1.125rem] text-black">
+                              {remainingBullets.map((bullet) => (
+                                <li key={bullet.id}>{bullet.content}</li>
+                              ))}
+                            </ul>
+                          ) : null}
                         </div>
-                        {entry.bullets.length > 0 ? (
-                          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-[1.125rem] text-black">
-                            {entry.bullets.map((bullet) => (
-                              <li key={bullet.id}>{bullet.content}</li>
-                            ))}
-                          </ul>
-                        ) : null}
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </section>
               ) : null
             case 'education':
               return (
                 <section key="education" className={sectionClassName}>
-                  <h3 className="border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Education</h3>
+                  <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Education</h3>
                   <div className="mt-4 space-y-4 text-sm text-black">
                     {documentData.educationEntries.length === 0 ? (
                       <p className="text-black">No education entries enabled.</p>
                     ) : (
                       documentData.educationEntries.map((entry) => (
-                        <div key={entry.id}>
+                        <div key={entry.id} className="print-keep-together">
                           <div className="resume-experience-header">
                             <p className="font-semibold text-black">{entry.degree || 'Degree not set'}</p>
                             <p className="resume-experience-date text-black">{formatMonthYear(entry.graduationDate)}</p>
@@ -152,12 +165,12 @@ export const ResumePage = () => {
             case 'certifications':
               return (
                 <section key="certifications" className={sectionClassName}>
-                  <h3 className="border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Certifications</h3>
+                  <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Certifications</h3>
                   <div className="mt-4 text-sm leading-[1.125rem] text-black">
                     {documentData.certifications.length === 0 ? (
                       <p className="text-black">No certifications enabled.</p>
                     ) : (
-                      <p>
+                      <p className="print-keep-together">
                         {documentData.certifications.map((entry, index) => (
                           <span key={entry.id}>
                             {index > 0 ? <span>{' · '}</span> : null}
@@ -172,13 +185,13 @@ export const ResumePage = () => {
             case 'references':
               return (
                 <section key="references" className={sectionClassName}>
-                  <h3 className="border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">References</h3>
+                  <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">References</h3>
                   <div className="mt-4 space-y-4 text-sm text-black">
                     {documentData.references.length === 0 ? (
                       <p className="text-black">No references enabled.</p>
                     ) : (
                       documentData.references.map((entry) => (
-                        <div key={entry.id}>
+                        <div key={entry.id} className="print-keep-together">
                           <p className="font-semibold text-black">{entry.name || 'Reference'}</p>
                           <p>{[entry.title, entry.company].filter(Boolean).join(' · ')}</p>
                           <p className="text-black">{entry.email || entry.phone || 'Contact details not set'}</p>
