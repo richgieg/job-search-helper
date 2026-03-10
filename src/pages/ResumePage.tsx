@@ -43,11 +43,13 @@ export const ResumePage = () => {
       <article className="document-page text-black">
         <DocumentProfileHeader documentData={documentData} />
 
-        {orderedSections.map((orderedSection) => {
+        {orderedSections.map((orderedSection, index) => {
+          const sectionClassName = index === 0 ? '' : 'mt-8'
+
           switch (orderedSection.section) {
             case 'summary':
               return summaryParagraphs.length > 0 ? (
-                <section key="summary" className="mt-6">
+                <section key="summary" className={index === 0 ? '' : 'mt-6'}>
                   <h3 className="border-b border-black pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-black">Summary</h3>
                   <div className="mt-3 space-y-4 text-sm leading-5 text-black">
                     {summaryParagraphs.map((paragraph, index) => (
@@ -58,13 +60,15 @@ export const ResumePage = () => {
               ) : null
             case 'skills':
               return documentData.skillCategories.length > 0 ? (
-                <section key="skills" className="mt-8">
+                <section key="skills" className={sectionClassName}>
                   <h3 className="border-b border-black pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-black">Skills</h3>
-                  <div className="mt-4 space-y-4">
+                  <div className="mt-4 space-y-2">
                     {documentData.skillCategories.map((item) => (
                       <div key={item.category.id}>
-                        <p className="text-sm font-semibold text-black">{item.category.name || 'General'}</p>
-                        <p className="mt-2 text-sm leading-5 text-black">{item.skills.map((skill) => skill.name).join(' · ') || 'No skills listed yet.'}</p>
+                        <p className="text-sm leading-5 text-black">
+                          <span className="font-semibold">{item.category.name || 'General'}:</span>{' '}
+                          {item.skills.map((skill) => skill.name).join(' · ') || 'No skills listed yet.'}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -72,7 +76,7 @@ export const ResumePage = () => {
               ) : null
             case 'experience':
               return documentData.experienceEntries.length > 0 ? (
-                <section key="experience" className="mt-8">
+                <section key="experience" className={sectionClassName}>
                   <h3 className="border-b border-black pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-black">Experience</h3>
                   <div className="mt-4 space-y-5">
                     {documentData.experienceEntries.map((entry) => (
@@ -105,7 +109,7 @@ export const ResumePage = () => {
               ) : null
             case 'education':
               return (
-                <section key="education" className="mt-8">
+                <section key="education" className={sectionClassName}>
                   <h3 className="border-b border-black pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-black">Education</h3>
                   <div className="mt-4 space-y-4 text-sm text-black">
                     {documentData.educationEntries.length === 0 ? (
@@ -124,7 +128,7 @@ export const ResumePage = () => {
               )
             case 'certifications':
               return (
-                <section key="certifications" className="mt-8">
+                <section key="certifications" className={sectionClassName}>
                   <h3 className="border-b border-black pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-black">Certifications</h3>
                   <div className="mt-4 space-y-4 text-sm text-black">
                     {documentData.certifications.length === 0 ? (
@@ -143,7 +147,7 @@ export const ResumePage = () => {
               )
             case 'references':
               return (
-                <section key="references" className="mt-8">
+                <section key="references" className={sectionClassName}>
                   <h3 className="border-b border-black pb-1 text-sm font-semibold uppercase tracking-[0.18em] text-black">References</h3>
                   <div className="mt-4 space-y-4 text-sm text-black">
                     {documentData.references.length === 0 ? (
