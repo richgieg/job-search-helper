@@ -3,7 +3,7 @@ import type { FinalOutcomeStatus } from '../../types/state'
 export type FinalOutcomeDraftStatus = '' | FinalOutcomeStatus
 
 const finalOutcomeOptions: Array<{ value: FinalOutcomeDraftStatus; label: string }> = [
-  { value: '', label: 'None' },
+  { value: '', label: 'No outcome' },
   { value: 'withdrew', label: 'Withdrew' },
   { value: 'rejected', label: 'Rejected' },
   { value: 'offer_received', label: 'Offer received' },
