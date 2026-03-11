@@ -64,7 +64,7 @@ This keeps job creation lightweight while still enabling tailored resumes, cover
 2. User adds a job.
 3. User decides whether the job is worth tailoring.
 4. User creates one or more job-specific profiles for that job by duplicating a base profile or an existing job profile.
-6. User tailors summary, experience bullets, education bullets, skills, references, and letter content for that job.
+6. User tailors summary, achievements, experience bullets, education bullets, skills, references, and letter content for that job.
 6. User adds recruiter/hiring manager contacts.
 7. User selects one of the job's profiles and generates:
    - a resume
@@ -87,6 +87,7 @@ Each reusable profile should support:
    - customize the displayed label for each resume section
    - stored per profile so base profiles and job profiles can differ
 - Skill categories and skills
+- Achievements with name, description, enabled state, and sort order
 - Professional experience entries with zero or more bullets
 - Education entries with zero or more bullets, attendance dates, and completion status
 - Certifications
@@ -186,6 +187,9 @@ This allows the user to keep track of custom questions asked during online appli
 - Generated from either a base profile or a selected job-specific profile
 - Respects the profile's resume settings for section visibility and section order
 - Uses the profile's configured resume section labels for displayed headings
+- Defaults to the following section order for new profiles: summary, skills, achievements, experience, education, certifications, references
+- Renders enabled achievements as bullets before experience by default
+- Formats each achievement bullet as bold name followed by a colon and plain-text description
 - Renders enabled experience bullets beneath each enabled experience entry
 - Renders enabled education bullets beneath each enabled education entry
 - Displays education entries using either an attendance range or a completion date depending on the entry status
@@ -206,6 +210,7 @@ This allows the user to keep track of custom questions asked during online appli
 
 - Shows the selected profile fields in a structured layout
 - Every answer/value can be clicked to copy to clipboard
+- Can include achievements as name-and-description items if the selected profile has them enabled
 - Shows education entries using the full set of stored education fields as entered by the user
 - Includes common sections used in application forms
 
@@ -257,6 +262,14 @@ This allows the user to keep track of custom questions asked during online appli
 - updated_at
 
 If `job_id` is null, the profile is a base profile. If `job_id` is not null, the profile is a job-specific profile.
+
+### Achievement
+- id
+- profile_id
+- name
+- description
+- enabled
+- sort_order
 
 `resume_settings_json` stores the profile's single resume settings configuration for the MVP, including whether each resume section is shown and the order in which sections should appear.
 

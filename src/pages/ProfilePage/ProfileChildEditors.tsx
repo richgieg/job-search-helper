@@ -676,6 +676,104 @@ const SkillCategoryCard = ({
   )
 }
 
+const AchievementCard = ({
+  achievementId,
+  defaultExpanded = false,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  achievementId: string
+  defaultExpanded?: boolean
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
+  const achievement = useAppStore((state) => state.data.achievements[achievementId])
+  const achievementsById = useAppStore((state) => state.data.achievements)
+  const updateAchievement = useAppStore((state) => state.actions.updateAchievement)
+  const deleteAchievement = useAppStore((state) => state.actions.deleteAchievement)
+  const reorderAchievements = useAppStore((state) => state.actions.reorderAchievements)
+  const [draft, setDraft] = useState(achievement)
+  const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
+
+  const achievementIds = useMemo(
+    () =>
+      achievement
+        ? Object.values(achievementsById)
+            .filter((item) => item.profileId === achievement.profileId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [achievement, achievementsById],
+  )
+  const achievementIndex = achievementIds.indexOf(achievementId)
+
+  useEffect(() => {
+    setDraft(achievement)
+  }, [achievement])
+
+  if (!achievement || !draft) {
+    return null
+  }
+
+  const summary = summarizeParts([
+    draft.description.trim() ? draft.description.trim() : 'No description',
+  ])
+
+  return (
+    <div ref={cardRef} style={cardScrollStyle}>
+      <CollapsiblePanel
+        defaultExpanded={defaultExpanded}
+        headerActions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ActionToggle checked={draft.enabled} label="Enable achievement" onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateAchievement({ achievementId: achievement.id, changes: { enabled: value } })
+            }} />
+            <ReorderButtons
+              canMoveDown={achievementIds.length > 1}
+              canMoveUp={achievementIds.length > 1}
+              onMoveDown={() =>
+                reorderAchievements({
+                  profileId: achievement.profileId,
+                  orderedIds: moveOrderedItem(achievementIds, achievementIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderAchievements({
+                  profileId: achievement.profileId,
+                  orderedIds: moveOrderedItem(achievementIds, achievementIndex, -1),
+                })
+              }
+            />
+            <DeleteIconButton label="Delete achievement" onDelete={() => deleteAchievement(achievement.id)} />
+          </div>
+        }
+        summary={summary}
+        title={draft.name || achievement.name || 'Achievement'}
+      >
+        <div className="grid gap-4">
+          <TextField
+            label="Name"
+            onBlur={() => draft.name !== achievement.name && updateAchievement({ achievementId: achievement.id, changes: { name: draft.name } })}
+            value={draft.name}
+            onChange={(value) => setDraft({ ...draft, name: value })}
+          />
+          <TextAreaField
+            label="Description"
+            onBlur={() => draft.description !== achievement.description && updateAchievement({ achievementId: achievement.id, changes: { description: draft.description } })}
+            placeholder="Describe the outcome or recognition"
+            value={draft.description}
+            onChange={(value) => setDraft({ ...draft, description: value })}
+          />
+        </div>
+      </CollapsiblePanel>
+    </div>
+  )
+}
+
 const ExperienceCard = ({
   entryId,
   defaultExpanded = false,
@@ -1232,18 +1330,21 @@ const ReferenceCard = ({
 export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
   const profileLinksById = useAppStore((state) => state.data.profileLinks)
   const skillCategoriesById = useAppStore((state) => state.data.skillCategories)
+  const achievementsById = useAppStore((state) => state.data.achievements)
   const experienceEntriesById = useAppStore((state) => state.data.experienceEntries)
   const educationEntriesById = useAppStore((state) => state.data.educationEntries)
   const certificationsById = useAppStore((state) => state.data.certifications)
   const referencesById = useAppStore((state) => state.data.references)
   const createProfileLink = useAppStore((state) => state.actions.createProfileLink)
   const createSkillCategory = useAppStore((state) => state.actions.createSkillCategory)
+  const createAchievement = useAppStore((state) => state.actions.createAchievement)
   const createExperienceEntry = useAppStore((state) => state.actions.createExperienceEntry)
   const createEducationEntry = useAppStore((state) => state.actions.createEducationEntry)
   const createCertification = useAppStore((state) => state.actions.createCertification)
   const createReference = useAppStore((state) => state.actions.createReference)
   const [newProfileLinkId, setNewProfileLinkId] = useState<string | null>(null)
   const [newSkillCategoryId, setNewSkillCategoryId] = useState<string | null>(null)
+  const [newAchievementId, setNewAchievementId] = useState<string | null>(null)
   const [newExperienceEntryId, setNewExperienceEntryId] = useState<string | null>(null)
   const [newEducationEntryId, setNewEducationEntryId] = useState<string | null>(null)
   const [newCertificationId, setNewCertificationId] = useState<string | null>(null)
@@ -1276,6 +1377,15 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
     [experienceEntriesById, profileId],
   )
 
+  const achievementIds = useMemo(
+    () =>
+      Object.values(achievementsById)
+        .filter((item) => item.profileId === profileId)
+        .sort((left, right) => left.sortOrder - right.sortOrder)
+        .map((item) => item.id),
+    [achievementsById, profileId],
+  )
+
   const educationEntryIds = useMemo(
     () =>
       Object.values(educationEntriesById)
@@ -1305,6 +1415,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
 
   const hasProfileLinks = profileLinkIds.length > 0
   const hasSkillCategories = skillCategoryIds.length > 0
+  const hasAchievements = achievementIds.length > 0
   const hasExperienceEntries = experienceEntryIds.length > 0
   const hasEducationEntries = educationEntryIds.length > 0
   const hasCertifications = certificationIds.length > 0
@@ -1368,6 +1479,38 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
                 skillCategoryId={id}
                 {...(id === newSkillCategoryId
                   ? { onScrollIntoViewComplete: () => setNewSkillCategoryId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
+        ) : null}
+      </CollapsiblePanel>
+
+      <CollapsiblePanel
+        actionLabel="Add achievement"
+        actionStyle="icon"
+        collapsible={hasAchievements}
+        description="Capture notable accomplishments that should appear as a standalone resume section."
+        onAction={() => {
+          const createdId = createAchievement(profileId)
+
+          if (createdId) {
+            setNewAchievementId(createdId)
+          }
+        }}
+        showBottomActionWhenHeaderHidden
+        title="Achievements"
+      >
+        {hasAchievements ? (
+          <div className="space-y-4">
+            {achievementIds.map((id) => (
+              <AchievementCard
+                achievementId={id}
+                defaultExpanded={id === newAchievementId}
+                key={id}
+                scrollIntoViewOnMount={id === newAchievementId}
+                {...(id === newAchievementId
+                  ? { onScrollIntoViewComplete: () => setNewAchievementId(null) }
                   : {})}
               />
             ))}

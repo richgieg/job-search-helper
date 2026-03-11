@@ -273,6 +273,27 @@ export const ApplicationPage = () => {
         </section>
 
         <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-app-heading">Achievements</h2>
+          {documentData.achievements.length === 0 ? (
+            <p className="text-sm text-app-text-subtle">No achievements enabled.</p>
+          ) : (
+            documentData.achievements.map((achievement, index) => (
+              <DataTable
+                key={achievement.id}
+                copiedKey={copiedKey}
+                description={`Achievement ${index + 1}`}
+                onCopy={handleCopy}
+                rows={[
+                  { label: 'Name', values: buildSingleValue(achievement.name) },
+                  { label: 'Description', values: buildSingleValue(achievement.description), multiline: true },
+                ]}
+                title={achievement.name || `Achievement ${index + 1}`}
+              />
+            ))
+          )}
+        </section>
+
+        <section className="space-y-4">
           <h2 className="text-lg font-semibold text-app-heading">Education Entries</h2>
           {documentData.educationEntries.length === 0 ? (
             <p className="text-sm text-app-text-subtle">No education entries enabled.</p>

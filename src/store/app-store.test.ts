@@ -165,7 +165,8 @@ describe('app store reorder actions', () => {
     expect(initialProfile?.resumeSettings.sections.summary.enabled).toBe(true)
     expect(initialProfile?.resumeSettings.sections.summary.sortOrder).toBe(1)
     expect(initialProfile?.resumeSettings.sections.summary.label).toBe('Summary')
-    expect(initialProfile?.resumeSettings.sections.references.sortOrder).toBe(6)
+    expect(initialProfile?.resumeSettings.sections.achievements.sortOrder).toBe(3)
+    expect(initialProfile?.resumeSettings.sections.references.sortOrder).toBe(7)
 
     actions.setResumeSectionLabel({
       profileId,
@@ -181,7 +182,7 @@ describe('app store reorder actions', () => {
 
     actions.reorderResumeSections({
       profileId,
-      orderedSections: ['skills', 'experience', 'summary', 'education', 'certifications', 'references'],
+      orderedSections: ['skills', 'achievements', 'experience', 'summary', 'education', 'certifications', 'references'],
     })
 
     const nextProfile = useAppStore.getState().data.profiles[profileId]
@@ -189,6 +190,7 @@ describe('app store reorder actions', () => {
     expect(nextProfile?.resumeSettings.sections.references.enabled).toBe(false)
     expect(getOrderedResumeSections(nextProfile!).map((section) => section.section)).toEqual([
       'skills',
+      'achievements',
       'experience',
       'summary',
       'education',
@@ -333,6 +335,63 @@ describe('app store reorder actions', () => {
       'Senior capstone',
       'Dean list',
     ])
+  })
+
+  it('reorders achievements for a profile and preview data reflects the new order', async () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    const firstAchievementId = expectDefined(actions.createAchievement(profileId), 'Expected first achievement id')
+    const secondAchievementId = expectDefined(actions.createAchievement(profileId), 'Expected second achievement id')
+
+    actions.updateAchievement({
+      achievementId: firstAchievementId,
+      changes: { name: 'First achievement', description: 'First description' },
+    })
+    actions.updateAchievement({
+      achievementId: secondAchievementId,
+      changes: { name: 'Second achievement', description: 'Second description' },
+    })
+
+    const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
+    await waitForNextTick()
+
+    actions.reorderAchievements({
+      profileId,
+      orderedIds: [secondAchievementId, firstAchievementId],
+    })
+
+    expect(useAppStore.getState().data.achievements[secondAchievementId]?.sortOrder).toBe(1)
+    expect(useAppStore.getState().data.achievements[firstAchievementId]?.sortOrder).toBe(2)
+    expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
+
+    const preview = selectProfileDocumentData(useAppStore.getState().data, profileId)
+    expect(preview?.achievements.map((item) => item.name)).toEqual(['Second achievement', 'First achievement'])
+  })
+
+  it('toggles achievement enabled state and excludes disabled achievements from preview data', () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+    const achievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
+
+    actions.updateAchievement({
+      achievementId,
+      changes: { name: 'Award', description: 'Received a company-wide award' },
+    })
+
+    expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.achievements).toHaveLength(1)
+
+    actions.updateAchievement({
+      achievementId,
+      changes: { enabled: false },
+    })
+
+    expect(useAppStore.getState().data.achievements[achievementId]?.enabled).toBe(false)
+    expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.achievements).toHaveLength(0)
   })
 
   it('normalizes education entry dates for status changes and rejects invalid ranges', async () => {
@@ -781,7 +840,13 @@ describe('app store reorder actions', () => {
     actions.setResumeSectionEnabled({ profileId, section: 'references', enabled: false })
     actions.reorderResumeSections({
       profileId,
-      orderedSections: ['experience', 'summary', 'skills', 'education', 'certifications', 'references'],
+      orderedSections: ['experience', 'summary', 'skills', 'achievements', 'education', 'certifications', 'references'],
+    })
+
+    const achievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
+    actions.updateAchievement({
+      achievementId,
+      changes: { name: 'Promotion', description: 'Promoted after leading a critical delivery' },
     })
 
     const duplicatedProfileId = expectDefined(
@@ -793,12 +858,20 @@ describe('app store reorder actions', () => {
       'experience',
       'summary',
       'skills',
+      'achievements',
       'education',
       'certifications',
       'references',
     ])
     expect(useAppStore.getState().data.profiles[duplicatedProfileId]?.resumeSettings.sections.summary.label).toBe('Career Summary')
     expect(useAppStore.getState().data.profiles[duplicatedProfileId]?.resumeSettings.sections.references.enabled).toBe(false)
+    const duplicatedAchievement = Object.values(useAppStore.getState().data.achievements).find((item) => item.profileId === duplicatedProfileId)
+    expect(duplicatedAchievement).toMatchObject({
+      name: 'Promotion',
+      description: 'Promoted after leading a critical delivery',
+      enabled: true,
+      sortOrder: 1,
+    })
 
     const exported = actions.exportAppData()
 
@@ -812,10 +885,77 @@ describe('app store reorder actions', () => {
       'experience',
       'summary',
       'skills',
+      'achievements',
       'education',
       'certifications',
       'references',
     ])
+    expect(useAppStore.getState().data.achievements[duplicatedAchievement!.id]).toMatchObject({
+      name: 'Promotion',
+      description: 'Promoted after leading a critical delivery',
+    })
+  })
+
+  it('duplicates and cascades deletes achievements with their parent profile', () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    const originalAchievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
+    actions.updateAchievement({
+      achievementId: originalAchievementId,
+      changes: { name: 'Team award', description: 'Recognized for a cross-team platform initiative' },
+    })
+
+    const duplicatedProfileId = expectDefined(actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
+    const duplicatedAchievements = Object.values(useAppStore.getState().data.achievements)
+      .filter((item) => item.profileId === duplicatedProfileId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+
+    expect(duplicatedAchievements).toHaveLength(1)
+    expect(duplicatedAchievements[0]).toMatchObject({
+      name: 'Team award',
+      description: 'Recognized for a cross-team platform initiative',
+      enabled: true,
+      sortOrder: 1,
+    })
+    expect(duplicatedAchievements[0]?.id).not.toBe(originalAchievementId)
+
+    actions.deleteProfile(profileId)
+
+    expect(Object.values(useAppStore.getState().data.achievements).filter((item) => item.profileId === profileId)).toHaveLength(0)
+    expect(Object.values(useAppStore.getState().data.achievements).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
+
+    actions.deleteProfile(duplicatedProfileId)
+
+    expect(Object.keys(useAppStore.getState().data.achievements)).toHaveLength(0)
+  })
+
+  it('preserves achievement data through export and import', () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+    const achievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
+
+    actions.updateAchievement({
+      achievementId,
+      changes: { name: 'Conference speaker', description: 'Presented a talk on service reliability', enabled: false },
+    })
+
+    const exported = actions.exportAppData()
+
+    resetStore()
+    useAppStore.getState().actions.importAppData(exported)
+
+    expect(useAppStore.getState().data.achievements[achievementId]).toMatchObject({
+      profileId,
+      name: 'Conference speaker',
+      description: 'Presented a talk on service reliability',
+      enabled: false,
+      sortOrder: 1,
+    })
   })
 
   it('duplicates and cascades deletes profile links with their parent profile', () => {

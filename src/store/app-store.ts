@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState, emptyProfileDefaults } from './create-initial-state'
 import { normalizeResumeSectionLabel } from '../utils/resume-section-labels'
 import type {
+  Achievement,
   ApplicationQuestion,
   AppDataState,
   AppExportFile,
@@ -66,6 +67,13 @@ interface AppStoreState {
     updateSkill: (input: { skillId: Id; changes: Partial<Pick<Skill, 'name' | 'enabled' | 'sortOrder'>> }) => void
     deleteSkill: (skillId: Id) => void
     reorderSkills: (input: { skillCategoryId: Id; orderedIds: Id[] }) => void
+    createAchievement: (profileId: Id) => Id | null
+    updateAchievement: (input: {
+      achievementId: Id
+      changes: Partial<Omit<Achievement, 'id' | 'profileId'>>
+    }) => void
+    deleteAchievement: (achievementId: Id) => void
+    reorderAchievements: (input: { profileId: Id; orderedIds: Id[] }) => void
     createExperienceEntry: (profileId: Id) => Id | null
     updateExperienceEntry: (input: {
       experienceEntryId: Id
@@ -193,7 +201,7 @@ const reorderSortableEntities = <T extends { id: Id; sortOrder: number }>(entiti
   return nextEntities
 }
 
-const resumeSectionKeys: ResumeSectionKey[] = ['summary', 'skills', 'experience', 'education', 'certifications', 'references']
+const resumeSectionKeys: ResumeSectionKey[] = ['summary', 'skills', 'achievements', 'experience', 'education', 'certifications', 'references']
 
 const normalizeEducationEntry = (
   existing: EducationEntry,
@@ -276,6 +284,7 @@ const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetPro
     profileLinks: { ...data.profileLinks },
     skillCategories: { ...data.skillCategories },
     skills: { ...data.skills },
+    achievements: { ...data.achievements },
     experienceEntries: { ...data.experienceEntries },
     experienceBullets: { ...data.experienceBullets },
     educationEntries: { ...data.educationEntries },
@@ -318,6 +327,17 @@ const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetPro
         skillCategoryId: clonedSkillCategoryIds.get(item.skillCategoryId)!,
       }
       nextData.skills[cloned.id] = cloned
+    })
+
+  Object.values(data.achievements)
+    .filter((item) => item.profileId === sourceProfileId)
+    .forEach((item) => {
+      const cloned: Achievement = {
+        ...item,
+        id: createId(),
+        profileId: targetProfileId,
+      }
+      nextData.achievements[cloned.id] = cloned
     })
 
   Object.values(data.experienceEntries)
@@ -409,6 +429,7 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
   const nextProfileLinks = { ...data.profileLinks }
   const nextSkillCategories = { ...data.skillCategories }
   const nextSkills = { ...data.skills }
+  const nextAchievements = { ...data.achievements }
   const nextExperienceEntries = { ...data.experienceEntries }
   const nextExperienceBullets = { ...data.experienceBullets }
   const nextEducationEntries = { ...data.educationEntries }
@@ -442,6 +463,12 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
   Object.values(data.skills).forEach((item) => {
     if (skillCategoryIds.has(item.skillCategoryId)) {
       delete nextSkills[item.id]
+    }
+  })
+
+  Object.values(data.achievements).forEach((item) => {
+    if (item.profileId === profileId) {
+      delete nextAchievements[item.id]
     }
   })
 
@@ -489,6 +516,7 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
     profileLinks: nextProfileLinks,
     skillCategories: nextSkillCategories,
     skills: nextSkills,
+    achievements: nextAchievements,
     experienceEntries: nextExperienceEntries,
     experienceBullets: nextExperienceBullets,
     educationEntries: nextEducationEntries,
@@ -759,6 +787,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           sections: {
             summary: { ...sourceProfile.resumeSettings.sections.summary },
             skills: { ...sourceProfile.resumeSettings.sections.skills },
+            achievements: { ...sourceProfile.resumeSettings.sections.achievements },
             experience: { ...sourceProfile.resumeSettings.sections.experience },
             education: { ...sourceProfile.resumeSettings.sections.education },
             certifications: { ...sourceProfile.resumeSettings.sections.certifications },
@@ -1108,6 +1137,109 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
             skills: reorderSortableEntities(state.data.skills, orderedIds),
           },
           category.profileId,
+          now(),
+        ),
+      }))
+    },
+    createAchievement: (profileId) => {
+      const profile = get().data.profiles[profileId]
+
+      if (!profile) {
+        return null
+      }
+
+      const achievement: Achievement = {
+        id: createId(),
+        profileId,
+        name: '',
+        description: '',
+        enabled: true,
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.achievements)
+            .filter((item) => item.profileId === profileId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            achievements: {
+              ...state.data.achievements,
+              [achievement.id]: achievement,
+            },
+          },
+          profileId,
+          now(),
+        ),
+      }))
+
+      return achievement.id
+    },
+    updateAchievement: ({ achievementId, changes }) => {
+      const existing = get().data.achievements[achievementId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            achievements: {
+              ...state.data.achievements,
+              [achievementId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          existing.profileId,
+          now(),
+        ),
+      }))
+    },
+    deleteAchievement: (achievementId) => {
+      const existing = get().data.achievements[achievementId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => {
+        const nextAchievements = { ...state.data.achievements }
+        delete nextAchievements[achievementId]
+
+        return {
+          data: stampUpdatedProfile(
+            {
+              ...state.data,
+              achievements: nextAchievements,
+            },
+            existing.profileId,
+            now(),
+          ),
+        }
+      })
+    },
+    reorderAchievements: ({ profileId, orderedIds }) => {
+      const existingIds = Object.values(get().data.achievements)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            achievements: reorderSortableEntities(state.data.achievements, orderedIds),
+          },
+          profileId,
           now(),
         ),
       }))

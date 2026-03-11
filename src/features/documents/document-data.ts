@@ -1,5 +1,6 @@
 import { getJobComputedStatus } from '../jobs/job-status'
 import type {
+  Achievement,
   AppDataState,
   Certification,
   EducationBullet,
@@ -41,6 +42,7 @@ export interface ProfileDocumentData {
   contacts: JobContact[]
   jobLinks: JobLink[]
   skillCategories: DocumentSkillCategory[]
+  achievements: Achievement[]
   experienceEntries: DocumentExperienceEntry[]
   educationEntries: DocumentEducationEntry[]
   certifications: Certification[]
@@ -218,6 +220,10 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
         .sort(compareSortOrder),
     }))
 
+  const achievements = Object.values(data.achievements)
+    .filter((item) => item.profileId === profileId && item.enabled && (item.name.trim() || item.description.trim()))
+    .sort(compareSortOrder)
+
   const certifications = Object.values(data.certifications)
     .filter((entry) => entry.profileId === profileId && entry.enabled)
     .sort(compareSortOrder)
@@ -234,6 +240,7 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
     contacts,
     jobLinks,
     skillCategories,
+    achievements,
     experienceEntries,
     educationEntries,
     certifications,

@@ -18,10 +18,11 @@ export const createDefaultResumeSettings = (): ResumeSettings => ({
   sections: {
     summary: { enabled: true, sortOrder: 1, label: defaultResumeSectionLabels.summary },
     skills: { enabled: true, sortOrder: 2, label: defaultResumeSectionLabels.skills },
-    experience: { enabled: true, sortOrder: 3, label: defaultResumeSectionLabels.experience },
-    education: { enabled: true, sortOrder: 4, label: defaultResumeSectionLabels.education },
-    certifications: { enabled: true, sortOrder: 5, label: defaultResumeSectionLabels.certifications },
-    references: { enabled: true, sortOrder: 6, label: defaultResumeSectionLabels.references },
+    achievements: { enabled: true, sortOrder: 3, label: defaultResumeSectionLabels.achievements },
+    experience: { enabled: true, sortOrder: 4, label: defaultResumeSectionLabels.experience },
+    education: { enabled: true, sortOrder: 5, label: defaultResumeSectionLabels.education },
+    certifications: { enabled: true, sortOrder: 6, label: defaultResumeSectionLabels.certifications },
+    references: { enabled: true, sortOrder: 7, label: defaultResumeSectionLabels.references },
   },
 })
 
@@ -31,6 +32,7 @@ export const createEmptyDataState = (): AppDataState => ({
   profileLinks: {},
   skillCategories: {},
   skills: {},
+  achievements: {},
   experienceEntries: {},
   experienceBullets: {},
   educationEntries: {},

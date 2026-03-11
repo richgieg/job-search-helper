@@ -110,6 +110,28 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
                 ) : null}
               </section>
             )
+          case 'achievements':
+            return (
+              <section key="achievements" className={sectionClassName}>
+                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">{orderedSection.label}</h3>
+                {documentData.achievements.length > 0 ? (
+                  <ul className="mt-4 list-disc space-y-2 pl-10 text-sm leading-4.5 text-black">
+                    {documentData.achievements.map((item) => {
+                      const name = item.name.trim()
+                      const description = item.description.trim()
+
+                      return (
+                        <li key={item.id}>
+                          {name ? <span className="font-semibold">{name}</span> : null}
+                          {name && description ? ': ' : null}
+                          {description || (!name ? 'Achievement details not set' : null)}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                ) : null}
+              </section>
+            )
           case 'experience':
             return (
               <section key="experience" className={sectionClassName}>

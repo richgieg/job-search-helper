@@ -259,6 +259,7 @@ Notes:
 - duplicating a job profile into another job profile may target the same job or a different job
 - duplicating a profile should also duplicate its `resumeSettings`
 - duplicated resume settings should preserve section labels
+- duplicating a profile should also duplicate its `Achievement` records
 
 ### `deleteProfile(input)`
 
@@ -301,6 +302,18 @@ These actions should all:
 - `updateSkill(input)`
 - `deleteSkill(input)`
 - `reorderSkills(input)`
+
+### Achievement actions
+
+- `createAchievement(input)`
+- `updateAchievement(input)`
+- `deleteAchievement(input)`
+- `reorderAchievements(input)`
+
+These actions should:
+
+- support enable/disable behavior through the record's `enabled` field
+- preserve explicit per-profile ordering through `sortOrder`
 
 ### Experience actions
 

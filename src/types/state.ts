@@ -44,6 +44,7 @@ export type ThemePreference = 'light' | 'dark' | 'system'
 export type ResumeSectionKey =
   | 'summary'
   | 'skills'
+  | 'achievements'
   | 'experience'
   | 'education'
   | 'certifications'
@@ -105,6 +106,15 @@ export interface Skill {
   id: Id
   skillCategoryId: Id
   name: string
+  enabled: boolean
+  sortOrder: number
+}
+
+export interface Achievement {
+  id: Id
+  profileId: Id
+  name: string
+  description: string
   enabled: boolean
   sortOrder: number
 }
@@ -269,6 +279,7 @@ export interface AppDataState {
   profileLinks: Record<Id, ProfileLink>
   skillCategories: Record<Id, SkillCategory>
   skills: Record<Id, Skill>
+  achievements: Record<Id, Achievement>
   experienceEntries: Record<Id, ExperienceEntry>
   experienceBullets: Record<Id, ExperienceBullet>
   educationEntries: Record<Id, EducationEntry>

@@ -50,6 +50,7 @@ interface AppDataState {
   profileLinks: Record<Id, ProfileLink>;
   skillCategories: Record<Id, SkillCategory>;
   skills: Record<Id, Skill>;
+  achievements: Record<Id, Achievement>;
   experienceEntries: Record<Id, ExperienceEntry>;
   experienceBullets: Record<Id, ExperienceBullet>;
   educationEntries: Record<Id, EducationEntry>;
@@ -154,6 +155,7 @@ type JobStatusFilter = JobComputedStatus | 'all';
 type ResumeSectionKey =
   | 'summary'
   | 'skills'
+  | 'achievements'
   | 'experience'
   | 'education'
   | 'certifications'
@@ -239,6 +241,19 @@ interface Skill {
   id: Id;
   skillCategoryId: Id;
   name: string;
+  enabled: boolean;
+  sortOrder: number;
+}
+```
+
+### Achievement
+
+```ts
+interface Achievement {
+  id: Id;
+  profileId: Id;
+  name: string;
+  description: string;
   enabled: boolean;
   sortOrder: number;
 }
@@ -458,6 +473,7 @@ The following relationships should be enforced during normal app operations and 
 - `ProfileLink.profileId` points to an existing `Profile`.
 - `SkillCategory.profileId` points to an existing `Profile`.
 - `Skill.skillCategoryId` points to an existing `SkillCategory`.
+- `Achievement.profileId` points to an existing `Profile`.
 - `ExperienceEntry.profileId` points to an existing `Profile`.
 - If `ExperienceEntry.isCurrent === true`, then `ExperienceEntry.endDate` must be `null`.
 - `ExperienceBullet.experienceEntryId` points to an existing `ExperienceEntry`.
@@ -488,6 +504,7 @@ When duplicating a profile, create a new `Profile` and duplicate all profile-own
 - `ProfileLink`
 - `SkillCategory`
 - `Skill`
+- `Achievement`
 - `ExperienceEntry`
 - `ExperienceBullet`
 - `EducationEntry`
@@ -532,6 +549,7 @@ Cascade delete these records:
 - `ProfileLink`
 - `SkillCategory`
 - `Skill`
+- `Achievement`
 - `ExperienceEntry`
 - `ExperienceBullet`
 - `EducationEntry`

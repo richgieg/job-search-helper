@@ -12,10 +12,11 @@
           "sections": {
             "summary": { "enabled": true, "sortOrder": 1, "label": "Summary" },
             "skills": { "enabled": true, "sortOrder": 2, "label": "Skills" },
-            "experience": { "enabled": true, "sortOrder": 3, "label": "Experience" },
-            "education": { "enabled": true, "sortOrder": 4, "label": "Education" },
-            "certifications": { "enabled": true, "sortOrder": 5, "label": "Certifications" },
-            "references": { "enabled": true, "sortOrder": 6, "label": "References" }
+            "achievements": { "enabled": true, "sortOrder": 3, "label": "Achievements" },
+            "experience": { "enabled": true, "sortOrder": 4, "label": "Experience" },
+            "education": { "enabled": true, "sortOrder": 5, "label": "Education" },
+            "certifications": { "enabled": true, "sortOrder": 6, "label": "Certifications" },
+            "references": { "enabled": true, "sortOrder": 7, "label": "References" }
           }
         },
         "personalDetails": {
@@ -43,10 +44,11 @@
           "sections": {
             "summary": { "enabled": true, "sortOrder": 1, "label": "Summary" },
             "skills": { "enabled": true, "sortOrder": 2, "label": "Skills" },
-            "experience": { "enabled": true, "sortOrder": 3, "label": "Experience" },
-            "education": { "enabled": true, "sortOrder": 4, "label": "Education" },
-            "certifications": { "enabled": true, "sortOrder": 5, "label": "Certifications" },
-            "references": { "enabled": true, "sortOrder": 6, "label": "References" }
+            "achievements": { "enabled": true, "sortOrder": 3, "label": "Achievements" },
+            "experience": { "enabled": true, "sortOrder": 4, "label": "Experience" },
+            "education": { "enabled": true, "sortOrder": 5, "label": "Education" },
+            "certifications": { "enabled": true, "sortOrder": 6, "label": "Certifications" },
+            "references": { "enabled": true, "sortOrder": 7, "label": "References" }
           }
         },
         "personalDetails": {
@@ -74,10 +76,11 @@
           "sections": {
             "summary": { "enabled": true, "sortOrder": 1, "label": "Summary" },
             "skills": { "enabled": true, "sortOrder": 2, "label": "Skills" },
-            "experience": { "enabled": true, "sortOrder": 3, "label": "Experience" },
-            "education": { "enabled": true, "sortOrder": 4, "label": "Education" },
-            "certifications": { "enabled": true, "sortOrder": 5, "label": "Certifications" },
-            "references": { "enabled": true, "sortOrder": 6, "label": "References" }
+            "achievements": { "enabled": true, "sortOrder": 3, "label": "Achievements" },
+            "experience": { "enabled": true, "sortOrder": 4, "label": "Experience" },
+            "education": { "enabled": true, "sortOrder": 5, "label": "Education" },
+            "certifications": { "enabled": true, "sortOrder": 6, "label": "Certifications" },
+            "references": { "enabled": true, "sortOrder": 7, "label": "References" }
           }
         },
         "personalDetails": {
@@ -322,6 +325,17 @@
       "skill-cloud-patch-management": { "id": "skill-cloud-patch-management", "skillCategoryId": "skillcat-cloud-ops", "name": "Patch Management", "enabled": true, "sortOrder": 13 },
       "skill-cloud-change-management": { "id": "skill-cloud-change-management", "skillCategoryId": "skillcat-cloud-ops", "name": "Change Management", "enabled": true, "sortOrder": 14 },
       "skill-cloud-rightsizing": { "id": "skill-cloud-rightsizing", "skillCategoryId": "skillcat-cloud-ops", "name": "Resource Rightsizing", "enabled": true, "sortOrder": 15 }
+    },
+    "achievements": {
+      "achievement-se-1": { "id": "achievement-se-1", "profileId": "profile-base-software-engineer", "name": "API Reliability Initiative", "description": "Improved backend service resilience by tightening error handling, expanding automated coverage, and standardizing observability for high-traffic integrations.", "enabled": true, "sortOrder": 1 },
+      "achievement-se-2": { "id": "achievement-se-2", "profileId": "profile-base-software-engineer", "name": "Shared Audit Platform Delivery", "description": "Delivered a cross-team internal service workflow that simplified audit-related engineering work and reduced duplication across product teams.", "enabled": true, "sortOrder": 2 },
+      "achievement-se-3": { "id": "achievement-se-3", "profileId": "profile-base-software-engineer", "name": "Testing and Release Confidence", "description": "Raised release confidence for backend services by improving test depth and deployment checks in ways that made production changes easier to reason about.", "enabled": true, "sortOrder": 3 },
+      "achievement-devops-1": { "id": "achievement-devops-1", "profileId": "profile-base-devops-engineer", "name": "Deployment Workflow Standardization", "description": "Standardized CI/CD patterns across services so teams could ship through more consistent pipelines with fewer manual release steps.", "enabled": true, "sortOrder": 1 },
+      "achievement-devops-2": { "id": "achievement-devops-2", "profileId": "profile-base-devops-engineer", "name": "Platform Self-Service Improvement", "description": "Expanded reusable automation and infrastructure patterns that reduced operational friction for engineers working across shared environments.", "enabled": true, "sortOrder": 2 },
+      "achievement-devops-3": { "id": "achievement-devops-3", "profileId": "profile-base-devops-engineer", "name": "Operational Visibility Expansion", "description": "Improved alerting and dashboard coverage so rollout issues and service regressions could be detected and diagnosed faster.", "enabled": true, "sortOrder": 3 },
+      "achievement-cloud-1": { "id": "achievement-cloud-1", "profileId": "profile-base-cloud-engineer", "name": "AWS Environment Hardening", "description": "Strengthened shared AWS environment design through clearer access boundaries, better account structure, and more supportable operational patterns.", "enabled": true, "sortOrder": 1 },
+      "achievement-cloud-2": { "id": "achievement-cloud-2", "profileId": "profile-base-cloud-engineer", "name": "Cloud Resiliency Improvement", "description": "Improved reliability and recovery readiness for shared platform services by refining observability, alert tuning, and failure-response workflows.", "enabled": true, "sortOrder": 2 },
+      "achievement-cloud-3": { "id": "achievement-cloud-3", "profileId": "profile-base-cloud-engineer", "name": "Infrastructure Modernization Support", "description": "Helped modernize AWS-based environments with stronger Terraform patterns, clearer architecture expectations, and better day-to-day operability for engineering teams.", "enabled": true, "sortOrder": 3 }
     },
     "experienceEntries": {
       "exp-se-northstar": {

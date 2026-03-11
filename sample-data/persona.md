@@ -12,7 +12,7 @@ The sample data should represent one real person adapting shared professional hi
 
 ## Motivation
 
-Rowan is actively exploring new roles and wants one place to manage tailored resumes, cover letters, links, experience bullets, education bullets, and job-specific application materials.
+Rowan is actively exploring new roles and wants one place to manage tailored resumes, cover letters, links, achievements, experience bullets, education bullets, and job-specific application materials.
 
 The purpose of the sample data is to demonstrate how the app supports:
 
@@ -82,6 +82,20 @@ Guidance:
 - Titles should reflect a realistic career progression.
 - Experience entries should stay largely the same across profiles.
 - Experience bullets should be tailored for each of the three profile targets.
+
+## Achievements
+
+Achievements should be included in all three base profiles.
+
+Each base profile should include exactly 3 achievements tailored to that profile's target role.
+
+Achievement guidance:
+
+- use achievements for standout accomplishments that are strong enough to stand on their own outside a single job entry
+- keep them concise, outcome-oriented, and believable for the same underlying person
+- tailor the emphasis per profile without inventing a different career history
+- avoid simply copying an experience bullet and renaming it as an achievement
+- prefer accomplishments with clear impact such as reliability gains, delivery improvements, automation wins, architecture improvements, awards, or high-visibility technical contributions
 
 ## Education
 
@@ -173,6 +187,12 @@ Experience bullets should highlight:
 - performance and reliability improvements
 - developer experience improvements tied to software delivery
 
+Achievements should highlight:
+
+- notable backend or application-delivery outcomes
+- improvements to system quality, maintainability, or reliability
+- technical contributions that read as strong engineering wins without drifting into management language
+
 Education bullets should highlight:
 
 - software-focused coursework or capstone work
@@ -211,6 +231,12 @@ Experience bullets should highlight:
 - platform tooling
 - environment consistency and reduced manual work
 
+Achievements should highlight:
+
+- CI/CD or deployment improvements with visible engineering impact
+- platform automation or self-service improvements that reduced operational friction
+- reliability or incident-readiness wins that feel broader than a single task-level bullet
+
 Education bullets should highlight:
 
 - systems, automation, or infrastructure-oriented coursework
@@ -248,6 +274,12 @@ Experience bullets should highlight:
 - cost or performance optimization
 - security posture improvements
 - platform resiliency and operational visibility
+
+Achievements should highlight:
+
+- meaningful AWS or shared-infrastructure improvements
+- resiliency, security, or cost-optimization results that reinforce cloud judgment
+- architecture or modernization outcomes that support a cloud-platform identity
 
 Education bullets should highlight:
 

@@ -77,6 +77,7 @@ export const ProfilePage = () => {
       ? {
           summary: profile.resumeSettings.sections.summary.label,
           skills: profile.resumeSettings.sections.skills.label,
+          achievements: profile.resumeSettings.sections.achievements.label,
           experience: profile.resumeSettings.sections.experience.label,
           education: profile.resumeSettings.sections.education.label,
           certifications: profile.resumeSettings.sections.certifications.label,
@@ -85,6 +86,7 @@ export const ProfilePage = () => {
       : {
           summary: '',
           skills: '',
+          achievements: '',
           experience: '',
           education: '',
           certifications: '',
@@ -104,6 +106,7 @@ export const ProfilePage = () => {
     setResumeSectionLabels({
       summary: profile.resumeSettings.sections.summary.label,
       skills: profile.resumeSettings.sections.skills.label,
+      achievements: profile.resumeSettings.sections.achievements.label,
       experience: profile.resumeSettings.sections.experience.label,
       education: profile.resumeSettings.sections.education.label,
       certifications: profile.resumeSettings.sections.certifications.label,
