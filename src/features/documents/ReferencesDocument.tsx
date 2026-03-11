@@ -4,11 +4,12 @@ import { DocumentProfileHeader } from './DocumentProfileHeader'
 interface ReferencesSectionProps {
   documentData: ProfileDocumentData
   className?: string
+  heading?: string
 }
 
-export const ReferencesSection = ({ documentData, className = '' }: ReferencesSectionProps) => (
+export const ReferencesSection = ({ documentData, className = '', heading = 'References' }: ReferencesSectionProps) => (
   <section className={className}>
-    <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">References</h3>
+    <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">{heading}</h3>
     <div className="mt-4 space-y-4 text-sm text-black">
       {documentData.references.length > 0 ? (
         documentData.references.map((entry) => (
@@ -27,6 +28,6 @@ export const ReferencesSection = ({ documentData, className = '' }: ReferencesSe
 export const ReferencesDocument = ({ documentData }: ReferencesSectionProps) => (
   <>
     <DocumentProfileHeader documentData={documentData} />
-    <ReferencesSection documentData={documentData} />
+    <ReferencesSection documentData={documentData} heading="References" />
   </>
 )

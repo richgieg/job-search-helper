@@ -189,6 +189,27 @@ Behavior:
 - update `profile.resumeSettings.sections[section].enabled`
 - update `updatedAt`
 
+### `setResumeSectionLabel(input)`
+
+Updates the displayed label for a single resume section for a profile.
+
+```ts
+interface SetResumeSectionLabelInput {
+  profileId: Id;
+  section: ResumeSectionKey;
+  label: string;
+}
+```
+
+Behavior:
+
+- require an existing profile
+- require a valid `ResumeSectionKey`
+- trim the provided label
+- if the trimmed value is empty, fall back to the default label for that section
+- update `profile.resumeSettings.sections[section].label`
+- update `updatedAt`
+
 ### `reorderResumeSections(input)`
 
 Reorders resume sections for a profile.
@@ -205,7 +226,7 @@ Behavior:
 - require an existing profile
 - require every `ResumeSectionKey` exactly once in `orderedSections`
 - rewrite each section's `sortOrder`
-- preserve each section's existing `enabled` flag
+- preserve each section's existing `enabled` flag and `label`
 - update `updatedAt`
 
 ### `duplicateProfile(input)`
@@ -237,6 +258,7 @@ Notes:
 - duplicating a base profile into another base profile uses `targetJobId = null`
 - duplicating a job profile into another job profile may target the same job or a different job
 - duplicating a profile should also duplicate its `resumeSettings`
+- duplicated resume settings should preserve section labels
 
 ### `deleteProfile(input)`
 

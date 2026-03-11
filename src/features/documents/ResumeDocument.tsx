@@ -46,7 +46,7 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
           case 'summary':
             return (
               <section key="summary" className={index === 0 ? '' : 'mt-5'}>
-                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Summary</h3>
+                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">{orderedSection.label}</h3>
                 {summaryParagraphs.length > 0 ? (
                   <div className="mt-3 space-y-2.5 text-sm leading-4.5 text-black">
                     {summaryParagraphs.map((paragraph, paragraphIndex) => (
@@ -61,7 +61,7 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
           case 'skills':
             return (
               <section key="skills" className={sectionClassName}>
-                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Skills</h3>
+                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">{orderedSection.label}</h3>
                 {documentData.skillCategories.length > 0 ? (
                   <div className="mt-4 space-y-2">
                     {documentData.skillCategories.map((item) => (
@@ -86,7 +86,7 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
           case 'experience':
             return (
               <section key="experience" className={sectionClassName}>
-                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Experience</h3>
+                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">{orderedSection.label}</h3>
                 {documentData.experienceEntries.length > 0 ? (
                   <div className="mt-4 space-y-5">
                     {documentData.experienceEntries.map((entry) => {
@@ -132,7 +132,7 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
           case 'education':
             return (
               <section key="education" className={sectionClassName}>
-                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Education</h3>
+                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">{orderedSection.label}</h3>
                 <div className="mt-4 space-y-4 text-sm text-black">
                   {documentData.educationEntries.length > 0 ? (
                     documentData.educationEntries.map((entry) => (
@@ -151,7 +151,7 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
           case 'certifications':
             return (
               <section key="certifications" className={sectionClassName}>
-                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">Certifications</h3>
+                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">{orderedSection.label}</h3>
                 <div className="mt-4 text-sm leading-4.5 text-black">
                   {documentData.certifications.length > 0 ? (
                     <p className="print-keep-together">
@@ -167,7 +167,7 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
               </section>
             )
           case 'references':
-            return <ReferencesSection key="references" className={sectionClassName} documentData={documentData} />
+            return <ReferencesSection key="references" className={sectionClassName} documentData={documentData} heading={orderedSection.label} />
           default:
             return null
         }

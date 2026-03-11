@@ -8,6 +8,7 @@ import { ProfileChildEditors } from './ProfileChildEditors'
 import { useAppStore } from '../../store/app-store'
 import type { PersonalDetails, ResumeSectionKey } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
+import { normalizeResumeSectionLabel } from '../../utils/resume-section-labels'
 
 const createPersonalDetailsDraft = (personalDetails: PersonalDetails): PersonalDetails => ({
   ...personalDetails,
@@ -23,15 +24,6 @@ const emptyPersonalDetails: PersonalDetails = {
   city: '',
   state: '',
   postalCode: '',
-}
-
-const resumeSectionLabels: Record<ResumeSectionKey, string> = {
-  summary: 'Summary',
-  skills: 'Skills',
-  experience: 'Experience',
-  education: 'Education',
-  certifications: 'Certifications',
-  references: 'References',
 }
 
 const Field = ({
@@ -75,10 +67,30 @@ export const ProfilePage = () => {
   const jobsById = useAppStore((state) => state.data.jobs)
   const updateProfile = useAppStore((state) => state.actions.updateProfile)
   const setResumeSectionEnabled = useAppStore((state) => state.actions.setResumeSectionEnabled)
+  const setResumeSectionLabel = useAppStore((state) => state.actions.setResumeSectionLabel)
   const reorderResumeSections = useAppStore((state) => state.actions.reorderResumeSections)
   const [name, setName] = useState(profile?.name ?? '')
   const [summary, setSummary] = useState(profile?.summary ?? '')
   const [coverLetter, setCoverLetter] = useState(profile?.coverLetter ?? '')
+  const [resumeSectionLabels, setResumeSectionLabels] = useState<Record<ResumeSectionKey, string>>(
+    profile
+      ? {
+          summary: profile.resumeSettings.sections.summary.label,
+          skills: profile.resumeSettings.sections.skills.label,
+          experience: profile.resumeSettings.sections.experience.label,
+          education: profile.resumeSettings.sections.education.label,
+          certifications: profile.resumeSettings.sections.certifications.label,
+          references: profile.resumeSettings.sections.references.label,
+        }
+      : {
+          summary: '',
+          skills: '',
+          experience: '',
+          education: '',
+          certifications: '',
+          references: '',
+        },
+  )
   const [personalDetails, setPersonalDetails] = useState(profile ? createPersonalDetailsDraft(profile.personalDetails) : emptyPersonalDetails)
 
   useEffect(() => {
@@ -89,6 +101,14 @@ export const ProfilePage = () => {
     setName(profile.name)
     setSummary(profile.summary)
     setCoverLetter(profile.coverLetter)
+    setResumeSectionLabels({
+      summary: profile.resumeSettings.sections.summary.label,
+      skills: profile.resumeSettings.sections.skills.label,
+      experience: profile.resumeSettings.sections.experience.label,
+      education: profile.resumeSettings.sections.education.label,
+      certifications: profile.resumeSettings.sections.certifications.label,
+      references: profile.resumeSettings.sections.references.label,
+    })
     setPersonalDetails(createPersonalDetailsDraft(profile.personalDetails))
   }, [profile])
 
@@ -165,6 +185,27 @@ export const ProfilePage = () => {
       personalDetails: {
         [key]: value,
       },
+    })
+  }
+
+  const commitResumeSectionLabel = (section: ResumeSectionKey) => {
+    const nextLabel = normalizeResumeSectionLabel(section, resumeSectionLabels[section])
+
+    if (nextLabel !== resumeSectionLabels[section]) {
+      setResumeSectionLabels((current) => ({
+        ...current,
+        [section]: nextLabel,
+      }))
+    }
+
+    if (nextLabel === profile.resumeSettings.sections[section].label) {
+      return
+    }
+
+    setResumeSectionLabel({
+      profileId: profile.id,
+      section,
+      label: nextLabel,
     })
   }
 
@@ -266,15 +307,28 @@ export const ProfilePage = () => {
 
                 return (
                   <div key={resumeSection.section} className="flex flex-col gap-3 rounded-xl border border-app-border-muted p-4 md:flex-row md:items-center md:justify-between">
-                    <div className="flex items-center gap-3 text-sm font-medium text-app-text">
+                    <div className="flex min-w-0 items-center gap-3 text-sm font-medium text-app-text md:flex-1">
                       <OrderBadge value={index + 1} />
-                      <span>{resumeSectionLabels[resumeSection.section]}</span>
+                      <label className="min-w-0 flex-1">
+                        <span className="sr-only">Resume section label</span>
+                        <input
+                          className="w-full rounded-lg border border-app-border px-3 py-2 text-sm font-medium text-app-text outline-none transition focus:border-app-focus-ring"
+                          value={resumeSectionLabels[resumeSection.section]}
+                          onBlur={() => commitResumeSectionLabel(resumeSection.section)}
+                          onChange={(event) =>
+                            setResumeSectionLabels((current) => ({
+                              ...current,
+                              [resumeSection.section]: event.target.value,
+                            }))
+                          }
+                        />
+                      </label>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-end gap-2">
                       <ActionToggle
                         checked={resumeSection.enabled}
-                        label={`Enable ${resumeSectionLabels[resumeSection.section]} section`}
+                        label={`Enable ${resumeSection.label} section`}
                         onChange={(value) =>
                           setResumeSectionEnabled({
                             profileId: profile.id,

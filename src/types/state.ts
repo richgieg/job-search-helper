@@ -50,6 +50,7 @@ export type ResumeSectionKey =
 export interface ResumeSectionSettings {
   enabled: boolean
   sortOrder: number
+  label: string
 }
 
 export interface ResumeSettings {

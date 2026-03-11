@@ -84,6 +84,7 @@ Each reusable profile should support:
 - Resume settings
    - control whether each resume section is shown or hidden
    - control the order of resume sections
+   - customize the displayed label for each resume section
    - stored per profile so base profiles and job profiles can differ
 - Skill categories and skills
 - Professional experience entries
@@ -184,6 +185,7 @@ This allows the user to keep track of custom questions asked during online appli
 
 - Generated from either a base profile or a selected job-specific profile
 - Respects the profile's resume settings for section visibility and section order
+- Uses the profile's configured resume section labels for displayed headings
 - Exportable as printable HTML in MVP
 - Optional PDF in phase 2
 - Simple templates only in MVP

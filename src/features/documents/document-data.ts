@@ -46,6 +46,7 @@ export interface OrderedResumeSection {
   section: ResumeSectionKey
   enabled: boolean
   sortOrder: number
+  label: string
 }
 
 const compareSortOrder = <T extends { sortOrder: number }>(left: T, right: T) => left.sortOrder - right.sortOrder
@@ -151,6 +152,7 @@ export const getOrderedResumeSections = (profile: Profile): OrderedResumeSection
   Object.entries(profile.resumeSettings.sections)
     .map(([section, settings]) => ({
       section: section as ResumeSectionKey,
+      label: settings.label,
       enabled: settings.enabled,
       sortOrder: settings.sortOrder,
     }))

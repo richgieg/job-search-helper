@@ -1,5 +1,6 @@
 import { readStoredThemePreference } from '../app/theme'
 import type { AppDataState, AppUiState, PersonalDetails, ResumeSettings, ThemePreference } from '../types/state'
+import { defaultResumeSectionLabels } from '../utils/resume-section-labels'
 
 const createEmptyPersonalDetails = (): PersonalDetails => ({
   fullName: '',
@@ -15,12 +16,12 @@ const createEmptyPersonalDetails = (): PersonalDetails => ({
 
 export const createDefaultResumeSettings = (): ResumeSettings => ({
   sections: {
-    summary: { enabled: true, sortOrder: 1 },
-    skills: { enabled: true, sortOrder: 2 },
-    experience: { enabled: true, sortOrder: 3 },
-    education: { enabled: true, sortOrder: 4 },
-    certifications: { enabled: true, sortOrder: 5 },
-    references: { enabled: true, sortOrder: 6 },
+    summary: { enabled: true, sortOrder: 1, label: defaultResumeSectionLabels.summary },
+    skills: { enabled: true, sortOrder: 2, label: defaultResumeSectionLabels.skills },
+    experience: { enabled: true, sortOrder: 3, label: defaultResumeSectionLabels.experience },
+    education: { enabled: true, sortOrder: 4, label: defaultResumeSectionLabels.education },
+    certifications: { enabled: true, sortOrder: 5, label: defaultResumeSectionLabels.certifications },
+    references: { enabled: true, sortOrder: 6, label: defaultResumeSectionLabels.references },
   },
 })
 

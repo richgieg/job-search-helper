@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState, emptyProfileDefaults } from './create-initial-state'
+import { normalizeResumeSectionLabel } from '../utils/resume-section-labels'
 import type {
   ApplicationQuestion,
   AppDataState,
@@ -41,6 +42,7 @@ interface AppStoreState {
       personalDetails?: Partial<PersonalDetails>
     }) => void
     setResumeSectionEnabled: (input: { profileId: Id; section: ResumeSectionKey; enabled: boolean }) => void
+    setResumeSectionLabel: (input: { profileId: Id; section: ResumeSectionKey; label: string }) => void
     reorderResumeSections: (input: { profileId: Id; orderedSections: ResumeSectionKey[] }) => void
     duplicateProfile: (input: { sourceProfileId: Id; targetJobId?: Id | null; name?: string }) => Id | null
     deleteProfile: (profileId: Id) => void
@@ -196,41 +198,6 @@ const hasExactResumeSections = (orderedSections: ResumeSectionKey[]) => {
   }
 
   return resumeSectionKeys.every((section) => sectionSet.has(section))
-}
-
-const normalizeResumeSettings = (resumeSettings?: ResumeSettings): ResumeSettings => {
-  const defaults = createDefaultResumeSettings()
-
-  if (!resumeSettings) {
-    return defaults
-  }
-
-  const sections = resumeSectionKeys.reduce<Record<ResumeSectionKey, { enabled: boolean; sortOrder: number }>>((accumulator, section) => {
-    const sourceSection = resumeSettings.sections?.[section]
-    const defaultSection = defaults.sections[section]
-
-    accumulator[section] = {
-      enabled: sourceSection?.enabled ?? defaultSection.enabled,
-      sortOrder: sourceSection?.sortOrder ?? defaultSection.sortOrder,
-    }
-
-    return accumulator
-  }, {} as Record<ResumeSectionKey, { enabled: boolean; sortOrder: number }>)
-
-  const orderedSections = resumeSectionKeys
-    .slice()
-    .sort((left, right) => sections[left].sortOrder - sections[right].sortOrder)
-
-  orderedSections.forEach((section, index) => {
-    sections[section] = {
-      ...sections[section],
-      sortOrder: index + 1,
-    }
-  })
-
-  return {
-    sections,
-  }
 }
 
 const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: string): AppDataState => {
@@ -628,6 +595,41 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         },
       }))
     },
+    setResumeSectionLabel: ({ profileId, section, label }) => {
+      const existingProfile = get().data.profiles[profileId]
+
+      if (!existingProfile) {
+        return
+      }
+
+      const nextLabel = normalizeResumeSectionLabel(section, label)
+
+      if (existingProfile.resumeSettings.sections[section].label === nextLabel) {
+        return
+      }
+
+      set((state) => ({
+        data: {
+          ...state.data,
+          profiles: {
+            ...state.data.profiles,
+            [profileId]: {
+              ...existingProfile,
+              resumeSettings: {
+                sections: {
+                  ...existingProfile.resumeSettings.sections,
+                  [section]: {
+                    ...existingProfile.resumeSettings.sections[section],
+                    label: nextLabel,
+                  },
+                },
+              },
+              updatedAt: now(),
+            },
+          },
+        },
+      }))
+    },
     reorderResumeSections: ({ profileId, orderedSections }) => {
       const existingProfile = get().data.profiles[profileId]
 
@@ -680,7 +682,16 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         ...sourceProfile,
         id: createId(),
         name: nextName,
-        resumeSettings: normalizeResumeSettings(sourceProfile.resumeSettings),
+        resumeSettings: {
+          sections: {
+            summary: { ...sourceProfile.resumeSettings.sections.summary },
+            skills: { ...sourceProfile.resumeSettings.sections.skills },
+            experience: { ...sourceProfile.resumeSettings.sections.experience },
+            education: { ...sourceProfile.resumeSettings.sections.education },
+            certifications: { ...sourceProfile.resumeSettings.sections.certifications },
+            references: { ...sourceProfile.resumeSettings.sections.references },
+          },
+        },
         jobId: targetJobId === undefined ? sourceProfile.jobId : targetJobId,
         clonedFromProfileId: sourceProfileId,
         createdAt: timestamp,

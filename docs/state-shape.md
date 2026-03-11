@@ -202,6 +202,7 @@ interface ResumeSettings {
 interface ResumeSectionSettings {
   enabled: boolean;
   sortOrder: number;
+  label: string;
 }
 ```
 
