@@ -1,6 +1,8 @@
-import { Children, type ReactNode, useState } from 'react'
+import { Children, type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { AddIconButton } from './CompactActionControls'
+
+const HEADER_ACTION_VISIBLE_RATIO_THRESHOLD = 0.5
 
 interface CollapsiblePanelProps {
   title: string
@@ -16,6 +18,7 @@ interface CollapsiblePanelProps {
   headerActions?: ReactNode
   headerActionContent?: ReactNode
   contentClassName?: string
+  showBottomActionWhenHeaderHidden?: boolean
 }
 
 export const CollapsiblePanel = ({
@@ -32,10 +35,34 @@ export const CollapsiblePanel = ({
   headerActions,
   headerActionContent,
   contentClassName,
+  showBottomActionWhenHeaderHidden = false,
 }: CollapsiblePanelProps) => {
   const [expanded, setExpanded] = useState(defaultExpanded)
+  const [isHeaderActionVisible, setIsHeaderActionVisible] = useState(true)
+  const headerActionRef = useRef<HTMLDivElement | null>(null)
   const isExpanded = collapsible ? expanded : true
   const hasContent = Children.count(children) > 0
+  const shouldRenderTopAction = (!collapsible || isExpanded) && Boolean(actionLabel && onAction)
+  const shouldReserveBottomActionSpace = showBottomActionWhenHeaderHidden && shouldRenderTopAction && hasContent
+  const shouldShowBottomAction = shouldReserveBottomActionSpace && !isHeaderActionVisible
+
+  useEffect(() => {
+    if (!showBottomActionWhenHeaderHidden || !shouldRenderTopAction || !headerActionRef.current) {
+      setIsHeaderActionVisible(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsHeaderActionVisible(entry?.isIntersecting === true && entry.intersectionRatio >= HEADER_ACTION_VISIBLE_RATIO_THRESHOLD)
+      },
+      { threshold: HEADER_ACTION_VISIBLE_RATIO_THRESHOLD },
+    )
+
+    observer.observe(headerActionRef.current)
+
+    return () => observer.disconnect()
+  }, [showBottomActionWhenHeaderHidden, shouldRenderTopAction])
 
   const handleToggle = () => {
     if (!collapsible) {
@@ -86,20 +113,43 @@ export const CollapsiblePanel = ({
 
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           {headerActions}
-            {(!collapsible || isExpanded) && headerActionContent ? headerActionContent : null}
-          {(!collapsible || isExpanded) && actionLabel && onAction ? (
-            actionStyle === 'icon' ? (
-              <AddIconButton label={actionLabel} onAdd={handleAction} />
-            ) : (
-              <button className="rounded-xl bg-app-primary px-4 py-2 text-sm font-medium text-app-primary-contrast hover:bg-app-primary-hover" onClick={handleAction} type="button">
-                {actionLabel}
-              </button>
-            )
+          {(!collapsible || isExpanded) && headerActionContent ? headerActionContent : null}
+          {shouldRenderTopAction ? (
+            <div ref={headerActionRef}>
+              {actionStyle === 'icon' ? (
+                <AddIconButton label={actionLabel!} onAdd={handleAction} />
+              ) : (
+                <button className="rounded-xl bg-app-primary px-4 py-2 text-sm font-medium text-app-primary-contrast hover:bg-app-primary-hover" onClick={handleAction} type="button">
+                  {actionLabel}
+                </button>
+              )}
+            </div>
           ) : null}
         </div>
       </div>
 
-      {isExpanded && hasContent ? <div className={['mt-4', contentClassName].filter(Boolean).join(' ')}>{children}</div> : null}
+      {isExpanded && hasContent ? (
+        <>
+          <div className={['mt-4', contentClassName].filter(Boolean).join(' ')}>{children}</div>
+          {shouldReserveBottomActionSpace ? (
+            <div className="mt-4 flex min-h-10 justify-end">
+              <button
+                aria-hidden={!shouldShowBottomAction}
+                className={[
+                  'rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text-muted transition-opacity hover:bg-app-surface-muted',
+                  shouldShowBottomAction ? 'opacity-100' : 'pointer-events-none opacity-0',
+                ].join(' ')}
+                disabled={!shouldShowBottomAction}
+                onClick={handleAction}
+                tabIndex={shouldShowBottomAction ? 0 : -1}
+                type="button"
+              >
+                {actionLabel}
+              </button>
+            </div>
+          ) : null}
+        </>
+      ) : null}
     </section>
   )
 }

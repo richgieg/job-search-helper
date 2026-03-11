@@ -1218,6 +1218,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
             setNewProfileLinkId(createdId)
           }
         }}
+        showBottomActionWhenHeaderHidden
         title="Links"
       >
         {hasProfileLinks ? (
@@ -1248,6 +1249,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
             setNewSkillCategoryId(createdId)
           }
         }}
+        showBottomActionWhenHeaderHidden
         title="Skills"
       >
         {hasSkillCategories ? (
@@ -1279,6 +1281,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         }}
         collapsible={hasExperienceEntries}
         description="Capture work history entries used in resumes and applications."
+        showBottomActionWhenHeaderHidden
         title="Experience"
       >
         {hasExperienceEntries ? (
@@ -1310,6 +1313,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         }}
         collapsible={hasEducationEntries}
         description="Store education entries that can be enabled or disabled per profile."
+        showBottomActionWhenHeaderHidden
         title="Education"
       >
         {hasEducationEntries ? (
@@ -1341,6 +1345,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         }}
         collapsible={hasCertifications}
         description="Track certifications and their optional credential metadata."
+        showBottomActionWhenHeaderHidden
         title="Certifications"
       >
         {hasCertifications ? (
@@ -1372,6 +1377,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
             setNewReferenceId(createdId)
           }
         }}
+        showBottomActionWhenHeaderHidden
         title="References"
       >
         {hasReferences ? (
