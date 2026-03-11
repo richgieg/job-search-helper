@@ -165,7 +165,15 @@ const scrollIntoViewIfNeeded = (element: HTMLElement) => {
   element.scrollIntoView({ behavior: 'smooth', block: 'end' })
 }
 
-const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
+const ProfileLinkRow = ({
+  profileLinkId,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  profileLinkId: string
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
   const profileLink = useAppStore((state) => state.data.profileLinks[profileLinkId])
   const profileLinksById = useAppStore((state) => state.data.profileLinks)
   const updateProfileLink = useAppStore((state) => state.actions.updateProfileLink)
@@ -174,6 +182,7 @@ const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
   const [name, setName] = useState(profileLink?.name ?? '')
   const [url, setUrl] = useState(profileLink?.url ?? '')
   const [enabled, setEnabled] = useState(profileLink?.enabled ?? true)
+  const rowRef = useRef<HTMLDivElement | null>(null)
 
   const profileLinkIds = useMemo(
     () =>
@@ -196,6 +205,15 @@ const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
     setUrl(profileLink.url)
     setEnabled(profileLink.enabled)
   }, [profileLink])
+
+  useEffect(() => {
+    if (!scrollIntoViewOnMount || !rowRef.current) {
+      return
+    }
+
+    scrollIntoViewIfNeeded(rowRef.current)
+    onScrollIntoViewComplete?.()
+  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
 
   if (!profileLink) {
     return null
@@ -227,7 +245,7 @@ const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
   const hasUrl = trimmedUrl.length > 0
 
   return (
-    <div className="rounded-xl border border-app-border-muted p-3">
+    <div className="rounded-xl border border-app-border-muted p-3" ref={rowRef} style={{ scrollMarginBottom: `${NEW_CARD_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <div className="grid gap-3 md:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)_auto] md:items-end">
         <TextField label="Link name" onBlur={commitName} value={name} onChange={setName} />
         <TextField label="URL" type="url" onBlur={commitUrl} value={url} onChange={setUrl} />
@@ -1118,6 +1136,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
   const createEducationEntry = useAppStore((state) => state.actions.createEducationEntry)
   const createCertification = useAppStore((state) => state.actions.createCertification)
   const createReference = useAppStore((state) => state.actions.createReference)
+  const [newProfileLinkId, setNewProfileLinkId] = useState<string | null>(null)
   const [newSkillCategoryId, setNewSkillCategoryId] = useState<string | null>(null)
   const [newExperienceEntryId, setNewExperienceEntryId] = useState<string | null>(null)
   const [newEducationEntryId, setNewEducationEntryId] = useState<string | null>(null)
@@ -1192,10 +1211,29 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         actionStyle="icon"
         collapsible={hasProfileLinks}
         description="Store the public URLs that should travel with this profile."
-        onAction={() => createProfileLink(profileId)}
+        onAction={() => {
+          const createdId = createProfileLink(profileId)
+
+          if (createdId) {
+            setNewProfileLinkId(createdId)
+          }
+        }}
         title="Links"
       >
-        {hasProfileLinks ? <div className="space-y-4">{profileLinkIds.map((id) => <ProfileLinkRow key={id} profileLinkId={id} />)}</div> : null}
+        {hasProfileLinks ? (
+          <div className="space-y-4">
+            {profileLinkIds.map((id) => (
+              <ProfileLinkRow
+                key={id}
+                profileLinkId={id}
+                scrollIntoViewOnMount={id === newProfileLinkId}
+                {...(id === newProfileLinkId
+                  ? { onScrollIntoViewComplete: () => setNewProfileLinkId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
+        ) : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel

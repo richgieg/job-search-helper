@@ -44,7 +44,7 @@ interface AppStoreState {
     reorderResumeSections: (input: { profileId: Id; orderedSections: ResumeSectionKey[] }) => void
     duplicateProfile: (input: { sourceProfileId: Id; targetJobId?: Id | null; name?: string }) => Id | null
     deleteProfile: (profileId: Id) => void
-    createProfileLink: (profileId: Id) => void
+    createProfileLink: (profileId: Id) => Id | null
     updateProfileLink: (input: {
       profileLinkId: Id
       changes: Partial<Pick<ProfileLink, 'name' | 'url' | 'enabled' | 'sortOrder'>>
@@ -723,7 +723,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const profile = get().data.profiles[profileId]
 
       if (!profile) {
-        return
+        return null
       }
 
       const profileLink: ProfileLink = {
@@ -752,6 +752,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           now(),
         ),
       }))
+
+      return profileLink.id
     },
     updateProfileLink: ({ profileLinkId, changes }) => {
       const existing = get().data.profileLinks[profileLinkId]
