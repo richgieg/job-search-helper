@@ -9,6 +9,7 @@ import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadg
 import { useAppStore } from '../store/app-store'
 import type { EmploymentType, Job, Profile, WorkArrangement } from '../types/state'
 import { employmentTypeOptions, workArrangementOptions } from '../utils/job-field-options'
+import { AUTO_SCROLL_MARGIN_BOTTOM_PX, useScrollIntoViewOnMount } from '../utils/use-scroll-into-view-on-mount'
 
 const TextField = ({
   label,
@@ -118,19 +119,6 @@ const createJobDraft = (job: Job): JobDraftState => ({
   notes: job.notes,
 })
 
-const NEW_ATTACHED_PROFILE_SCROLL_MARGIN_BOTTOM_PX = 96
-
-const scrollIntoViewIfNeeded = (element: HTMLElement) => {
-  const rect = element.getBoundingClientRect()
-  const isFullyVisible = rect.top >= 0 && rect.bottom + NEW_ATTACHED_PROFILE_SCROLL_MARGIN_BOTTOM_PX <= window.innerHeight
-
-  if (isFullyVisible) {
-    return
-  }
-
-  element.scrollIntoView({ behavior: 'smooth', block: 'end' })
-}
-
 const AttachedProfileRow = ({
   profile,
   onDelete,
@@ -146,20 +134,17 @@ const AttachedProfileRow = ({
 }) => {
   const rowRef = useRef<HTMLDivElement | null>(null)
 
-  useEffect(() => {
-    if (!scrollIntoViewOnMount || !rowRef.current) {
-      return
-    }
-
-    scrollIntoViewIfNeeded(rowRef.current)
-    onScrollIntoViewComplete?.()
-  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+  useScrollIntoViewOnMount({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+    ref: rowRef,
+  })
 
   return (
     <div
       className="flex flex-col gap-3 rounded-xl border border-app-border-muted px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
       ref={rowRef}
-      style={{ scrollMarginBottom: `${NEW_ATTACHED_PROFILE_SCROLL_MARGIN_BOTTOM_PX}px` }}
+      style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}
     >
       <div>
         <p className="font-medium text-app-text">{profile.name}</p>

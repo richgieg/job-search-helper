@@ -6,32 +6,9 @@ import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
 import type { ContactRelationshipType } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
+import { AUTO_SCROLL_MARGIN_BOTTOM_PX, useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(' • ')
-
-const NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX = 96
-const NEW_ITEM_SCROLL_MARGIN_TOP_PX = 24
-
-const scrollIntoViewIfNeeded = (element: HTMLElement) => {
-  const rect = element.getBoundingClientRect()
-  const isFullyVisible = rect.top >= 0 && rect.bottom + NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX <= window.innerHeight
-  const availableHeight = window.innerHeight - NEW_ITEM_SCROLL_MARGIN_TOP_PX - NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX
-  const isOversized = rect.height > availableHeight
-
-  if (isFullyVisible) {
-    return
-  }
-
-  if (isOversized) {
-    window.scrollTo({
-      top: Math.max(0, window.scrollY + rect.top - NEW_ITEM_SCROLL_MARGIN_TOP_PX),
-      behavior: 'smooth',
-    })
-    return
-  }
-
-  element.scrollIntoView({ behavior: 'smooth', block: 'end' })
-}
 
 const truncatePanelText = (value: string, maxLength: number) => {
   const normalized = value.replace(/\s+/g, ' ').trim()
@@ -236,14 +213,11 @@ const JobLinkCard = ({
     setDraft(link)
   }, [link])
 
-  useEffect(() => {
-    if (!scrollIntoViewOnMount || !cardRef.current) {
-      return
-    }
-
-    scrollIntoViewIfNeeded(cardRef.current)
-    onScrollIntoViewComplete?.()
-  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+  useScrollIntoViewOnMount({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+    ref: cardRef,
+  })
 
   if (!link || !draft) {
     return null
@@ -260,7 +234,7 @@ const JobLinkCard = ({
   const hasUrl = trimmedUrl.length > 0
 
   return (
-    <div className="rounded-xl border border-app-border-muted p-4" ref={cardRef} style={{ scrollMarginBottom: `${NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div className="rounded-xl border border-app-border-muted p-4" ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <div className="flex items-end gap-4">
         <div className="min-w-0 flex-1">
           <TextField placeholder="https://example.com/job" type="url" value={draft.url} onBlur={() => draft.url !== link.url && commitLinkChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
@@ -345,14 +319,11 @@ const JobContactCard = ({
     setDraft(contact)
   }, [contact])
 
-  useEffect(() => {
-    if (!scrollIntoViewOnMount || !cardRef.current) {
-      return
-    }
-
-    scrollIntoViewIfNeeded(cardRef.current)
-    onScrollIntoViewComplete?.()
-  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+  useScrollIntoViewOnMount({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+    ref: cardRef,
+  })
 
   if (!contact || !draft) {
     return null
@@ -372,7 +343,7 @@ const JobContactCard = ({
   ])
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -496,14 +467,11 @@ const InterviewCard = ({
     })
   }, [availableContacts])
 
-  useEffect(() => {
-    if (!scrollIntoViewOnMount || !cardRef.current) {
-      return
-    }
-
-    scrollIntoViewIfNeeded(cardRef.current)
-    onScrollIntoViewComplete?.()
-  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+  useScrollIntoViewOnMount({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+    ref: cardRef,
+  })
 
   if (!interview || !draft) {
     return null
@@ -529,7 +497,7 @@ const InterviewCard = ({
   }>
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         summary={formatInterviewSummary(draft.startAt)}
@@ -654,14 +622,11 @@ const ApplicationQuestionCard = ({
     setDraft(applicationQuestion)
   }, [applicationQuestion])
 
-  useEffect(() => {
-    if (!scrollIntoViewOnMount || !cardRef.current) {
-      return
-    }
-
-    scrollIntoViewIfNeeded(cardRef.current)
-    onScrollIntoViewComplete?.()
-  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+  useScrollIntoViewOnMount({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+    ref: cardRef,
+  })
 
   if (!applicationQuestion || !draft) {
     return null
@@ -678,7 +643,7 @@ const ApplicationQuestionCard = ({
   const summary = truncatePanelText(draft.answer, 180) || 'No answer'
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={

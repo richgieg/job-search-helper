@@ -7,6 +7,7 @@ import { useAppStore } from '../../store/app-store'
 import type { ExperienceEntry, ReferenceType } from '../../types/state'
 import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 import { moveOrderedItem } from '../../utils/reorder'
+import { AUTO_SCROLL_MARGIN_BOTTOM_PX, useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
 
 const TextField = ({
   label,
@@ -152,30 +153,6 @@ const formatDateRange = (startDate: string | null, endDate: string | null, isCur
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter((part): part is string => Boolean(part && part.trim())).join(' • ')
 
-const NEW_CARD_SCROLL_MARGIN_BOTTOM_PX = 96
-const NEW_CARD_SCROLL_MARGIN_TOP_PX = 24
-
-const scrollIntoViewIfNeeded = (element: HTMLElement) => {
-  const rect = element.getBoundingClientRect()
-  const isFullyVisible = rect.top >= 0 && rect.bottom + NEW_CARD_SCROLL_MARGIN_BOTTOM_PX <= window.innerHeight
-  const availableHeight = window.innerHeight - NEW_CARD_SCROLL_MARGIN_TOP_PX - NEW_CARD_SCROLL_MARGIN_BOTTOM_PX
-  const isOversized = rect.height > availableHeight
-
-  if (isFullyVisible) {
-    return
-  }
-
-  if (isOversized) {
-    window.scrollTo({
-      top: Math.max(0, window.scrollY + rect.top - NEW_CARD_SCROLL_MARGIN_TOP_PX),
-      behavior: 'smooth',
-    })
-    return
-  }
-
-  element.scrollIntoView({ behavior: 'smooth', block: 'end' })
-}
-
 const ProfileLinkRow = ({
   profileLinkId,
   scrollIntoViewOnMount = false,
@@ -217,14 +194,11 @@ const ProfileLinkRow = ({
     setEnabled(profileLink.enabled)
   }, [profileLink])
 
-  useEffect(() => {
-    if (!scrollIntoViewOnMount || !rowRef.current) {
-      return
-    }
-
-    scrollIntoViewIfNeeded(rowRef.current)
-    onScrollIntoViewComplete?.()
-  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+  useScrollIntoViewOnMount({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+    ref: rowRef,
+  })
 
   if (!profileLink) {
     return null
@@ -256,7 +230,7 @@ const ProfileLinkRow = ({
   const hasUrl = trimmedUrl.length > 0
 
   return (
-    <div className="rounded-xl border border-app-border-muted p-3" ref={rowRef} style={{ scrollMarginBottom: `${NEW_CARD_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div className="rounded-xl border border-app-border-muted p-3" ref={rowRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <div className="grid gap-3 md:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)_auto] md:items-end">
         <TextField label="Link name" onBlur={commitName} value={name} onChange={setName} />
         <TextField label="URL" type="url" onBlur={commitUrl} value={url} onChange={setUrl} />
@@ -515,14 +489,11 @@ const SkillCategoryCard = ({
     setEnabled(category.enabled)
   }, [category])
 
-  useEffect(() => {
-    if (!scrollIntoViewOnMount || !cardRef.current) {
-      return
-    }
-
-    scrollIntoViewIfNeeded(cardRef.current)
-    onScrollIntoViewComplete?.()
-  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+  useScrollIntoViewOnMount({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+    ref: cardRef,
+  })
 
   const summary = summarizeParts([countLabel(skillIds.length, 'skill')])
 
@@ -539,7 +510,7 @@ const SkillCategoryCard = ({
   }
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_CARD_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -652,14 +623,11 @@ const ExperienceCard = ({
     setDraft(entry)
   }, [entry])
 
-  useEffect(() => {
-    if (!scrollIntoViewOnMount || !cardRef.current) {
-      return
-    }
-
-    scrollIntoViewIfNeeded(cardRef.current)
-    onScrollIntoViewComplete?.()
-  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+  useScrollIntoViewOnMount({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+    ref: cardRef,
+  })
 
   const summary = summarizeParts([
     draft?.company || 'Unknown company',
@@ -676,7 +644,7 @@ const ExperienceCard = ({
   }
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_CARD_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -862,14 +830,11 @@ const EducationCard = ({
     setDraft(entry)
   }, [entry])
 
-  useEffect(() => {
-    if (!scrollIntoViewOnMount || !cardRef.current) {
-      return
-    }
-
-    scrollIntoViewIfNeeded(cardRef.current)
-    onScrollIntoViewComplete?.()
-  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+  useScrollIntoViewOnMount({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+    ref: cardRef,
+  })
 
   const summary = summarizeParts([
     draft?.school || 'No school',
@@ -881,7 +846,7 @@ const EducationCard = ({
   }
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_CARD_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -957,14 +922,11 @@ const CertificationCard = ({
     setDraft(certification)
   }, [certification])
 
-  useEffect(() => {
-    if (!scrollIntoViewOnMount || !cardRef.current) {
-      return
-    }
-
-    scrollIntoViewIfNeeded(cardRef.current)
-    onScrollIntoViewComplete?.()
-  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+  useScrollIntoViewOnMount({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+    ref: cardRef,
+  })
 
   const summary = summarizeParts([
     draft?.issuer || 'No issuer',
@@ -977,7 +939,7 @@ const CertificationCard = ({
   }
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_CARD_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -1056,14 +1018,11 @@ const ReferenceCard = ({
     setDraft(reference)
   }, [reference])
 
-  useEffect(() => {
-    if (!scrollIntoViewOnMount || !cardRef.current) {
-      return
-    }
-
-    scrollIntoViewIfNeeded(cardRef.current)
-    onScrollIntoViewComplete?.()
-  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+  useScrollIntoViewOnMount({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+    ref: cardRef,
+  })
 
   const summary = summarizeParts([
     draft?.type === 'professional' ? 'Professional' : 'Personal',
@@ -1075,7 +1034,7 @@ const ReferenceCard = ({
   }
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_CARD_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
