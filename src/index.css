@@ -182,18 +182,20 @@ button:disabled {
   cursor: not-allowed;
 }
 
-button[class*='border-app-border']:not(:hover):not(:focus-visible):not(:active),
+button:not(:disabled)[class*='border-app-border']:not(:hover):not(:focus-visible):not(:active),
 a[class*='border-app-border']:not(:hover):not(:focus-visible):not(:active),
 label[class*='border-app-border']:not(:hover):not(:focus-within):not(:active),
-button[class*='border-slate-300']:not(:hover):not(:focus-visible):not(:active),
+button:not(:disabled)[class*='border-slate-300']:not(:hover):not(:focus-visible):not(:active),
 a[class*='border-slate-300']:not(:hover):not(:focus-visible):not(:active),
 label[class*='border-slate-300']:not(:hover):not(:focus-within):not(:active) {
   background: var(--app-surface);
 }
 
-button[class*='border-app-danger-muted']:not(:hover):not(:focus-visible):not(:active),
+button:not(:disabled)[class*='border-app-danger-border']:not(:hover):not(:focus-visible):not(:active),
+a[class*='border-app-danger-border']:not(:hover):not(:focus-visible):not(:active),
+button:not(:disabled)[class*='border-app-danger-muted']:not(:hover):not(:focus-visible):not(:active),
 a[class*='border-app-danger-muted']:not(:hover):not(:focus-visible):not(:active),
-button[class*='border-rose-300']:not(:hover):not(:focus-visible):not(:active),
+button:not(:disabled)[class*='border-rose-300']:not(:hover):not(:focus-visible):not(:active),
 a[class*='border-rose-300']:not(:hover):not(:focus-visible):not(:active) {
   background: var(--app-surface);
 }
