@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState, emptyProfileDefaults } from './create-initial-state'
+import { defaultResumeSectionOrder } from '../utils/resume-section-labels'
 import { normalizeResumeSectionLabel } from '../utils/resume-section-labels'
 import type {
   Achievement,
@@ -217,7 +218,7 @@ const reorderSortableEntities = <T extends { id: Id; sortOrder: number }>(entiti
   return nextEntities
 }
 
-const resumeSectionKeys: ResumeSectionKey[] = ['summary', 'skills', 'achievements', 'experience', 'education', 'projects', 'certifications', 'references']
+const resumeSectionKeys: ResumeSectionKey[] = defaultResumeSectionOrder
 
 const normalizeEducationEntry = (
   existing: EducationEntry,

@@ -1,5 +1,16 @@
 import type { ResumeSectionKey } from '../types/state'
 
+export const defaultResumeSectionOrder: ResumeSectionKey[] = [
+  'summary',
+  'skills',
+  'achievements',
+  'experience',
+  'education',
+  'projects',
+  'certifications',
+  'references',
+]
+
 export const defaultResumeSectionLabels: Record<ResumeSectionKey, string> = {
   summary: 'Summary',
   skills: 'Skills',

@@ -1,6 +1,6 @@
 import { readStoredThemePreference } from '../app/theme'
 import type { AppDataState, AppUiState, PersonalDetails, ResumeSettings, ThemePreference } from '../types/state'
-import { defaultResumeSectionLabels } from '../utils/resume-section-labels'
+import { defaultResumeSectionLabels, defaultResumeSectionOrder } from '../utils/resume-section-labels'
 
 const createEmptyPersonalDetails = (): PersonalDetails => ({
   fullName: '',
@@ -15,16 +15,15 @@ const createEmptyPersonalDetails = (): PersonalDetails => ({
 })
 
 export const createDefaultResumeSettings = (): ResumeSettings => ({
-  sections: {
-    summary: { enabled: true, sortOrder: 1, label: defaultResumeSectionLabels.summary },
-    skills: { enabled: true, sortOrder: 2, label: defaultResumeSectionLabels.skills },
-    achievements: { enabled: true, sortOrder: 3, label: defaultResumeSectionLabels.achievements },
-    experience: { enabled: true, sortOrder: 4, label: defaultResumeSectionLabels.experience },
-    education: { enabled: true, sortOrder: 5, label: defaultResumeSectionLabels.education },
-    projects: { enabled: true, sortOrder: 6, label: defaultResumeSectionLabels.projects },
-    certifications: { enabled: true, sortOrder: 7, label: defaultResumeSectionLabels.certifications },
-    references: { enabled: true, sortOrder: 8, label: defaultResumeSectionLabels.references },
-  },
+  sections: defaultResumeSectionOrder.reduce<ResumeSettings['sections']>((sections, section, index) => {
+    sections[section] = {
+      enabled: true,
+      sortOrder: index + 1,
+      label: defaultResumeSectionLabels[section],
+    }
+
+    return sections
+  }, {} as ResumeSettings['sections']),
 })
 
 export const createEmptyDataState = (): AppDataState => ({

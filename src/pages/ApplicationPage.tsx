@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom'
 
 import { selectProfileDocumentData } from '../features/documents/document-data'
 import { useAppStore } from '../store/app-store'
+import { defaultResumeSectionLabels, defaultResumeSectionOrder } from '../utils/resume-section-labels'
+import type { ResumeSectionKey } from '../types/state'
 
 interface CopyValueItem {
   display: string
@@ -21,15 +23,24 @@ interface SectionNavItem {
   label: string
 }
 
+const applicationSectionIdByResumeSection: Record<Exclude<ResumeSectionKey, 'summary'>, string> = {
+  skills: 'skill-categories',
+  achievements: 'achievements',
+  experience: 'experience-entries',
+  education: 'education-entries',
+  projects: 'projects',
+  certifications: 'certifications',
+  references: 'references',
+}
+
 const applicationSectionNavItems: SectionNavItem[] = [
   { id: 'personal-info', label: 'Personal Info' },
-  { id: 'experience-entries', label: 'Experience' },
-  { id: 'achievements', label: 'Achievements' },
-  { id: 'education-entries', label: 'Education' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'certifications', label: 'Certifications' },
-  { id: 'skill-categories', label: 'Skills' },
-  { id: 'references', label: 'References' },
+  ...defaultResumeSectionOrder
+    .filter((section): section is Exclude<ResumeSectionKey, 'summary'> => section !== 'summary')
+    .map((section) => ({
+      id: applicationSectionIdByResumeSection[section],
+      label: defaultResumeSectionLabels[section],
+    })),
 ]
 
 const copyText = async (value: string) => {
