@@ -6,14 +6,14 @@ export const getActionIconButtonClassName = (tone: ActionButtonTone = 'neutral',
     tone === 'danger'
       ? disabled
         ? 'cursor-not-allowed border-app-danger-border bg-app-danger-soft text-app-danger-contrast focus-visible:outline-app-danger'
-        : 'border-app-danger-border text-app-danger enabled:hover:bg-app-danger-soft focus-visible:outline-app-danger'
+        : 'border-app-danger-border text-app-danger hover:bg-app-danger-soft focus-visible:outline-app-danger'
       : tone === 'primary'
         ? disabled
           ? 'cursor-not-allowed border-app-primary-muted bg-app-primary-muted text-app-text-disabled focus-visible:outline-app-focus-ring'
-          : 'border-app-primary bg-app-primary text-app-primary-contrast enabled:hover:bg-app-primary-hover enabled:hover:border-app-primary-hover focus-visible:outline-app-focus-ring'
+          : 'border-app-primary bg-app-primary text-app-primary-contrast hover:bg-app-primary-hover hover:border-app-primary-hover focus-visible:outline-app-focus-ring'
         : disabled
           ? 'cursor-not-allowed border-app-border-muted bg-app-surface-subtle text-app-text-disabled focus-visible:outline-app-focus-ring'
-          : 'border-app-border bg-app-surface text-app-text-muted enabled:hover:bg-app-surface-muted focus-visible:outline-app-focus-ring',
+          : 'border-app-border bg-app-surface text-app-text-muted hover:bg-app-surface-muted focus-visible:outline-app-focus-ring',
   ].join(' ')
 
 interface ActionToggleProps {

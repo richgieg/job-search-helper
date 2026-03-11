@@ -10,7 +10,7 @@ const buttonClassName = (disabled: boolean) =>
     'inline-flex h-10 w-10 items-center justify-center rounded-xl border bg-app-surface transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-focus-ring',
     disabled
       ? 'cursor-not-allowed border-app-border-muted bg-app-surface-subtle text-app-text-disabled'
-      : 'border-app-border text-app-text-muted enabled:hover:bg-app-surface-muted',
+      : 'border-app-border text-app-text-muted hover:bg-app-surface-muted',
   ].join(' ')
 
 export const ReorderButtons = ({ canMoveUp, canMoveDown, onMoveUp, onMoveDown }: ReorderButtonsProps) => {
