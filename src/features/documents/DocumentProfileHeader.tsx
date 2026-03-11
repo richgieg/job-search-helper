@@ -14,7 +14,7 @@ export const DocumentProfileHeader = ({ documentData }: DocumentProfileHeaderPro
     .map((value) => value.trim())
     .filter(Boolean)
   const links = documentData.profileLinks
-    .map((link) => `${link.name}: ${link.url}`.trim())
+    .map((link) => link.url.trim())
     .filter(Boolean)
 
   return (

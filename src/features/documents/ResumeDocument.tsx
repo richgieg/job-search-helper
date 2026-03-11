@@ -165,7 +165,7 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
               </section>
             )
           case 'references':
-            return <ReferencesSection key="references" documentData={documentData} />
+            return <ReferencesSection key="references" className={sectionClassName} documentData={documentData} />
           default:
             return null
         }

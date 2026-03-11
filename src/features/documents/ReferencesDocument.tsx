@@ -3,10 +3,11 @@ import { DocumentProfileHeader } from './DocumentProfileHeader'
 
 interface ReferencesSectionProps {
   documentData: ProfileDocumentData
+  className?: string
 }
 
-export const ReferencesSection = ({ documentData }: ReferencesSectionProps) => (
-  <section>
+export const ReferencesSection = ({ documentData, className = '' }: ReferencesSectionProps) => (
+  <section className={className}>
     <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">References</h3>
     <div className="mt-4 space-y-4 text-sm text-black">
       {documentData.references.length === 0 ? (
