@@ -260,6 +260,7 @@ Notes:
 - duplicating a profile should also duplicate its `resumeSettings`
 - duplicated resume settings should preserve section labels
 - duplicating a profile should also duplicate its `Achievement` records
+- duplicating a profile should also duplicate its `Project` and `ProjectBullet` records
 
 ### `deleteProfile(input)`
 
@@ -360,6 +361,29 @@ These actions should:
 - `updateEducationBullet(input)`
 - `deleteEducationBullet(input)`
 - `reorderEducationBullets(input)`
+
+### Project actions
+
+- `createProject(input)`
+- `updateProject(input)`
+- `deleteProject(input)`
+- `reorderProjects(input)`
+
+These actions should:
+
+- support enable/disable behavior through the record's `enabled` field
+- allow `organization` to be blank for personal or unaffiliated projects
+- store `startDate` and `endDate` as nullable date fields
+- reject or ignore invalid date ranges where both `startDate` and `endDate` are present and `startDate > endDate`
+
+`deleteProject()` must also delete all child `ProjectBullet` records for that project.
+
+### Project bullet actions
+
+- `createProjectBullet(input)`
+- `updateProjectBullet(input)`
+- `deleteProjectBullet(input)`
+- `reorderProjectBullets(input)`
 
 ### Certification actions
 
@@ -708,6 +732,8 @@ High-priority tests:
 - reordering interview contacts produces unique sequential `sortOrder` values
 - importing valid JSON replaces state
 - importing invalid JSON is rejected without mutating state
+- duplicating a profile copies projects and project bullets with new ids and preserved ordering
+- deleting a project cascades to its project bullets
 - computed status changes correctly as `appliedAt`, interviews, and `finalOutcome` change
 
 ## Recommended next step

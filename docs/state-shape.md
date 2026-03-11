@@ -55,6 +55,8 @@ interface AppDataState {
   experienceBullets: Record<Id, ExperienceBullet>;
   educationEntries: Record<Id, EducationEntry>;
   educationBullets: Record<Id, EducationBullet>;
+  projects: Record<Id, Project>;
+  projectBullets: Record<Id, ProjectBullet>;
   certifications: Record<Id, Certification>;
   references: Record<Id, Reference>;
   jobs: Record<Id, Job>;
@@ -158,6 +160,7 @@ type ResumeSectionKey =
   | 'achievements'
   | 'experience'
   | 'education'
+  | 'projects'
   | 'certifications'
   | 'references';
 ```
@@ -254,6 +257,29 @@ interface Achievement {
   profileId: Id;
   name: string;
   description: string;
+  enabled: boolean;
+  sortOrder: number;
+}
+```
+
+### Project
+
+```ts
+interface Project {
+  id: Id;
+  profileId: Id;
+  name: string;
+  organization: string;
+  startDate: IsoDate | null;
+  endDate: IsoDate | null;
+  enabled: boolean;
+  sortOrder: number;
+}
+
+interface ProjectBullet {
+  id: Id;
+  projectId: Id;
+  content: string;
   enabled: boolean;
   sortOrder: number;
 }
@@ -483,6 +509,10 @@ The following relationships should be enforced during normal app operations and 
 - `EducationEntry.endDate` is the completion date when `EducationEntry.status === 'graduated'`.
 - `EducationEntry.endDate` is the last attended date when `EducationEntry.status === 'attended'`.
 - `EducationBullet.educationEntryId` points to an existing `EducationEntry`.
+- `Project.profileId` points to an existing `Profile`.
+- If both `Project.startDate` and `Project.endDate` are present, then `Project.startDate <= Project.endDate`.
+- `Project.organization` may be blank to represent a personal or unaffiliated project.
+- `ProjectBullet.projectId` points to an existing `Project`.
 - `Certification.profileId` points to an existing `Profile`.
 - `Reference.profileId` points to an existing `Profile`.
 
@@ -509,6 +539,8 @@ When duplicating a profile, create a new `Profile` and duplicate all profile-own
 - `ExperienceBullet`
 - `EducationEntry`
 - `EducationBullet`
+- `Project`
+- `ProjectBullet`
 - `Certification`
 - `Reference`
 
@@ -527,6 +559,10 @@ Additional duplication rule for experience bullets:
 Additional duplication rule for education bullets:
 
 - when duplicating an `EducationEntry`, duplicate all of its `EducationBullet` records and re-point them to the new education entry
+
+Additional duplication rule for project bullets:
+
+- when duplicating a `Project`, duplicate all of its `ProjectBullet` records and re-point them to the new project
 
 ## Deletion rules
 
@@ -554,6 +590,8 @@ Cascade delete these records:
 - `ExperienceBullet`
 - `EducationEntry`
 - `EducationBullet`
+- `Project`
+- `ProjectBullet`
 - `Certification`
 - `Reference`
 
@@ -596,6 +634,8 @@ The following records can be hard deleted directly:
 - `ExperienceBullet`
 - `EducationEntry`
 - `EducationBullet`
+- `Project`
+- `ProjectBullet`
 - `Certification`
 - `Reference`
 - `JobLink`
@@ -609,6 +649,7 @@ Additional rule:
 - deleting a `SkillCategory` should also delete all `Skill` records that belong to that category
 - deleting an `ExperienceEntry` should also delete all `ExperienceBullet` records that belong to that entry
 - deleting an `EducationEntry` should also delete all `EducationBullet` records that belong to that entry
+- deleting a `Project` should also delete all `ProjectBullet` records that belong to that project
 - deleting an `Interview` should also delete all `InterviewContact` records that belong to that interview
 
 ### Generated outputs and deletion
@@ -632,6 +673,7 @@ Examples:
 
 - deleting a job removes its job profiles, links, contacts, interviews, and interview-contact associations
 - deleting a profile removes its skill categories, skills, experience entries, education entries, certifications, and references
+- deleting a profile removes its skill categories, skills, achievements, experience entries, education entries, projects, certifications, and references
 
 Recommended improvement for the MVP:
 
@@ -639,7 +681,7 @@ Recommended improvement for the MVP:
 
 Example:
 
-> Delete profile? This will also remove 3 skill categories, 12 skills, 4 experience entries, 2 education entries, 1 certification, and 3 references.
+> Delete profile? This will also remove 3 skill categories, 12 skills, 2 achievements, 4 experience entries, 2 education entries, 3 projects, 1 certification, and 3 references.
 
 ## Derived selectors
 
@@ -658,6 +700,8 @@ These values should be computed, not stored.
 - `getOrderedExperienceBullets(experienceEntryId)`
 - `getOrderedEducationEntries(profileId)`
 - `getOrderedEducationBullets(educationEntryId)`
+- `getOrderedProjects(profileId)`
+- `getOrderedProjectBullets(projectId)`
 - `getOrderedCertifications(profileId)`
 - `getOrderedReferences(profileId)`
 

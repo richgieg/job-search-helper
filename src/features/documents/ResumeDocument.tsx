@@ -55,6 +55,28 @@ const formatEducationDateDisplay = (input: {
   return input.status === 'in_progress' ? 'In progress' : 'Date not set'
 }
 
+const formatProjectDateDisplay = (input: {
+  startDate: string | null
+  endDate: string | null
+}) => {
+  const start = input.startDate ? formatMonthYear(input.startDate) : ''
+  const end = input.endDate ? formatMonthYear(input.endDate) : ''
+
+  if (start && end) {
+    return `${start} – ${end}`
+  }
+
+  if (start) {
+    return `${start} – Present`
+  }
+
+  if (end) {
+    return end
+  }
+
+  return ''
+}
+
 export const ResumeDocument = ({ documentData }: { documentData: ProfileDocumentData }) => {
   const summaryParagraphs = documentData.profile.summary
     .split(/\n+/g)
@@ -212,6 +234,44 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
                       )
                     })
                   ) : null}
+                </div>
+              </section>
+            )
+          case 'projects':
+            return (
+              <section key="projects" className={sectionClassName}>
+                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">{orderedSection.label}</h3>
+                <div className="mt-4 space-y-4 text-sm text-black">
+                  {documentData.projectEntries.length > 0
+                    ? documentData.projectEntries.map((item) => {
+                        const [firstBullet, ...remainingBullets] = item.bullets
+                        const dateRange = formatProjectDateDisplay(item.entry)
+
+                        return (
+                          <div key={item.entry.id}>
+                            <div className="print-keep-together">
+                              <div className="resume-experience-header">
+                                <p className="font-semibold text-black">{item.entry.name || 'Project'}</p>
+                                {dateRange ? <p className="resume-experience-date text-black">{dateRange}</p> : null}
+                              </div>
+                              {item.entry.organization ? <p className="italic">{item.entry.organization}</p> : null}
+                              {firstBullet ? (
+                                <ul className="mt-3 list-disc pl-10 text-sm leading-4.5 text-black">
+                                  <li>{firstBullet.content}</li>
+                                </ul>
+                              ) : null}
+                            </div>
+                            {remainingBullets.length > 0 ? (
+                              <ul className="mt-2 list-disc space-y-2 pl-10 text-sm leading-4.5 text-black">
+                                {remainingBullets.map((bullet) => (
+                                  <li key={bullet.id}>{bullet.content}</li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </div>
+                        )
+                      })
+                    : null}
                 </div>
               </section>
             )

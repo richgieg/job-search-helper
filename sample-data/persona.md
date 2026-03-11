@@ -12,7 +12,7 @@ The sample data should represent one real person adapting shared professional hi
 
 ## Motivation
 
-Rowan is actively exploring new roles and wants one place to manage tailored resumes, cover letters, links, achievements, experience bullets, education bullets, and job-specific application materials.
+Rowan is actively exploring new roles and wants one place to manage tailored resumes, cover letters, links, achievements, projects, experience bullets, education bullets, and job-specific application materials.
 
 The purpose of the sample data is to demonstrate how the app supports:
 
@@ -96,6 +96,40 @@ Achievement guidance:
 - tailor the emphasis per profile without inventing a different career history
 - avoid simply copying an experience bullet and renaming it as an achievement
 - prefer accomplishments with clear impact such as reliability gains, delivery improvements, automation wins, architecture improvements, awards, or high-visibility technical contributions
+
+## Projects
+
+Projects should be included in all three base profiles.
+
+Each base profile should include exactly 3 projects tailored to that profile's target role.
+
+Project structure guidance:
+
+- include exactly 2 professional projects and 1 personal project per base profile
+- one professional project should be associated with Rowan's current company, Northstar Health Systems, and should be in progress
+- the second professional project should be associated with either Blue Ridge Commerce or Harbor Technical Services and should be completed
+- the personal project should use a blank organization field rather than a filler value like "Independent"
+- use nullable `startDate` and `endDate`; for the ongoing project, set `endDate` to `null`
+
+Project content guidance:
+
+- keep the projects believable extensions of Rowan's real work history rather than unrelated side stories
+- use project bullets to show role-specific emphasis for software engineering, DevOps, or cloud engineering
+- make the professional projects feel distinct from the main experience bullets by framing them as named initiatives, platforms, migrations, or internal tools
+- let the personal project demonstrate curiosity or depth, but keep it grounded and technically credible
+- avoid inventing projects that imply a different employer history or a different seniority level than the rest of the persona
+
+Suggested mix per profile:
+
+1. Ongoing professional project at Northstar Health Systems
+2. Completed professional project at a prior employer
+3. Personal project with no organization
+
+Tailoring direction:
+
+- Software Engineer: emphasize application architecture, backend services, data flows, internal developer tools, or product-adjacent systems
+- DevOps Engineer: emphasize CI/CD systems, deployment automation, internal platforms, observability tooling, or reliability automation
+- Cloud Engineer: emphasize AWS platform design, infrastructure modernization, resiliency, IAM/security improvements, or cost-aware cloud tooling
 
 ## Education
 
@@ -193,6 +227,12 @@ Achievements should highlight:
 - improvements to system quality, maintainability, or reliability
 - technical contributions that read as strong engineering wins without drifting into management language
 
+Projects should highlight:
+
+- backend-heavy or platform-adjacent projects with clear software ownership
+- project bullets that show design, implementation, and maintainability work
+- one personal project that still feels relevant to production-quality software engineering
+
 Education bullets should highlight:
 
 - software-focused coursework or capstone work
@@ -237,6 +277,12 @@ Achievements should highlight:
 - platform automation or self-service improvements that reduced operational friction
 - reliability or incident-readiness wins that feel broader than a single task-level bullet
 
+Projects should highlight:
+
+- named automation or platform initiatives with strong delivery and operations themes
+- project bullets that show pipelines, repeatability, observability, or internal enablement
+- one personal project that reinforces automation, homelab-style systems thinking, or developer tooling without becoming gimmicky
+
 Education bullets should highlight:
 
 - systems, automation, or infrastructure-oriented coursework
@@ -280,6 +326,12 @@ Achievements should highlight:
 - meaningful AWS or shared-infrastructure improvements
 - resiliency, security, or cost-optimization results that reinforce cloud judgment
 - architecture or modernization outcomes that support a cloud-platform identity
+
+Projects should highlight:
+
+- named cloud or infrastructure initiatives with clear AWS or platform focus
+- project bullets that show architecture decisions, resiliency, security, or cost-awareness
+- one personal project that supports a cloud/platform identity, such as infrastructure automation, observability, or resilient hosted services
 
 Education bullets should highlight:
 

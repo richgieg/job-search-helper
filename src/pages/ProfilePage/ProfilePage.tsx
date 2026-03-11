@@ -80,6 +80,7 @@ export const ProfilePage = () => {
           achievements: profile.resumeSettings.sections.achievements.label,
           experience: profile.resumeSettings.sections.experience.label,
           education: profile.resumeSettings.sections.education.label,
+          projects: profile.resumeSettings.sections.projects.label,
           certifications: profile.resumeSettings.sections.certifications.label,
           references: profile.resumeSettings.sections.references.label,
         }
@@ -89,6 +90,7 @@ export const ProfilePage = () => {
           achievements: '',
           experience: '',
           education: '',
+          projects: '',
           certifications: '',
           references: '',
         },
@@ -109,6 +111,7 @@ export const ProfilePage = () => {
       achievements: profile.resumeSettings.sections.achievements.label,
       experience: profile.resumeSettings.sections.experience.label,
       education: profile.resumeSettings.sections.education.label,
+      projects: profile.resumeSettings.sections.projects.label,
       certifications: profile.resumeSettings.sections.certifications.label,
       references: profile.resumeSettings.sections.references.label,
     })

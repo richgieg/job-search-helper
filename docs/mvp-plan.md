@@ -64,7 +64,7 @@ This keeps job creation lightweight while still enabling tailored resumes, cover
 2. User adds a job.
 3. User decides whether the job is worth tailoring.
 4. User creates one or more job-specific profiles for that job by duplicating a base profile or an existing job profile.
-6. User tailors summary, achievements, experience bullets, education bullets, skills, references, and letter content for that job.
+6. User tailors summary, achievements, experience bullets, education bullets, project bullets, skills, references, and letter content for that job.
 6. User adds recruiter/hiring manager contacts.
 7. User selects one of the job's profiles and generates:
    - a resume
@@ -90,6 +90,7 @@ Each reusable profile should support:
 - Achievements with name, description, enabled state, and sort order
 - Professional experience entries with zero or more bullets
 - Education entries with zero or more bullets, attendance dates, and completion status
+- Project entries with optional organization, nullable start and end dates, and zero or more bullets
 - Certifications
 - References (professional and personal)
 - Zero or more profile links with user-defined names and URLs
@@ -187,12 +188,14 @@ This allows the user to keep track of custom questions asked during online appli
 - Generated from either a base profile or a selected job-specific profile
 - Respects the profile's resume settings for section visibility and section order
 - Uses the profile's configured resume section labels for displayed headings
-- Defaults to the following section order for new profiles: summary, skills, achievements, experience, education, certifications, references
+- Defaults to the following section order for new profiles: summary, skills, achievements, experience, education, projects, certifications, references
 - Renders enabled achievements as bullets before experience by default
 - Formats each achievement bullet as bold name followed by a colon and plain-text description
 - Renders enabled experience bullets beneath each enabled experience entry
 - Renders enabled education bullets beneath each enabled education entry
+- Renders enabled project bullets beneath each enabled project entry
 - Displays education entries using either an attendance range or a completion date depending on the entry status
+- Displays project entries using an optional organization line and a date range when either project date is present
 - Exportable as printable HTML in MVP
 - Optional PDF in phase 2
 - Simple templates only in MVP
@@ -212,6 +215,7 @@ This allows the user to keep track of custom questions asked during online appli
 - Every answer/value can be clicked to copy to clipboard
 - Can include achievements as name-and-description items if the selected profile has them enabled
 - Shows education entries using the full set of stored education fields as entered by the user
+- Shows projects using the stored name, organization, dates, and combined bullet text as entered by the user
 - Includes common sections used in application forms
 
 ### 7. Data portability

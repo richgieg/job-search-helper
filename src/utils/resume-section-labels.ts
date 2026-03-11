@@ -6,6 +6,7 @@ export const defaultResumeSectionLabels: Record<ResumeSectionKey, string> = {
   achievements: 'Achievements',
   experience: 'Experience',
   education: 'Education',
+  projects: 'Projects',
   certifications: 'Certifications',
   references: 'References',
 }

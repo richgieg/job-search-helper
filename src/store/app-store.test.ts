@@ -166,7 +166,8 @@ describe('app store reorder actions', () => {
     expect(initialProfile?.resumeSettings.sections.summary.sortOrder).toBe(1)
     expect(initialProfile?.resumeSettings.sections.summary.label).toBe('Summary')
     expect(initialProfile?.resumeSettings.sections.achievements.sortOrder).toBe(3)
-    expect(initialProfile?.resumeSettings.sections.references.sortOrder).toBe(7)
+    expect(initialProfile?.resumeSettings.sections.projects.sortOrder).toBe(6)
+    expect(initialProfile?.resumeSettings.sections.references.sortOrder).toBe(8)
 
     actions.setResumeSectionLabel({
       profileId,
@@ -182,7 +183,7 @@ describe('app store reorder actions', () => {
 
     actions.reorderResumeSections({
       profileId,
-      orderedSections: ['skills', 'achievements', 'experience', 'summary', 'education', 'certifications', 'references'],
+      orderedSections: ['skills', 'achievements', 'experience', 'summary', 'education', 'projects', 'certifications', 'references'],
     })
 
     const nextProfile = useAppStore.getState().data.profiles[profileId]
@@ -194,6 +195,7 @@ describe('app store reorder actions', () => {
       'experience',
       'summary',
       'education',
+      'projects',
       'certifications',
       'references',
     ])
@@ -474,6 +476,104 @@ describe('app store reorder actions', () => {
 
     expect(useAppStore.getState().data.educationEntries[educationEntryId]).toEqual(validEntry)
     expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).toBe(updatedAtBeforeInvalidRange)
+  })
+
+  it('reorders projects and project bullets and preview data reflects the new order', async () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    const firstProjectId = expectDefined(actions.createProject(profileId), 'Expected first project id')
+    const secondProjectId = expectDefined(actions.createProject(profileId), 'Expected second project id')
+
+    actions.updateProject({
+      projectId: firstProjectId,
+      changes: { name: 'Alpha', organization: 'Acme', startDate: '2024-01-01', endDate: '2024-03-01' },
+    })
+    actions.updateProject({
+      projectId: secondProjectId,
+      changes: { name: 'Beta', organization: '', startDate: '2024-04-01', endDate: '2024-05-01' },
+    })
+
+    const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
+    await waitForNextTick()
+
+    actions.reorderProjects({
+      profileId,
+      orderedIds: [secondProjectId, firstProjectId],
+    })
+
+    expect(useAppStore.getState().data.projects[secondProjectId]?.sortOrder).toBe(1)
+    expect(useAppStore.getState().data.projects[firstProjectId]?.sortOrder).toBe(2)
+    expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
+
+    actions.createProjectBullet(secondProjectId)
+    actions.createProjectBullet(secondProjectId)
+
+    const bulletIds = getOrderedIds(
+      Object.fromEntries(
+        Object.values(useAppStore.getState().data.projectBullets)
+          .filter((item) => item.projectId === secondProjectId)
+          .map((item) => [item.id, item]),
+      ),
+    )
+    const firstBulletId = expectDefined(bulletIds[0], 'Expected first project bullet id')
+    const secondBulletId = expectDefined(bulletIds[1], 'Expected second project bullet id')
+
+    actions.updateProjectBullet({
+      projectBulletId: firstBulletId,
+      changes: { content: 'First project bullet', enabled: true },
+    })
+    actions.updateProjectBullet({
+      projectBulletId: secondBulletId,
+      changes: { content: 'Second project bullet', enabled: true },
+    })
+
+    actions.reorderProjectBullets({
+      projectId: secondProjectId,
+      orderedIds: [secondBulletId, firstBulletId],
+    })
+
+    const preview = selectProfileDocumentData(useAppStore.getState().data, profileId)
+    expect(preview?.projectEntries.map((item) => item.entry.name)).toEqual(['Beta', 'Alpha'])
+    expect(preview?.projectEntries[0]?.bullets.map((bullet) => bullet.content)).toEqual([
+      'Second project bullet',
+      'First project bullet',
+    ])
+  })
+
+  it('rejects invalid project date ranges and excludes disabled projects from preview data', async () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+    const projectId = expectDefined(actions.createProject(profileId), 'Expected project id')
+
+    actions.updateProject({
+      projectId,
+      changes: { name: 'Portfolio rebuild', startDate: '2024-02-01', endDate: '2024-04-01', enabled: true },
+    })
+
+    const validProject = expectDefined(useAppStore.getState().data.projects[projectId], 'Expected valid project')
+    const updatedAtBeforeInvalidRange = useAppStore.getState().data.profiles[profileId]?.updatedAt
+    await waitForNextTick()
+
+    actions.updateProject({
+      projectId,
+      changes: { startDate: '2024-05-01' },
+    })
+
+    expect(useAppStore.getState().data.projects[projectId]).toEqual(validProject)
+    expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).toBe(updatedAtBeforeInvalidRange)
+    expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.projectEntries).toHaveLength(1)
+
+    actions.updateProject({
+      projectId,
+      changes: { enabled: false },
+    })
+
+    expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.projectEntries).toHaveLength(0)
   })
 
   it('reorders job contacts for a job', () => {
@@ -840,13 +940,24 @@ describe('app store reorder actions', () => {
     actions.setResumeSectionEnabled({ profileId, section: 'references', enabled: false })
     actions.reorderResumeSections({
       profileId,
-      orderedSections: ['experience', 'summary', 'skills', 'achievements', 'education', 'certifications', 'references'],
+      orderedSections: ['experience', 'summary', 'skills', 'achievements', 'education', 'projects', 'certifications', 'references'],
     })
 
     const achievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
     actions.updateAchievement({
       achievementId,
       changes: { name: 'Promotion', description: 'Promoted after leading a critical delivery' },
+    })
+    const projectId = expectDefined(actions.createProject(profileId), 'Expected project id')
+    actions.updateProject({
+      projectId,
+      changes: { name: 'Migration tool', organization: 'Acme', startDate: '2024-01-01', endDate: '2024-02-01' },
+    })
+    actions.createProjectBullet(projectId)
+    const projectBulletId = expectDefined(Object.keys(useAppStore.getState().data.projectBullets)[0], 'Expected project bullet id')
+    actions.updateProjectBullet({
+      projectBulletId,
+      changes: { content: 'Automated bulk migration workflow', enabled: true },
     })
 
     const duplicatedProfileId = expectDefined(
@@ -860,6 +971,7 @@ describe('app store reorder actions', () => {
       'skills',
       'achievements',
       'education',
+      'projects',
       'certifications',
       'references',
     ])
@@ -869,6 +981,21 @@ describe('app store reorder actions', () => {
     expect(duplicatedAchievement).toMatchObject({
       name: 'Promotion',
       description: 'Promoted after leading a critical delivery',
+      enabled: true,
+      sortOrder: 1,
+    })
+    const duplicatedProject = Object.values(useAppStore.getState().data.projects).find((item) => item.profileId === duplicatedProfileId)
+    expect(duplicatedProject).toMatchObject({
+      name: 'Migration tool',
+      organization: 'Acme',
+      startDate: '2024-01-01',
+      endDate: '2024-02-01',
+      enabled: true,
+      sortOrder: 1,
+    })
+    const duplicatedProjectBullet = Object.values(useAppStore.getState().data.projectBullets).find((item) => item.projectId === duplicatedProject?.id)
+    expect(duplicatedProjectBullet).toMatchObject({
+      content: 'Automated bulk migration workflow',
       enabled: true,
       sortOrder: 1,
     })
@@ -887,6 +1014,7 @@ describe('app store reorder actions', () => {
       'skills',
       'achievements',
       'education',
+      'projects',
       'certifications',
       'references',
     ])
@@ -894,6 +1022,69 @@ describe('app store reorder actions', () => {
       name: 'Promotion',
       description: 'Promoted after leading a critical delivery',
     })
+    expect(useAppStore.getState().data.projects[duplicatedProject!.id]).toMatchObject({
+      name: 'Migration tool',
+      organization: 'Acme',
+    })
+    expect(useAppStore.getState().data.projectBullets[duplicatedProjectBullet!.id]).toMatchObject({
+      content: 'Automated bulk migration workflow',
+    })
+  })
+
+  it('duplicates and cascades deletes projects and project bullets with their parent profile', () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    const originalProjectId = expectDefined(actions.createProject(profileId), 'Expected project id')
+    actions.updateProject({
+      projectId: originalProjectId,
+      changes: { name: 'Internal dashboard', organization: 'Acme', startDate: '2024-01-01', endDate: '2024-03-01' },
+    })
+    actions.createProjectBullet(originalProjectId)
+    const originalProjectBulletId = expectDefined(Object.keys(useAppStore.getState().data.projectBullets)[0], 'Expected project bullet id')
+    actions.updateProjectBullet({
+      projectBulletId: originalProjectBulletId,
+      changes: { content: 'Built analytics reporting view', enabled: true },
+    })
+
+    const duplicatedProfileId = expectDefined(actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
+    const duplicatedProject = expectDefined(
+      Object.values(useAppStore.getState().data.projects).find((item) => item.profileId === duplicatedProfileId),
+      'Expected duplicated project',
+    )
+
+    expect(duplicatedProject).toMatchObject({
+      name: 'Internal dashboard',
+      organization: 'Acme',
+      startDate: '2024-01-01',
+      endDate: '2024-03-01',
+      enabled: true,
+      sortOrder: 1,
+    })
+    expect(duplicatedProject.id).not.toBe(originalProjectId)
+
+    const duplicatedProjectBullet = expectDefined(
+      Object.values(useAppStore.getState().data.projectBullets).find((item) => item.projectId === duplicatedProject.id),
+      'Expected duplicated project bullet',
+    )
+
+    expect(duplicatedProjectBullet).toMatchObject({
+      content: 'Built analytics reporting view',
+      enabled: true,
+      sortOrder: 1,
+    })
+    expect(duplicatedProjectBullet.id).not.toBe(originalProjectBulletId)
+
+    actions.deleteProject(originalProjectId)
+    expect(Object.values(useAppStore.getState().data.projectBullets).filter((item) => item.projectId === originalProjectId)).toHaveLength(0)
+    expect(Object.values(useAppStore.getState().data.projectBullets).filter((item) => item.projectId === duplicatedProject.id)).toHaveLength(1)
+
+    actions.deleteProfile(duplicatedProfileId)
+
+    expect(Object.values(useAppStore.getState().data.projects).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(0)
+    expect(Object.values(useAppStore.getState().data.projectBullets).filter((item) => item.projectId === duplicatedProject.id)).toHaveLength(0)
   })
 
   it('duplicates and cascades deletes achievements with their parent profile', () => {

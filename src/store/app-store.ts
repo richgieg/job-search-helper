@@ -26,6 +26,8 @@ import type {
   PersonalDetails,
   Profile,
   ProfileLink,
+  Project,
+  ProjectBullet,
   Reference,
   ResumeSectionKey,
   ResumeSettings,
@@ -102,6 +104,20 @@ interface AppStoreState {
     }) => void
     deleteEducationBullet: (educationBulletId: Id) => void
     reorderEducationBullets: (input: { educationEntryId: Id; orderedIds: Id[] }) => void
+    createProject: (profileId: Id) => Id | null
+    updateProject: (input: {
+      projectId: Id
+      changes: Partial<Omit<Project, 'id' | 'profileId'>>
+    }) => void
+    deleteProject: (projectId: Id) => void
+    reorderProjects: (input: { profileId: Id; orderedIds: Id[] }) => void
+    createProjectBullet: (projectId: Id) => void
+    updateProjectBullet: (input: {
+      projectBulletId: Id
+      changes: Partial<Pick<ProjectBullet, 'content' | 'enabled' | 'sortOrder'>>
+    }) => void
+    deleteProjectBullet: (projectBulletId: Id) => void
+    reorderProjectBullets: (input: { projectId: Id; orderedIds: Id[] }) => void
     createCertification: (profileId: Id) => Id | null
     updateCertification: (input: {
       certificationId: Id
@@ -201,7 +217,7 @@ const reorderSortableEntities = <T extends { id: Id; sortOrder: number }>(entiti
   return nextEntities
 }
 
-const resumeSectionKeys: ResumeSectionKey[] = ['summary', 'skills', 'achievements', 'experience', 'education', 'certifications', 'references']
+const resumeSectionKeys: ResumeSectionKey[] = ['summary', 'skills', 'achievements', 'experience', 'education', 'projects', 'certifications', 'references']
 
 const normalizeEducationEntry = (
   existing: EducationEntry,
@@ -221,6 +237,19 @@ const normalizeEducationEntry = (
   }
 
   return nextEntry
+}
+
+const normalizeProject = (existing: Project, changes: Partial<Omit<Project, 'id' | 'profileId'>>): Project | null => {
+  const nextProject: Project = {
+    ...existing,
+    ...changes,
+  }
+
+  if (nextProject.startDate && nextProject.endDate && nextProject.startDate > nextProject.endDate) {
+    return null
+  }
+
+  return nextProject
 }
 
 const hasExactResumeSections = (orderedSections: ResumeSectionKey[]) => {
@@ -279,6 +308,7 @@ const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetPro
   const clonedSkillCategoryIds = new Map<Id, Id>()
   const clonedExperienceEntryIds = new Map<Id, Id>()
   const clonedEducationEntryIds = new Map<Id, Id>()
+  const clonedProjectIds = new Map<Id, Id>()
   const nextData: AppDataState = {
     ...data,
     profileLinks: { ...data.profileLinks },
@@ -289,6 +319,8 @@ const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetPro
     experienceBullets: { ...data.experienceBullets },
     educationEntries: { ...data.educationEntries },
     educationBullets: { ...data.educationBullets },
+    projects: { ...data.projects },
+    projectBullets: { ...data.projectBullets },
     certifications: { ...data.certifications },
     references: { ...data.references },
   }
@@ -388,6 +420,30 @@ const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetPro
       nextData.educationBullets[cloned.id] = cloned
     })
 
+  Object.values(data.projects)
+    .filter((item) => item.profileId === sourceProfileId)
+    .forEach((item) => {
+      const newId = createId()
+      clonedProjectIds.set(item.id, newId)
+      const cloned: Project = {
+        ...item,
+        id: newId,
+        profileId: targetProfileId,
+      }
+      nextData.projects[cloned.id] = cloned
+    })
+
+  Object.values(data.projectBullets)
+    .filter((item) => clonedProjectIds.has(item.projectId))
+    .forEach((item) => {
+      const cloned: ProjectBullet = {
+        ...item,
+        id: createId(),
+        projectId: clonedProjectIds.get(item.projectId)!,
+      }
+      nextData.projectBullets[cloned.id] = cloned
+    })
+
   Object.values(data.certifications)
     .filter((item) => item.profileId === sourceProfileId)
     .forEach((item) => {
@@ -424,6 +480,11 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
       .filter((item) => item.profileId === profileId)
       .map((item) => item.id),
   )
+  const projectIds = new Set(
+    Object.values(data.projects)
+      .filter((item) => item.profileId === profileId)
+      .map((item) => item.id),
+  )
 
   const nextProfiles = { ...data.profiles }
   const nextProfileLinks = { ...data.profileLinks }
@@ -434,6 +495,8 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
   const nextExperienceBullets = { ...data.experienceBullets }
   const nextEducationEntries = { ...data.educationEntries }
   const nextEducationBullets = { ...data.educationBullets }
+  const nextProjects = { ...data.projects }
+  const nextProjectBullets = { ...data.projectBullets }
   const nextCertifications = { ...data.certifications }
   const nextReferences = { ...data.references }
 
@@ -498,6 +561,18 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
     }
   })
 
+  Object.values(data.projects).forEach((item) => {
+    if (item.profileId === profileId) {
+      delete nextProjects[item.id]
+    }
+  })
+
+  Object.values(data.projectBullets).forEach((item) => {
+    if (projectIds.has(item.projectId)) {
+      delete nextProjectBullets[item.id]
+    }
+  })
+
   Object.values(data.certifications).forEach((item) => {
     if (item.profileId === profileId) {
       delete nextCertifications[item.id]
@@ -521,6 +596,8 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
     experienceBullets: nextExperienceBullets,
     educationEntries: nextEducationEntries,
     educationBullets: nextEducationBullets,
+    projects: nextProjects,
+    projectBullets: nextProjectBullets,
     certifications: nextCertifications,
     references: nextReferences,
   }
@@ -561,6 +638,25 @@ const deleteEducationEntryCascade = (data: AppDataState, educationEntryId: Id): 
     ...data,
     educationEntries: nextEducationEntries,
     educationBullets: nextEducationBullets,
+  }
+}
+
+const deleteProjectCascade = (data: AppDataState, projectId: Id): AppDataState => {
+  const nextProjects = { ...data.projects }
+  const nextProjectBullets = { ...data.projectBullets }
+
+  delete nextProjects[projectId]
+
+  Object.values(data.projectBullets).forEach((item) => {
+    if (item.projectId === projectId) {
+      delete nextProjectBullets[item.id]
+    }
+  })
+
+  return {
+    ...data,
+    projects: nextProjects,
+    projectBullets: nextProjectBullets,
   }
 }
 
@@ -790,6 +886,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
             achievements: { ...sourceProfile.resumeSettings.sections.achievements },
             experience: { ...sourceProfile.resumeSettings.sections.experience },
             education: { ...sourceProfile.resumeSettings.sections.education },
+            projects: { ...sourceProfile.resumeSettings.sections.projects },
             certifications: { ...sourceProfile.resumeSettings.sections.certifications },
             references: { ...sourceProfile.resumeSettings.sections.references },
           },
@@ -1687,6 +1784,220 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
             educationBullets: reorderSortableEntities(state.data.educationBullets, orderedIds),
           },
           educationEntry.profileId,
+          now(),
+        ),
+      }))
+    },
+    createProject: (profileId) => {
+      const profile = get().data.profiles[profileId]
+
+      if (!profile) {
+        return null
+      }
+
+      const project: Project = {
+        id: createId(),
+        profileId,
+        name: '',
+        organization: '',
+        startDate: null,
+        endDate: null,
+        enabled: true,
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.projects)
+            .filter((item) => item.profileId === profileId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            projects: {
+              ...state.data.projects,
+              [project.id]: project,
+            },
+          },
+          profileId,
+          now(),
+        ),
+      }))
+
+      return project.id
+    },
+    updateProject: ({ projectId, changes }) => {
+      const existing = get().data.projects[projectId]
+
+      if (!existing) {
+        return
+      }
+
+      const nextProject = normalizeProject(existing, changes)
+
+      if (!nextProject) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            projects: {
+              ...state.data.projects,
+              [projectId]: nextProject,
+            },
+          },
+          existing.profileId,
+          now(),
+        ),
+      }))
+    },
+    deleteProject: (projectId) => {
+      const existing = get().data.projects[projectId]
+
+      if (!existing) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(deleteProjectCascade(state.data, projectId), existing.profileId, now()),
+      }))
+    },
+    reorderProjects: ({ profileId, orderedIds }) => {
+      const existingIds = Object.values(get().data.projects)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            projects: reorderSortableEntities(state.data.projects, orderedIds),
+          },
+          profileId,
+          now(),
+        ),
+      }))
+    },
+    createProjectBullet: (projectId) => {
+      const project = get().data.projects[projectId]
+
+      if (!project) {
+        return
+      }
+
+      const projectBullet: ProjectBullet = {
+        id: createId(),
+        projectId,
+        content: '',
+        enabled: true,
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.projectBullets)
+            .filter((item) => item.projectId === projectId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            projectBullets: {
+              ...state.data.projectBullets,
+              [projectBullet.id]: projectBullet,
+            },
+          },
+          project.profileId,
+          now(),
+        ),
+      }))
+    },
+    updateProjectBullet: ({ projectBulletId, changes }) => {
+      const existing = get().data.projectBullets[projectBulletId]
+
+      if (!existing) {
+        return
+      }
+
+      const project = get().data.projects[existing.projectId]
+
+      if (!project) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            projectBullets: {
+              ...state.data.projectBullets,
+              [projectBulletId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          project.profileId,
+          now(),
+        ),
+      }))
+    },
+    deleteProjectBullet: (projectBulletId) => {
+      const existing = get().data.projectBullets[projectBulletId]
+
+      if (!existing) {
+        return
+      }
+
+      const project = get().data.projects[existing.projectId]
+
+      if (!project) {
+        return
+      }
+
+      set((state) => {
+        const nextProjectBullets = { ...state.data.projectBullets }
+        delete nextProjectBullets[projectBulletId]
+
+        return {
+          data: stampUpdatedProfile(
+            {
+              ...state.data,
+              projectBullets: nextProjectBullets,
+            },
+            project.profileId,
+            now(),
+          ),
+        }
+      })
+    },
+    reorderProjectBullets: ({ projectId, orderedIds }) => {
+      const project = get().data.projects[projectId]
+
+      if (!project) {
+        return
+      }
+
+      const existingIds = Object.values(get().data.projectBullets)
+        .filter((item) => item.projectId === projectId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            projectBullets: reorderSortableEntities(state.data.projectBullets, orderedIds),
+          },
+          project.profileId,
           now(),
         ),
       }))

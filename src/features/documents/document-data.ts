@@ -13,6 +13,8 @@ import type {
   JobLink,
   Profile,
   ProfileLink,
+  Project,
+  ProjectBullet,
   Reference,
   ResumeSectionKey,
   Skill,
@@ -34,6 +36,11 @@ export interface DocumentEducationEntry {
   bullets: EducationBullet[]
 }
 
+export interface DocumentProjectEntry {
+  entry: Project
+  bullets: ProjectBullet[]
+}
+
 export interface ProfileDocumentData {
   profile: Profile
   profileLinks: ProfileLink[]
@@ -45,6 +52,7 @@ export interface ProfileDocumentData {
   achievements: Achievement[]
   experienceEntries: DocumentExperienceEntry[]
   educationEntries: DocumentEducationEntry[]
+  projectEntries: DocumentProjectEntry[]
   certifications: Certification[]
   references: Reference[]
   computedStatus: ReturnType<typeof getJobComputedStatus>
@@ -224,6 +232,17 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
     .filter((item) => item.profileId === profileId && item.enabled && (item.name.trim() || item.description.trim()))
     .sort(compareSortOrder)
 
+  const projectEntries = Object.values(data.projects)
+    .filter((entry) => entry.profileId === profileId && entry.enabled)
+    .sort(compareSortOrder)
+    .map((entry) => ({
+      entry,
+      bullets: Object.values(data.projectBullets)
+        .filter((bullet) => bullet.projectId === entry.id && bullet.enabled && bullet.content.trim())
+        .sort(compareSortOrder),
+    }))
+    .filter((item) => item.entry.name.trim() || item.entry.organization.trim() || item.bullets.length > 0 || item.entry.startDate || item.entry.endDate)
+
   const certifications = Object.values(data.certifications)
     .filter((entry) => entry.profileId === profileId && entry.enabled)
     .sort(compareSortOrder)
@@ -243,6 +262,7 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
     achievements,
     experienceEntries,
     educationEntries,
+    projectEntries,
     certifications,
     references,
     computedStatus: getJobComputedStatus({

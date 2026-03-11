@@ -15,8 +15,9 @@
             "achievements": { "enabled": true, "sortOrder": 3, "label": "Achievements" },
             "experience": { "enabled": true, "sortOrder": 4, "label": "Experience" },
             "education": { "enabled": true, "sortOrder": 5, "label": "Education" },
-            "certifications": { "enabled": true, "sortOrder": 6, "label": "Certifications" },
-            "references": { "enabled": true, "sortOrder": 7, "label": "References" }
+            "projects": { "enabled": true, "sortOrder": 6, "label": "Projects" },
+            "certifications": { "enabled": true, "sortOrder": 7, "label": "Certifications" },
+            "references": { "enabled": true, "sortOrder": 8, "label": "References" }
           }
         },
         "personalDetails": {
@@ -47,8 +48,9 @@
             "achievements": { "enabled": true, "sortOrder": 3, "label": "Achievements" },
             "experience": { "enabled": true, "sortOrder": 4, "label": "Experience" },
             "education": { "enabled": true, "sortOrder": 5, "label": "Education" },
-            "certifications": { "enabled": true, "sortOrder": 6, "label": "Certifications" },
-            "references": { "enabled": true, "sortOrder": 7, "label": "References" }
+            "projects": { "enabled": true, "sortOrder": 6, "label": "Projects" },
+            "certifications": { "enabled": true, "sortOrder": 7, "label": "Certifications" },
+            "references": { "enabled": true, "sortOrder": 8, "label": "References" }
           }
         },
         "personalDetails": {
@@ -79,8 +81,9 @@
             "achievements": { "enabled": true, "sortOrder": 3, "label": "Achievements" },
             "experience": { "enabled": true, "sortOrder": 4, "label": "Experience" },
             "education": { "enabled": true, "sortOrder": 5, "label": "Education" },
-            "certifications": { "enabled": true, "sortOrder": 6, "label": "Certifications" },
-            "references": { "enabled": true, "sortOrder": 7, "label": "References" }
+            "projects": { "enabled": true, "sortOrder": 6, "label": "Projects" },
+            "certifications": { "enabled": true, "sortOrder": 7, "label": "Certifications" },
+            "references": { "enabled": true, "sortOrder": 8, "label": "References" }
           }
         },
         "personalDetails": {
@@ -593,6 +596,37 @@
       "education-bullet-cloud-bs-1": { "id": "education-bullet-cloud-bs-1", "educationEntryId": "education-cloud-ncsu-bs", "content": "Completed coursework in distributed systems, networking, and security that supported later cloud infrastructure and platform responsibilities.", "enabled": true, "sortOrder": 1 },
       "education-bullet-cloud-bs-2": { "id": "education-bullet-cloud-bs-2", "educationEntryId": "education-cloud-ncsu-bs", "content": "Senior project work emphasized scalable system design and practical tradeoffs around reliability, performance, and maintainability.", "enabled": true, "sortOrder": 2 },
       "education-bullet-cloud-ms-1": { "id": "education-bullet-cloud-ms-1", "educationEntryId": "education-cloud-ncsu-ms", "content": "Current master's coursework focuses on cloud-scale distributed systems, network design, and infrastructure security concepts that map cleanly to AWS platform work.", "enabled": true, "sortOrder": 1 }
+    },
+    "projects": {
+      "project-se-northstar-audit": { "id": "project-se-northstar-audit", "profileId": "profile-base-software-engineer", "name": "Unified Audit Workflow Platform", "organization": "Northstar Health Systems", "startDate": "2023-01-01", "endDate": null, "enabled": true, "sortOrder": 1 },
+      "project-se-blueridge-events": { "id": "project-se-blueridge-events", "profileId": "profile-base-software-engineer", "name": "Partner Order Event Gateway", "organization": "Blue Ridge Commerce", "startDate": "2020-02-01", "endDate": "2021-08-01", "enabled": true, "sortOrder": 2 },
+      "project-se-personal-trailnote": { "id": "project-se-personal-trailnote", "profileId": "profile-base-software-engineer", "name": "Trailnote API", "organization": "", "startDate": "2024-06-01", "endDate": "2024-10-01", "enabled": true, "sortOrder": 3 },
+      "project-devops-northstar-release": { "id": "project-devops-northstar-release", "profileId": "profile-base-devops-engineer", "name": "Release Orchestration Platform", "organization": "Northstar Health Systems", "startDate": "2023-03-01", "endDate": null, "enabled": true, "sortOrder": 1 },
+      "project-devops-blueridge-baseline": { "id": "project-devops-blueridge-baseline", "profileId": "profile-base-devops-engineer", "name": "Commerce Delivery Baseline", "organization": "Blue Ridge Commerce", "startDate": "2020-05-01", "endDate": "2021-11-01", "enabled": true, "sortOrder": 2 },
+      "project-devops-personal-homelab": { "id": "project-devops-personal-homelab", "profileId": "profile-base-devops-engineer", "name": "Home Lab Reliability Toolkit", "organization": "", "startDate": "2024-01-01", "endDate": "2024-09-01", "enabled": true, "sortOrder": 3 },
+      "project-cloud-northstar-foundation": { "id": "project-cloud-northstar-foundation", "profileId": "profile-base-cloud-engineer", "name": "AWS Shared Services Foundation", "organization": "Northstar Health Systems", "startDate": "2022-09-01", "endDate": null, "enabled": true, "sortOrder": 1 },
+      "project-cloud-blueridge-modernization": { "id": "project-cloud-blueridge-modernization", "profileId": "profile-base-cloud-engineer", "name": "Checkout Platform AWS Modernization", "organization": "Blue Ridge Commerce", "startDate": "2020-06-01", "endDate": "2021-12-01", "enabled": true, "sortOrder": 2 },
+      "project-cloud-personal-costwatch": { "id": "project-cloud-personal-costwatch", "profileId": "profile-base-cloud-engineer", "name": "Serverless Cost Watch", "organization": "", "startDate": "2024-03-01", "endDate": "2024-08-01", "enabled": true, "sortOrder": 3 }
+    },
+    "projectBullets": {
+      "project-bullet-se-northstar-1": { "id": "project-bullet-se-northstar-1", "projectId": "project-se-northstar-audit", "content": "Built TypeScript and Node.js services that unified audit evidence intake, reviewer workflows, and downstream compliance integrations for internal teams.", "enabled": true, "sortOrder": 1 },
+      "project-bullet-se-northstar-2": { "id": "project-bullet-se-northstar-2", "projectId": "project-se-northstar-audit", "content": "Designed background processing and API boundaries that reduced duplicate workflow logic while making failure handling easier to test and support.", "enabled": true, "sortOrder": 2 },
+      "project-bullet-se-blueridge-1": { "id": "project-bullet-se-blueridge-1", "projectId": "project-se-blueridge-events", "content": "Created a backend integration service that normalized partner order events into a single internal contract for downstream commerce systems.", "enabled": true, "sortOrder": 1 },
+      "project-bullet-se-blueridge-2": { "id": "project-bullet-se-blueridge-2", "projectId": "project-se-blueridge-events", "content": "Improved reconciliation and debugging by adding idempotent processing paths, clearer payload validation, and more useful operational logging.", "enabled": true, "sortOrder": 2 },
+      "project-bullet-se-personal-1": { "id": "project-bullet-se-personal-1", "projectId": "project-se-personal-trailnote", "content": "Built a personal trip-planning API with authentication, PostgreSQL-backed itinerary data, and automated tests for core scheduling flows.", "enabled": true, "sortOrder": 1 },
+      "project-bullet-se-personal-2": { "id": "project-bullet-se-personal-2", "projectId": "project-se-personal-trailnote", "content": "Packaged the service with Docker and documented a clean OpenAPI surface to practice maintainable backend delivery outside of work projects.", "enabled": true, "sortOrder": 2 },
+      "project-bullet-devops-northstar-1": { "id": "project-bullet-devops-northstar-1", "projectId": "project-devops-northstar-release", "content": "Standardized GitHub Actions and Terraform deployment patterns so service teams could promote changes through shared environments with fewer manual steps.", "enabled": true, "sortOrder": 1 },
+      "project-bullet-devops-northstar-2": { "id": "project-bullet-devops-northstar-2", "projectId": "project-devops-northstar-release", "content": "Added rollout checks, environment validation, and reusable release templates that improved self-service delivery without weakening operational guardrails.", "enabled": true, "sortOrder": 2 },
+      "project-bullet-devops-blueridge-1": { "id": "project-bullet-devops-blueridge-1", "projectId": "project-devops-blueridge-baseline", "content": "Built a shared CI/CD baseline for commerce services that aligned container image handling, deployment steps, and rollback expectations across teams.", "enabled": true, "sortOrder": 1 },
+      "project-bullet-devops-blueridge-2": { "id": "project-bullet-devops-blueridge-2", "projectId": "project-devops-blueridge-baseline", "content": "Centralized release telemetry in Datadog and CloudWatch so deployment health signals were easier to interpret during change windows.", "enabled": true, "sortOrder": 2 },
+      "project-bullet-devops-personal-1": { "id": "project-bullet-devops-personal-1", "projectId": "project-devops-personal-homelab", "content": "Automated homelab cluster bootstrap, backup verification, and certificate rotation to practice repeatable operational workflows on a smaller scale.", "enabled": true, "sortOrder": 1 },
+      "project-bullet-devops-personal-2": { "id": "project-bullet-devops-personal-2", "projectId": "project-devops-personal-homelab", "content": "Created lightweight monitoring and alert tests that made it easier to validate reliability changes before applying them to the running environment.", "enabled": true, "sortOrder": 2 },
+      "project-bullet-cloud-northstar-1": { "id": "project-bullet-cloud-northstar-1", "projectId": "project-cloud-northstar-foundation", "content": "Improved shared AWS account foundations with clearer IAM boundaries, reusable Terraform modules, and more consistent networking patterns for platform services.", "enabled": true, "sortOrder": 1 },
+      "project-bullet-cloud-northstar-2": { "id": "project-bullet-cloud-northstar-2", "projectId": "project-cloud-northstar-foundation", "content": "Expanded observability and cost visibility for shared infrastructure so teams could make more informed reliability and capacity decisions.", "enabled": true, "sortOrder": 2 },
+      "project-bullet-cloud-blueridge-1": { "id": "project-bullet-cloud-blueridge-1", "projectId": "project-cloud-blueridge-modernization", "content": "Supported migration of checkout-related workloads toward ECS, RDS, and queue-backed processing patterns that were easier to scale and operate in AWS.", "enabled": true, "sortOrder": 1 },
+      "project-bullet-cloud-blueridge-2": { "id": "project-bullet-cloud-blueridge-2", "projectId": "project-cloud-blueridge-modernization", "content": "Improved cloud-hosted service resilience through better alarms, resource tuning, and infrastructure conventions that reduced surprise production behavior.", "enabled": true, "sortOrder": 2 },
+      "project-bullet-cloud-personal-1": { "id": "project-bullet-cloud-personal-1", "projectId": "project-cloud-personal-costwatch", "content": "Built a small serverless reporting tool with Lambda, EventBridge, and S3 to summarize personal AWS usage and surface avoidable spend patterns.", "enabled": true, "sortOrder": 1 },
+      "project-bullet-cloud-personal-2": { "id": "project-bullet-cloud-personal-2", "projectId": "project-cloud-personal-costwatch", "content": "Defined the infrastructure in Terraform and used the project to explore practical tradeoffs around cloud visibility, automation, and low-cost operations.", "enabled": true, "sortOrder": 2 }
     },
     "certifications": {
       "cert-se-saa": { "id": "cert-se-saa", "profileId": "profile-base-software-engineer", "name": "AWS Certified Solutions Architect - Associate", "issuer": "Amazon Web Services", "issueDate": "2023-06-15", "expiryDate": "2026-06-15", "credentialId": "AWS-SAA-EXAMPLE-001", "credentialUrl": "https://www.credly.com/example/aws-saa-rowan-mercer", "enabled": true, "sortOrder": 1 },

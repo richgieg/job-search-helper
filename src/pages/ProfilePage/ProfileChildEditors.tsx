@@ -4,7 +4,7 @@ import { ActionToggle, DeleteIconButton, getActionIconButtonClassName } from '..
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
-import type { EducationEntry, EducationStatus, ExperienceEntry, ReferenceType } from '../../types/state'
+import type { EducationEntry, EducationStatus, ExperienceEntry, Project, ReferenceType } from '../../types/state'
 import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 import { moveOrderedItem } from '../../utils/reorder'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
@@ -182,6 +182,21 @@ const formatEducationSummaryDate = (entry: Pick<EducationEntry, 'startDate' | 'e
   }
 
   return entry.status === 'in_progress' ? 'In progress' : ''
+}
+
+const formatProjectSummaryDate = (entry: Pick<Project, 'startDate' | 'endDate'> | null | undefined) => {
+  if (!entry) {
+    return ''
+  }
+
+  const start = formatMonthYear(entry.startDate)
+  const end = formatMonthYear(entry.endDate)
+
+  if (start && end) {
+    return `${start} – ${end}`
+  }
+
+  return start || end || ''
 }
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter((part): part is string => Boolean(part && part.trim())).join(' • ')
@@ -452,6 +467,78 @@ const EducationBulletRow = ({ bulletId }: { bulletId: string }) => {
           }
         />
         <DeleteIconButton label="Delete education bullet" onDelete={() => deleteEducationBullet(bullet.id)} />
+      </div>
+    </div>
+  )
+}
+
+const ProjectBulletRow = ({ bulletId }: { bulletId: string }) => {
+  const bullet = useAppStore((state) => state.data.projectBullets[bulletId])
+  const bulletsById = useAppStore((state) => state.data.projectBullets)
+  const updateProjectBullet = useAppStore((state) => state.actions.updateProjectBullet)
+  const deleteProjectBullet = useAppStore((state) => state.actions.deleteProjectBullet)
+  const reorderProjectBullets = useAppStore((state) => state.actions.reorderProjectBullets)
+  const [content, setContent] = useState(bullet?.content ?? '')
+  const [enabled, setEnabled] = useState(bullet?.enabled ?? true)
+
+  const bulletIds = useMemo(
+    () =>
+      bullet
+        ? Object.values(bulletsById)
+            .filter((item) => item.projectId === bullet.projectId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [bullet, bulletsById],
+  )
+  const bulletIndex = bulletIds.indexOf(bulletId)
+
+  useEffect(() => {
+    if (!bullet) {
+      return
+    }
+
+    setContent(bullet.content)
+    setEnabled(bullet.enabled)
+  }, [bullet])
+
+  if (!bullet) {
+    return null
+  }
+
+  const commitContent = () => {
+    if (content === bullet.content) {
+      return
+    }
+
+    updateProjectBullet({ projectBulletId: bullet.id, changes: { content } })
+  }
+
+  return (
+    <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+      <TextAreaField hideLabel label="Bullet" minHeightClass="min-h-10" onBlur={commitContent} placeholder="Describe the project outcome, scope, or technologies used" value={content} onChange={setContent} />
+      <div className="flex flex-wrap items-center justify-end gap-2 md:self-center">
+        <ActionToggle checked={enabled} label="Enable project bullet" onChange={(value) => {
+          setEnabled(value)
+          updateProjectBullet({ projectBulletId: bullet.id, changes: { enabled: value } })
+        }} />
+        <ReorderButtons
+          canMoveDown={bulletIds.length > 1}
+          canMoveUp={bulletIds.length > 1}
+          onMoveDown={() =>
+            reorderProjectBullets({
+              projectId: bullet.projectId,
+              orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
+            })
+          }
+          onMoveUp={() =>
+            reorderProjectBullets({
+              projectId: bullet.projectId,
+              orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
+            })
+          }
+        />
+        <DeleteIconButton label="Delete project bullet" onDelete={() => deleteProjectBullet(bullet.id)} />
       </div>
     </div>
   )
@@ -1127,6 +1214,132 @@ const EducationCard = ({
   )
 }
 
+const ProjectCard = ({
+  projectId,
+  defaultExpanded = false,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  projectId: string
+  defaultExpanded?: boolean
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
+  const project = useAppStore((state) => state.data.projects[projectId])
+  const projectsById = useAppStore((state) => state.data.projects)
+  const bulletsById = useAppStore((state) => state.data.projectBullets)
+  const updateProject = useAppStore((state) => state.actions.updateProject)
+  const deleteProject = useAppStore((state) => state.actions.deleteProject)
+  const reorderProjects = useAppStore((state) => state.actions.reorderProjects)
+  const createProjectBullet = useAppStore((state) => state.actions.createProjectBullet)
+  const [draft, setDraft] = useState(project)
+  const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
+
+  const projectIds = useMemo(
+    () =>
+      project
+        ? Object.values(projectsById)
+            .filter((item) => item.profileId === project.profileId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [project, projectsById],
+  )
+  const projectIndex = projectIds.indexOf(projectId)
+
+  const bulletIds = useMemo(
+    () =>
+      Object.values(bulletsById)
+        .filter((item) => item.projectId === projectId)
+        .sort((left, right) => left.sortOrder - right.sortOrder)
+        .map((item) => item.id),
+    [bulletsById, projectId],
+  )
+
+  useEffect(() => {
+    setDraft(project)
+  }, [project])
+
+  const summary = summarizeParts([
+    draft?.organization || 'Personal or unaffiliated',
+    formatProjectSummaryDate(draft) || null,
+    countLabel(bulletIds.length, 'bullet'),
+  ])
+
+  if (!project || !draft) {
+    return null
+  }
+
+  const commitProjectChanges = (changes: Partial<Omit<Project, 'id' | 'profileId'>>) => {
+    updateProject({ projectId: project.id, changes })
+  }
+
+  return (
+    <div ref={cardRef} style={cardScrollStyle}>
+      <CollapsiblePanel
+        defaultExpanded={defaultExpanded}
+        headerActions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ActionToggle checked={draft.enabled} label="Enable project" onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateProject({ projectId: project.id, changes: { enabled: value } })
+            }} />
+            <ReorderButtons
+              canMoveDown={projectIds.length > 1}
+              canMoveUp={projectIds.length > 1}
+              onMoveDown={() =>
+                reorderProjects({
+                  profileId: project.profileId,
+                  orderedIds: moveOrderedItem(projectIds, projectIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderProjects({
+                  profileId: project.profileId,
+                  orderedIds: moveOrderedItem(projectIds, projectIndex, -1),
+                })
+              }
+            />
+            <DeleteIconButton label="Delete project" onDelete={() => deleteProject(project.id)} />
+          </div>
+        }
+        summary={summary}
+        title={draft.name || project.name || 'Project'}
+      >
+        <div className="grid gap-4 xl:grid-cols-3">
+          <TextField label="Name" onBlur={() => draft.name !== project.name && commitProjectChanges({ name: draft.name })} value={draft.name} onChange={(value) => setDraft({ ...draft, name: value })} />
+          <TextField label="Company / School / Organization" onBlur={() => draft.organization !== project.organization && commitProjectChanges({ organization: draft.organization })} value={draft.organization} onChange={(value) => setDraft({ ...draft, organization: value })} />
+          <div className="hidden xl:block" />
+          <TextField label="Start date" type="date" onBlur={() => draft.startDate !== project.startDate && commitProjectChanges({ startDate: draft.startDate })} value={draft.startDate ?? ''} onChange={(value) => setDraft({ ...draft, startDate: value || null })} />
+          <TextField label="End date" type="date" onBlur={() => draft.endDate !== project.endDate && commitProjectChanges({ endDate: draft.endDate })} value={draft.endDate ?? ''} onChange={(value) => setDraft({ ...draft, endDate: value || null })} />
+          <div className="xl:col-span-3">
+            <div className="flex items-center justify-between gap-3">
+              <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Bullets</h4>
+              <button
+                className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted"
+                onClick={() => createProjectBullet(project.id)}
+                type="button"
+              >
+                Add bullet
+              </button>
+            </div>
+            <div className="mt-3 space-y-3">
+              {bulletIds.length === 0 ? (
+                <p className="text-sm text-app-text-subtle">No bullets yet.</p>
+              ) : (
+                bulletIds.map((bulletId) => <ProjectBulletRow key={bulletId} bulletId={bulletId} />)
+              )}
+            </div>
+          </div>
+        </div>
+      </CollapsiblePanel>
+    </div>
+  )
+}
+
 const CertificationCard = ({
   certificationId,
   defaultExpanded = false,
@@ -1333,6 +1546,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
   const achievementsById = useAppStore((state) => state.data.achievements)
   const experienceEntriesById = useAppStore((state) => state.data.experienceEntries)
   const educationEntriesById = useAppStore((state) => state.data.educationEntries)
+  const projectsById = useAppStore((state) => state.data.projects)
   const certificationsById = useAppStore((state) => state.data.certifications)
   const referencesById = useAppStore((state) => state.data.references)
   const createProfileLink = useAppStore((state) => state.actions.createProfileLink)
@@ -1340,6 +1554,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
   const createAchievement = useAppStore((state) => state.actions.createAchievement)
   const createExperienceEntry = useAppStore((state) => state.actions.createExperienceEntry)
   const createEducationEntry = useAppStore((state) => state.actions.createEducationEntry)
+  const createProject = useAppStore((state) => state.actions.createProject)
   const createCertification = useAppStore((state) => state.actions.createCertification)
   const createReference = useAppStore((state) => state.actions.createReference)
   const [newProfileLinkId, setNewProfileLinkId] = useState<string | null>(null)
@@ -1347,6 +1562,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
   const [newAchievementId, setNewAchievementId] = useState<string | null>(null)
   const [newExperienceEntryId, setNewExperienceEntryId] = useState<string | null>(null)
   const [newEducationEntryId, setNewEducationEntryId] = useState<string | null>(null)
+  const [newProjectId, setNewProjectId] = useState<string | null>(null)
   const [newCertificationId, setNewCertificationId] = useState<string | null>(null)
   const [newReferenceId, setNewReferenceId] = useState<string | null>(null)
 
@@ -1395,6 +1611,15 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
     [educationEntriesById, profileId],
   )
 
+  const projectIds = useMemo(
+    () =>
+      Object.values(projectsById)
+        .filter((item) => item.profileId === profileId)
+        .sort((left, right) => left.sortOrder - right.sortOrder)
+        .map((item) => item.id),
+    [profileId, projectsById],
+  )
+
   const certificationIds = useMemo(
     () =>
       Object.values(certificationsById)
@@ -1418,6 +1643,7 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
   const hasAchievements = achievementIds.length > 0
   const hasExperienceEntries = experienceEntryIds.length > 0
   const hasEducationEntries = educationEntryIds.length > 0
+  const hasProjects = projectIds.length > 0
   const hasCertifications = certificationIds.length > 0
   const hasReferences = referenceIds.length > 0
 
@@ -1575,6 +1801,38 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
                 scrollIntoViewOnMount={id === newEducationEntryId}
                 {...(id === newEducationEntryId
                   ? { onScrollIntoViewComplete: () => setNewEducationEntryId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
+        ) : null}
+      </CollapsiblePanel>
+
+      <CollapsiblePanel
+        actionLabel="Add project"
+        actionStyle="icon"
+        onAction={() => {
+          const createdId = createProject(profileId)
+
+          if (createdId) {
+            setNewProjectId(createdId)
+          }
+        }}
+        collapsible={hasProjects}
+        description="Store projects with optional organization context, dates, and bullets."
+        showBottomActionWhenHeaderHidden
+        title="Projects"
+      >
+        {hasProjects ? (
+          <div className="space-y-4">
+            {projectIds.map((id) => (
+              <ProjectCard
+                defaultExpanded={id === newProjectId}
+                key={id}
+                projectId={id}
+                scrollIntoViewOnMount={id === newProjectId}
+                {...(id === newProjectId
+                  ? { onScrollIntoViewComplete: () => setNewProjectId(null) }
                   : {})}
               />
             ))}

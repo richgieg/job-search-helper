@@ -337,6 +337,34 @@ export const ApplicationPage = () => {
         </section>
 
         <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-app-heading">Projects</h2>
+          {documentData.projectEntries.length === 0 ? (
+            <p className="text-sm text-app-text-subtle">No projects enabled.</p>
+          ) : (
+            documentData.projectEntries.map((item, index) => (
+              <DataTable
+                key={item.entry.id}
+                copiedKey={copiedKey}
+                description={`Project ${index + 1}`}
+                onCopy={handleCopy}
+                rows={[
+                  { label: 'Name', values: buildSingleValue(item.entry.name) },
+                  { label: 'Company / School / Organization', values: buildSingleValue(item.entry.organization) },
+                  buildDateRow('Start date', item.entry.startDate),
+                  buildDateRow('End date', item.entry.endDate),
+                  {
+                    label: 'Bullets',
+                    values: buildBulletListValue(item.bullets.map((bullet) => bullet.content)),
+                    multiline: true,
+                  },
+                ]}
+                title={`${item.entry.name || 'Project'}${item.entry.organization ? ` · ${item.entry.organization}` : ''}`}
+              />
+            ))
+          )}
+        </section>
+
+        <section className="space-y-4">
           <h2 className="text-lg font-semibold text-app-heading">Certifications</h2>
           {documentData.certifications.length === 0 ? (
             <p className="text-sm text-app-text-subtle">No certifications enabled.</p>
