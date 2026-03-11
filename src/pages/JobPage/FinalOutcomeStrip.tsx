@@ -1,5 +1,5 @@
 import type { FinalOutcomeStatus } from '../../types/state'
-import { getFinalOutcomeSelectedClassName } from './job-status'
+import { getFinalOutcomeSelectedClassName } from '../../features/jobs/job-status'
 
 export type FinalOutcomeDraftStatus = '' | FinalOutcomeStatus
 

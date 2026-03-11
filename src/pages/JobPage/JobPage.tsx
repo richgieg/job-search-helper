@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { ActionToggle } from '../../components/CompactActionControls'
-import { FinalOutcomeStrip, type FinalOutcomeDraftStatus } from '../../features/jobs/FinalOutcomeStrip'
+import { FinalOutcomeStrip, type FinalOutcomeDraftStatus } from './FinalOutcomeStrip'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { JobChildEditors } from './JobChildEditors'
 import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadgeClassName } from '../../features/jobs/job-status'
