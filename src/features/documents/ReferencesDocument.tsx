@@ -10,9 +10,7 @@ export const ReferencesSection = ({ documentData, className = '' }: ReferencesSe
   <section className={className}>
     <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">References</h3>
     <div className="mt-4 space-y-4 text-sm text-black">
-      {documentData.references.length === 0 ? (
-        <p className="text-black">No references enabled.</p>
-      ) : (
+      {documentData.references.length > 0 ? (
         documentData.references.map((entry) => (
           <div key={entry.id} className="print-keep-together">
             <p className="font-semibold text-black">{entry.name || 'Reference'}</p>
@@ -21,7 +19,7 @@ export const ReferencesSection = ({ documentData, className = '' }: ReferencesSe
             {entry.email ? <p className="text-black">{entry.email}</p> : null}
           </div>
         ))
-      )}
+      ) : null}
     </div>
   </section>
 )
