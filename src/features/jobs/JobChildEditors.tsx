@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { AddIconButton, DeleteIconButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
@@ -8,6 +8,19 @@ import type { ContactRelationshipType } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(' • ')
+
+const NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX = 96
+
+const scrollIntoViewIfNeeded = (element: HTMLElement) => {
+  const rect = element.getBoundingClientRect()
+  const isFullyVisible = rect.top >= 0 && rect.bottom + NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX <= window.innerHeight
+
+  if (isFullyVisible) {
+    return
+  }
+
+  element.scrollIntoView({ behavior: 'smooth', block: 'end' })
+}
 
 const truncatePanelText = (value: string, maxLength: number) => {
   const normalized = value.replace(/\s+/g, ' ').trim()
@@ -179,13 +192,22 @@ const formatInterviewSummary = (startAt: string | null) => {
   return summarizeParts([start || null])
 }
 
-const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
+const JobLinkCard = ({
+  jobLinkId,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  jobLinkId: string
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
   const link = useAppStore((state) => state.data.jobLinks[jobLinkId])
   const jobLinksById = useAppStore((state) => state.data.jobLinks)
   const updateJobLink = useAppStore((state) => state.actions.updateJobLink)
   const deleteJobLink = useAppStore((state) => state.actions.deleteJobLink)
   const reorderJobLinks = useAppStore((state) => state.actions.reorderJobLinks)
   const [draft, setDraft] = useState(link)
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
   const jobLinkIds = useMemo(
     () =>
@@ -203,6 +225,15 @@ const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
     setDraft(link)
   }, [link])
 
+  useEffect(() => {
+    if (!scrollIntoViewOnMount || !cardRef.current) {
+      return
+    }
+
+    scrollIntoViewIfNeeded(cardRef.current)
+    onScrollIntoViewComplete?.()
+  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+
   if (!link || !draft) {
     return null
   }
@@ -218,7 +249,7 @@ const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
   const hasUrl = trimmedUrl.length > 0
 
   return (
-    <div className="rounded-xl border border-app-border-muted p-4">
+    <div className="rounded-xl border border-app-border-muted p-4" ref={cardRef} style={{ scrollMarginBottom: `${NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <div className="flex items-end gap-4">
         <div className="min-w-0 flex-1">
           <TextField placeholder="https://example.com/job" type="url" value={draft.url} onBlur={() => draft.url !== link.url && commitLinkChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
@@ -268,13 +299,24 @@ const JobLinkCard = ({ jobLinkId }: { jobLinkId: string }) => {
   )
 }
 
-const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
+const JobContactCard = ({
+  jobContactId,
+  defaultExpanded = false,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  jobContactId: string
+  defaultExpanded?: boolean
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
   const contact = useAppStore((state) => state.data.jobContacts[jobContactId])
   const jobContactsById = useAppStore((state) => state.data.jobContacts)
   const updateJobContact = useAppStore((state) => state.actions.updateJobContact)
   const deleteJobContact = useAppStore((state) => state.actions.deleteJobContact)
   const reorderJobContacts = useAppStore((state) => state.actions.reorderJobContacts)
   const [draft, setDraft] = useState(contact)
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
   const jobContactIds = useMemo(
     () =>
@@ -291,6 +333,15 @@ const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
   useEffect(() => {
     setDraft(contact)
   }, [contact])
+
+  useEffect(() => {
+    if (!scrollIntoViewOnMount || !cardRef.current) {
+      return
+    }
+
+    scrollIntoViewIfNeeded(cardRef.current)
+    onScrollIntoViewComplete?.()
+  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
 
   if (!contact || !draft) {
     return null
@@ -310,32 +361,34 @@ const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
   ])
 
   return (
-    <CollapsiblePanel
-      headerActions={
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <ReorderButtons
-            canMoveDown={jobContactIds.length > 1}
-            canMoveUp={jobContactIds.length > 1}
-            onMoveDown={() =>
-              reorderJobContacts({
-                jobId: contact.jobId,
-                orderedIds: moveOrderedItem(jobContactIds, jobContactIndex, 1),
-              })
-            }
-            onMoveUp={() =>
-              reorderJobContacts({
-                jobId: contact.jobId,
-                orderedIds: moveOrderedItem(jobContactIds, jobContactIndex, -1),
-              })
-            }
-          />
-          <DeleteIconButton label="Delete contact" onDelete={() => deleteJobContact(contact.id)} />
-        </div>
-      }
-      summary={summary}
-      title={draft.name || contact.name || 'Contact'}
-    >
-      <div className="grid gap-4 xl:grid-cols-3">
+    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+      <CollapsiblePanel
+        defaultExpanded={defaultExpanded}
+        headerActions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ReorderButtons
+              canMoveDown={jobContactIds.length > 1}
+              canMoveUp={jobContactIds.length > 1}
+              onMoveDown={() =>
+                reorderJobContacts({
+                  jobId: contact.jobId,
+                  orderedIds: moveOrderedItem(jobContactIds, jobContactIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderJobContacts({
+                  jobId: contact.jobId,
+                  orderedIds: moveOrderedItem(jobContactIds, jobContactIndex, -1),
+                })
+              }
+            />
+            <DeleteIconButton label="Delete contact" onDelete={() => deleteJobContact(contact.id)} />
+          </div>
+        }
+        summary={summary}
+        title={draft.name || contact.name || 'Contact'}
+      >
+        <div className="grid gap-4 xl:grid-cols-3">
         <TextField label="Name" value={draft.name} onBlur={() => draft.name !== contact.name && commitContactChanges({ name: draft.name })} onChange={(value) => setDraft({ ...draft, name: value })} />
         <TextField label="Title" value={draft.title} onBlur={() => draft.title !== contact.title && commitContactChanges({ title: draft.title })} onChange={(value) => setDraft({ ...draft, title: value })} />
         <TextField label="Company" value={draft.company} onBlur={() => draft.company !== contact.company && commitContactChanges({ company: draft.company })} onChange={(value) => setDraft({ ...draft, company: value })} />
@@ -362,12 +415,23 @@ const JobContactCard = ({ jobContactId }: { jobContactId: string }) => {
         <div className="xl:col-span-3">
           <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== contact.notes && commitContactChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
         </div>
-      </div>
-    </CollapsiblePanel>
+        </div>
+      </CollapsiblePanel>
+    </div>
   )
 }
 
-const InterviewCard = ({ interviewId }: { interviewId: string }) => {
+const InterviewCard = ({
+  interviewId,
+  defaultExpanded = false,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  interviewId: string
+  defaultExpanded?: boolean
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
   const interview = useAppStore((state) => state.data.interviews[interviewId])
   const interviewContactsById = useAppStore((state) => state.data.interviewContacts)
   const jobContactsById = useAppStore((state) => state.data.jobContacts)
@@ -378,6 +442,7 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
   const reorderInterviewContacts = useAppStore((state) => state.actions.reorderInterviewContacts)
   const [draft, setDraft] = useState(interview)
   const [selectedContactId, setSelectedContactId] = useState('')
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     setDraft(interview)
@@ -420,6 +485,15 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
     })
   }, [availableContacts])
 
+  useEffect(() => {
+    if (!scrollIntoViewOnMount || !cardRef.current) {
+      return
+    }
+
+    scrollIntoViewIfNeeded(cardRef.current)
+    onScrollIntoViewComplete?.()
+  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+
   if (!interview || !draft) {
     return null
   }
@@ -444,12 +518,14 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
   }>
 
   return (
-    <CollapsiblePanel
-      summary={formatInterviewSummary(draft.startAt)}
-      title={formatInterviewTitle(draft.startAt)}
-      headerActions={<DeleteIconButton label="Delete interview" onDelete={() => deleteInterview(interview.id)} />}
-    >
-      <div className="space-y-5">
+    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+      <CollapsiblePanel
+        defaultExpanded={defaultExpanded}
+        summary={formatInterviewSummary(draft.startAt)}
+        title={formatInterviewTitle(draft.startAt)}
+        headerActions={<DeleteIconButton label="Delete interview" onDelete={() => deleteInterview(interview.id)} />}
+      >
+        <div className="space-y-5">
         <div className="grid gap-4 xl:grid-cols-1">
           <TextField
             label="Start at"
@@ -526,18 +602,30 @@ const InterviewCard = ({ interviewId }: { interviewId: string }) => {
             <p className="mt-4 text-sm text-app-text-subtle">No contacts associated with this interview yet.</p>
           )}
         </div>
-      </div>
-    </CollapsiblePanel>
+        </div>
+      </CollapsiblePanel>
+    </div>
   )
 }
 
-const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestionId: string }) => {
+const ApplicationQuestionCard = ({
+  applicationQuestionId,
+  defaultExpanded = false,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  applicationQuestionId: string
+  defaultExpanded?: boolean
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
   const applicationQuestion = useAppStore((state) => state.data.applicationQuestions[applicationQuestionId])
   const applicationQuestionsById = useAppStore((state) => state.data.applicationQuestions)
   const updateApplicationQuestion = useAppStore((state) => state.actions.updateApplicationQuestion)
   const deleteApplicationQuestion = useAppStore((state) => state.actions.deleteApplicationQuestion)
   const reorderApplicationQuestions = useAppStore((state) => state.actions.reorderApplicationQuestions)
   const [draft, setDraft] = useState(applicationQuestion)
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
   const applicationQuestionIds = useMemo(
     () =>
@@ -555,6 +643,15 @@ const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestio
     setDraft(applicationQuestion)
   }, [applicationQuestion])
 
+  useEffect(() => {
+    if (!scrollIntoViewOnMount || !cardRef.current) {
+      return
+    }
+
+    scrollIntoViewIfNeeded(cardRef.current)
+    onScrollIntoViewComplete?.()
+  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+
   if (!applicationQuestion || !draft) {
     return null
   }
@@ -570,36 +667,39 @@ const ApplicationQuestionCard = ({ applicationQuestionId }: { applicationQuestio
   const summary = truncatePanelText(draft.answer, 180) || 'No answer'
 
   return (
-    <CollapsiblePanel
-      headerActions={
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <ReorderButtons
-            canMoveDown={applicationQuestionIds.length > 1}
-            canMoveUp={applicationQuestionIds.length > 1}
-            onMoveDown={() =>
-              reorderApplicationQuestions({
-                jobId: applicationQuestion.jobId,
-                orderedIds: moveOrderedItem(applicationQuestionIds, applicationQuestionIndex, 1),
-              })
-            }
-            onMoveUp={() =>
-              reorderApplicationQuestions({
-                jobId: applicationQuestion.jobId,
-                orderedIds: moveOrderedItem(applicationQuestionIds, applicationQuestionIndex, -1),
-              })
-            }
-          />
-          <DeleteIconButton label="Delete application question" onDelete={() => deleteApplicationQuestion(applicationQuestion.id)} />
+    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_ITEM_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+      <CollapsiblePanel
+        defaultExpanded={defaultExpanded}
+        headerActions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ReorderButtons
+              canMoveDown={applicationQuestionIds.length > 1}
+              canMoveUp={applicationQuestionIds.length > 1}
+              onMoveDown={() =>
+                reorderApplicationQuestions({
+                  jobId: applicationQuestion.jobId,
+                  orderedIds: moveOrderedItem(applicationQuestionIds, applicationQuestionIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderApplicationQuestions({
+                  jobId: applicationQuestion.jobId,
+                  orderedIds: moveOrderedItem(applicationQuestionIds, applicationQuestionIndex, -1),
+                })
+              }
+            />
+            <DeleteIconButton label="Delete application question" onDelete={() => deleteApplicationQuestion(applicationQuestion.id)} />
+          </div>
+        }
+        summary={summary}
+        title={title}
+      >
+        <div className="grid gap-4 xl:grid-cols-2">
+          <TextAreaField label="Question" value={draft.question} onBlur={() => draft.question !== applicationQuestion.question && commitQuestionChanges({ question: draft.question })} onChange={(value) => setDraft({ ...draft, question: value })} />
+          <TextAreaField label="Answer" value={draft.answer} onBlur={() => draft.answer !== applicationQuestion.answer && commitQuestionChanges({ answer: draft.answer })} onChange={(value) => setDraft({ ...draft, answer: value })} />
         </div>
-      }
-      summary={summary}
-      title={title}
-    >
-      <div className="grid gap-4 xl:grid-cols-2">
-        <TextAreaField label="Question" value={draft.question} onBlur={() => draft.question !== applicationQuestion.question && commitQuestionChanges({ question: draft.question })} onChange={(value) => setDraft({ ...draft, question: value })} />
-        <TextAreaField label="Answer" value={draft.answer} onBlur={() => draft.answer !== applicationQuestion.answer && commitQuestionChanges({ answer: draft.answer })} onChange={(value) => setDraft({ ...draft, answer: value })} />
-      </div>
-    </CollapsiblePanel>
+      </CollapsiblePanel>
+    </div>
   )
 }
 
@@ -612,6 +712,10 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
   const createJobContact = useAppStore((state) => state.actions.createJobContact)
   const createInterview = useAppStore((state) => state.actions.createInterview)
   const createApplicationQuestion = useAppStore((state) => state.actions.createApplicationQuestion)
+  const [newJobLinkId, setNewJobLinkId] = useState<string | null>(null)
+  const [newJobContactId, setNewJobContactId] = useState<string | null>(null)
+  const [newInterviewId, setNewInterviewId] = useState<string | null>(null)
+  const [newApplicationQuestionId, setNewApplicationQuestionId] = useState<string | null>(null)
 
   const jobLinkIds = useMemo(
     () =>
@@ -670,8 +774,35 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
 
   return (
     <>
-      <CollapsiblePanel actionLabel="Add link" actionStyle="icon" collapsible={hasJobLinks} description="Track the relevant job URLs for this role." onAction={() => createJobLink(jobId)} title="Links">
-        {hasJobLinks ? <div className="space-y-4">{jobLinkIds.map((id) => <JobLinkCard key={id} jobLinkId={id} />)}</div> : null}
+      <CollapsiblePanel
+        actionLabel="Add link"
+        actionStyle="icon"
+        collapsible={hasJobLinks}
+        description="Track the relevant job URLs for this role."
+        onAction={() => {
+          const createdId = createJobLink(jobId)
+
+          if (createdId) {
+            setNewJobLinkId(createdId)
+          }
+        }}
+        showBottomActionWhenHeaderHidden
+        title="Links"
+      >
+        {hasJobLinks ? (
+          <div className="space-y-4">
+            {jobLinkIds.map((id) => (
+              <JobLinkCard
+                jobLinkId={id}
+                key={id}
+                scrollIntoViewOnMount={id === newJobLinkId}
+                {...(id === newJobLinkId
+                  ? { onScrollIntoViewComplete: () => setNewJobLinkId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
+        ) : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel
@@ -679,20 +810,95 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
         actionStyle="icon"
         collapsible={hasApplicationQuestions}
         description="Track custom questions asked during the application flow and the answers you submitted."
-        onAction={() => createApplicationQuestion(jobId)}
+        onAction={() => {
+          const createdId = createApplicationQuestion(jobId)
+
+          if (createdId) {
+            setNewApplicationQuestionId(createdId)
+          }
+        }}
+        showBottomActionWhenHeaderHidden
         title="Application questions"
       >
         {hasApplicationQuestions ? (
-          <div className="space-y-4">{applicationQuestionIds.map((id) => <ApplicationQuestionCard key={id} applicationQuestionId={id} />)}</div>
+          <div className="space-y-4">
+            {applicationQuestionIds.map((id) => (
+              <ApplicationQuestionCard
+                applicationQuestionId={id}
+                defaultExpanded={id === newApplicationQuestionId}
+                key={id}
+                scrollIntoViewOnMount={id === newApplicationQuestionId}
+                {...(id === newApplicationQuestionId
+                  ? { onScrollIntoViewComplete: () => setNewApplicationQuestionId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
         ) : null}
       </CollapsiblePanel>
 
-      <CollapsiblePanel actionLabel="Add contact" actionStyle="icon" collapsible={hasJobContacts} description="Maintain recruiters, hiring managers, referrals, and interviewers for the job." onAction={() => createJobContact(jobId)} title="Contacts">
-        {hasJobContacts ? <div className="space-y-4">{jobContactIds.map((id) => <JobContactCard key={id} jobContactId={id} />)}</div> : null}
+      <CollapsiblePanel
+        actionLabel="Add contact"
+        actionStyle="icon"
+        collapsible={hasJobContacts}
+        description="Maintain recruiters, hiring managers, referrals, and interviewers for the job."
+        onAction={() => {
+          const createdId = createJobContact(jobId)
+
+          if (createdId) {
+            setNewJobContactId(createdId)
+          }
+        }}
+        showBottomActionWhenHeaderHidden
+        title="Contacts"
+      >
+        {hasJobContacts ? (
+          <div className="space-y-4">
+            {jobContactIds.map((id) => (
+              <JobContactCard
+                defaultExpanded={id === newJobContactId}
+                jobContactId={id}
+                key={id}
+                scrollIntoViewOnMount={id === newJobContactId}
+                {...(id === newJobContactId
+                  ? { onScrollIntoViewComplete: () => setNewJobContactId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
+        ) : null}
       </CollapsiblePanel>
 
-      <CollapsiblePanel actionLabel="Add interview" actionStyle="icon" collapsible={hasInterviews} description="Track interviews in chronological order." onAction={() => createInterview(jobId)} title="Interviews">
-        {hasInterviews ? <div className="space-y-4">{interviewIds.map((id) => <InterviewCard key={id} interviewId={id} />)}</div> : null}
+      <CollapsiblePanel
+        actionLabel="Add interview"
+        actionStyle="icon"
+        collapsible={hasInterviews}
+        description="Track interviews in chronological order."
+        onAction={() => {
+          const createdId = createInterview(jobId)
+
+          if (createdId) {
+            setNewInterviewId(createdId)
+          }
+        }}
+        showBottomActionWhenHeaderHidden
+        title="Interviews"
+      >
+        {hasInterviews ? (
+          <div className="space-y-4">
+            {interviewIds.map((id) => (
+              <InterviewCard
+                defaultExpanded={id === newInterviewId}
+                interviewId={id}
+                key={id}
+                scrollIntoViewOnMount={id === newInterviewId}
+                {...(id === newInterviewId
+                  ? { onScrollIntoViewComplete: () => setNewInterviewId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
+        ) : null}
       </CollapsiblePanel>
     </>
   )

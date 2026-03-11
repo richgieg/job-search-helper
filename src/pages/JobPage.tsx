@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { ActionToggle, AddIconButton, DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../components/CompactActionControls'
@@ -7,7 +7,7 @@ import { CollapsiblePanel } from '../components/CollapsiblePanel'
 import { JobChildEditors } from '../features/jobs/JobChildEditors'
 import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadgeClassName } from '../features/jobs/job-status'
 import { useAppStore } from '../store/app-store'
-import type { EmploymentType, Job, WorkArrangement } from '../types/state'
+import type { EmploymentType, Job, Profile, WorkArrangement } from '../types/state'
 import { employmentTypeOptions, workArrangementOptions } from '../utils/job-field-options'
 
 const TextField = ({
@@ -118,6 +118,72 @@ const createJobDraft = (job: Job): JobDraftState => ({
   notes: job.notes,
 })
 
+const NEW_ATTACHED_PROFILE_SCROLL_MARGIN_BOTTOM_PX = 96
+
+const scrollIntoViewIfNeeded = (element: HTMLElement) => {
+  const rect = element.getBoundingClientRect()
+  const isFullyVisible = rect.top >= 0 && rect.bottom + NEW_ATTACHED_PROFILE_SCROLL_MARGIN_BOTTOM_PX <= window.innerHeight
+
+  if (isFullyVisible) {
+    return
+  }
+
+  element.scrollIntoView({ behavior: 'smooth', block: 'end' })
+}
+
+const AttachedProfileRow = ({
+  profile,
+  onDelete,
+  onDuplicate,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  profile: Profile
+  onDelete: () => void
+  onDuplicate: () => void
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
+  const rowRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!scrollIntoViewOnMount || !rowRef.current) {
+      return
+    }
+
+    scrollIntoViewIfNeeded(rowRef.current)
+    onScrollIntoViewComplete?.()
+  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+
+  return (
+    <div
+      className="flex flex-col gap-3 rounded-xl border border-app-border-muted px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+      ref={rowRef}
+      style={{ scrollMarginBottom: `${NEW_ATTACHED_PROFILE_SCROLL_MARGIN_BOTTOM_PX}px` }}
+    >
+      <div>
+        <p className="font-medium text-app-text">{profile.name}</p>
+        <p className="mt-1 text-sm text-app-text-subtle">Updated {new Date(profile.updatedAt).toLocaleString()}</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Link aria-label={`Open profile ${profile.name}`} className={getActionIconButtonClassName()} to={`/profiles/${profile.id}`}>
+          <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
+            <path d="M7 17 17 7" />
+            <path d="M9 7h8v8" />
+          </svg>
+        </Link>
+        <IconActionButton label={`Duplicate profile ${profile.name}`} onClick={onDuplicate}>
+          <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+            <rect height="10" rx="2" width="10" x="9" y="9" />
+            <path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+          </svg>
+        </IconActionButton>
+        <DeleteIconButton label={`Delete profile ${profile.name}`} onDelete={onDelete} />
+      </div>
+    </div>
+  )
+}
+
 export const JobPage = () => {
   const { jobId = '' } = useParams()
   const job = useAppStore((state) => state.data.jobs[jobId])
@@ -132,6 +198,7 @@ export const JobPage = () => {
   const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
   const [draft, setDraft] = useState<JobDraftState | null>(null)
   const [selectedBaseProfileId, setSelectedBaseProfileId] = useState('')
+  const [newAttachedProfileId, setNewAttachedProfileId] = useState<string | null>(null)
 
   const profiles = useMemo(() => Object.values(profilesById), [profilesById])
   const baseProfiles = useMemo(() => profiles.filter((profile) => profile.jobId === null), [profiles])
@@ -139,7 +206,7 @@ export const JobPage = () => {
     () =>
       profiles
         .filter((profile) => profile.jobId === jobId)
-        .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)),
+        .sort((left, right) => left.createdAt.localeCompare(right.createdAt)),
     [jobId, profiles],
   )
   const hasAttachedProfiles = attachedProfiles.length > 0
@@ -264,10 +331,14 @@ export const JobPage = () => {
       return
     }
 
-    duplicateProfile({
+    const createdId = duplicateProfile({
       sourceProfileId: selectedBaseProfileId,
       targetJobId: job.id,
     })
+
+    if (createdId) {
+      setNewAttachedProfileId(createdId)
+    }
   }
 
   const handleAppliedToggle = (checked: boolean) => {
@@ -349,7 +420,7 @@ export const JobPage = () => {
       <CollapsiblePanel
         collapsible={hasAttachedProfiles}
         description="Create job-specific profiles from base profiles and manage the profiles already attached to this job."
-        headerActionContent={
+        headerActionContent={({ triggerAction }) =>
           baseProfiles.length === 0 ? (
             <p className="text-sm text-app-text-subtle">Create a base profile first.</p>
           ) : (
@@ -365,47 +436,40 @@ export const JobPage = () => {
                   </option>
                 ))}
               </select>
-              <AddIconButton label="Add profile" onAdd={handleAddJobProfile} />
+              <AddIconButton label="Add profile" onAdd={triggerAction} />
             </div>
           )
         }
+        onAction={handleAddJobProfile}
         title="Profiles"
       >
         {hasAttachedProfiles ? (
           <div className="space-y-3">
             {attachedProfiles.map((profile) => (
-                <div key={profile.id} className="flex flex-col gap-3 rounded-xl border border-app-border-muted px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="font-medium text-app-text">{profile.name}</p>
-                    <p className="mt-1 text-sm text-app-text-subtle">Updated {new Date(profile.updatedAt).toLocaleString()}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Link aria-label={`Open profile ${profile.name}`} className={getActionIconButtonClassName()} to={`/profiles/${profile.id}`}>
-                      <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
-                        <path d="M7 17 17 7" />
-                        <path d="M9 7h8v8" />
-                      </svg>
-                    </Link>
-                    <IconActionButton label={`Duplicate profile ${profile.name}`} onClick={() => duplicateProfile({ sourceProfileId: profile.id })}>
-                      <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
-                        <rect height="10" rx="2" width="10" x="9" y="9" />
-                        <path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
-                      </svg>
-                    </IconActionButton>
-                    <DeleteIconButton
-                      label={`Delete profile ${profile.name}`}
-                      onDelete={() => {
-                        const confirmed = window.confirm(`Delete profile "${profile.name}"? This cannot be undone.`)
-                        if (!confirmed) {
-                          return
-                        }
+              <AttachedProfileRow
+                key={profile.id}
+                onDelete={() => {
+                  const confirmed = window.confirm(`Delete profile "${profile.name}"? This cannot be undone.`)
+                  if (!confirmed) {
+                    return
+                  }
 
-                        deleteProfile(profile.id)
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
+                  deleteProfile(profile.id)
+                }}
+                onDuplicate={() => {
+                  const createdId = duplicateProfile({ sourceProfileId: profile.id })
+
+                  if (createdId) {
+                    setNewAttachedProfileId(createdId)
+                  }
+                }}
+                profile={profile}
+                scrollIntoViewOnMount={profile.id === newAttachedProfileId}
+                {...(profile.id === newAttachedProfileId
+                  ? { onScrollIntoViewComplete: () => setNewAttachedProfileId(null) }
+                  : {})}
+              />
+            ))}
           </div>
         ) : null}
       </CollapsiblePanel>

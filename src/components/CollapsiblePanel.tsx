@@ -17,7 +17,7 @@ interface CollapsiblePanelProps {
   expandOnAction?: boolean
   actionStyle?: 'text' | 'icon'
   headerActions?: ReactNode
-  headerActionContent?: ReactNode
+  headerActionContent?: ReactNode | ((input: { triggerAction: () => void }) => ReactNode)
   contentClassName?: string
   showBottomActionWhenHeaderHidden?: boolean
 }
@@ -80,6 +80,10 @@ export const CollapsiblePanel = ({
     onAction?.()
   }
 
+  const resolvedHeaderActionContent = typeof headerActionContent === 'function'
+    ? headerActionContent({ triggerAction: handleAction })
+    : headerActionContent
+
   return (
     <section className="rounded-2xl border border-app-border-muted bg-app-surface p-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -113,7 +117,7 @@ export const CollapsiblePanel = ({
 
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           {headerActions}
-          {(!collapsible || isExpanded) && headerActionContent ? headerActionContent : null}
+          {(!collapsible || isExpanded) && resolvedHeaderActionContent ? resolvedHeaderActionContent : null}
           {shouldRenderTopAction ? (
             <div ref={headerActionRef}>
               {actionStyle === 'icon' ? (

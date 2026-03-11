@@ -100,18 +100,18 @@ interface AppStoreState {
     createJob: (input: Pick<Job, 'companyName' | 'jobTitle'> & Partial<Job> & { initialLinkUrl?: string }) => Id
     updateJob: (input: { jobId: Id; changes: Partial<Omit<Job, 'id' | 'createdAt' | 'updatedAt' | 'appliedAt' | 'finalOutcome'>> }) => void
     deleteJob: (jobId: Id) => void
-    createJobLink: (jobId: Id) => void
+    createJobLink: (jobId: Id) => Id | null
     updateJobLink: (input: {
       jobLinkId: Id
       changes: Partial<Omit<JobLink, 'id' | 'jobId' | 'createdAt'>>
     }) => void
     deleteJobLink: (jobLinkId: Id) => void
     reorderJobLinks: (input: { jobId: Id; orderedIds: Id[] }) => void
-    createJobContact: (jobId: Id) => void
+    createJobContact: (jobId: Id) => Id | null
     updateJobContact: (input: { jobContactId: Id; changes: Partial<Omit<JobContact, 'id' | 'jobId'>> }) => void
     deleteJobContact: (jobContactId: Id) => void
     reorderJobContacts: (input: { jobId: Id; orderedIds: Id[] }) => void
-    createApplicationQuestion: (jobId: Id) => void
+    createApplicationQuestion: (jobId: Id) => Id | null
     updateApplicationQuestion: (input: {
       applicationQuestionId: Id
       changes: Partial<Omit<ApplicationQuestion, 'id' | 'jobId'>>
@@ -1731,7 +1731,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const job = get().data.jobs[jobId]
 
       if (!job) {
-        return
+        return null
       }
 
       const jobLink: JobLink = {
@@ -1759,6 +1759,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           now(),
         ),
       }))
+
+      return jobLink.id
     },
     updateJobLink: ({ jobLinkId, changes }) => {
       const existing = get().data.jobLinks[jobLinkId]
@@ -1831,7 +1833,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const job = get().data.jobs[jobId]
 
       if (!job) {
-        return
+        return null
       }
 
       const jobContact: JobContact = {
@@ -1869,6 +1871,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           now(),
         ),
       }))
+
+      return jobContact.id
     },
     updateJobContact: ({ jobContactId, changes }) => {
       const existing = get().data.jobContacts[jobContactId]
@@ -1949,7 +1953,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const job = get().data.jobs[jobId]
 
       if (!job) {
-        return
+        return null
       }
 
       const applicationQuestion: ApplicationQuestion = {
@@ -1977,6 +1981,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           now(),
         ),
       }))
+
+      return applicationQuestion.id
     },
     updateApplicationQuestion: ({ applicationQuestionId, changes }) => {
       const existing = get().data.applicationQuestions[applicationQuestionId]
