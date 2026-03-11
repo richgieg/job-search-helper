@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
-import { AddIconButton, DeleteIconButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
+import { AddIconButton, DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
 import type { ContactRelationshipType } from '../../types/state'
@@ -178,6 +179,75 @@ const formatInterviewSummary = (startAt: string | null) => {
   const start = formatInterviewTime(startAt)
 
   return summarizeParts([start || null])
+}
+
+const AttachedProfileCard = ({
+  profileId,
+  onDuplicateComplete,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  profileId: string
+  onDuplicateComplete?: (createdProfileId: string) => void
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
+  const profile = useAppStore((state) => state.data.profiles[profileId])
+  const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
+  const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
+  const { scrollTargetRef: rowRef, scrollTargetStyle: rowScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
+
+  if (!profile) {
+    return null
+  }
+
+  const handleDelete = () => {
+    const confirmed = window.confirm(`Delete profile \"${profile.name}\"? This cannot be undone.`)
+    if (!confirmed) {
+      return
+    }
+
+    deleteProfile(profile.id)
+  }
+
+  const handleDuplicate = () => {
+    const createdId = duplicateProfile({ sourceProfileId: profile.id })
+
+    if (createdId) {
+      onDuplicateComplete?.(createdId)
+    }
+  }
+
+  return (
+    <div
+      className="flex flex-col gap-3 rounded-xl border border-app-border-muted px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+      ref={rowRef}
+      style={rowScrollStyle}
+    >
+      <div>
+        <p className="font-medium text-app-text">{profile.name}</p>
+        <p className="mt-1 text-sm text-app-text-subtle">Updated {new Date(profile.updatedAt).toLocaleString()}</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Link aria-label={`Open profile ${profile.name}`} className={getActionIconButtonClassName()} to={`/profiles/${profile.id}`}>
+          <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
+            <path d="M7 17 17 7" />
+            <path d="M9 7h8v8" />
+          </svg>
+        </Link>
+        <IconActionButton label={`Duplicate profile ${profile.name}`} onClick={handleDuplicate}>
+          <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+            <rect height="10" rx="2" width="10" x="9" y="9" />
+            <path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+          </svg>
+        </IconActionButton>
+        <DeleteIconButton label={`Delete profile ${profile.name}`} onDelete={handleDelete} />
+      </div>
+    </div>
+  )
 }
 
 const JobLinkCard = ({
@@ -668,18 +738,32 @@ const ApplicationQuestionCard = ({
 }
 
 export const JobChildEditors = ({ jobId }: { jobId: string }) => {
+  const profilesById = useAppStore((state) => state.data.profiles)
   const jobLinksById = useAppStore((state) => state.data.jobLinks)
   const jobContactsById = useAppStore((state) => state.data.jobContacts)
   const interviewsById = useAppStore((state) => state.data.interviews)
   const applicationQuestionsById = useAppStore((state) => state.data.applicationQuestions)
+  const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
   const createJobLink = useAppStore((state) => state.actions.createJobLink)
   const createJobContact = useAppStore((state) => state.actions.createJobContact)
   const createInterview = useAppStore((state) => state.actions.createInterview)
   const createApplicationQuestion = useAppStore((state) => state.actions.createApplicationQuestion)
+  const [selectedBaseProfileId, setSelectedBaseProfileId] = useState('')
+  const [newAttachedProfileId, setNewAttachedProfileId] = useState<string | null>(null)
   const [newJobLinkId, setNewJobLinkId] = useState<string | null>(null)
   const [newJobContactId, setNewJobContactId] = useState<string | null>(null)
   const [newInterviewId, setNewInterviewId] = useState<string | null>(null)
   const [newApplicationQuestionId, setNewApplicationQuestionId] = useState<string | null>(null)
+
+  const profiles = useMemo(() => Object.values(profilesById), [profilesById])
+  const baseProfiles = useMemo(() => profiles.filter((profile) => profile.jobId === null), [profiles])
+  const attachedProfiles = useMemo(
+    () =>
+      profiles
+        .filter((profile) => profile.jobId === jobId)
+        .sort((left, right) => left.createdAt.localeCompare(right.createdAt)),
+    [jobId, profiles],
+  )
 
   const jobLinkIds = useMemo(
     () =>
@@ -735,9 +819,78 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
   const hasJobContacts = jobContactIds.length > 0
   const hasInterviews = interviewIds.length > 0
   const hasApplicationQuestions = applicationQuestionIds.length > 0
+  const hasAttachedProfiles = attachedProfiles.length > 0
+
+  useEffect(() => {
+    setSelectedBaseProfileId((current) => {
+      if (current && baseProfiles.some((profile) => profile.id === current)) {
+        return current
+      }
+
+      return baseProfiles[0]?.id ?? ''
+    })
+  }, [baseProfiles])
+
+  const handleAddJobProfile = () => {
+    if (!selectedBaseProfileId) {
+      return
+    }
+
+    const createdId = duplicateProfile({
+      sourceProfileId: selectedBaseProfileId,
+      targetJobId: jobId,
+    })
+
+    if (createdId) {
+      setNewAttachedProfileId(createdId)
+    }
+  }
 
   return (
     <>
+      <CollapsiblePanel
+        collapsible={hasAttachedProfiles}
+        description="Create job-specific profiles from base profiles and manage the profiles already attached to this job."
+        headerActionContent={({ triggerAction }) =>
+          baseProfiles.length === 0 ? (
+            <p className="text-sm text-app-text-subtle">Create a base profile first.</p>
+          ) : (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <select
+                className="min-w-0 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring sm:w-64"
+                value={selectedBaseProfileId}
+                onChange={(event) => setSelectedBaseProfileId(event.target.value)}
+              >
+                {baseProfiles.map((profile) => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.name}
+                  </option>
+                ))}
+              </select>
+              <AddIconButton label="Add profile" onAdd={triggerAction} />
+            </div>
+          )
+        }
+        onAction={handleAddJobProfile}
+        title="Profiles"
+      >
+        {hasAttachedProfiles ? (
+          <div className="space-y-3">
+            {attachedProfiles.map((profile) => (
+              <AttachedProfileCard
+                key={profile.id}
+                onDuplicateComplete={setNewAttachedProfileId}
+                profileId={profile.id}
+                scrollIntoViewOnMount={profile.id === newAttachedProfileId}
+                {...(profile.id === newAttachedProfileId
+                  ? { onScrollIntoViewComplete: () => setNewAttachedProfileId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
+        ) : null}
+      </CollapsiblePanel>
+
       <CollapsiblePanel
         actionLabel="Add link"
         actionStyle="icon"
