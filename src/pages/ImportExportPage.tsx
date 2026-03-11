@@ -65,7 +65,7 @@ export const ImportExportPage = () => {
         <p className="mt-2 text-lg font-semibold text-app-text">{summary}</p>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <button className="rounded-xl bg-app-text px-3 py-2 text-sm font-medium text-app-primary-contrast hover:bg-app-text-muted" onClick={handleExport} type="button">
+          <button className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" onClick={handleExport} type="button">
             Export JSON
           </button>
           <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted">
