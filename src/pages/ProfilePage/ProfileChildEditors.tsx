@@ -4,7 +4,7 @@ import { ActionToggle, DeleteIconButton, getActionIconButtonClassName } from '..
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
-import type { ExperienceEntry, ReferenceType } from '../../types/state'
+import type { EducationEntry, ExperienceEntry, ReferenceType } from '../../types/state'
 import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 import { moveOrderedItem } from '../../utils/reorder'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
@@ -347,6 +347,78 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
           }
         />
         <DeleteIconButton label="Delete experience bullet" onDelete={() => deleteExperienceBullet(bullet.id)} />
+      </div>
+    </div>
+  )
+}
+
+const EducationBulletRow = ({ bulletId }: { bulletId: string }) => {
+  const bullet = useAppStore((state) => state.data.educationBullets[bulletId])
+  const bulletsById = useAppStore((state) => state.data.educationBullets)
+  const updateEducationBullet = useAppStore((state) => state.actions.updateEducationBullet)
+  const deleteEducationBullet = useAppStore((state) => state.actions.deleteEducationBullet)
+  const reorderEducationBullets = useAppStore((state) => state.actions.reorderEducationBullets)
+  const [content, setContent] = useState(bullet?.content ?? '')
+  const [enabled, setEnabled] = useState(bullet?.enabled ?? true)
+
+  const bulletIds = useMemo(
+    () =>
+      bullet
+        ? Object.values(bulletsById)
+            .filter((item) => item.educationEntryId === bullet.educationEntryId)
+            .sort((left, right) => left.sortOrder - right.sortOrder)
+            .map((item) => item.id)
+        : [],
+    [bullet, bulletsById],
+  )
+  const bulletIndex = bulletIds.indexOf(bulletId)
+
+  useEffect(() => {
+    if (!bullet) {
+      return
+    }
+
+    setContent(bullet.content)
+    setEnabled(bullet.enabled)
+  }, [bullet])
+
+  if (!bullet) {
+    return null
+  }
+
+  const commitContent = () => {
+    if (content === bullet.content) {
+      return
+    }
+
+    updateEducationBullet({ educationBulletId: bullet.id, changes: { content } })
+  }
+
+  return (
+    <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+      <TextAreaField hideLabel label="Bullet" minHeightClass="min-h-10" onBlur={commitContent} placeholder="Describe coursework, honors, or related details" value={content} onChange={setContent} />
+      <div className="flex flex-wrap items-center justify-end gap-2 md:self-center">
+        <ActionToggle checked={enabled} label="Enable education bullet" onChange={(value) => {
+          setEnabled(value)
+          updateEducationBullet({ educationBulletId: bullet.id, changes: { enabled: value } })
+        }} />
+        <ReorderButtons
+          canMoveDown={bulletIds.length > 1}
+          canMoveUp={bulletIds.length > 1}
+          onMoveDown={() =>
+            reorderEducationBullets({
+              educationEntryId: bullet.educationEntryId,
+              orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
+            })
+          }
+          onMoveUp={() =>
+            reorderEducationBullets({
+              educationEntryId: bullet.educationEntryId,
+              orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
+            })
+          }
+        />
+        <DeleteIconButton label="Delete education bullet" onDelete={() => deleteEducationBullet(bullet.id)} />
       </div>
     </div>
   )
@@ -799,9 +871,11 @@ const EducationCard = ({
 }) => {
   const entry = useAppStore((state) => state.data.educationEntries[entryId])
   const educationEntriesById = useAppStore((state) => state.data.educationEntries)
+  const bulletsById = useAppStore((state) => state.data.educationBullets)
   const updateEducationEntry = useAppStore((state) => state.actions.updateEducationEntry)
   const deleteEducationEntry = useAppStore((state) => state.actions.deleteEducationEntry)
   const reorderEducationEntries = useAppStore((state) => state.actions.reorderEducationEntries)
+  const createEducationBullet = useAppStore((state) => state.actions.createEducationBullet)
   const [draft, setDraft] = useState(entry)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
@@ -820,6 +894,15 @@ const EducationCard = ({
   )
   const educationEntryIndex = educationEntryIds.indexOf(entryId)
 
+  const bulletIds = useMemo(
+    () =>
+      Object.values(bulletsById)
+        .filter((item) => item.educationEntryId === entryId)
+        .sort((left, right) => left.sortOrder - right.sortOrder)
+        .map((item) => item.id),
+    [bulletsById, entryId],
+  )
+
   useEffect(() => {
     setDraft(entry)
   }, [entry])
@@ -827,10 +910,15 @@ const EducationCard = ({
   const summary = summarizeParts([
     draft?.school || 'No school',
     formatMonthYear(draft?.graduationDate ?? null) || null,
+    countLabel(bulletIds.length, 'bullet'),
   ])
 
   if (!entry || !draft) {
     return null
+  }
+
+  const commitEntryChanges = (changes: Partial<Omit<EducationEntry, 'id' | 'profileId'>>) => {
+    updateEducationEntry({ educationEntryId: entry.id, changes })
   }
 
   return (
@@ -866,9 +954,28 @@ const EducationCard = ({
         title={draft.degree || entry.degree || 'Education entry'}
       >
         <div className="grid gap-4 xl:grid-cols-3">
-          <TextField label="Degree" onBlur={() => draft.degree !== entry.degree && updateEducationEntry({ educationEntryId: entry.id, changes: { degree: draft.degree } })} value={draft.degree} onChange={(value) => setDraft({ ...draft, degree: value })} />
-          <TextField label="School" onBlur={() => draft.school !== entry.school && updateEducationEntry({ educationEntryId: entry.id, changes: { school: draft.school } })} value={draft.school} onChange={(value) => setDraft({ ...draft, school: value })} />
-          <TextField label="Graduation date" type="date" onBlur={() => draft.graduationDate !== entry.graduationDate && updateEducationEntry({ educationEntryId: entry.id, changes: { graduationDate: draft.graduationDate } })} value={draft.graduationDate ?? ''} onChange={(value) => setDraft({ ...draft, graduationDate: value || null })} />
+          <TextField label="Degree" onBlur={() => draft.degree !== entry.degree && commitEntryChanges({ degree: draft.degree })} value={draft.degree} onChange={(value) => setDraft({ ...draft, degree: value })} />
+          <TextField label="School" onBlur={() => draft.school !== entry.school && commitEntryChanges({ school: draft.school })} value={draft.school} onChange={(value) => setDraft({ ...draft, school: value })} />
+          <TextField label="Graduation date" type="date" onBlur={() => draft.graduationDate !== entry.graduationDate && commitEntryChanges({ graduationDate: draft.graduationDate })} value={draft.graduationDate ?? ''} onChange={(value) => setDraft({ ...draft, graduationDate: value || null })} />
+          <div className="xl:col-span-3">
+            <div className="flex items-center justify-between gap-3">
+              <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Bullets</h4>
+              <button
+                className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted"
+                onClick={() => createEducationBullet(entry.id)}
+                type="button"
+              >
+                Add bullet
+              </button>
+            </div>
+            <div className="mt-3 space-y-3">
+              {bulletIds.length === 0 ? (
+                <p className="text-sm text-app-text-subtle">No bullets yet.</p>
+              ) : (
+                bulletIds.map((bulletId) => <EducationBulletRow key={bulletId} bulletId={bulletId} />)
+              )}
+            </div>
+          </div>
         </div>
       </CollapsiblePanel>
     </div>

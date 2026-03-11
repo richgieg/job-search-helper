@@ -330,6 +330,15 @@ These actions should:
 - `deleteEducationEntry(input)`
 - `reorderEducationEntries(input)`
 
+`deleteEducationEntry()` must also delete all child `EducationBullet` records for that education entry.
+
+### Education bullet actions
+
+- `createEducationBullet(input)`
+- `updateEducationBullet(input)`
+- `deleteEducationBullet(input)`
+- `reorderEducationBullets(input)`
+
 ### Certification actions
 
 - `createCertification(input)`

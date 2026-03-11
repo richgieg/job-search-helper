@@ -9,6 +9,7 @@ import type {
   AppUiState,
   Certification,
   ContactRelationshipType,
+  EducationBullet,
   EducationEntry,
   ExperienceBullet,
   ExperienceEntry,
@@ -85,6 +86,13 @@ interface AppStoreState {
     }) => void
     deleteEducationEntry: (educationEntryId: Id) => void
     reorderEducationEntries: (input: { profileId: Id; orderedIds: Id[] }) => void
+    createEducationBullet: (educationEntryId: Id) => void
+    updateEducationBullet: (input: {
+      educationBulletId: Id
+      changes: Partial<Pick<EducationBullet, 'content' | 'enabled' | 'sortOrder'>>
+    }) => void
+    deleteEducationBullet: (educationBulletId: Id) => void
+    reorderEducationBullets: (input: { educationEntryId: Id; orderedIds: Id[] }) => void
     createCertification: (profileId: Id) => Id | null
     updateCertification: (input: {
       certificationId: Id
@@ -241,6 +249,7 @@ const stampUpdatedJob = (data: AppDataState, jobId: Id, timestamp: string): AppD
 const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetProfileId: Id): AppDataState => {
   const clonedSkillCategoryIds = new Map<Id, Id>()
   const clonedExperienceEntryIds = new Map<Id, Id>()
+  const clonedEducationEntryIds = new Map<Id, Id>()
   const nextData: AppDataState = {
     ...data,
     profileLinks: { ...data.profileLinks },
@@ -249,6 +258,7 @@ const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetPro
     experienceEntries: { ...data.experienceEntries },
     experienceBullets: { ...data.experienceBullets },
     educationEntries: { ...data.educationEntries },
+    educationBullets: { ...data.educationBullets },
     certifications: { ...data.certifications },
     references: { ...data.references },
   }
@@ -316,12 +326,25 @@ const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetPro
   Object.values(data.educationEntries)
     .filter((item) => item.profileId === sourceProfileId)
     .forEach((item) => {
+      const newId = createId()
+      clonedEducationEntryIds.set(item.id, newId)
       const cloned: EducationEntry = {
         ...item,
-        id: createId(),
+        id: newId,
         profileId: targetProfileId,
       }
       nextData.educationEntries[cloned.id] = cloned
+    })
+
+  Object.values(data.educationBullets)
+    .filter((item) => clonedEducationEntryIds.has(item.educationEntryId))
+    .forEach((item) => {
+      const cloned: EducationBullet = {
+        ...item,
+        id: createId(),
+        educationEntryId: clonedEducationEntryIds.get(item.educationEntryId)!,
+      }
+      nextData.educationBullets[cloned.id] = cloned
     })
 
   Object.values(data.certifications)
@@ -368,6 +391,7 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
   const nextExperienceEntries = { ...data.experienceEntries }
   const nextExperienceBullets = { ...data.experienceBullets }
   const nextEducationEntries = { ...data.educationEntries }
+  const nextEducationBullets = { ...data.educationBullets }
   const nextCertifications = { ...data.certifications }
   const nextReferences = { ...data.references }
 
@@ -418,6 +442,14 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
     }
   })
 
+  Object.values(data.educationBullets).forEach((item) => {
+    const educationEntry = data.educationEntries[item.educationEntryId]
+
+    if (educationEntry?.profileId === profileId) {
+      delete nextEducationBullets[item.id]
+    }
+  })
+
   Object.values(data.certifications).forEach((item) => {
     if (item.profileId === profileId) {
       delete nextCertifications[item.id]
@@ -439,6 +471,7 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
     experienceEntries: nextExperienceEntries,
     experienceBullets: nextExperienceBullets,
     educationEntries: nextEducationEntries,
+    educationBullets: nextEducationBullets,
     certifications: nextCertifications,
     references: nextReferences,
   }
@@ -460,6 +493,25 @@ const deleteExperienceEntryCascade = (data: AppDataState, experienceEntryId: Id)
     ...data,
     experienceEntries: nextExperienceEntries,
     experienceBullets: nextExperienceBullets,
+  }
+}
+
+const deleteEducationEntryCascade = (data: AppDataState, educationEntryId: Id): AppDataState => {
+  const nextEducationEntries = { ...data.educationEntries }
+  const nextEducationBullets = { ...data.educationBullets }
+
+  delete nextEducationEntries[educationEntryId]
+
+  Object.values(data.educationBullets).forEach((item) => {
+    if (item.educationEntryId === educationEntryId) {
+      delete nextEducationBullets[item.id]
+    }
+  })
+
+  return {
+    ...data,
+    educationEntries: nextEducationEntries,
+    educationBullets: nextEducationBullets,
   }
 }
 
@@ -1339,21 +1391,9 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         return
       }
 
-      set((state) => {
-        const nextEducationEntries = { ...state.data.educationEntries }
-        delete nextEducationEntries[educationEntryId]
-
-        return {
-          data: stampUpdatedProfile(
-            {
-              ...state.data,
-              educationEntries: nextEducationEntries,
-            },
-            existing.profileId,
-            now(),
-          ),
-        }
-      })
+      set((state) => ({
+        data: stampUpdatedProfile(deleteEducationEntryCascade(state.data, educationEntryId), existing.profileId, now()),
+      }))
     },
     reorderEducationEntries: ({ profileId, orderedIds }) => {
       const existingIds = Object.values(get().data.educationEntries)
@@ -1371,6 +1411,124 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
             educationEntries: reorderSortableEntities(state.data.educationEntries, orderedIds),
           },
           profileId,
+          now(),
+        ),
+      }))
+    },
+    createEducationBullet: (educationEntryId) => {
+      const educationEntry = get().data.educationEntries[educationEntryId]
+
+      if (!educationEntry) {
+        return
+      }
+
+      const educationBullet: EducationBullet = {
+        id: createId(),
+        educationEntryId,
+        content: '',
+        enabled: true,
+        sortOrder: getNextSortOrder(
+          Object.values(get().data.educationBullets)
+            .filter((item) => item.educationEntryId === educationEntryId)
+            .map((item) => item.sortOrder),
+        ),
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            educationBullets: {
+              ...state.data.educationBullets,
+              [educationBullet.id]: educationBullet,
+            },
+          },
+          educationEntry.profileId,
+          now(),
+        ),
+      }))
+    },
+    updateEducationBullet: ({ educationBulletId, changes }) => {
+      const existing = get().data.educationBullets[educationBulletId]
+
+      if (!existing) {
+        return
+      }
+
+      const educationEntry = get().data.educationEntries[existing.educationEntryId]
+
+      if (!educationEntry) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            educationBullets: {
+              ...state.data.educationBullets,
+              [educationBulletId]: {
+                ...existing,
+                ...changes,
+              },
+            },
+          },
+          educationEntry.profileId,
+          now(),
+        ),
+      }))
+    },
+    deleteEducationBullet: (educationBulletId) => {
+      const existing = get().data.educationBullets[educationBulletId]
+
+      if (!existing) {
+        return
+      }
+
+      const educationEntry = get().data.educationEntries[existing.educationEntryId]
+
+      if (!educationEntry) {
+        return
+      }
+
+      set((state) => {
+        const nextEducationBullets = { ...state.data.educationBullets }
+        delete nextEducationBullets[educationBulletId]
+
+        return {
+          data: stampUpdatedProfile(
+            {
+              ...state.data,
+              educationBullets: nextEducationBullets,
+            },
+            educationEntry.profileId,
+            now(),
+          ),
+        }
+      })
+    },
+    reorderEducationBullets: ({ educationEntryId, orderedIds }) => {
+      const educationEntry = get().data.educationEntries[educationEntryId]
+
+      if (!educationEntry) {
+        return
+      }
+
+      const existingIds = Object.values(get().data.educationBullets)
+        .filter((item) => item.educationEntryId === educationEntryId)
+        .map((item) => item.id)
+
+      if (!hasExactIds(existingIds, orderedIds)) {
+        return
+      }
+
+      set((state) => ({
+        data: stampUpdatedProfile(
+          {
+            ...state.data,
+            educationBullets: reorderSortableEntities(state.data.educationBullets, orderedIds),
+          },
+          educationEntry.profileId,
           now(),
         ),
       }))

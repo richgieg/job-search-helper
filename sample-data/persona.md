@@ -12,7 +12,7 @@ The sample data should represent one real person adapting shared professional hi
 
 ## Motivation
 
-Rowan is actively exploring new roles and wants one place to manage tailored resumes, cover letters, links, experience bullets, and job-specific application materials.
+Rowan is actively exploring new roles and wants one place to manage tailored resumes, cover letters, links, experience bullets, education bullets, and job-specific application materials.
 
 The purpose of the sample data is to demonstrate how the app supports:
 
@@ -87,6 +87,8 @@ Guidance:
 
 Education should be shared across all profiles.
 
+Education bullets should also be included and tailored per profile, but with restraint.
+
 Suggested education entry:
 
 - North Carolina State University
@@ -100,6 +102,14 @@ Optional second entry if needed:
 - Graduation date: 2013-05
 
 Use restraint here. One primary degree is enough unless the sample data clearly benefits from a second entry.
+
+Education bullet guidance:
+
+- include 1 or 2 education bullets per profile
+- keep them shorter and lighter than experience bullets
+- use them for believable academic detail such as honors, relevant coursework, capstone work, lab work, or other technical focus areas
+- tailor the emphasis per profile without making the underlying education history feel different
+- avoid making academic work read like full professional experience
 
 ## Certifications
 
@@ -158,6 +168,12 @@ Experience bullets should highlight:
 - performance and reliability improvements
 - developer experience improvements tied to software delivery
 
+Education bullets should highlight:
+
+- software-focused coursework or capstone work
+- academic projects involving application development or systems design
+- honors or distinctions that support a strong engineering profile
+
 ### DevOps Engineer
 
 This profile should emphasize:
@@ -189,6 +205,12 @@ Experience bullets should highlight:
 - platform tooling
 - environment consistency and reduced manual work
 
+Education bullets should highlight:
+
+- systems, automation, or infrastructure-oriented coursework
+- lab or project work that suggests operational or platform interest
+- academic work that supports CI/CD, systems thinking, or reliability themes where credible
+
 ### Cloud Engineer
 
 This profile should emphasize:
@@ -219,6 +241,12 @@ Experience bullets should highlight:
 - cost or performance optimization
 - security posture improvements
 - platform resiliency and operational visibility
+
+Education bullets should highlight:
+
+- networking, distributed systems, security, or infrastructure-related coursework
+- academic projects that support cloud or platform positioning
+- technical focus areas that reinforce AWS, resiliency, or systems design themes without overstating them
 
 ## Shared Skills Baseline
 
@@ -258,6 +286,7 @@ Avoid:
 - exaggerated claims
 - overly generic AI-style phrasing
 - unrealistic scope in a single bullet
+- turning education bullets into inflated pseudo-work experience
 - overly senior language that implies staff-plus leadership unless the work history supports it
 
 ## Naming Style
@@ -281,7 +310,7 @@ When creating sample-data.json later:
 - keep the three base profiles aligned to this persona
 - reuse shared personal details exactly
 - reuse the same underlying work history, education, certifications, and references wherever practical
-- tailor summaries, cover letters, skill emphasis, and experience bullets per profile
+- tailor summaries, cover letters, skill emphasis, experience bullets, and education bullets per profile
 - make the sample data useful for demonstrating imports, exports, profile editing, job tracking, and document generation
 
 ## Sample Job Pipeline Guidance

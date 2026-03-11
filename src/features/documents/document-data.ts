@@ -2,6 +2,7 @@ import { getJobComputedStatus } from '../jobs/job-status'
 import type {
   AppDataState,
   Certification,
+  EducationBullet,
   EducationEntry,
   ExperienceBullet,
   ExperienceEntry,
@@ -27,6 +28,11 @@ export interface DocumentExperienceEntry {
   bullets: ExperienceBullet[]
 }
 
+export interface DocumentEducationEntry {
+  entry: EducationEntry
+  bullets: EducationBullet[]
+}
+
 export interface ProfileDocumentData {
   profile: Profile
   profileLinks: ProfileLink[]
@@ -36,7 +42,7 @@ export interface ProfileDocumentData {
   jobLinks: JobLink[]
   skillCategories: DocumentSkillCategory[]
   experienceEntries: DocumentExperienceEntry[]
-  educationEntries: EducationEntry[]
+  educationEntries: DocumentEducationEntry[]
   certifications: Certification[]
   references: Reference[]
   computedStatus: ReturnType<typeof getJobComputedStatus>
@@ -205,6 +211,12 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
   const educationEntries = Object.values(data.educationEntries)
     .filter((entry) => entry.profileId === profileId && entry.enabled)
     .sort(compareSortOrder)
+    .map((entry) => ({
+      entry,
+      bullets: Object.values(data.educationBullets)
+        .filter((bullet) => bullet.educationEntryId === entry.id && bullet.enabled && bullet.content.trim())
+        .sort(compareSortOrder),
+    }))
 
   const certifications = Object.values(data.certifications)
     .filter((entry) => entry.profileId === profileId && entry.enabled)

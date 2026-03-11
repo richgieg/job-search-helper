@@ -64,7 +64,7 @@ This keeps job creation lightweight while still enabling tailored resumes, cover
 2. User adds a job.
 3. User decides whether the job is worth tailoring.
 4. User creates one or more job-specific profiles for that job by duplicating a base profile or an existing job profile.
-5. User tailors summary, experience bullets, skills, references, and letter content for that job.
+6. User tailors summary, experience bullets, education bullets, skills, references, and letter content for that job.
 6. User adds recruiter/hiring manager contacts.
 7. User selects one of the job's profiles and generates:
    - a resume
@@ -87,8 +87,8 @@ Each reusable profile should support:
    - customize the displayed label for each resume section
    - stored per profile so base profiles and job profiles can differ
 - Skill categories and skills
-- Professional experience entries
-- Education entries
+- Professional experience entries with zero or more bullets
+- Education entries with zero or more bullets
 - Certifications
 - References (professional and personal)
 - Zero or more profile links with user-defined names and URLs
@@ -186,6 +186,8 @@ This allows the user to keep track of custom questions asked during online appli
 - Generated from either a base profile or a selected job-specific profile
 - Respects the profile's resume settings for section visibility and section order
 - Uses the profile's configured resume section labels for displayed headings
+- Renders enabled experience bullets beneath each enabled experience entry
+- Renders enabled education bullets beneath each enabled education entry
 - Exportable as printable HTML in MVP
 - Optional PDF in phase 2
 - Simple templates only in MVP
@@ -267,6 +269,7 @@ The copied related records include:
 - `ExperienceEntry`
 - `ExperienceBullet`
 - `EducationEntry`
+- `EducationBullet`
 - `Certification`
 - `Reference`
 - `ProfileLink`
@@ -326,6 +329,13 @@ The copied related records include:
 - school
 - degree
 - graduation_date
+- enabled
+- sort_order
+
+### EducationBullet
+- id
+- education_entry_id
+- content
 - enabled
 - sort_order
 

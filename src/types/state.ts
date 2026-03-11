@@ -150,6 +150,14 @@ export interface EducationEntry {
   sortOrder: number
 }
 
+export interface EducationBullet {
+  id: Id
+  educationEntryId: Id
+  content: string
+  enabled: boolean
+  sortOrder: number
+}
+
 export interface Certification {
   id: Id
   profileId: Id
@@ -260,6 +268,7 @@ export interface AppDataState {
   experienceEntries: Record<Id, ExperienceEntry>
   experienceBullets: Record<Id, ExperienceBullet>
   educationEntries: Record<Id, EducationEntry>
+  educationBullets: Record<Id, EducationBullet>
   certifications: Record<Id, Certification>
   references: Record<Id, Reference>
   jobs: Record<Id, Job>

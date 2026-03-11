@@ -289,6 +289,52 @@ describe('app store reorder actions', () => {
     expect(preview?.experienceEntries[0]?.bullets.map((bullet) => bullet.content)).toEqual(['Second bullet', 'First bullet'])
   })
 
+  it('reorders education bullets and preview data reflects the new order', () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    actions.createEducationEntry(profileId)
+    const educationEntryId = expectDefined(
+      Object.keys(useAppStore.getState().data.educationEntries)[0],
+      'Expected an education entry id',
+    )
+
+    actions.createEducationBullet(educationEntryId)
+    actions.createEducationBullet(educationEntryId)
+
+    const bulletIds = getOrderedIds(
+      Object.fromEntries(
+        Object.values(useAppStore.getState().data.educationBullets)
+          .filter((item) => item.educationEntryId === educationEntryId)
+          .map((item) => [item.id, item]),
+      ),
+    )
+    const firstBulletId = expectDefined(bulletIds[0], 'Expected first bullet id')
+    const secondBulletId = expectDefined(bulletIds[1], 'Expected second bullet id')
+
+    actions.updateEducationBullet({
+      educationBulletId: firstBulletId,
+      changes: { content: 'Dean list', enabled: true },
+    })
+    actions.updateEducationBullet({
+      educationBulletId: secondBulletId,
+      changes: { content: 'Senior capstone', enabled: true },
+    })
+
+    actions.reorderEducationBullets({
+      educationEntryId,
+      orderedIds: [secondBulletId, firstBulletId],
+    })
+
+    const preview = selectProfileDocumentData(useAppStore.getState().data, profileId)
+    expect(preview?.educationEntries[0]?.bullets.map((bullet) => bullet.content)).toEqual([
+      'Senior capstone',
+      'Dean list',
+    ])
+  })
+
   it('reorders job contacts for a job', () => {
     const { actions } = useAppStore.getState()
 
@@ -727,6 +773,98 @@ describe('app store reorder actions', () => {
     actions.deleteProfile(duplicatedProfileId)
 
     expect(Object.keys(useAppStore.getState().data.profileLinks)).toHaveLength(0)
+  })
+
+  it('duplicates and cascades deletes education bullets with their parent profile and education entry', () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    actions.createEducationEntry(profileId)
+    const educationEntryId = expectDefined(
+      Object.keys(useAppStore.getState().data.educationEntries)[0],
+      'Expected an education entry id',
+    )
+
+    actions.updateEducationEntry({
+      educationEntryId,
+      changes: { school: 'Example University', degree: 'B.S. Computer Science' },
+    })
+
+    actions.createEducationBullet(educationEntryId)
+    const originalBulletId = expectDefined(
+      Object.keys(useAppStore.getState().data.educationBullets)[0],
+      'Expected an education bullet id',
+    )
+
+    actions.updateEducationBullet({
+      educationBulletId: originalBulletId,
+      changes: { content: 'Graduated magna cum laude', enabled: true },
+    })
+
+    const duplicatedProfileId = expectDefined(actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
+
+    const duplicatedEducationEntry = expectDefined(
+      Object.values(useAppStore.getState().data.educationEntries).find((item) => item.profileId === duplicatedProfileId),
+      'Expected duplicated education entry',
+    )
+
+    const duplicatedBullets = Object.values(useAppStore.getState().data.educationBullets)
+      .filter((item) => item.educationEntryId === duplicatedEducationEntry.id)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+
+    expect(duplicatedBullets).toHaveLength(1)
+    expect(duplicatedBullets[0]).toMatchObject({
+      content: 'Graduated magna cum laude',
+      enabled: true,
+      sortOrder: 1,
+    })
+    expect(duplicatedBullets[0]?.id).not.toBe(originalBulletId)
+
+    actions.deleteEducationEntry(educationEntryId)
+    expect(Object.values(useAppStore.getState().data.educationBullets).filter((item) => item.educationEntryId === educationEntryId)).toHaveLength(0)
+    expect(Object.values(useAppStore.getState().data.educationBullets).filter((item) => item.educationEntryId === duplicatedEducationEntry.id)).toHaveLength(1)
+
+    actions.deleteProfile(duplicatedProfileId)
+
+    expect(Object.values(useAppStore.getState().data.educationBullets).filter((item) => item.educationEntryId === duplicatedEducationEntry.id)).toHaveLength(0)
+  })
+
+  it('preserves education bullet data through export and import', () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    actions.createEducationEntry(profileId)
+    const educationEntryId = expectDefined(
+      Object.keys(useAppStore.getState().data.educationEntries)[0],
+      'Expected an education entry id',
+    )
+
+    actions.createEducationBullet(educationEntryId)
+    const educationBulletId = expectDefined(
+      Object.keys(useAppStore.getState().data.educationBullets)[0],
+      'Expected an education bullet id',
+    )
+
+    actions.updateEducationBullet({
+      educationBulletId,
+      changes: { content: 'Honors program', enabled: false },
+    })
+
+    const exported = actions.exportAppData()
+
+    resetStore()
+    useAppStore.getState().actions.importAppData(exported)
+
+    expect(useAppStore.getState().data.educationBullets[educationBulletId]).toMatchObject({
+      educationEntryId,
+      content: 'Honors program',
+      enabled: false,
+      sortOrder: 1,
+    })
   })
 
   it('preserves profile link order through export and import', () => {

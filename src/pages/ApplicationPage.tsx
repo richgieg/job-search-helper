@@ -277,18 +277,23 @@ export const ApplicationPage = () => {
           {documentData.educationEntries.length === 0 ? (
             <p className="text-sm text-app-text-subtle">No education entries enabled.</p>
           ) : (
-            documentData.educationEntries.map((entry, index) => (
+            documentData.educationEntries.map((item, index) => (
               <DataTable
-                key={entry.id}
+                key={item.entry.id}
                 copiedKey={copiedKey}
                 description={`Education entry ${index + 1}`}
                 onCopy={handleCopy}
                 rows={[
-                  { label: 'School', values: buildSingleValue(entry.school) },
-                  { label: 'Degree', values: buildSingleValue(entry.degree) },
-                  buildDateRow('Graduation date', entry.graduationDate),
+                  { label: 'School', values: buildSingleValue(item.entry.school) },
+                  { label: 'Degree', values: buildSingleValue(item.entry.degree) },
+                  buildDateRow('Graduation date', item.entry.graduationDate),
+                  ...item.bullets.map((bullet, bulletIndex) => ({
+                    label: `Bullet ${bulletIndex + 1}`,
+                    values: buildSingleValue(bullet.content),
+                    multiline: true,
+                  })),
                 ]}
-                title={`${entry.school || 'School'}${entry.degree ? ` · ${entry.degree}` : ''}`}
+                title={`${item.entry.school || 'School'}${item.entry.degree ? ` · ${item.entry.degree}` : ''}`}
               />
             ))
           )}

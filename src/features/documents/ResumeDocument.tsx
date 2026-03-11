@@ -135,15 +135,33 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
                 <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">{orderedSection.label}</h3>
                 <div className="mt-4 space-y-4 text-sm text-black">
                   {documentData.educationEntries.length > 0 ? (
-                    documentData.educationEntries.map((entry) => (
-                      <div key={entry.id} className="print-keep-together">
-                        <div className="resume-experience-header">
-                          <p className="font-semibold text-black">{entry.degree || 'Degree not set'}</p>
-                          <p className="resume-experience-date text-black">{formatMonthYear(entry.graduationDate)}</p>
+                    documentData.educationEntries.map((item) => {
+                      const [firstBullet, ...remainingBullets] = item.bullets
+
+                      return (
+                        <div key={item.entry.id}>
+                          <div className="print-keep-together">
+                            <div className="resume-experience-header">
+                              <p className="font-semibold text-black">{item.entry.degree || 'Degree not set'}</p>
+                              <p className="resume-experience-date text-black">{formatMonthYear(item.entry.graduationDate)}</p>
+                            </div>
+                            <p className="italic">{item.entry.school || 'School'}</p>
+                            {firstBullet ? (
+                              <ul className="mt-3 list-disc pl-10 text-sm leading-4.5 text-black">
+                                <li>{firstBullet.content}</li>
+                              </ul>
+                            ) : null}
+                          </div>
+                          {remainingBullets.length > 0 ? (
+                            <ul className="mt-2 list-disc space-y-2 pl-10 text-sm leading-4.5 text-black">
+                              {remainingBullets.map((bullet) => (
+                                <li key={bullet.id}>{bullet.content}</li>
+                              ))}
+                            </ul>
+                          ) : null}
                         </div>
-                        <p className="italic">{entry.school || 'School'}</p>
-                      </div>
-                    ))
+                      )
+                    })
                   ) : null}
                 </div>
               </section>

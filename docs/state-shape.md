@@ -53,6 +53,7 @@ interface AppDataState {
   experienceEntries: Record<Id, ExperienceEntry>;
   experienceBullets: Record<Id, ExperienceBullet>;
   educationEntries: Record<Id, EducationEntry>;
+  educationBullets: Record<Id, EducationBullet>;
   certifications: Record<Id, Certification>;
   references: Record<Id, Reference>;
   jobs: Record<Id, Job>;
@@ -294,6 +295,14 @@ interface EducationEntry {
   enabled: boolean;
   sortOrder: number;
 }
+
+interface EducationBullet {
+  id: Id;
+  educationEntryId: Id;
+  content: string;
+  enabled: boolean;
+  sortOrder: number;
+}
 ```
 
 ### Certification
@@ -451,6 +460,7 @@ The following relationships should be enforced during normal app operations and 
 - If `ExperienceEntry.isCurrent === true`, then `ExperienceEntry.endDate` must be `null`.
 - `ExperienceBullet.experienceEntryId` points to an existing `ExperienceEntry`.
 - `EducationEntry.profileId` points to an existing `Profile`.
+- `EducationBullet.educationEntryId` points to an existing `EducationEntry`.
 - `Certification.profileId` points to an existing `Profile`.
 - `Reference.profileId` points to an existing `Profile`.
 
@@ -475,6 +485,7 @@ When duplicating a profile, create a new `Profile` and duplicate all profile-own
 - `ExperienceEntry`
 - `ExperienceBullet`
 - `EducationEntry`
+- `EducationBullet`
 - `Certification`
 - `Reference`
 
@@ -489,6 +500,10 @@ Rules:
 Additional duplication rule for experience bullets:
 
 - when duplicating an `ExperienceEntry`, duplicate all of its `ExperienceBullet` records and re-point them to the new experience entry
+
+Additional duplication rule for education bullets:
+
+- when duplicating an `EducationEntry`, duplicate all of its `EducationBullet` records and re-point them to the new education entry
 
 ## Deletion rules
 
@@ -514,6 +529,7 @@ Cascade delete these records:
 - `ExperienceEntry`
 - `ExperienceBullet`
 - `EducationEntry`
+- `EducationBullet`
 - `Certification`
 - `Reference`
 
@@ -555,6 +571,7 @@ The following records can be hard deleted directly:
 - `ExperienceEntry`
 - `ExperienceBullet`
 - `EducationEntry`
+- `EducationBullet`
 - `Certification`
 - `Reference`
 - `JobLink`
@@ -567,6 +584,7 @@ Additional rule:
 
 - deleting a `SkillCategory` should also delete all `Skill` records that belong to that category
 - deleting an `ExperienceEntry` should also delete all `ExperienceBullet` records that belong to that entry
+- deleting an `EducationEntry` should also delete all `EducationBullet` records that belong to that entry
 - deleting an `Interview` should also delete all `InterviewContact` records that belong to that interview
 
 ### Generated outputs and deletion
@@ -615,6 +633,7 @@ These values should be computed, not stored.
 - `getOrderedExperienceEntries(profileId)`
 - `getOrderedExperienceBullets(experienceEntryId)`
 - `getOrderedEducationEntries(profileId)`
+- `getOrderedEducationBullets(educationEntryId)`
 - `getOrderedCertifications(profileId)`
 - `getOrderedReferences(profileId)`
 
