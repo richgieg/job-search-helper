@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { ActionToggle } from '../components/CompactActionControls'
-import { CollapsiblePanel } from '../components/CollapsiblePanel'
-import { ReorderButtons } from '../components/ReorderButtons'
-import { ProfileChildEditors } from '../features/profiles/ProfileChildEditors'
-import { useAppStore } from '../store/app-store'
-import type { PersonalDetails, ResumeSectionKey } from '../types/state'
-import { moveOrderedItem } from '../utils/reorder'
+import { ActionToggle } from '../../components/CompactActionControls'
+import { CollapsiblePanel } from '../../components/CollapsiblePanel'
+import { ReorderButtons } from '../../components/ReorderButtons'
+import { ProfileChildEditors } from './ProfileChildEditors'
+import { useAppStore } from '../../store/app-store'
+import type { PersonalDetails, ResumeSectionKey } from '../../types/state'
+import { moveOrderedItem } from '../../utils/reorder'
 
 const createPersonalDetailsDraft = (personalDetails: PersonalDetails): PersonalDetails => ({
   ...personalDetails,
