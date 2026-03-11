@@ -262,6 +262,29 @@ button:disabled {
   cursor: not-allowed;
 }
 
+select {
+  color: var(--app-text);
+  background: var(--app-surface);
+}
+
+select:disabled {
+  color: var(--app-text-disabled);
+  background: var(--app-surface-subtle);
+}
+
+select option,
+select optgroup {
+  color: var(--app-text);
+  background: var(--app-surface);
+}
+
+select option:checked,
+select option:hover,
+select option:focus {
+  color: var(--app-text);
+  background: var(--app-surface-muted);
+}
+
 button:not(:disabled)[class*='border-app-border']:not(:hover):not(:focus-visible):not(:active),
 a[class*='border-app-border']:not(:hover):not(:focus-visible):not(:active),
 label[class*='border-app-border']:not(:hover):not(:focus-within):not(:active) {
