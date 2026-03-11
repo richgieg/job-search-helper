@@ -12,11 +12,59 @@ const navigationItems = [
   { to: '/import-export', label: 'Import / Export' },
 ]
 
-const themePreferenceOptions: Array<{ value: ThemePreference; label: string }> = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System' },
-]
+const themePreferenceLabel: Record<ThemePreference, string> = {
+  light: 'Light',
+  dark: 'Dark',
+  system: 'System',
+}
+
+const getNextThemePreference = (themePreference: ThemePreference): ThemePreference => {
+  switch (themePreference) {
+    case 'light':
+      return 'dark'
+    case 'dark':
+      return 'system'
+    case 'system':
+      return 'light'
+    default:
+      return 'light'
+  }
+}
+
+const ThemeIcon = ({ themePreference }: { themePreference: ThemePreference }) => {
+  switch (themePreference) {
+    case 'light':
+      return (
+        <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2" />
+          <path d="M12 20v2" />
+          <path d="m4.93 4.93 1.41 1.41" />
+          <path d="m17.66 17.66 1.41 1.41" />
+          <path d="M2 12h2" />
+          <path d="M20 12h2" />
+          <path d="m6.34 17.66-1.41 1.41" />
+          <path d="m19.07 4.93-1.41 1.41" />
+        </svg>
+      )
+    case 'dark':
+      return (
+        <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3c0 .13-.01.26-.01.39A7 7 0 0 0 20.61 12c.13 0 .26 0 .39-.01Z" />
+        </svg>
+      )
+    case 'system':
+      return (
+        <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+          <rect height="14" rx="2" width="20" x="2" y="3" />
+          <path d="M8 21h8" />
+          <path d="M12 17v4" />
+        </svg>
+      )
+    default:
+      return null
+  }
+}
 
 const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   [
@@ -27,6 +75,7 @@ const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
 export const AppShell = ({ children }: { children: ReactNode }) => {
   const themePreference = useAppStore((state) => state.ui.themePreference)
   const setThemePreference = useAppStore((state) => state.actions.setThemePreference)
+  const nextThemePreference = getNextThemePreference(themePreference)
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
@@ -63,7 +112,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
             <p className="text-lg font-semibold uppercase tracking-[0.24em] text-app-primary sm:text-xl">Job Search Helper</p>
           </div>
 
-          <div className="flex flex-col gap-3 lg:items-end">
+          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
             <nav className="flex flex-wrap gap-2">
               {navigationItems.map((item) => (
                 <NavLink key={item.to} className={navLinkClassName} to={item.to}>
@@ -72,20 +121,15 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
               ))}
             </nav>
 
-            <label className="flex items-center gap-2 self-start text-sm text-app-text-muted lg:self-end">
-              <span className="font-medium text-app-text-subtle">Theme</span>
-              <select
-                className="rounded-lg border border-app-border bg-app-surface px-3 py-2 text-sm text-app-text outline-none transition focus:border-app-focus-ring"
-                value={themePreference}
-                onChange={(event) => setThemePreference(event.target.value as ThemePreference)}
-              >
-                {themePreferenceOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <button
+              aria-label={`Theme: ${themePreferenceLabel[themePreference]}. Switch to ${themePreferenceLabel[nextThemePreference]}.`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-app-border bg-app-surface text-app-text-subtle transition hover:bg-app-surface-subtle hover:text-app-text focus-visible:ring-2 focus-visible:ring-app-focus-ring focus-visible:ring-offset-2"
+              title={`Theme: ${themePreferenceLabel[themePreference]}`}
+              type="button"
+              onClick={() => setThemePreference(nextThemePreference)}
+            >
+              <ThemeIcon themePreference={themePreference} />
+            </button>
           </div>
         </div>
       </header>
