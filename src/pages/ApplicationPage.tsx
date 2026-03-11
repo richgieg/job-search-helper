@@ -16,6 +16,22 @@ interface FieldRow {
   inline?: boolean
 }
 
+interface SectionNavItem {
+  id: string
+  label: string
+}
+
+const applicationSectionNavItems: SectionNavItem[] = [
+  { id: 'personal-info', label: 'Personal Info' },
+  { id: 'experience-entries', label: 'Experience' },
+  { id: 'achievements', label: 'Achievements' },
+  { id: 'education-entries', label: 'Education' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'certifications', label: 'Certifications' },
+  { id: 'skill-categories', label: 'Skills' },
+  { id: 'references', label: 'References' },
+]
+
 const copyText = async (value: string) => {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(value)
@@ -235,9 +251,30 @@ export const ApplicationPage = () => {
       </div>
 
       <div className="space-y-6">
-        <DataTable copiedKey={copiedKey} description="Personal details and links from the selected profile." onCopy={handleCopy} rows={personalInfoRows} title="Personal Info" />
+        <nav className="sticky top-4 z-20 overflow-hidden rounded-2xl border border-app-border-muted bg-app-surface/95 shadow-sm backdrop-blur">
+          <div className="border-b border-app-border-muted bg-app-surface-muted px-5 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-subtle">Jump to section</p>
+          </div>
+          <div className="overflow-x-auto px-3 py-3">
+            <div className="flex min-w-max flex-wrap gap-2 sm:min-w-0">
+              {applicationSectionNavItems.map((item) => (
+                <a
+                  key={item.id}
+                  className="inline-flex items-center rounded-full border border-app-border bg-app-surface px-3 py-2 text-sm font-medium text-app-text-muted transition hover:bg-app-primary-soft hover:text-app-text"
+                  href={`#${item.id}`}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </nav>
 
-        <section className="space-y-4">
+        <section className="scroll-mt-32" id="personal-info">
+          <DataTable copiedKey={copiedKey} description="Personal details and links from the selected profile." onCopy={handleCopy} rows={personalInfoRows} title="Personal Info" />
+        </section>
+
+        <section className="scroll-mt-32 space-y-4" id="experience-entries">
           <h2 className="text-lg font-semibold text-app-heading">Experience Entries</h2>
           {documentData.experienceEntries.length === 0 ? (
             <p className="text-sm text-app-text-subtle">No experience entries enabled.</p>
@@ -286,7 +323,7 @@ export const ApplicationPage = () => {
           )}
         </section>
 
-        <section className="space-y-4">
+        <section className="scroll-mt-32 space-y-4" id="achievements">
           <h2 className="text-lg font-semibold text-app-heading">Achievements</h2>
           {documentData.achievements.length === 0 ? (
             <p className="text-sm text-app-text-subtle">No achievements enabled.</p>
@@ -307,7 +344,7 @@ export const ApplicationPage = () => {
           )}
         </section>
 
-        <section className="space-y-4">
+        <section className="scroll-mt-32 space-y-4" id="education-entries">
           <h2 className="text-lg font-semibold text-app-heading">Education Entries</h2>
           {documentData.educationEntries.length === 0 ? (
             <p className="text-sm text-app-text-subtle">No education entries enabled.</p>
@@ -336,7 +373,7 @@ export const ApplicationPage = () => {
           )}
         </section>
 
-        <section className="space-y-4">
+        <section className="scroll-mt-32 space-y-4" id="projects">
           <h2 className="text-lg font-semibold text-app-heading">Projects</h2>
           {documentData.projectEntries.length === 0 ? (
             <p className="text-sm text-app-text-subtle">No projects enabled.</p>
@@ -364,7 +401,7 @@ export const ApplicationPage = () => {
           )}
         </section>
 
-        <section className="space-y-4">
+        <section className="scroll-mt-32 space-y-4" id="certifications">
           <h2 className="text-lg font-semibold text-app-heading">Certifications</h2>
           {documentData.certifications.length === 0 ? (
             <p className="text-sm text-app-text-subtle">No certifications enabled.</p>
@@ -389,7 +426,7 @@ export const ApplicationPage = () => {
           )}
         </section>
 
-        <section className="space-y-4">
+        <section className="scroll-mt-32 space-y-4" id="skill-categories">
           <h2 className="text-lg font-semibold text-app-heading">Skill Categories and Skills</h2>
           {documentData.skillCategories.length === 0 ? (
             <p className="text-sm text-app-text-subtle">No enabled skill categories or skills.</p>
@@ -414,7 +451,7 @@ export const ApplicationPage = () => {
           )}
         </section>
 
-        <section className="space-y-4">
+        <section className="scroll-mt-32 space-y-4" id="references">
           <h2 className="text-lg font-semibold text-app-heading">References</h2>
           {documentData.references.length === 0 ? (
             <p className="text-sm text-app-text-subtle">No references enabled.</p>
