@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { ActionToggle } from '../components/CompactActionControls'
-import { FinalOutcomeStrip, type FinalOutcomeDraftStatus } from '../features/jobs/FinalOutcomeStrip'
-import { CollapsiblePanel } from '../components/CollapsiblePanel'
-import { JobChildEditors } from '../features/jobs/JobChildEditors'
-import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadgeClassName } from '../features/jobs/job-status'
-import { useAppStore } from '../store/app-store'
-import type { EmploymentType, Job, WorkArrangement } from '../types/state'
-import { employmentTypeOptions, workArrangementOptions } from '../utils/job-field-options'
+import { ActionToggle } from '../../components/CompactActionControls'
+import { FinalOutcomeStrip, type FinalOutcomeDraftStatus } from '../../features/jobs/FinalOutcomeStrip'
+import { CollapsiblePanel } from '../../components/CollapsiblePanel'
+import { JobChildEditors } from './JobChildEditors'
+import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadgeClassName } from '../../features/jobs/job-status'
+import { useAppStore } from '../../store/app-store'
+import type { EmploymentType, Job, WorkArrangement } from '../../types/state'
+import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 
 const TextField = ({
   label,
