@@ -61,6 +61,20 @@ const buildSingleValue = (value: string | null | undefined): CopyValueItem[] => 
   return trimmed ? [{ display: trimmed, copyValue: trimmed }] : []
 }
 
+const buildBulletListValue = (values: Array<string | null | undefined>): CopyValueItem[] => {
+  const lines = values
+    .map((value) => value?.trim() ?? '')
+    .filter(Boolean)
+    .map((value) => `- ${value}`)
+
+  if (lines.length === 0) {
+    return []
+  }
+
+  const copyValue = lines.join('\n')
+  return [{ display: copyValue, copyValue }]
+}
+
 const buildDateRow = (label: string, value: string | null): FieldRow => ({
   label,
   values: buildDateFormats(value),
@@ -250,11 +264,11 @@ export const ApplicationPage = () => {
                   buildDateRow('Start date', entry.startDate),
                   buildDateRow('End date', entry.endDate),
                   { label: 'Current role', values: buildSingleValue(entry.isCurrent ? 'Yes' : 'No') },
-                  ...bullets.map((bullet, bulletIndex) => ({
-                    label: `Bullet ${bulletIndex + 1}`,
-                    values: buildSingleValue(bullet.content),
+                  {
+                    label: 'Bullets',
+                    values: buildBulletListValue(bullets.map((bullet) => bullet.content)),
                     multiline: true,
-                  })),
+                  },
                   { label: 'Reason for leaving (short)', values: buildSingleValue(entry.reasonForLeavingShort) },
                   {
                     label: 'Reason for leaving (details)',
@@ -310,11 +324,11 @@ export const ApplicationPage = () => {
                   { label: 'Status', values: buildSingleValue(toTitleCase(item.entry.status)) },
                   buildDateRow('Start date', item.entry.startDate),
                   buildDateRow('End date', item.entry.endDate),
-                  ...item.bullets.map((bullet, bulletIndex) => ({
-                    label: `Bullet ${bulletIndex + 1}`,
-                    values: buildSingleValue(bullet.content),
+                  {
+                    label: 'Bullets',
+                    values: buildBulletListValue(item.bullets.map((bullet) => bullet.content)),
                     multiline: true,
-                  })),
+                  },
                 ]}
                 title={`${item.entry.school || 'School'}${item.entry.degree ? ` · ${item.entry.degree}` : ''}`}
               />
