@@ -3,6 +3,7 @@ import { Children, type ReactNode, useEffect, useRef, useState } from 'react'
 import { AddIconButton } from './CompactActionControls'
 
 const HEADER_ACTION_VISIBLE_RATIO_THRESHOLD = 0.5
+const PANEL_FOOTER_MIN_HEIGHT_CLASS = 'min-h-12'
 
 interface CollapsiblePanelProps {
   title: string
@@ -43,8 +44,7 @@ export const CollapsiblePanel = ({
   const isExpanded = collapsible ? expanded : true
   const hasContent = Children.count(children) > 0
   const shouldRenderTopAction = (!collapsible || isExpanded) && Boolean(actionLabel && onAction)
-  const shouldReserveBottomActionSpace = showBottomActionWhenHeaderHidden && shouldRenderTopAction && hasContent
-  const shouldShowBottomAction = shouldReserveBottomActionSpace && !isHeaderActionVisible
+  const shouldShowBottomAction = showBottomActionWhenHeaderHidden && shouldRenderTopAction && hasContent && !isHeaderActionVisible
 
   useEffect(() => {
     if (!showBottomActionWhenHeaderHidden || !shouldRenderTopAction || !headerActionRef.current) {
@@ -131,8 +131,8 @@ export const CollapsiblePanel = ({
       {isExpanded && hasContent ? (
         <>
           <div className={['mt-4', contentClassName].filter(Boolean).join(' ')}>{children}</div>
-          {shouldReserveBottomActionSpace ? (
-            <div className="mt-4 flex min-h-10 justify-end">
+          <div className={['mt-4 flex items-center justify-end', PANEL_FOOTER_MIN_HEIGHT_CLASS].join(' ')}>
+            {shouldRenderTopAction ? (
               <button
                 aria-hidden={!shouldShowBottomAction}
                 className={[
@@ -146,8 +146,8 @@ export const CollapsiblePanel = ({
               >
                 {actionLabel}
               </button>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
         </>
       ) : null}
     </section>
