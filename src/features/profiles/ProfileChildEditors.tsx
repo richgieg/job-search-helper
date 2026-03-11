@@ -152,6 +152,19 @@ const formatDateRange = (startDate: string | null, endDate: string | null, isCur
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter((part): part is string => Boolean(part && part.trim())).join(' • ')
 
+const NEW_CARD_SCROLL_MARGIN_BOTTOM_PX = 96
+
+const scrollIntoViewIfNeeded = (element: HTMLElement) => {
+  const rect = element.getBoundingClientRect()
+  const isFullyVisible = rect.top >= 0 && rect.bottom + NEW_CARD_SCROLL_MARGIN_BOTTOM_PX <= window.innerHeight
+
+  if (isFullyVisible) {
+    return
+  }
+
+  element.scrollIntoView({ behavior: 'smooth', block: 'end' })
+}
+
 const ProfileLinkRow = ({ profileLinkId }: { profileLinkId: string }) => {
   const profileLink = useAppStore((state) => state.data.profileLinks[profileLinkId])
   const profileLinksById = useAppStore((state) => state.data.profileLinks)
@@ -478,7 +491,7 @@ const SkillCategoryCard = ({
       return
     }
 
-    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    scrollIntoViewIfNeeded(cardRef.current)
     onScrollIntoViewComplete?.()
   }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
 
@@ -497,7 +510,7 @@ const SkillCategoryCard = ({
   }
 
   return (
-    <div className="scroll-mb-24" ref={cardRef}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_CARD_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -615,7 +628,7 @@ const ExperienceCard = ({
       return
     }
 
-    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    scrollIntoViewIfNeeded(cardRef.current)
     onScrollIntoViewComplete?.()
   }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
 
@@ -634,7 +647,7 @@ const ExperienceCard = ({
   }
 
   return (
-    <div className="scroll-mb-24" ref={cardRef}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_CARD_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -825,7 +838,7 @@ const EducationCard = ({
       return
     }
 
-    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    scrollIntoViewIfNeeded(cardRef.current)
     onScrollIntoViewComplete?.()
   }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
 
@@ -839,7 +852,7 @@ const EducationCard = ({
   }
 
   return (
-    <div className="scroll-mb-24" ref={cardRef}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_CARD_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -920,7 +933,7 @@ const CertificationCard = ({
       return
     }
 
-    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    scrollIntoViewIfNeeded(cardRef.current)
     onScrollIntoViewComplete?.()
   }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
 
@@ -935,7 +948,7 @@ const CertificationCard = ({
   }
 
   return (
-    <div className="scroll-mb-24" ref={cardRef}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_CARD_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -1019,7 +1032,7 @@ const ReferenceCard = ({
       return
     }
 
-    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    scrollIntoViewIfNeeded(cardRef.current)
     onScrollIntoViewComplete?.()
   }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
 
@@ -1033,7 +1046,7 @@ const ReferenceCard = ({
   }
 
   return (
-    <div className="scroll-mb-24" ref={cardRef}>
+    <div ref={cardRef} style={{ scrollMarginBottom: `${NEW_CARD_SCROLL_MARGIN_BOTTOM_PX}px` }}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
