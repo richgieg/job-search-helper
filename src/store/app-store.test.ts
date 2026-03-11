@@ -335,6 +335,88 @@ describe('app store reorder actions', () => {
     ])
   })
 
+  it('normalizes education entry dates for status changes and rejects invalid ranges', async () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    actions.createEducationEntry(profileId)
+    const educationEntryId = expectDefined(
+      Object.keys(useAppStore.getState().data.educationEntries)[0],
+      'Expected an education entry id',
+    )
+
+    actions.updateEducationEntry({
+      educationEntryId,
+      changes: {
+        school: 'Example University',
+        degree: 'B.S. Computer Science',
+        startDate: '2020-09',
+        endDate: '2024-05',
+        status: 'graduated',
+      },
+    })
+
+    const updatedAtBeforeStatusChange = useAppStore.getState().data.profiles[profileId]?.updatedAt
+    await waitForNextTick()
+
+    actions.updateEducationEntry({
+      educationEntryId,
+      changes: {
+        status: 'in_progress',
+        endDate: '2025-05',
+      },
+    })
+
+    expect(useAppStore.getState().data.educationEntries[educationEntryId]).toMatchObject({
+      startDate: '2020-09',
+      endDate: null,
+      status: 'in_progress',
+    })
+    expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBeforeStatusChange)
+
+    actions.updateEducationEntry({
+      educationEntryId,
+      changes: { endDate: '2025-12' },
+    })
+
+    expect(useAppStore.getState().data.educationEntries[educationEntryId]).toMatchObject({
+      endDate: null,
+      status: 'in_progress',
+    })
+
+    actions.updateEducationEntry({
+      educationEntryId,
+      changes: {
+        status: 'attended',
+        endDate: '2023-12',
+      },
+    })
+
+    const validEntry = expectDefined(
+      useAppStore.getState().data.educationEntries[educationEntryId],
+      'Expected updated education entry',
+    )
+
+    expect(validEntry).toMatchObject({
+      startDate: '2020-09',
+      endDate: '2023-12',
+      status: 'attended',
+    })
+
+    const updatedAtBeforeInvalidRange = useAppStore.getState().data.profiles[profileId]?.updatedAt
+    await waitForNextTick()
+
+    actions.updateEducationEntry({
+      educationEntryId,
+      changes: { startDate: '2024-01' },
+    })
+
+    expect(useAppStore.getState().data.educationEntries[educationEntryId]).toEqual(validEntry)
+    expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).toBe(updatedAtBeforeInvalidRange)
+  })
+
   it('reorders job contacts for a job', () => {
     const { actions } = useAppStore.getState()
 
@@ -789,7 +871,13 @@ describe('app store reorder actions', () => {
 
     actions.updateEducationEntry({
       educationEntryId,
-      changes: { school: 'Example University', degree: 'B.S. Computer Science' },
+      changes: {
+        school: 'Example University',
+        degree: 'B.S. Computer Science',
+        startDate: '2020-09',
+        endDate: '2024-05',
+        status: 'graduated',
+      },
     })
 
     actions.createEducationBullet(educationEntryId)
@@ -809,6 +897,14 @@ describe('app store reorder actions', () => {
       Object.values(useAppStore.getState().data.educationEntries).find((item) => item.profileId === duplicatedProfileId),
       'Expected duplicated education entry',
     )
+
+    expect(duplicatedEducationEntry).toMatchObject({
+      school: 'Example University',
+      degree: 'B.S. Computer Science',
+      startDate: '2020-09',
+      endDate: '2024-05',
+      status: 'graduated',
+    })
 
     const duplicatedBullets = Object.values(useAppStore.getState().data.educationBullets)
       .filter((item) => item.educationEntryId === duplicatedEducationEntry.id)
@@ -843,6 +939,17 @@ describe('app store reorder actions', () => {
       'Expected an education entry id',
     )
 
+    actions.updateEducationEntry({
+      educationEntryId,
+      changes: {
+        school: 'Example University',
+        degree: 'M.S. Data Science',
+        startDate: '2021-09',
+        endDate: null,
+        status: 'in_progress',
+      },
+    })
+
     actions.createEducationBullet(educationEntryId)
     const educationBulletId = expectDefined(
       Object.keys(useAppStore.getState().data.educationBullets)[0],
@@ -859,6 +966,13 @@ describe('app store reorder actions', () => {
     resetStore()
     useAppStore.getState().actions.importAppData(exported)
 
+    expect(useAppStore.getState().data.educationEntries[educationEntryId]).toMatchObject({
+      school: 'Example University',
+      degree: 'M.S. Data Science',
+      startDate: '2021-09',
+      endDate: null,
+      status: 'in_progress',
+    })
     expect(useAppStore.getState().data.educationBullets[educationBulletId]).toMatchObject({
       educationEntryId,
       content: 'Honors program',

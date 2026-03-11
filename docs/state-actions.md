@@ -330,6 +330,15 @@ These actions should:
 - `deleteEducationEntry(input)`
 - `reorderEducationEntries(input)`
 
+These actions should:
+
+- initialize or preserve `degree` as the primary first-line education label
+- store `startDate`, `endDate`, and `status` instead of a single graduation date
+- clear `endDate` whenever `status` is set to `in_progress`
+- reject or ignore invalid date ranges where both `startDate` and `endDate` are present and `startDate > endDate`
+- treat `endDate` as a completion date when `status === 'graduated'`
+- treat `endDate` as a last-attended date when `status === 'attended'`
+
 `deleteEducationEntry()` must also delete all child `EducationBullet` records for that education entry.
 
 ### Education bullet actions

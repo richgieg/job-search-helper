@@ -11,6 +11,7 @@ import type {
   ContactRelationshipType,
   EducationBullet,
   EducationEntry,
+  EducationStatus,
   ExperienceBullet,
   ExperienceEntry,
   FinalOutcome,
@@ -193,6 +194,26 @@ const reorderSortableEntities = <T extends { id: Id; sortOrder: number }>(entiti
 }
 
 const resumeSectionKeys: ResumeSectionKey[] = ['summary', 'skills', 'experience', 'education', 'certifications', 'references']
+
+const normalizeEducationEntry = (
+  existing: EducationEntry,
+  changes: Partial<Omit<EducationEntry, 'id' | 'profileId'>>,
+): EducationEntry | null => {
+  const nextEntry: EducationEntry = {
+    ...existing,
+    ...changes,
+  }
+
+  if (nextEntry.status === 'in_progress') {
+    nextEntry.endDate = null
+  }
+
+  if (nextEntry.startDate && nextEntry.endDate && nextEntry.startDate > nextEntry.endDate) {
+    return null
+  }
+
+  return nextEntry
+}
 
 const hasExactResumeSections = (orderedSections: ResumeSectionKey[]) => {
   if (orderedSections.length !== resumeSectionKeys.length) {
@@ -1335,7 +1356,9 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         profileId,
         school: '',
         degree: '',
-        graduationDate: null,
+        startDate: null,
+        endDate: null,
+        status: 'graduated' as EducationStatus,
         enabled: true,
         sortOrder: getNextSortOrder(
           Object.values(get().data.educationEntries)
@@ -1367,16 +1390,19 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         return
       }
 
+      const nextEducationEntry = normalizeEducationEntry(existing, changes)
+
+      if (!nextEducationEntry) {
+        return
+      }
+
       set((state) => ({
         data: stampUpdatedProfile(
           {
             ...state.data,
             educationEntries: {
               ...state.data.educationEntries,
-              [educationEntryId]: {
-                ...existing,
-                ...changes,
-              },
+              [educationEntryId]: nextEducationEntry,
             },
           },
           existing.profileId,

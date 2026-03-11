@@ -28,6 +28,33 @@ const formatMonthYear = (value: string | null) => {
   })
 }
 
+const formatEducationDateDisplay = (input: {
+  startDate: string | null
+  endDate: string | null
+  status: 'graduated' | 'attended' | 'in_progress'
+}) => {
+  if (input.status === 'graduated') {
+    return formatMonthYear(input.endDate)
+  }
+
+  const start = input.startDate ? formatMonthYear(input.startDate) : ''
+  const end = input.status === 'in_progress' ? 'Present' : input.endDate ? formatMonthYear(input.endDate) : ''
+
+  if (start && end) {
+    return `${start} – ${end}`
+  }
+
+  if (start) {
+    return input.status === 'in_progress' ? `${start} – Present` : start
+  }
+
+  if (end) {
+    return end
+  }
+
+  return input.status === 'in_progress' ? 'In progress' : 'Date not set'
+}
+
 export const ResumeDocument = ({ documentData }: { documentData: ProfileDocumentData }) => {
   const summaryParagraphs = documentData.profile.summary
     .split(/\n+/g)
@@ -142,8 +169,8 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
                         <div key={item.entry.id}>
                           <div className="print-keep-together">
                             <div className="resume-experience-header">
-                              <p className="font-semibold text-black">{item.entry.degree || 'Degree not set'}</p>
-                              <p className="resume-experience-date text-black">{formatMonthYear(item.entry.graduationDate)}</p>
+                              <p className="font-semibold text-black">{item.entry.degree || 'Program not set'}</p>
+                              <p className="resume-experience-date text-black">{formatEducationDateDisplay(item.entry)}</p>
                             </div>
                             <p className="italic">{item.entry.school || 'School'}</p>
                             {firstBullet ? (

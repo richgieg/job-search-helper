@@ -291,7 +291,9 @@ interface EducationEntry {
   profileId: Id;
   school: string;
   degree: string;
-  graduationDate: IsoDate | null;
+  startDate: IsoDate | null;
+  endDate: IsoDate | null;
+  status: 'graduated' | 'attended' | 'in_progress';
   enabled: boolean;
   sortOrder: number;
 }
@@ -460,6 +462,10 @@ The following relationships should be enforced during normal app operations and 
 - If `ExperienceEntry.isCurrent === true`, then `ExperienceEntry.endDate` must be `null`.
 - `ExperienceBullet.experienceEntryId` points to an existing `ExperienceEntry`.
 - `EducationEntry.profileId` points to an existing `Profile`.
+- If `EducationEntry.status === 'in_progress'`, then `EducationEntry.endDate` should be `null`.
+- If both `EducationEntry.startDate` and `EducationEntry.endDate` are present, then `EducationEntry.startDate <= EducationEntry.endDate`.
+- `EducationEntry.endDate` is the completion date when `EducationEntry.status === 'graduated'`.
+- `EducationEntry.endDate` is the last attended date when `EducationEntry.status === 'attended'`.
 - `EducationBullet.educationEntryId` points to an existing `EducationEntry`.
 - `Certification.profileId` points to an existing `Profile`.
 - `Reference.profileId` points to an existing `Profile`.

@@ -89,19 +89,23 @@ Education should be shared across all profiles.
 
 Education bullets should also be included and tailored per profile, but with restraint.
 
-Suggested education entry:
+Suggested education entries:
+
+- North Carolina State University
+- M.S. in Computer Engineering
+- Status: in_progress
+- Start date: 2024-08
+- End date: none yet
 
 - North Carolina State University
 - B.S. in Computer Science
-- Graduation date: 2016-05
+- Status: graduated
+- Start date: 2012-08
+- End date: 2016-05
 
-Optional second entry if needed:
+The master's program should appear in all three profiles because it is part of Rowan's real background, not a role-specific invention.
 
-- Wake Technical Community College
-- Associate coursework in Information Technology
-- Graduation date: 2013-05
-
-Use restraint here. One primary degree is enough unless the sample data clearly benefits from a second entry.
+Use restraint here. Two entries are enough for the sample data: one completed undergraduate degree and one current graduate program.
 
 Education bullet guidance:
 
@@ -109,6 +113,7 @@ Education bullet guidance:
 - keep them shorter and lighter than experience bullets
 - use them for believable academic detail such as honors, relevant coursework, capstone work, lab work, or other technical focus areas
 - tailor the emphasis per profile without making the underlying education history feel different
+- let the in-progress master's reinforce current technical growth, but avoid turning it into inflated pseudo-experience
 - avoid making academic work read like full professional experience
 
 ## Certifications
@@ -173,6 +178,7 @@ Education bullets should highlight:
 - software-focused coursework or capstone work
 - academic projects involving application development or systems design
 - honors or distinctions that support a strong engineering profile
+- master's coursework that supports backend systems, distributed applications, or data-intensive software design
 
 ### DevOps Engineer
 
@@ -210,6 +216,7 @@ Education bullets should highlight:
 - systems, automation, or infrastructure-oriented coursework
 - lab or project work that suggests operational or platform interest
 - academic work that supports CI/CD, systems thinking, or reliability themes where credible
+- master's coursework that supports automation, systems reliability, or platform engineering themes
 
 ### Cloud Engineer
 
@@ -247,6 +254,7 @@ Education bullets should highlight:
 - networking, distributed systems, security, or infrastructure-related coursework
 - academic projects that support cloud or platform positioning
 - technical focus areas that reinforce AWS, resiliency, or systems design themes without overstating them
+- master's coursework that supports cloud architecture, networked systems, or infrastructure security themes
 
 ## Shared Skills Baseline
 

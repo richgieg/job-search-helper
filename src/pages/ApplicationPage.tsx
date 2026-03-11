@@ -285,8 +285,10 @@ export const ApplicationPage = () => {
                 onCopy={handleCopy}
                 rows={[
                   { label: 'School', values: buildSingleValue(item.entry.school) },
-                  { label: 'Degree', values: buildSingleValue(item.entry.degree) },
-                  buildDateRow('Graduation date', item.entry.graduationDate),
+                  { label: 'Degree / Program', values: buildSingleValue(item.entry.degree) },
+                  { label: 'Status', values: buildSingleValue(toTitleCase(item.entry.status)) },
+                  buildDateRow('Start date', item.entry.startDate),
+                  buildDateRow('End date', item.entry.endDate),
                   ...item.bullets.map((bullet, bulletIndex) => ({
                     label: `Bullet ${bulletIndex + 1}`,
                     values: buildSingleValue(bullet.content),

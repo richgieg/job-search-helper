@@ -88,7 +88,7 @@ Each reusable profile should support:
    - stored per profile so base profiles and job profiles can differ
 - Skill categories and skills
 - Professional experience entries with zero or more bullets
-- Education entries with zero or more bullets
+- Education entries with zero or more bullets, attendance dates, and completion status
 - Certifications
 - References (professional and personal)
 - Zero or more profile links with user-defined names and URLs
@@ -188,6 +188,7 @@ This allows the user to keep track of custom questions asked during online appli
 - Uses the profile's configured resume section labels for displayed headings
 - Renders enabled experience bullets beneath each enabled experience entry
 - Renders enabled education bullets beneath each enabled education entry
+- Displays education entries using either an attendance range or a completion date depending on the entry status
 - Exportable as printable HTML in MVP
 - Optional PDF in phase 2
 - Simple templates only in MVP
@@ -205,6 +206,7 @@ This allows the user to keep track of custom questions asked during online appli
 
 - Shows the selected profile fields in a structured layout
 - Every answer/value can be clicked to copy to clipboard
+- Shows education entries using the full set of stored education fields as entered by the user
 - Includes common sections used in application forms
 
 ### 7. Data portability
@@ -328,9 +330,15 @@ The copied related records include:
 - profile_id
 - school
 - degree
-- graduation_date
+- start_date
+- end_date
+- status
 - enabled
 - sort_order
+
+`status` should be one of `graduated`, `attended`, or `in_progress`.
+
+`end_date` represents either completion or last attendance depending on `status`.
 
 ### EducationBullet
 - id

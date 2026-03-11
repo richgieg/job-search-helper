@@ -4,7 +4,7 @@ import { ActionToggle, DeleteIconButton, getActionIconButtonClassName } from '..
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
-import type { EducationEntry, ExperienceEntry, ReferenceType } from '../../types/state'
+import type { EducationEntry, EducationStatus, ExperienceEntry, ReferenceType } from '../../types/state'
 import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 import { moveOrderedItem } from '../../utils/reorder'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
@@ -149,6 +149,39 @@ const formatDateRange = (startDate: string | null, endDate: string | null, isCur
   const end = isCurrent ? 'Present' : formatMonthYear(endDate) || 'No end date'
 
   return `${start} – ${end}`
+}
+
+const educationStatusOptions: Array<{ value: EducationStatus; label: string }> = [
+  { value: 'graduated', label: 'Graduated' },
+  { value: 'attended', label: 'Attended' },
+  { value: 'in_progress', label: 'In progress' },
+]
+
+const formatEducationSummaryDate = (entry: Pick<EducationEntry, 'startDate' | 'endDate' | 'status'> | null | undefined) => {
+  if (!entry) {
+    return ''
+  }
+
+  if (entry.status === 'graduated') {
+    return formatMonthYear(entry.endDate) || 'Graduated'
+  }
+
+  const start = formatMonthYear(entry.startDate)
+  const end = entry.status === 'in_progress' ? 'Present' : formatMonthYear(entry.endDate)
+
+  if (start && end) {
+    return `${start} – ${end}`
+  }
+
+  if (start) {
+    return entry.status === 'in_progress' ? `${start} – Present` : start
+  }
+
+  if (end) {
+    return end
+  }
+
+  return entry.status === 'in_progress' ? 'In progress' : ''
 }
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter((part): part is string => Boolean(part && part.trim())).join(' • ')
@@ -909,7 +942,7 @@ const EducationCard = ({
 
   const summary = summarizeParts([
     draft?.school || 'No school',
-    formatMonthYear(draft?.graduationDate ?? null) || null,
+    formatEducationSummaryDate(draft) || null,
     countLabel(bulletIds.length, 'bullet'),
   ])
 
@@ -954,9 +987,23 @@ const EducationCard = ({
         title={draft.degree || entry.degree || 'Education entry'}
       >
         <div className="grid gap-4 xl:grid-cols-3">
-          <TextField label="Degree" onBlur={() => draft.degree !== entry.degree && commitEntryChanges({ degree: draft.degree })} value={draft.degree} onChange={(value) => setDraft({ ...draft, degree: value })} />
+          <TextField label="Degree / Program" onBlur={() => draft.degree !== entry.degree && commitEntryChanges({ degree: draft.degree })} value={draft.degree} onChange={(value) => setDraft({ ...draft, degree: value })} />
           <TextField label="School" onBlur={() => draft.school !== entry.school && commitEntryChanges({ school: draft.school })} value={draft.school} onChange={(value) => setDraft({ ...draft, school: value })} />
-          <TextField label="Graduation date" type="date" onBlur={() => draft.graduationDate !== entry.graduationDate && commitEntryChanges({ graduationDate: draft.graduationDate })} value={draft.graduationDate ?? ''} onChange={(value) => setDraft({ ...draft, graduationDate: value || null })} />
+          <SelectField
+            label="Status"
+            onBlur={() => draft.status !== entry.status && commitEntryChanges({ status: draft.status })}
+            value={draft.status}
+            onChange={(value) =>
+              setDraft({
+                ...draft,
+                status: value,
+                endDate: value === 'in_progress' ? null : draft.endDate,
+              })
+            }
+            options={educationStatusOptions}
+          />
+          <TextField label="Start date" type="date" onBlur={() => draft.startDate !== entry.startDate && commitEntryChanges({ startDate: draft.startDate })} value={draft.startDate ?? ''} onChange={(value) => setDraft({ ...draft, startDate: value || null })} />
+          <TextField label="End date" disabled={draft.status === 'in_progress'} type="date" onBlur={() => draft.endDate !== entry.endDate && commitEntryChanges({ endDate: draft.endDate })} value={draft.endDate ?? ''} onChange={(value) => setDraft({ ...draft, endDate: value || null })} />
           <div className="xl:col-span-3">
             <div className="flex items-center justify-between gap-3">
               <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Bullets</h4>

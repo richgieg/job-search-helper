@@ -20,6 +20,8 @@ export type ContactRelationshipType =
 
 export type ReferenceType = 'professional' | 'personal'
 
+export type EducationStatus = 'graduated' | 'attended' | 'in_progress'
+
 export type FinalOutcomeStatus =
   | 'withdrew'
   | 'rejected'
@@ -145,7 +147,9 @@ export interface EducationEntry {
   profileId: Id
   school: string
   degree: string
-  graduationDate: IsoDate | null
+  startDate: IsoDate | null
+  endDate: IsoDate | null
+  status: EducationStatus
   enabled: boolean
   sortOrder: number
 }
