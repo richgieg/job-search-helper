@@ -9,7 +9,7 @@ const resetStore = () => {
   useAppStore.setState((state) => ({
     ...state,
     data: createEmptyDataState(),
-    ui: createDefaultUiState(),
+    ui: createDefaultUiState('system'),
   }))
 }
 
@@ -763,5 +763,27 @@ describe('app store reorder actions', () => {
     expect(importedLinks.map((item) => item.name)).toEqual(['Website', 'GitHub'])
     expect(importedLinks.map((item) => item.url)).toEqual(['https://example.com', 'https://github.com/example'])
     expect(importedLinks.map((item) => item.enabled)).toEqual([true, false])
+  })
+})
+
+describe('app store theme preference', () => {
+  beforeEach(() => {
+    resetStore()
+  })
+
+  it('updates the theme preference and preserves it when resetting ui state', () => {
+    const { actions } = useAppStore.getState()
+
+    actions.setThemePreference('dark')
+    actions.selectJob('job-123')
+    actions.selectProfile('profile-123')
+
+    expect(useAppStore.getState().ui.themePreference).toBe('dark')
+
+    actions.resetUiState()
+
+    expect(useAppStore.getState().ui.themePreference).toBe('dark')
+    expect(useAppStore.getState().ui.selectedJobId).toBeNull()
+    expect(useAppStore.getState().ui.selectedProfileId).toBeNull()
   })
 })

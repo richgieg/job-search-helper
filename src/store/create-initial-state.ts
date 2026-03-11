@@ -1,4 +1,5 @@
-import type { AppDataState, AppUiState, PersonalDetails, ResumeSettings } from '../types/state'
+import { readStoredThemePreference } from '../app/theme'
+import type { AppDataState, AppUiState, PersonalDetails, ResumeSettings, ThemePreference } from '../types/state'
 
 const createEmptyPersonalDetails = (): PersonalDetails => ({
   fullName: '',
@@ -42,9 +43,10 @@ export const createEmptyDataState = (): AppDataState => ({
   applicationQuestions: {},
 })
 
-export const createDefaultUiState = (): AppUiState => ({
+export const createDefaultUiState = (themePreference: ThemePreference = readStoredThemePreference()): AppUiState => ({
   selectedJobId: null,
   selectedProfileId: null,
+  themePreference,
   jobsList: {
     searchText: '',
     statusFilter: null,

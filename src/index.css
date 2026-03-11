@@ -159,6 +159,86 @@
   background: var(--app-canvas);
 }
 
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --app-canvas: var(--color-slate-950);
+  --app-surface: var(--color-slate-900);
+  --app-surface-muted: var(--color-slate-800);
+  --app-surface-subtle: var(--color-slate-800);
+  --app-surface-overlay: color-mix(in oklab, var(--color-slate-950) 82%, transparent);
+  --app-control-muted: var(--color-slate-700);
+  --app-control-disabled: color-mix(in oklab, var(--color-slate-700) 65%, transparent);
+  --app-border: var(--color-slate-700);
+  --app-border-muted: var(--color-slate-800);
+  --app-border-strong: var(--color-slate-200);
+  --app-text: var(--color-slate-50);
+  --app-text-muted: var(--color-slate-300);
+  --app-text-subtle: var(--color-slate-400);
+  --app-text-disabled: var(--color-slate-500);
+  --app-heading: var(--color-white);
+
+  --app-primary: var(--color-sky-400);
+  --app-primary-hover: var(--color-sky-300);
+  --app-primary-soft: var(--color-sky-950);
+  --app-primary-muted: var(--color-sky-900);
+  --app-primary-contrast: var(--color-slate-950);
+  --app-focus-ring: var(--color-sky-400);
+
+  --app-danger: var(--color-rose-300);
+  --app-danger-border: var(--color-rose-500);
+  --app-danger-hover: var(--color-rose-200);
+  --app-danger-soft: var(--color-rose-950);
+  --app-danger-muted: var(--color-rose-900);
+  --app-danger-contrast: var(--color-rose-200);
+
+  --app-warning: var(--color-amber-300);
+  --app-warning-soft: var(--color-amber-950);
+  --app-warning-muted: var(--color-amber-900);
+  --app-warning-contrast: var(--color-amber-100);
+
+  --app-success: var(--color-emerald-300);
+  --app-success-soft: var(--color-emerald-950);
+  --app-success-muted: var(--color-emerald-900);
+  --app-success-contrast: var(--color-emerald-100);
+
+  --app-status-interested: var(--color-sky-300);
+  --app-status-interested-soft: var(--color-sky-950);
+  --app-status-interested-muted: var(--color-sky-900);
+  --app-status-interested-contrast: var(--color-sky-100);
+
+  --app-status-applied: var(--color-indigo-300);
+  --app-status-applied-soft: var(--color-indigo-950);
+  --app-status-applied-muted: var(--color-indigo-900);
+  --app-status-applied-contrast: var(--color-indigo-100);
+
+  --app-status-interview: var(--color-violet-300);
+  --app-status-interview-soft: var(--color-violet-950);
+  --app-status-interview-muted: var(--color-violet-900);
+  --app-status-interview-contrast: var(--color-violet-100);
+
+  --app-status-withdrew: var(--color-amber-300);
+  --app-status-withdrew-soft: var(--color-amber-950);
+  --app-status-withdrew-muted: var(--color-amber-900);
+  --app-status-withdrew-contrast: var(--color-amber-100);
+
+  --app-status-rejected: var(--color-rose-300);
+  --app-status-rejected-soft: var(--color-rose-950);
+  --app-status-rejected-muted: var(--color-rose-900);
+  --app-status-rejected-contrast: var(--color-rose-100);
+
+  --app-status-offer: var(--color-emerald-300);
+  --app-status-offer-soft: var(--color-emerald-950);
+  --app-status-offer-muted: var(--color-emerald-900);
+  --app-status-offer-contrast: var(--color-emerald-100);
+
+  --app-status-accepted: var(--color-teal-300);
+  --app-status-accepted-border: var(--color-teal-500);
+  --app-status-accepted-soft: var(--color-teal-950);
+  --app-status-accepted-muted: var(--color-teal-900);
+  --app-status-accepted-contrast: var(--color-teal-100);
+}
+
 body {
   margin: 0;
   min-width: 320px;

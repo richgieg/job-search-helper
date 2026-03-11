@@ -37,6 +37,8 @@ export type JobComputedStatus =
 
 export type JobStatusFilter = JobComputedStatus | 'all'
 
+export type ThemePreference = 'light' | 'dark' | 'system'
+
 export type ResumeSectionKey =
   | 'summary'
   | 'skills'
@@ -290,6 +292,7 @@ export interface DialogUiState {
 export interface AppUiState {
   selectedJobId: Id | null
   selectedProfileId: Id | null
+  themePreference: ThemePreference
   jobsList: JobsListUiState
   profilesList: ProfilesListUiState
   dialogs: DialogUiState

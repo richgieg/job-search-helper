@@ -27,6 +27,7 @@ import type {
   ResumeSettings,
   Skill,
   SkillCategory,
+  ThemePreference,
 } from '../types/state'
 
 interface AppStoreState {
@@ -130,6 +131,7 @@ interface AppStoreState {
     importAppData: (file: AppExportFile) => void
     exportAppData: () => AppExportFile
     resetUiState: () => void
+    setThemePreference: (themePreference: ThemePreference) => void
     selectJob: (jobId: Id | null) => void
     selectProfile: (profileId: Id | null) => void
   }
@@ -2281,13 +2283,15 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       }))
     },
     importAppData: (file) => {
+      const currentThemePreference = get().ui.themePreference
+
       set({
         data: {
           version: 1,
           exportedAt: file.exportedAt,
           ...file.data,
         },
-        ui: createDefaultUiState(),
+        ui: createDefaultUiState(currentThemePreference),
       })
     },
     exportAppData: () => {
@@ -2302,7 +2306,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         },
       }
     },
-    resetUiState: () => set((state) => ({ ...state, ui: createDefaultUiState() })),
+    resetUiState: () => set((state) => ({ ...state, ui: createDefaultUiState(state.ui.themePreference) })),
+    setThemePreference: (themePreference) => set((state) => ({ ...state, ui: { ...state.ui, themePreference } })),
     selectJob: (jobId) => set((state) => ({ ...state, ui: { ...state.ui, selectedJobId: jobId } })),
     selectProfile: (profileId) =>
       set((state) => ({ ...state, ui: { ...state.ui, selectedProfileId: profileId } })),
