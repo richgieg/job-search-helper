@@ -478,7 +478,7 @@ const SkillCategoryCard = ({
       return
     }
 
-    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
     onScrollIntoViewComplete?.()
   }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
 
@@ -497,7 +497,7 @@ const SkillCategoryCard = ({
   }
 
   return (
-    <div ref={cardRef}>
+    <div className="scroll-mb-24" ref={cardRef}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -615,7 +615,7 @@ const ExperienceCard = ({
       return
     }
 
-    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
     onScrollIntoViewComplete?.()
   }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
 
@@ -634,7 +634,7 @@ const ExperienceCard = ({
   }
 
   return (
-    <div ref={cardRef}>
+    <div className="scroll-mb-24" ref={cardRef}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -825,7 +825,7 @@ const EducationCard = ({
       return
     }
 
-    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
     onScrollIntoViewComplete?.()
   }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
 
@@ -839,7 +839,7 @@ const EducationCard = ({
   }
 
   return (
-    <div ref={cardRef}>
+    <div className="scroll-mb-24" ref={cardRef}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -920,7 +920,7 @@ const CertificationCard = ({
       return
     }
 
-    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
     onScrollIntoViewComplete?.()
   }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
 
@@ -935,7 +935,7 @@ const CertificationCard = ({
   }
 
   return (
-    <div ref={cardRef}>
+    <div className="scroll-mb-24" ref={cardRef}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -1019,7 +1019,7 @@ const ReferenceCard = ({
       return
     }
 
-    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
     onScrollIntoViewComplete?.()
   }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
 
@@ -1033,7 +1033,7 @@ const ReferenceCard = ({
   }
 
   return (
-    <div ref={cardRef}>
+    <div className="scroll-mb-24" ref={cardRef}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
