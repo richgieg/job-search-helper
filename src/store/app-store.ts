@@ -51,7 +51,7 @@ interface AppStoreState {
     }) => void
     deleteProfileLink: (profileLinkId: Id) => void
     reorderProfileLinks: (input: { profileId: Id; orderedIds: Id[] }) => void
-    createSkillCategory: (profileId: Id) => void
+    createSkillCategory: (profileId: Id) => Id | null
     updateSkillCategory: (input: {
       skillCategoryId: Id
       changes: Partial<Pick<SkillCategory, 'name' | 'enabled' | 'sortOrder'>>
@@ -62,7 +62,7 @@ interface AppStoreState {
     updateSkill: (input: { skillId: Id; changes: Partial<Pick<Skill, 'name' | 'enabled' | 'sortOrder'>> }) => void
     deleteSkill: (skillId: Id) => void
     reorderSkills: (input: { skillCategoryId: Id; orderedIds: Id[] }) => void
-    createExperienceEntry: (profileId: Id) => void
+    createExperienceEntry: (profileId: Id) => Id | null
     updateExperienceEntry: (input: {
       experienceEntryId: Id
       changes: Partial<Omit<ExperienceEntry, 'id' | 'profileId'>>
@@ -76,21 +76,21 @@ interface AppStoreState {
     }) => void
     deleteExperienceBullet: (experienceBulletId: Id) => void
     reorderExperienceBullets: (input: { experienceEntryId: Id; orderedIds: Id[] }) => void
-    createEducationEntry: (profileId: Id) => void
+    createEducationEntry: (profileId: Id) => Id | null
     updateEducationEntry: (input: {
       educationEntryId: Id
       changes: Partial<Omit<EducationEntry, 'id' | 'profileId'>>
     }) => void
     deleteEducationEntry: (educationEntryId: Id) => void
     reorderEducationEntries: (input: { profileId: Id; orderedIds: Id[] }) => void
-    createCertification: (profileId: Id) => void
+    createCertification: (profileId: Id) => Id | null
     updateCertification: (input: {
       certificationId: Id
       changes: Partial<Omit<Certification, 'id' | 'profileId'>>
     }) => void
     deleteCertification: (certificationId: Id) => void
     reorderCertifications: (input: { profileId: Id; orderedIds: Id[] }) => void
-    createReference: (profileId: Id) => void
+    createReference: (profileId: Id) => Id | null
     updateReference: (input: {
       referenceId: Id
       changes: Partial<Omit<Reference, 'id' | 'profileId'>>
@@ -824,7 +824,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const profile = get().data.profiles[profileId]
 
       if (!profile) {
-        return
+        return null
       }
 
       const skillCategory: SkillCategory = {
@@ -852,6 +852,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           now(),
         ),
       }))
+
+      return skillCategory.id
     },
     updateSkillCategory: ({ skillCategoryId, changes }) => {
       const existing = get().data.skillCategories[skillCategoryId]
@@ -1028,7 +1030,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const profile = get().data.profiles[profileId]
 
       if (!profile) {
-        return
+        return null
       }
 
       const experienceEntry: ExperienceEntry = {
@@ -1071,6 +1073,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           now(),
         ),
       }))
+
+      return experienceEntry.id
     },
     updateExperienceEntry: ({ experienceEntryId, changes }) => {
       const existing = get().data.experienceEntries[experienceEntryId]
@@ -1258,7 +1262,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const profile = get().data.profiles[profileId]
 
       if (!profile) {
-        return
+        return null
       }
 
       const educationEntry: EducationEntry = {
@@ -1288,6 +1292,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           now(),
         ),
       }))
+
+      return educationEntry.id
     },
     updateEducationEntry: ({ educationEntryId, changes }) => {
       const existing = get().data.educationEntries[educationEntryId]
@@ -1360,7 +1366,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const profile = get().data.profiles[profileId]
 
       if (!profile) {
-        return
+        return null
       }
 
       const certification: Certification = {
@@ -1393,6 +1399,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           now(),
         ),
       }))
+
+      return certification.id
     },
     updateCertification: ({ certificationId, changes }) => {
       const existing = get().data.certifications[certificationId]
@@ -1465,7 +1473,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       const profile = get().data.profiles[profileId]
 
       if (!profile) {
-        return
+        return null
       }
 
       const reference: Reference = {
@@ -1500,6 +1508,8 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
           now(),
         ),
       }))
+
+      return reference.id
     },
     updateReference: ({ referenceId, changes }) => {
       const existing = get().data.references[referenceId]

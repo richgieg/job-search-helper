@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { ActionToggle, DeleteIconButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
@@ -418,7 +418,17 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
   )
 }
 
-const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => {
+const SkillCategoryCard = ({
+  skillCategoryId,
+  defaultExpanded = false,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  skillCategoryId: string
+  defaultExpanded?: boolean
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
   const category = useAppStore((state) => state.data.skillCategories[skillCategoryId])
   const skillCategoriesById = useAppStore((state) => state.data.skillCategories)
   const skillsById = useAppStore((state) => state.data.skills)
@@ -428,6 +438,7 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
   const createSkill = useAppStore((state) => state.actions.createSkill)
   const [name, setName] = useState(category?.name ?? '')
   const [enabled, setEnabled] = useState(category?.enabled ?? true)
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
   const skillCategoryIds = useMemo(
     () =>
@@ -462,6 +473,15 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
     setEnabled(category.enabled)
   }, [category])
 
+  useEffect(() => {
+    if (!scrollIntoViewOnMount || !cardRef.current) {
+      return
+    }
+
+    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    onScrollIntoViewComplete?.()
+  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+
   const summary = summarizeParts([countLabel(skillIds.length, 'skill')])
 
   if (!category) {
@@ -477,71 +497,84 @@ const SkillCategoryCard = ({ skillCategoryId }: { skillCategoryId: string }) => 
   }
 
   return (
-    <CollapsiblePanel
-      headerActions={
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <ActionToggle checked={enabled} label="Enable skill category" onChange={(value) => {
-            setEnabled(value)
-            updateSkillCategory({ skillCategoryId: category.id, changes: { enabled: value } })
-          }} />
-          <ReorderButtons
-            canMoveDown={skillCategoryIds.length > 1}
-            canMoveUp={skillCategoryIds.length > 1}
-            onMoveDown={() =>
-              reorderSkillCategories({
-                profileId: category.profileId,
-                orderedIds: moveOrderedItem(skillCategoryIds, skillCategoryIndex, 1),
-              })
-            }
-            onMoveUp={() =>
-              reorderSkillCategories({
-                profileId: category.profileId,
-                orderedIds: moveOrderedItem(skillCategoryIds, skillCategoryIndex, -1),
-              })
-            }
-          />
-          <DeleteIconButton label="Delete skill category" onDelete={() => deleteSkillCategory(category.id)} />
-        </div>
-      }
-      summary={summary}
-      title={name || 'Skill category'}
-    >
-      <div className="grid gap-3">
-        <TextField label="Category name" onBlur={commitName} value={name} onChange={setName} />
-      </div>
-
-      <div className="mt-4">
-        <div className="flex items-center justify-between gap-3">
-          <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Skills</h4>
-          <button
-            className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted"
-            onClick={() => createSkill(category.id)}
-            type="button"
-          >
-            Add skill
-          </button>
+    <div ref={cardRef}>
+      <CollapsiblePanel
+        defaultExpanded={defaultExpanded}
+        headerActions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ActionToggle checked={enabled} label="Enable skill category" onChange={(value) => {
+              setEnabled(value)
+              updateSkillCategory({ skillCategoryId: category.id, changes: { enabled: value } })
+            }} />
+            <ReorderButtons
+              canMoveDown={skillCategoryIds.length > 1}
+              canMoveUp={skillCategoryIds.length > 1}
+              onMoveDown={() =>
+                reorderSkillCategories({
+                  profileId: category.profileId,
+                  orderedIds: moveOrderedItem(skillCategoryIds, skillCategoryIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderSkillCategories({
+                  profileId: category.profileId,
+                  orderedIds: moveOrderedItem(skillCategoryIds, skillCategoryIndex, -1),
+                })
+              }
+            />
+            <DeleteIconButton label="Delete skill category" onDelete={() => deleteSkillCategory(category.id)} />
+          </div>
+        }
+        summary={summary}
+        title={name || 'Skill category'}
+      >
+        <div className="grid gap-3">
+          <TextField label="Category name" onBlur={commitName} value={name} onChange={setName} />
         </div>
 
-        <div className="mt-3">
-          {skillIds.length === 0 ? (
-            <p className="text-sm text-app-text-subtle">No skills yet.</p>
-          ) : (
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="space-y-3">
-                {leftColumnSkillIds.map((skillId) => <SkillRow key={skillId} skillId={skillId} />)}
+        <div className="mt-4">
+          <div className="flex items-center justify-between gap-3">
+            <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Skills</h4>
+            <button
+              className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted"
+              onClick={() => createSkill(category.id)}
+              type="button"
+            >
+              Add skill
+            </button>
+          </div>
+
+          <div className="mt-3">
+            {skillIds.length === 0 ? (
+              <p className="text-sm text-app-text-subtle">No skills yet.</p>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-3">
+                  {leftColumnSkillIds.map((skillId) => <SkillRow key={skillId} skillId={skillId} />)}
+                </div>
+                <div className="space-y-3">
+                  {rightColumnSkillIds.map((skillId) => <SkillRow key={skillId} skillId={skillId} />)}
+                </div>
               </div>
-              <div className="space-y-3">
-                {rightColumnSkillIds.map((skillId) => <SkillRow key={skillId} skillId={skillId} />)}
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-    </CollapsiblePanel>
+      </CollapsiblePanel>
+    </div>
   )
 }
 
-const ExperienceCard = ({ entryId }: { entryId: string }) => {
+const ExperienceCard = ({
+  entryId,
+  defaultExpanded = false,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  entryId: string
+  defaultExpanded?: boolean
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
   const entry = useAppStore((state) => state.data.experienceEntries[entryId])
   const experienceEntriesById = useAppStore((state) => state.data.experienceEntries)
   const bulletsById = useAppStore((state) => state.data.experienceBullets)
@@ -550,6 +583,7 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
   const reorderExperienceEntries = useAppStore((state) => state.actions.reorderExperienceEntries)
   const createExperienceBullet = useAppStore((state) => state.actions.createExperienceBullet)
   const [draft, setDraft] = useState(entry)
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
   const experienceEntryIds = useMemo(
     () =>
@@ -576,6 +610,15 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
     setDraft(entry)
   }, [entry])
 
+  useEffect(() => {
+    if (!scrollIntoViewOnMount || !cardRef.current) {
+      return
+    }
+
+    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    onScrollIntoViewComplete?.()
+  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+
   const summary = summarizeParts([
     draft?.company || 'Unknown company',
     formatDateRange(draft?.startDate ?? null, draft?.endDate ?? null, draft?.isCurrent),
@@ -591,36 +634,38 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
   }
 
   return (
-    <CollapsiblePanel
-      headerActions={
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <ActionToggle checked={draft.enabled} label="Enable experience entry" onChange={(value) => {
-            setDraft({ ...draft, enabled: value })
-            updateExperienceEntry({ experienceEntryId: entry.id, changes: { enabled: value } })
-          }} />
-          <ReorderButtons
-            canMoveDown={experienceEntryIds.length > 1}
-            canMoveUp={experienceEntryIds.length > 1}
-            onMoveDown={() =>
-              reorderExperienceEntries({
-                profileId: entry.profileId,
-                orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, 1),
-              })
-            }
-            onMoveUp={() =>
-              reorderExperienceEntries({
-                profileId: entry.profileId,
-                orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, -1),
-              })
-            }
-          />
-          <DeleteIconButton label="Delete experience entry" onDelete={() => deleteExperienceEntry(entry.id)} />
-        </div>
-      }
-      summary={summary}
-      title={draft.title || entry.title || 'Experience entry'}
-    >
-      <div className="grid gap-4 xl:grid-cols-3">
+    <div ref={cardRef}>
+      <CollapsiblePanel
+        defaultExpanded={defaultExpanded}
+        headerActions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ActionToggle checked={draft.enabled} label="Enable experience entry" onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateExperienceEntry({ experienceEntryId: entry.id, changes: { enabled: value } })
+            }} />
+            <ReorderButtons
+              canMoveDown={experienceEntryIds.length > 1}
+              canMoveUp={experienceEntryIds.length > 1}
+              onMoveDown={() =>
+                reorderExperienceEntries({
+                  profileId: entry.profileId,
+                  orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderExperienceEntries({
+                  profileId: entry.profileId,
+                  orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, -1),
+                })
+              }
+            />
+            <DeleteIconButton label="Delete experience entry" onDelete={() => deleteExperienceEntry(entry.id)} />
+          </div>
+        }
+        summary={summary}
+        title={draft.title || entry.title || 'Experience entry'}
+      >
+        <div className="grid gap-4 xl:grid-cols-3">
         <TextField label="Company" onBlur={() => draft.company !== entry.company && commitEntryChanges({ company: draft.company })} value={draft.company} onChange={(value) => setDraft({ ...draft, company: value })} />
         <TextField label="Title" onBlur={() => draft.title !== entry.title && commitEntryChanges({ title: draft.title })} value={draft.title} onChange={(value) => setDraft({ ...draft, title: value })} />
         <TextField label="Location" onBlur={() => draft.location !== entry.location && commitEntryChanges({ location: draft.location })} value={draft.location} onChange={(value) => setDraft({ ...draft, location: value })} />
@@ -734,18 +779,30 @@ const ExperienceCard = ({ entryId }: { entryId: string }) => {
             )}
           </div>
         </div>
-      </div>
-    </CollapsiblePanel>
+        </div>
+      </CollapsiblePanel>
+    </div>
   )
 }
 
-const EducationCard = ({ entryId }: { entryId: string }) => {
+const EducationCard = ({
+  entryId,
+  defaultExpanded = false,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  entryId: string
+  defaultExpanded?: boolean
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
   const entry = useAppStore((state) => state.data.educationEntries[entryId])
   const educationEntriesById = useAppStore((state) => state.data.educationEntries)
   const updateEducationEntry = useAppStore((state) => state.actions.updateEducationEntry)
   const deleteEducationEntry = useAppStore((state) => state.actions.deleteEducationEntry)
   const reorderEducationEntries = useAppStore((state) => state.actions.reorderEducationEntries)
   const [draft, setDraft] = useState(entry)
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
   const educationEntryIds = useMemo(
     () =>
@@ -763,6 +820,15 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
     setDraft(entry)
   }, [entry])
 
+  useEffect(() => {
+    if (!scrollIntoViewOnMount || !cardRef.current) {
+      return
+    }
+
+    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    onScrollIntoViewComplete?.()
+  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+
   const summary = summarizeParts([
     draft?.school || 'No school',
     formatMonthYear(draft?.graduationDate ?? null) || null,
@@ -773,51 +839,65 @@ const EducationCard = ({ entryId }: { entryId: string }) => {
   }
 
   return (
-    <CollapsiblePanel
-      headerActions={
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <ActionToggle checked={draft.enabled} label="Enable education entry" onChange={(value) => {
-            setDraft({ ...draft, enabled: value })
-            updateEducationEntry({ educationEntryId: entry.id, changes: { enabled: value } })
-          }} />
-          <ReorderButtons
-            canMoveDown={educationEntryIds.length > 1}
-            canMoveUp={educationEntryIds.length > 1}
-            onMoveDown={() =>
-              reorderEducationEntries({
-                profileId: entry.profileId,
-                orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, 1),
-              })
-            }
-            onMoveUp={() =>
-              reorderEducationEntries({
-                profileId: entry.profileId,
-                orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, -1),
-              })
-            }
-          />
-          <DeleteIconButton label="Delete education entry" onDelete={() => deleteEducationEntry(entry.id)} />
+    <div ref={cardRef}>
+      <CollapsiblePanel
+        defaultExpanded={defaultExpanded}
+        headerActions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ActionToggle checked={draft.enabled} label="Enable education entry" onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateEducationEntry({ educationEntryId: entry.id, changes: { enabled: value } })
+            }} />
+            <ReorderButtons
+              canMoveDown={educationEntryIds.length > 1}
+              canMoveUp={educationEntryIds.length > 1}
+              onMoveDown={() =>
+                reorderEducationEntries({
+                  profileId: entry.profileId,
+                  orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderEducationEntries({
+                  profileId: entry.profileId,
+                  orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, -1),
+                })
+              }
+            />
+            <DeleteIconButton label="Delete education entry" onDelete={() => deleteEducationEntry(entry.id)} />
+          </div>
+        }
+        summary={summary}
+        title={draft.degree || entry.degree || 'Education entry'}
+      >
+        <div className="grid gap-4 xl:grid-cols-3">
+          <TextField label="Degree" onBlur={() => draft.degree !== entry.degree && updateEducationEntry({ educationEntryId: entry.id, changes: { degree: draft.degree } })} value={draft.degree} onChange={(value) => setDraft({ ...draft, degree: value })} />
+          <TextField label="School" onBlur={() => draft.school !== entry.school && updateEducationEntry({ educationEntryId: entry.id, changes: { school: draft.school } })} value={draft.school} onChange={(value) => setDraft({ ...draft, school: value })} />
+          <TextField label="Graduation date" type="date" onBlur={() => draft.graduationDate !== entry.graduationDate && updateEducationEntry({ educationEntryId: entry.id, changes: { graduationDate: draft.graduationDate } })} value={draft.graduationDate ?? ''} onChange={(value) => setDraft({ ...draft, graduationDate: value || null })} />
         </div>
-      }
-      summary={summary}
-      title={draft.degree || entry.degree || 'Education entry'}
-    >
-      <div className="grid gap-4 xl:grid-cols-3">
-        <TextField label="Degree" onBlur={() => draft.degree !== entry.degree && updateEducationEntry({ educationEntryId: entry.id, changes: { degree: draft.degree } })} value={draft.degree} onChange={(value) => setDraft({ ...draft, degree: value })} />
-        <TextField label="School" onBlur={() => draft.school !== entry.school && updateEducationEntry({ educationEntryId: entry.id, changes: { school: draft.school } })} value={draft.school} onChange={(value) => setDraft({ ...draft, school: value })} />
-        <TextField label="Graduation date" type="date" onBlur={() => draft.graduationDate !== entry.graduationDate && updateEducationEntry({ educationEntryId: entry.id, changes: { graduationDate: draft.graduationDate } })} value={draft.graduationDate ?? ''} onChange={(value) => setDraft({ ...draft, graduationDate: value || null })} />
-      </div>
-    </CollapsiblePanel>
+      </CollapsiblePanel>
+    </div>
   )
 }
 
-const CertificationCard = ({ certificationId }: { certificationId: string }) => {
+const CertificationCard = ({
+  certificationId,
+  defaultExpanded = false,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  certificationId: string
+  defaultExpanded?: boolean
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
   const certification = useAppStore((state) => state.data.certifications[certificationId])
   const certificationsById = useAppStore((state) => state.data.certifications)
   const updateCertification = useAppStore((state) => state.actions.updateCertification)
   const deleteCertification = useAppStore((state) => state.actions.deleteCertification)
   const reorderCertifications = useAppStore((state) => state.actions.reorderCertifications)
   const [draft, setDraft] = useState(certification)
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
   const certificationIds = useMemo(
     () =>
@@ -835,6 +915,15 @@ const CertificationCard = ({ certificationId }: { certificationId: string }) => 
     setDraft(certification)
   }, [certification])
 
+  useEffect(() => {
+    if (!scrollIntoViewOnMount || !cardRef.current) {
+      return
+    }
+
+    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    onScrollIntoViewComplete?.()
+  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+
   const summary = summarizeParts([
     draft?.issuer || 'No issuer',
     formatMonthYear(draft?.issueDate ?? null) || null,
@@ -846,54 +935,68 @@ const CertificationCard = ({ certificationId }: { certificationId: string }) => 
   }
 
   return (
-    <CollapsiblePanel
-      headerActions={
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <ActionToggle checked={draft.enabled} label="Enable certification" onChange={(value) => {
-            setDraft({ ...draft, enabled: value })
-            updateCertification({ certificationId: certification.id, changes: { enabled: value } })
-          }} />
-          <ReorderButtons
-            canMoveDown={certificationIds.length > 1}
-            canMoveUp={certificationIds.length > 1}
-            onMoveDown={() =>
-              reorderCertifications({
-                profileId: certification.profileId,
-                orderedIds: moveOrderedItem(certificationIds, certificationIndex, 1),
-              })
-            }
-            onMoveUp={() =>
-              reorderCertifications({
-                profileId: certification.profileId,
-                orderedIds: moveOrderedItem(certificationIds, certificationIndex, -1),
-              })
-            }
-          />
-          <DeleteIconButton label="Delete certification" onDelete={() => deleteCertification(certification.id)} />
+    <div ref={cardRef}>
+      <CollapsiblePanel
+        defaultExpanded={defaultExpanded}
+        headerActions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ActionToggle checked={draft.enabled} label="Enable certification" onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateCertification({ certificationId: certification.id, changes: { enabled: value } })
+            }} />
+            <ReorderButtons
+              canMoveDown={certificationIds.length > 1}
+              canMoveUp={certificationIds.length > 1}
+              onMoveDown={() =>
+                reorderCertifications({
+                  profileId: certification.profileId,
+                  orderedIds: moveOrderedItem(certificationIds, certificationIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderCertifications({
+                  profileId: certification.profileId,
+                  orderedIds: moveOrderedItem(certificationIds, certificationIndex, -1),
+                })
+              }
+            />
+            <DeleteIconButton label="Delete certification" onDelete={() => deleteCertification(certification.id)} />
+          </div>
+        }
+        summary={summary}
+        title={draft.name || certification.name || 'Certification'}
+      >
+        <div className="grid gap-4 xl:grid-cols-3">
+          <TextField label="Name" onBlur={() => draft.name !== certification.name && updateCertification({ certificationId: certification.id, changes: { name: draft.name } })} value={draft.name} onChange={(value) => setDraft({ ...draft, name: value })} />
+          <TextField label="Issuer" onBlur={() => draft.issuer !== certification.issuer && updateCertification({ certificationId: certification.id, changes: { issuer: draft.issuer } })} value={draft.issuer} onChange={(value) => setDraft({ ...draft, issuer: value })} />
+          <TextField label="Credential ID" onBlur={() => draft.credentialId !== certification.credentialId && updateCertification({ certificationId: certification.id, changes: { credentialId: draft.credentialId } })} value={draft.credentialId} onChange={(value) => setDraft({ ...draft, credentialId: value })} />
+          <TextField label="Issue date" type="date" onBlur={() => draft.issueDate !== certification.issueDate && updateCertification({ certificationId: certification.id, changes: { issueDate: draft.issueDate } })} value={draft.issueDate ?? ''} onChange={(value) => setDraft({ ...draft, issueDate: value || null })} />
+          <TextField label="Expiry date" type="date" onBlur={() => draft.expiryDate !== certification.expiryDate && updateCertification({ certificationId: certification.id, changes: { expiryDate: draft.expiryDate } })} value={draft.expiryDate ?? ''} onChange={(value) => setDraft({ ...draft, expiryDate: value || null })} />
+          <TextField label="Credential URL" type="url" onBlur={() => draft.credentialUrl !== certification.credentialUrl && updateCertification({ certificationId: certification.id, changes: { credentialUrl: draft.credentialUrl } })} value={draft.credentialUrl} onChange={(value) => setDraft({ ...draft, credentialUrl: value })} />
         </div>
-      }
-      summary={summary}
-      title={draft.name || certification.name || 'Certification'}
-    >
-      <div className="grid gap-4 xl:grid-cols-3">
-        <TextField label="Name" onBlur={() => draft.name !== certification.name && updateCertification({ certificationId: certification.id, changes: { name: draft.name } })} value={draft.name} onChange={(value) => setDraft({ ...draft, name: value })} />
-        <TextField label="Issuer" onBlur={() => draft.issuer !== certification.issuer && updateCertification({ certificationId: certification.id, changes: { issuer: draft.issuer } })} value={draft.issuer} onChange={(value) => setDraft({ ...draft, issuer: value })} />
-        <TextField label="Credential ID" onBlur={() => draft.credentialId !== certification.credentialId && updateCertification({ certificationId: certification.id, changes: { credentialId: draft.credentialId } })} value={draft.credentialId} onChange={(value) => setDraft({ ...draft, credentialId: value })} />
-        <TextField label="Issue date" type="date" onBlur={() => draft.issueDate !== certification.issueDate && updateCertification({ certificationId: certification.id, changes: { issueDate: draft.issueDate } })} value={draft.issueDate ?? ''} onChange={(value) => setDraft({ ...draft, issueDate: value || null })} />
-        <TextField label="Expiry date" type="date" onBlur={() => draft.expiryDate !== certification.expiryDate && updateCertification({ certificationId: certification.id, changes: { expiryDate: draft.expiryDate } })} value={draft.expiryDate ?? ''} onChange={(value) => setDraft({ ...draft, expiryDate: value || null })} />
-        <TextField label="Credential URL" type="url" onBlur={() => draft.credentialUrl !== certification.credentialUrl && updateCertification({ certificationId: certification.id, changes: { credentialUrl: draft.credentialUrl } })} value={draft.credentialUrl} onChange={(value) => setDraft({ ...draft, credentialUrl: value })} />
-      </div>
-    </CollapsiblePanel>
+      </CollapsiblePanel>
+    </div>
   )
 }
 
-const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
+const ReferenceCard = ({
+  referenceId,
+  defaultExpanded = false,
+  scrollIntoViewOnMount = false,
+  onScrollIntoViewComplete,
+}: {
+  referenceId: string
+  defaultExpanded?: boolean
+  scrollIntoViewOnMount?: boolean
+  onScrollIntoViewComplete?: () => void
+}) => {
   const reference = useAppStore((state) => state.data.references[referenceId])
   const referencesById = useAppStore((state) => state.data.references)
   const updateReference = useAppStore((state) => state.actions.updateReference)
   const deleteReference = useAppStore((state) => state.actions.deleteReference)
   const reorderReferences = useAppStore((state) => state.actions.reorderReferences)
   const [draft, setDraft] = useState(reference)
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
   const referenceIds = useMemo(
     () =>
@@ -911,6 +1014,15 @@ const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
     setDraft(reference)
   }, [reference])
 
+  useEffect(() => {
+    if (!scrollIntoViewOnMount || !cardRef.current) {
+      return
+    }
+
+    cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    onScrollIntoViewComplete?.()
+  }, [onScrollIntoViewComplete, scrollIntoViewOnMount])
+
   const summary = summarizeParts([
     draft?.type === 'professional' ? 'Professional' : 'Personal',
     draft?.company || draft?.relationship || null,
@@ -921,36 +1033,38 @@ const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
   }
 
   return (
-    <CollapsiblePanel
-      headerActions={
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <ActionToggle checked={draft.enabled} label="Enable reference" onChange={(value) => {
-            setDraft({ ...draft, enabled: value })
-            updateReference({ referenceId: reference.id, changes: { enabled: value } })
-          }} />
-          <ReorderButtons
-            canMoveDown={referenceIds.length > 1}
-            canMoveUp={referenceIds.length > 1}
-            onMoveDown={() =>
-              reorderReferences({
-                profileId: reference.profileId,
-                orderedIds: moveOrderedItem(referenceIds, referenceIndex, 1),
-              })
-            }
-            onMoveUp={() =>
-              reorderReferences({
-                profileId: reference.profileId,
-                orderedIds: moveOrderedItem(referenceIds, referenceIndex, -1),
-              })
-            }
-          />
-          <DeleteIconButton label="Delete reference" onDelete={() => deleteReference(reference.id)} />
-        </div>
-      }
-      summary={summary}
-      title={draft.name || reference.name || 'Reference'}
-    >
-      <div className="grid gap-4 xl:grid-cols-3">
+    <div ref={cardRef}>
+      <CollapsiblePanel
+        defaultExpanded={defaultExpanded}
+        headerActions={
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ActionToggle checked={draft.enabled} label="Enable reference" onChange={(value) => {
+              setDraft({ ...draft, enabled: value })
+              updateReference({ referenceId: reference.id, changes: { enabled: value } })
+            }} />
+            <ReorderButtons
+              canMoveDown={referenceIds.length > 1}
+              canMoveUp={referenceIds.length > 1}
+              onMoveDown={() =>
+                reorderReferences({
+                  profileId: reference.profileId,
+                  orderedIds: moveOrderedItem(referenceIds, referenceIndex, 1),
+                })
+              }
+              onMoveUp={() =>
+                reorderReferences({
+                  profileId: reference.profileId,
+                  orderedIds: moveOrderedItem(referenceIds, referenceIndex, -1),
+                })
+              }
+            />
+            <DeleteIconButton label="Delete reference" onDelete={() => deleteReference(reference.id)} />
+          </div>
+        }
+        summary={summary}
+        title={draft.name || reference.name || 'Reference'}
+      >
+        <div className="grid gap-4 xl:grid-cols-3">
         <label className="flex flex-col gap-2 text-sm text-app-text-muted">
           <span className="font-medium">Type</span>
           <select
@@ -972,8 +1086,9 @@ const ReferenceCard = ({ referenceId }: { referenceId: string }) => {
         <div className="xl:col-span-2">
           <TextAreaField label="Notes" onBlur={() => draft.notes !== reference.notes && updateReference({ referenceId: reference.id, changes: { notes: draft.notes } })} value={draft.notes} onChange={(value) => setDraft({ ...draft, notes: value })} />
         </div>
-      </div>
-    </CollapsiblePanel>
+        </div>
+      </CollapsiblePanel>
+    </div>
   )
 }
 
@@ -990,6 +1105,11 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
   const createEducationEntry = useAppStore((state) => state.actions.createEducationEntry)
   const createCertification = useAppStore((state) => state.actions.createCertification)
   const createReference = useAppStore((state) => state.actions.createReference)
+  const [newSkillCategoryId, setNewSkillCategoryId] = useState<string | null>(null)
+  const [newExperienceEntryId, setNewExperienceEntryId] = useState<string | null>(null)
+  const [newEducationEntryId, setNewEducationEntryId] = useState<string | null>(null)
+  const [newCertificationId, setNewCertificationId] = useState<string | null>(null)
+  const [newReferenceId, setNewReferenceId] = useState<string | null>(null)
 
   const profileLinkIds = useMemo(
     () =>
@@ -1070,43 +1190,123 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         actionStyle="icon"
         collapsible={hasSkillCategories}
         description="Organize skills into enabled or disabled categories."
-        onAction={() => createSkillCategory(profileId)}
+        onAction={() => {
+          const createdId = createSkillCategory(profileId)
+
+          if (createdId) {
+            setNewSkillCategoryId(createdId)
+          }
+        }}
         title="Skills"
       >
-        {hasSkillCategories ? <div className="space-y-4">{skillCategoryIds.map((id) => <SkillCategoryCard key={id} skillCategoryId={id} />)}</div> : null}
+        {hasSkillCategories ? (
+          <div className="space-y-4">
+            {skillCategoryIds.map((id) => (
+              <SkillCategoryCard
+                defaultExpanded={id === newSkillCategoryId}
+                key={id}
+                scrollIntoViewOnMount={id === newSkillCategoryId}
+                skillCategoryId={id}
+                {...(id === newSkillCategoryId
+                  ? { onScrollIntoViewComplete: () => setNewSkillCategoryId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
+        ) : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel
         actionLabel="Add experience"
         actionStyle="icon"
+        onAction={() => {
+          const createdId = createExperienceEntry(profileId)
+
+          if (createdId) {
+            setNewExperienceEntryId(createdId)
+          }
+        }}
         collapsible={hasExperienceEntries}
         description="Capture work history entries used in resumes and applications."
-        onAction={() => createExperienceEntry(profileId)}
         title="Experience"
       >
-        {hasExperienceEntries ? <div className="space-y-4">{experienceEntryIds.map((id) => <ExperienceCard entryId={id} key={id} />)}</div> : null}
+        {hasExperienceEntries ? (
+          <div className="space-y-4">
+            {experienceEntryIds.map((id) => (
+              <ExperienceCard
+                defaultExpanded={id === newExperienceEntryId}
+                entryId={id}
+                key={id}
+                scrollIntoViewOnMount={id === newExperienceEntryId}
+                {...(id === newExperienceEntryId
+                  ? { onScrollIntoViewComplete: () => setNewExperienceEntryId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
+        ) : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel
         actionLabel="Add education"
         actionStyle="icon"
+        onAction={() => {
+          const createdId = createEducationEntry(profileId)
+
+          if (createdId) {
+            setNewEducationEntryId(createdId)
+          }
+        }}
         collapsible={hasEducationEntries}
         description="Store education entries that can be enabled or disabled per profile."
-        onAction={() => createEducationEntry(profileId)}
         title="Education"
       >
-        {hasEducationEntries ? <div className="space-y-4">{educationEntryIds.map((id) => <EducationCard entryId={id} key={id} />)}</div> : null}
+        {hasEducationEntries ? (
+          <div className="space-y-4">
+            {educationEntryIds.map((id) => (
+              <EducationCard
+                defaultExpanded={id === newEducationEntryId}
+                entryId={id}
+                key={id}
+                scrollIntoViewOnMount={id === newEducationEntryId}
+                {...(id === newEducationEntryId
+                  ? { onScrollIntoViewComplete: () => setNewEducationEntryId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
+        ) : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel
         actionLabel="Add certification"
         actionStyle="icon"
+        onAction={() => {
+          const createdId = createCertification(profileId)
+
+          if (createdId) {
+            setNewCertificationId(createdId)
+          }
+        }}
         collapsible={hasCertifications}
         description="Track certifications and their optional credential metadata."
-        onAction={() => createCertification(profileId)}
         title="Certifications"
       >
-        {hasCertifications ? <div className="space-y-4">{certificationIds.map((id) => <CertificationCard certificationId={id} key={id} />)}</div> : null}
+        {hasCertifications ? (
+          <div className="space-y-4">
+            {certificationIds.map((id) => (
+              <CertificationCard
+                certificationId={id}
+                defaultExpanded={id === newCertificationId}
+                key={id}
+                scrollIntoViewOnMount={id === newCertificationId}
+                {...(id === newCertificationId
+                  ? { onScrollIntoViewComplete: () => setNewCertificationId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
+        ) : null}
       </CollapsiblePanel>
 
       <CollapsiblePanel
@@ -1114,10 +1314,30 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         actionStyle="icon"
         collapsible={hasReferences}
         description="Maintain both professional and personal references."
-        onAction={() => createReference(profileId)}
+        onAction={() => {
+          const createdId = createReference(profileId)
+
+          if (createdId) {
+            setNewReferenceId(createdId)
+          }
+        }}
         title="References"
       >
-        {hasReferences ? <div className="space-y-4">{referenceIds.map((id) => <ReferenceCard key={id} referenceId={id} />)}</div> : null}
+        {hasReferences ? (
+          <div className="space-y-4">
+            {referenceIds.map((id) => (
+              <ReferenceCard
+                defaultExpanded={id === newReferenceId}
+                key={id}
+                referenceId={id}
+                scrollIntoViewOnMount={id === newReferenceId}
+                {...(id === newReferenceId
+                  ? { onScrollIntoViewComplete: () => setNewReferenceId(null) }
+                  : {})}
+              />
+            ))}
+          </div>
+        ) : null}
       </CollapsiblePanel>
     </>
   )
