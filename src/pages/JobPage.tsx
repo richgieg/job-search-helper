@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { ActionToggle, AddIconButton, DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../components/CompactActionControls'
@@ -9,7 +9,7 @@ import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadg
 import { useAppStore } from '../store/app-store'
 import type { EmploymentType, Job, Profile, WorkArrangement } from '../types/state'
 import { employmentTypeOptions, workArrangementOptions } from '../utils/job-field-options'
-import { AUTO_SCROLL_MARGIN_BOTTOM_PX, useScrollIntoViewOnMount } from '../utils/use-scroll-into-view-on-mount'
+import { useScrollIntoViewOnMount } from '../utils/use-scroll-into-view-on-mount'
 
 const TextField = ({
   label,
@@ -132,19 +132,16 @@ const AttachedProfileRow = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const rowRef = useRef<HTMLDivElement | null>(null)
-
-  useScrollIntoViewOnMount({
+  const { scrollTargetRef: rowRef, scrollTargetStyle: rowScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
-    ref: rowRef,
   })
 
   return (
     <div
       className="flex flex-col gap-3 rounded-xl border border-app-border-muted px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
       ref={rowRef}
-      style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}
+      style={rowScrollStyle}
     >
       <div>
         <p className="font-medium text-app-text">{profile.name}</p>

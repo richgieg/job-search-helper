@@ -1,6 +1,6 @@
-import { useEffect, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, type CSSProperties } from 'react'
 
-export const AUTO_SCROLL_MARGIN_BOTTOM_PX = 96
+const AUTO_SCROLL_MARGIN_BOTTOM_PX = 96
 const AUTO_SCROLL_MARGIN_TOP_PX = 24
 
 const scrollIntoViewIfNeeded = (element: HTMLElement) => {
@@ -24,21 +24,30 @@ const scrollIntoViewIfNeeded = (element: HTMLElement) => {
   element.scrollIntoView({ behavior: 'smooth', block: 'end' })
 }
 
-export const useScrollIntoViewOnMount = ({
-  ref,
+export const useScrollIntoViewOnMount = <T extends HTMLElement>({
   enabled,
   onComplete,
 }: {
-  ref: RefObject<HTMLElement | null>
   enabled: boolean
   onComplete: (() => void) | undefined
 }) => {
+  const scrollTargetRef = useRef<T | null>(null)
+  const scrollTargetStyle = useMemo<CSSProperties>(
+    () => ({ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }),
+    [],
+  )
+
   useEffect(() => {
-    if (!enabled || !ref.current) {
+    if (!enabled || !scrollTargetRef.current) {
       return
     }
 
-    scrollIntoViewIfNeeded(ref.current)
+    scrollIntoViewIfNeeded(scrollTargetRef.current)
     onComplete?.()
-  }, [enabled, onComplete, ref])
+  }, [enabled, onComplete])
+
+  return {
+    scrollTargetRef,
+    scrollTargetStyle,
+  }
 }

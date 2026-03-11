@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { AddIconButton, DeleteIconButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
@@ -6,7 +6,7 @@ import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
 import type { ContactRelationshipType } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
-import { AUTO_SCROLL_MARGIN_BOTTOM_PX, useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
+import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(' • ')
 
@@ -195,7 +195,10 @@ const JobLinkCard = ({
   const deleteJobLink = useAppStore((state) => state.actions.deleteJobLink)
   const reorderJobLinks = useAppStore((state) => state.actions.reorderJobLinks)
   const [draft, setDraft] = useState(link)
-  const cardRef = useRef<HTMLDivElement | null>(null)
+  const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
 
   const jobLinkIds = useMemo(
     () =>
@@ -213,12 +216,6 @@ const JobLinkCard = ({
     setDraft(link)
   }, [link])
 
-  useScrollIntoViewOnMount({
-    enabled: scrollIntoViewOnMount,
-    onComplete: onScrollIntoViewComplete,
-    ref: cardRef,
-  })
-
   if (!link || !draft) {
     return null
   }
@@ -234,7 +231,7 @@ const JobLinkCard = ({
   const hasUrl = trimmedUrl.length > 0
 
   return (
-    <div className="rounded-xl border border-app-border-muted p-4" ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div className="rounded-xl border border-app-border-muted p-4" ref={cardRef} style={cardScrollStyle}>
       <div className="flex items-end gap-4">
         <div className="min-w-0 flex-1">
           <TextField placeholder="https://example.com/job" type="url" value={draft.url} onBlur={() => draft.url !== link.url && commitLinkChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
@@ -301,7 +298,10 @@ const JobContactCard = ({
   const deleteJobContact = useAppStore((state) => state.actions.deleteJobContact)
   const reorderJobContacts = useAppStore((state) => state.actions.reorderJobContacts)
   const [draft, setDraft] = useState(contact)
-  const cardRef = useRef<HTMLDivElement | null>(null)
+  const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
 
   const jobContactIds = useMemo(
     () =>
@@ -318,12 +318,6 @@ const JobContactCard = ({
   useEffect(() => {
     setDraft(contact)
   }, [contact])
-
-  useScrollIntoViewOnMount({
-    enabled: scrollIntoViewOnMount,
-    onComplete: onScrollIntoViewComplete,
-    ref: cardRef,
-  })
 
   if (!contact || !draft) {
     return null
@@ -343,7 +337,7 @@ const JobContactCard = ({
   ])
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -424,7 +418,10 @@ const InterviewCard = ({
   const reorderInterviewContacts = useAppStore((state) => state.actions.reorderInterviewContacts)
   const [draft, setDraft] = useState(interview)
   const [selectedContactId, setSelectedContactId] = useState('')
-  const cardRef = useRef<HTMLDivElement | null>(null)
+  const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
 
   useEffect(() => {
     setDraft(interview)
@@ -467,12 +464,6 @@ const InterviewCard = ({
     })
   }, [availableContacts])
 
-  useScrollIntoViewOnMount({
-    enabled: scrollIntoViewOnMount,
-    onComplete: onScrollIntoViewComplete,
-    ref: cardRef,
-  })
-
   if (!interview || !draft) {
     return null
   }
@@ -497,7 +488,7 @@ const InterviewCard = ({
   }>
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         summary={formatInterviewSummary(draft.startAt)}
@@ -604,7 +595,10 @@ const ApplicationQuestionCard = ({
   const deleteApplicationQuestion = useAppStore((state) => state.actions.deleteApplicationQuestion)
   const reorderApplicationQuestions = useAppStore((state) => state.actions.reorderApplicationQuestions)
   const [draft, setDraft] = useState(applicationQuestion)
-  const cardRef = useRef<HTMLDivElement | null>(null)
+  const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
 
   const applicationQuestionIds = useMemo(
     () =>
@@ -622,12 +616,6 @@ const ApplicationQuestionCard = ({
     setDraft(applicationQuestion)
   }, [applicationQuestion])
 
-  useScrollIntoViewOnMount({
-    enabled: scrollIntoViewOnMount,
-    onComplete: onScrollIntoViewComplete,
-    ref: cardRef,
-  })
-
   if (!applicationQuestion || !draft) {
     return null
   }
@@ -643,7 +631,7 @@ const ApplicationQuestionCard = ({
   const summary = truncatePanelText(draft.answer, 180) || 'No answer'
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={

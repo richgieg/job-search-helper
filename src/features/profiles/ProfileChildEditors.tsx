@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { ActionToggle, DeleteIconButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
@@ -7,7 +7,7 @@ import { useAppStore } from '../../store/app-store'
 import type { ExperienceEntry, ReferenceType } from '../../types/state'
 import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 import { moveOrderedItem } from '../../utils/reorder'
-import { AUTO_SCROLL_MARGIN_BOTTOM_PX, useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
+import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
 
 const TextField = ({
   label,
@@ -170,7 +170,10 @@ const ProfileLinkRow = ({
   const [name, setName] = useState(profileLink?.name ?? '')
   const [url, setUrl] = useState(profileLink?.url ?? '')
   const [enabled, setEnabled] = useState(profileLink?.enabled ?? true)
-  const rowRef = useRef<HTMLDivElement | null>(null)
+  const { scrollTargetRef: rowRef, scrollTargetStyle: rowScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
 
   const profileLinkIds = useMemo(
     () =>
@@ -193,12 +196,6 @@ const ProfileLinkRow = ({
     setUrl(profileLink.url)
     setEnabled(profileLink.enabled)
   }, [profileLink])
-
-  useScrollIntoViewOnMount({
-    enabled: scrollIntoViewOnMount,
-    onComplete: onScrollIntoViewComplete,
-    ref: rowRef,
-  })
 
   if (!profileLink) {
     return null
@@ -230,7 +227,7 @@ const ProfileLinkRow = ({
   const hasUrl = trimmedUrl.length > 0
 
   return (
-    <div className="rounded-xl border border-app-border-muted p-3" ref={rowRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div className="rounded-xl border border-app-border-muted p-3" ref={rowRef} style={rowScrollStyle}>
       <div className="grid gap-3 md:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)_auto] md:items-end">
         <TextField label="Link name" onBlur={commitName} value={name} onChange={setName} />
         <TextField label="URL" type="url" onBlur={commitUrl} value={url} onChange={setUrl} />
@@ -454,7 +451,10 @@ const SkillCategoryCard = ({
   const createSkill = useAppStore((state) => state.actions.createSkill)
   const [name, setName] = useState(category?.name ?? '')
   const [enabled, setEnabled] = useState(category?.enabled ?? true)
-  const cardRef = useRef<HTMLDivElement | null>(null)
+  const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
 
   const skillCategoryIds = useMemo(
     () =>
@@ -489,12 +489,6 @@ const SkillCategoryCard = ({
     setEnabled(category.enabled)
   }, [category])
 
-  useScrollIntoViewOnMount({
-    enabled: scrollIntoViewOnMount,
-    onComplete: onScrollIntoViewComplete,
-    ref: cardRef,
-  })
-
   const summary = summarizeParts([countLabel(skillIds.length, 'skill')])
 
   if (!category) {
@@ -510,7 +504,7 @@ const SkillCategoryCard = ({
   }
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -596,7 +590,10 @@ const ExperienceCard = ({
   const reorderExperienceEntries = useAppStore((state) => state.actions.reorderExperienceEntries)
   const createExperienceBullet = useAppStore((state) => state.actions.createExperienceBullet)
   const [draft, setDraft] = useState(entry)
-  const cardRef = useRef<HTMLDivElement | null>(null)
+  const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
 
   const experienceEntryIds = useMemo(
     () =>
@@ -623,12 +620,6 @@ const ExperienceCard = ({
     setDraft(entry)
   }, [entry])
 
-  useScrollIntoViewOnMount({
-    enabled: scrollIntoViewOnMount,
-    onComplete: onScrollIntoViewComplete,
-    ref: cardRef,
-  })
-
   const summary = summarizeParts([
     draft?.company || 'Unknown company',
     formatDateRange(draft?.startDate ?? null, draft?.endDate ?? null, draft?.isCurrent),
@@ -644,7 +635,7 @@ const ExperienceCard = ({
   }
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -812,7 +803,10 @@ const EducationCard = ({
   const deleteEducationEntry = useAppStore((state) => state.actions.deleteEducationEntry)
   const reorderEducationEntries = useAppStore((state) => state.actions.reorderEducationEntries)
   const [draft, setDraft] = useState(entry)
-  const cardRef = useRef<HTMLDivElement | null>(null)
+  const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
 
   const educationEntryIds = useMemo(
     () =>
@@ -830,12 +824,6 @@ const EducationCard = ({
     setDraft(entry)
   }, [entry])
 
-  useScrollIntoViewOnMount({
-    enabled: scrollIntoViewOnMount,
-    onComplete: onScrollIntoViewComplete,
-    ref: cardRef,
-  })
-
   const summary = summarizeParts([
     draft?.school || 'No school',
     formatMonthYear(draft?.graduationDate ?? null) || null,
@@ -846,7 +834,7 @@ const EducationCard = ({
   }
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -904,7 +892,10 @@ const CertificationCard = ({
   const deleteCertification = useAppStore((state) => state.actions.deleteCertification)
   const reorderCertifications = useAppStore((state) => state.actions.reorderCertifications)
   const [draft, setDraft] = useState(certification)
-  const cardRef = useRef<HTMLDivElement | null>(null)
+  const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
 
   const certificationIds = useMemo(
     () =>
@@ -922,12 +913,6 @@ const CertificationCard = ({
     setDraft(certification)
   }, [certification])
 
-  useScrollIntoViewOnMount({
-    enabled: scrollIntoViewOnMount,
-    onComplete: onScrollIntoViewComplete,
-    ref: cardRef,
-  })
-
   const summary = summarizeParts([
     draft?.issuer || 'No issuer',
     formatMonthYear(draft?.issueDate ?? null) || null,
@@ -939,7 +924,7 @@ const CertificationCard = ({
   }
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
@@ -1000,7 +985,10 @@ const ReferenceCard = ({
   const deleteReference = useAppStore((state) => state.actions.deleteReference)
   const reorderReferences = useAppStore((state) => state.actions.reorderReferences)
   const [draft, setDraft] = useState(reference)
-  const cardRef = useRef<HTMLDivElement | null>(null)
+  const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
+    enabled: scrollIntoViewOnMount,
+    onComplete: onScrollIntoViewComplete,
+  })
 
   const referenceIds = useMemo(
     () =>
@@ -1018,12 +1006,6 @@ const ReferenceCard = ({
     setDraft(reference)
   }, [reference])
 
-  useScrollIntoViewOnMount({
-    enabled: scrollIntoViewOnMount,
-    onComplete: onScrollIntoViewComplete,
-    ref: cardRef,
-  })
-
   const summary = summarizeParts([
     draft?.type === 'professional' ? 'Professional' : 'Personal',
     draft?.company || draft?.relationship || null,
@@ -1034,7 +1016,7 @@ const ReferenceCard = ({
   }
 
   return (
-    <div ref={cardRef} style={{ scrollMarginBottom: `${AUTO_SCROLL_MARGIN_BOTTOM_PX}px` }}>
+    <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
         headerActions={
