@@ -103,7 +103,7 @@ export const CollapsiblePanel = ({
         ) : (
           <div className="min-w-0 flex-1">
             <div className="flex items-start gap-3">
-              <span aria-hidden="true" className="mt-0.5 text-sm text-app-text-disabled">
+              <span aria-hidden="true" className="invisible mt-0.5 text-sm">
                 ▸
               </span>
                 <div className="min-w-0">
