@@ -18,10 +18,13 @@ import type {
   ProfileMutationResult,
   ReorderProfileEntitiesInput,
   ReorderResumeSectionsInput,
+  ReorderExperienceBulletsInput,
   SetDocumentHeaderTemplateInput,
   SetResumeSectionEnabledInput,
   SetResumeSectionLabelInput,
   UpdateAchievementInput,
+  UpdateExperienceBulletInput,
+  UpdateExperienceEntryInput,
   UpdateProfileLinkInput,
   UpdateProfileInput,
   UpdateSkillCategoryInput,
@@ -57,6 +60,14 @@ export interface AppDataService {
   updateAchievement(input: UpdateAchievementInput): Promise<ProfileMutationResult>
   deleteAchievement(achievementId: string): Promise<ProfileMutationResult>
   reorderAchievements(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createExperienceEntry(profileId: string): Promise<ProfileMutationResult>
+  updateExperienceEntry(input: UpdateExperienceEntryInput): Promise<ProfileMutationResult>
+  deleteExperienceEntry(experienceEntryId: string): Promise<ProfileMutationResult>
+  reorderExperienceEntries(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createExperienceBullet(experienceEntryId: string): Promise<ProfileMutationResult>
+  updateExperienceBullet(input: UpdateExperienceBulletInput): Promise<ProfileMutationResult>
+  deleteExperienceBullet(experienceBulletId: string): Promise<ProfileMutationResult>
+  reorderExperienceBullets(input: ReorderExperienceBulletsInput): Promise<ProfileMutationResult>
   createJob(input: CreateJobInput): Promise<JobMutationResult>
   updateJob(input: UpdateJobInput): Promise<JobMutationResult>
   deleteJob(jobId: string): Promise<JobMutationResult>

@@ -18,12 +18,15 @@ import type {
 import type {
   DuplicateProfileInput,
   ProfileMutationResult,
+  ReorderExperienceBulletsInput,
   ReorderProfileEntitiesInput,
   ReorderResumeSectionsInput,
   SetDocumentHeaderTemplateInput,
   SetResumeSectionEnabledInput,
   SetResumeSectionLabelInput,
   UpdateAchievementInput,
+  UpdateExperienceBulletInput,
+  UpdateExperienceEntryInput,
   UpdateProfileLinkInput,
   UpdateProfileInput,
   UpdateSkillCategoryInput,
@@ -42,8 +45,6 @@ import type {
   EducationBullet,
   EducationEntry,
   EducationStatus,
-  ExperienceBullet,
-  ExperienceEntry,
   Id,
   Project,
   ProjectBullet,
@@ -90,20 +91,14 @@ interface AppStoreState {
     updateAchievement: (input: UpdateAchievementInput) => Promise<void>
     deleteAchievement: (achievementId: Id) => Promise<void>
     reorderAchievements: (input: ReorderProfileEntitiesInput) => Promise<void>
-    createExperienceEntry: (profileId: Id) => Id | null
-    updateExperienceEntry: (input: {
-      experienceEntryId: Id
-      changes: Partial<Omit<ExperienceEntry, 'id' | 'profileId'>>
-    }) => void
-    deleteExperienceEntry: (experienceEntryId: Id) => void
-    reorderExperienceEntries: (input: { profileId: Id; orderedIds: Id[] }) => void
-    createExperienceBullet: (experienceEntryId: Id) => void
-    updateExperienceBullet: (input: {
-      experienceBulletId: Id
-      changes: Partial<Pick<ExperienceBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>
-    }) => void
-    deleteExperienceBullet: (experienceBulletId: Id) => void
-    reorderExperienceBullets: (input: { experienceEntryId: Id; orderedIds: Id[] }) => void
+    createExperienceEntry: (profileId: Id) => Promise<Id | null>
+    updateExperienceEntry: (input: UpdateExperienceEntryInput) => Promise<void>
+    deleteExperienceEntry: (experienceEntryId: Id) => Promise<void>
+    reorderExperienceEntries: (input: ReorderProfileEntitiesInput) => Promise<void>
+    createExperienceBullet: (experienceEntryId: Id) => Promise<Id | null>
+    updateExperienceBullet: (input: UpdateExperienceBulletInput) => Promise<void>
+    deleteExperienceBullet: (experienceBulletId: Id) => Promise<void>
+    reorderExperienceBullets: (input: ReorderExperienceBulletsInput) => Promise<void>
     createEducationEntry: (profileId: Id) => Id | null
     updateEducationEntry: (input: {
       educationEntryId: Id
@@ -320,25 +315,6 @@ const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: strin
         updatedAt: timestamp,
       },
     },
-  }
-}
-
- const deleteExperienceEntryCascade = (data: AppDataState, experienceEntryId: Id): AppDataState => {
-  const nextExperienceEntries = { ...data.experienceEntries }
-  const nextExperienceBullets = { ...data.experienceBullets }
-
-  delete nextExperienceEntries[experienceEntryId]
-
-  Object.values(data.experienceBullets).forEach((item) => {
-    if (item.experienceEntryId === experienceEntryId) {
-      delete nextExperienceBullets[item.id]
-    }
-  })
-
-  return {
-    ...data,
-    experienceEntries: nextExperienceEntries,
-    experienceBullets: nextExperienceBullets,
   }
 }
 
@@ -636,241 +612,31 @@ const deleteAdditionalExperienceEntryCascade = (data: AppDataState, additionalEx
     reorderAchievements: async (input) => {
       await runPersistedProfileMutation((data) => getAppApiClient().reorderAchievements(data, input))
     },
-    createExperienceEntry: (profileId) => {
-      const profile = get().data.profiles[profileId]
-
-      if (!profile) {
-        return null
-      }
-
-      const experienceEntry: ExperienceEntry = {
-        id: createId(),
-        profileId,
-        company: '',
-        title: '',
-        location: '',
-        workArrangement: 'unknown',
-        employmentType: 'other',
-        startDate: null,
-        endDate: null,
-        isCurrent: false,
-        reasonForLeavingShort: '',
-        reasonForLeavingDetails: '',
-        supervisor: {
-          name: '',
-          title: '',
-          phone: '',
-          email: '',
-        },
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.experienceEntries)
-            .filter((item) => item.profileId === profileId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            experienceEntries: {
-              ...state.data.experienceEntries,
-              [experienceEntry.id]: experienceEntry,
-            },
-          },
-          profileId,
-          now(),
-        ),
-      }))
-
-      return experienceEntry.id
+    createExperienceEntry: async (profileId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createExperienceEntry(data, profileId))
+      return result?.createdId ?? null
     },
-    updateExperienceEntry: ({ experienceEntryId, changes }) => {
-      const existing = get().data.experienceEntries[experienceEntryId]
-
-      if (!existing) {
-        return
-      }
-
-      const nextIsCurrent = changes.isCurrent ?? existing.isCurrent
-      const nextChanges: Partial<Omit<ExperienceEntry, 'id' | 'profileId'>> = {
-        ...changes,
-      }
-
-      if (nextIsCurrent) {
-        nextChanges.endDate = null
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            experienceEntries: {
-              ...state.data.experienceEntries,
-              [experienceEntryId]: {
-                ...existing,
-                ...nextChanges,
-              },
-            },
-          },
-          existing.profileId,
-          now(),
-        ),
-      }))
+    updateExperienceEntry: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateExperienceEntry(data, input))
     },
-    deleteExperienceEntry: (experienceEntryId) => {
-      const existing = get().data.experienceEntries[experienceEntryId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(deleteExperienceEntryCascade(state.data, experienceEntryId), existing.profileId, now()),
-      }))
+    deleteExperienceEntry: async (experienceEntryId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteExperienceEntry(data, experienceEntryId))
     },
-    reorderExperienceEntries: ({ profileId, orderedIds }) => {
-      const existingIds = Object.values(get().data.experienceEntries)
-        .filter((item) => item.profileId === profileId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            experienceEntries: reorderSortableEntities(state.data.experienceEntries, orderedIds),
-          },
-          profileId,
-          now(),
-        ),
-      }))
+    reorderExperienceEntries: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderExperienceEntries(data, input))
     },
-    createExperienceBullet: (experienceEntryId) => {
-      const experienceEntry = get().data.experienceEntries[experienceEntryId]
-
-      if (!experienceEntry) {
-        return
-      }
-
-      const experienceBullet: ExperienceBullet = {
-        id: createId(),
-        experienceEntryId,
-        content: '',
-        level: defaultBulletLevel,
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.experienceBullets)
-            .filter((item) => item.experienceEntryId === experienceEntryId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            experienceBullets: {
-              ...state.data.experienceBullets,
-              [experienceBullet.id]: experienceBullet,
-            },
-          },
-          experienceEntry.profileId,
-          now(),
-        ),
-      }))
+    createExperienceBullet: async (experienceEntryId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createExperienceBullet(data, experienceEntryId))
+      return result?.createdId ?? null
     },
-    updateExperienceBullet: ({ experienceBulletId, changes }) => {
-      const existing = get().data.experienceBullets[experienceBulletId]
-
-      if (!existing) {
-        return
-      }
-
-      const experienceEntry = get().data.experienceEntries[existing.experienceEntryId]
-
-      if (!experienceEntry) {
-        return
-      }
-
-      const nextBullet = mergeBulletChanges<ExperienceBullet>(existing, changes)
-
-      if (!nextBullet) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            experienceBullets: {
-              ...state.data.experienceBullets,
-              [experienceBulletId]: nextBullet,
-            },
-          },
-          experienceEntry.profileId,
-          now(),
-        ),
-      }))
+    updateExperienceBullet: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateExperienceBullet(data, input))
     },
-    deleteExperienceBullet: (experienceBulletId) => {
-      const existing = get().data.experienceBullets[experienceBulletId]
-
-      if (!existing) {
-        return
-      }
-
-      const experienceEntry = get().data.experienceEntries[existing.experienceEntryId]
-
-      if (!experienceEntry) {
-        return
-      }
-
-      set((state) => {
-        const nextExperienceBullets = { ...state.data.experienceBullets }
-        delete nextExperienceBullets[experienceBulletId]
-
-        return {
-          data: stampUpdatedProfile(
-            {
-              ...state.data,
-              experienceBullets: nextExperienceBullets,
-            },
-            experienceEntry.profileId,
-            now(),
-          ),
-        }
-      })
+    deleteExperienceBullet: async (experienceBulletId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteExperienceBullet(data, experienceBulletId))
     },
-    reorderExperienceBullets: ({ experienceEntryId, orderedIds }) => {
-      const experienceEntry = get().data.experienceEntries[experienceEntryId]
-
-      if (!experienceEntry) {
-        return
-      }
-
-      const existingIds = Object.values(get().data.experienceBullets)
-        .filter((item) => item.experienceEntryId === experienceEntryId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            experienceBullets: reorderSortableEntities(state.data.experienceBullets, orderedIds),
-          },
-          experienceEntry.profileId,
-          now(),
-        ),
-      }))
+    reorderExperienceBullets: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderExperienceBullets(data, input))
     },
     createEducationEntry: (profileId) => {
       const profile = get().data.profiles[profileId]

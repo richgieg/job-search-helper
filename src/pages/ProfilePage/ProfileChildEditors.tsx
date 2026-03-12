@@ -430,7 +430,7 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
       return
     }
 
-    updateExperienceBullet({ experienceBulletId: bullet.id, changes: { content } })
+    void updateExperienceBullet({ experienceBulletId: bullet.id, changes: { content } })
   }
 
   return (
@@ -439,29 +439,29 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
       <div className="flex flex-wrap items-center justify-end gap-2 md:self-center">
         <ActionToggle checked={enabled} label="Enable experience bullet" onChange={(value) => {
           setEnabled(value)
-          updateExperienceBullet({ experienceBulletId: bullet.id, changes: { enabled: value } })
+          void updateExperienceBullet({ experienceBulletId: bullet.id, changes: { enabled: value } })
         }} />
         <BulletLevelField level={level} onChange={(value) => {
           setLevel(value)
-          updateExperienceBullet({ experienceBulletId: bullet.id, changes: { level: value } })
+          void updateExperienceBullet({ experienceBulletId: bullet.id, changes: { level: value } })
         }} />
         <ReorderButtons
           canMoveDown={bulletIds.length > 1}
           canMoveUp={bulletIds.length > 1}
           onMoveDown={() =>
-            reorderExperienceBullets({
+            void reorderExperienceBullets({
               experienceEntryId: bullet.experienceEntryId,
               orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
             })
           }
           onMoveUp={() =>
-            reorderExperienceBullets({
+            void reorderExperienceBullets({
               experienceEntryId: bullet.experienceEntryId,
               orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
             })
           }
         />
-        <DeleteIconButton label="Delete experience bullet" onDelete={() => deleteExperienceBullet(bullet.id)} />
+        <DeleteIconButton label="Delete experience bullet" onDelete={() => void deleteExperienceBullet(bullet.id)} />
       </div>
     </div>
   )
@@ -1078,7 +1078,7 @@ const ExperienceCard = ({
   }
 
   const commitEntryChanges = (changes: Partial<Omit<ExperienceEntry, 'id' | 'profileId'>>) => {
-    updateExperienceEntry({ experienceEntryId: entry.id, changes })
+    void updateExperienceEntry({ experienceEntryId: entry.id, changes })
   }
 
   return (
@@ -1089,25 +1089,25 @@ const ExperienceCard = ({
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable experience entry" onChange={(value) => {
               setDraft({ ...draft, enabled: value })
-              updateExperienceEntry({ experienceEntryId: entry.id, changes: { enabled: value } })
+              void updateExperienceEntry({ experienceEntryId: entry.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
               canMoveDown={experienceEntryIds.length > 1}
               canMoveUp={experienceEntryIds.length > 1}
               onMoveDown={() =>
-                reorderExperienceEntries({
+                void reorderExperienceEntries({
                   profileId: entry.profileId,
                   orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, 1),
                 })
               }
               onMoveUp={() =>
-                reorderExperienceEntries({
+                void reorderExperienceEntries({
                   profileId: entry.profileId,
                   orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, -1),
                 })
               }
             />
-            <DeleteIconButton label="Delete experience entry" onDelete={() => deleteExperienceEntry(entry.id)} />
+            <DeleteIconButton label="Delete experience entry" onDelete={() => void deleteExperienceEntry(entry.id)} />
           </div>
         }
         summary={summary}
@@ -1137,7 +1137,7 @@ const ExperienceCard = ({
               isCurrent: value,
               endDate: value ? null : draft.endDate,
             })
-            updateExperienceEntry({ experienceEntryId: entry.id, changes: { isCurrent: value } })
+            void updateExperienceEntry({ experienceEntryId: entry.id, changes: { isCurrent: value } })
           }}
         />
         <div className="xl:col-span-3">
@@ -1213,7 +1213,7 @@ const ExperienceCard = ({
             <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Bullets</h4>
             <button
               className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted"
-              onClick={() => createExperienceBullet(entry.id)}
+              onClick={() => void createExperienceBullet(entry.id)}
               type="button"
             >
               Add bullet
@@ -2045,8 +2045,8 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       <CollapsiblePanel
         actionLabel="Add experience"
         actionStyle="icon"
-        onAction={() => {
-          const createdId = createExperienceEntry(profileId)
+        onAction={async () => {
+          const createdId = await createExperienceEntry(profileId)
 
           if (createdId) {
             setNewExperienceEntryId(createdId)

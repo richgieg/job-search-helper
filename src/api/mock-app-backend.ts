@@ -43,15 +43,21 @@ import {
 import {
   createBaseProfileMutation,
   createAchievementMutation,
+  createExperienceBulletMutation,
+  createExperienceEntryMutation,
   createProfileLinkMutation,
   createSkillCategoryMutation,
   createSkillMutation,
   deleteAchievementMutation,
+  deleteExperienceBulletMutation,
+  deleteExperienceEntryMutation,
   deleteProfileMutation,
   deleteProfileLinkMutation,
   deleteSkillCategoryMutation,
   deleteSkillMutation,
   duplicateProfileMutation,
+  reorderExperienceBulletsMutation,
+  reorderExperienceEntriesMutation,
   reorderAchievementsMutation,
   reorderProfileLinksMutation,
   reorderSkillCategoriesMutation,
@@ -61,6 +67,8 @@ import {
   setResumeSectionEnabledMutation,
   setResumeSectionLabelMutation,
   updateAchievementMutation,
+  updateExperienceBulletMutation,
+  updateExperienceEntryMutation,
   updateProfileLinkMutation,
   updateProfileMutation,
   updateSkillCategoryMutation,
@@ -68,12 +76,15 @@ import {
   type DuplicateProfileInput,
   type ProfileMutationContext,
   type ProfileMutationResult,
+  type ReorderExperienceBulletsInput,
   type ReorderProfileEntitiesInput,
   type ReorderResumeSectionsInput,
   type SetDocumentHeaderTemplateInput,
   type SetResumeSectionEnabledInput,
   type SetResumeSectionLabelInput,
   type UpdateAchievementInput,
+  type UpdateExperienceBulletInput,
+  type UpdateExperienceEntryInput,
   type UpdateProfileLinkInput,
   type UpdateProfileInput,
   type UpdateSkillCategoryInput,
@@ -239,6 +250,38 @@ export class MockAppBackend implements AppDataService {
 
   async reorderAchievements(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
     return this.mutateProfile((data, context) => reorderAchievementsMutation(data, input, context))
+  }
+
+  async createExperienceEntry(profileId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => createExperienceEntryMutation(data, profileId, context))
+  }
+
+  async updateExperienceEntry(input: UpdateExperienceEntryInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => updateExperienceEntryMutation(data, input, context))
+  }
+
+  async deleteExperienceEntry(experienceEntryId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => deleteExperienceEntryMutation(data, experienceEntryId, context))
+  }
+
+  async reorderExperienceEntries(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => reorderExperienceEntriesMutation(data, input, context))
+  }
+
+  async createExperienceBullet(experienceEntryId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => createExperienceBulletMutation(data, experienceEntryId, context))
+  }
+
+  async updateExperienceBullet(input: UpdateExperienceBulletInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => updateExperienceBulletMutation(data, input, context))
+  }
+
+  async deleteExperienceBullet(experienceBulletId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => deleteExperienceBulletMutation(data, experienceBulletId, context))
+  }
+
+  async reorderExperienceBullets(input: ReorderExperienceBulletsInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => reorderExperienceBulletsMutation(data, input, context))
   }
 
   async createJob(input: CreateJobInput): Promise<JobMutationResult> {

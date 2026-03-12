@@ -303,13 +303,13 @@ describe('app store reorder actions', () => {
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    actions.createExperienceEntry(profileId)
+    await actions.createExperienceEntry(profileId)
     const experienceEntryId = expectDefined(
       Object.keys(useAppStore.getState().data.experienceEntries)[0],
       'Expected an experience entry id',
     )
 
-    actions.updateExperienceEntry({
+    await actions.updateExperienceEntry({
       experienceEntryId,
       changes: { endDate: '2024-06-01', isCurrent: false },
     })
@@ -317,7 +317,7 @@ describe('app store reorder actions', () => {
     const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
     await waitForNextTick()
 
-    actions.updateExperienceEntry({
+    await actions.updateExperienceEntry({
       experienceEntryId,
       changes: { isCurrent: true },
     })
@@ -328,14 +328,14 @@ describe('app store reorder actions', () => {
     })
     expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
 
-    actions.updateExperienceEntry({
+    await actions.updateExperienceEntry({
       experienceEntryId,
       changes: { endDate: '2025-01-01' },
     })
 
     expect(useAppStore.getState().data.experienceEntries[experienceEntryId]?.endDate).toBeNull()
 
-    actions.updateExperienceEntry({
+    await actions.updateExperienceEntry({
       experienceEntryId,
       changes: { isCurrent: false, endDate: '2025-01-01' },
     })
@@ -352,14 +352,14 @@ describe('app store reorder actions', () => {
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    actions.createExperienceEntry(profileId)
+    await actions.createExperienceEntry(profileId)
     const experienceEntryId = expectDefined(
       Object.keys(useAppStore.getState().data.experienceEntries)[0],
       'Expected an experience entry id',
     )
 
-    actions.createExperienceBullet(experienceEntryId)
-    actions.createExperienceBullet(experienceEntryId)
+    await actions.createExperienceBullet(experienceEntryId)
+    await actions.createExperienceBullet(experienceEntryId)
 
     const bulletIds = getOrderedIds(
       Object.fromEntries(
@@ -371,16 +371,16 @@ describe('app store reorder actions', () => {
     const firstBulletId = expectDefined(bulletIds[0], 'Expected first bullet id')
     const secondBulletId = expectDefined(bulletIds[1], 'Expected second bullet id')
 
-    actions.updateExperienceBullet({
+    await actions.updateExperienceBullet({
       experienceBulletId: firstBulletId,
       changes: { content: 'First bullet', enabled: true, level: 2 },
     })
-    actions.updateExperienceBullet({
+    await actions.updateExperienceBullet({
       experienceBulletId: secondBulletId,
       changes: { content: 'Second bullet', enabled: true, level: 3 },
     })
 
-    actions.reorderExperienceBullets({
+    await actions.reorderExperienceBullets({
       experienceEntryId,
       orderedIds: [secondBulletId, firstBulletId],
     })
@@ -396,12 +396,12 @@ describe('app store reorder actions', () => {
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    const experienceEntryId = expectDefined(actions.createExperienceEntry(profileId), 'Expected an experience entry id')
+    const experienceEntryId = expectDefined(await actions.createExperienceEntry(profileId), 'Expected an experience entry id')
     const educationEntryId = expectDefined(actions.createEducationEntry(profileId), 'Expected an education entry id')
     const projectId = expectDefined(actions.createProject(profileId), 'Expected a project id')
     const additionalExperienceEntryId = expectDefined(actions.createAdditionalExperienceEntry(profileId), 'Expected additional experience id')
 
-    actions.createExperienceBullet(experienceEntryId)
+    await actions.createExperienceBullet(experienceEntryId)
     actions.createEducationBullet(educationEntryId)
     actions.createProjectBullet(projectId)
     actions.createAdditionalExperienceBullet(additionalExperienceEntryId)
@@ -419,7 +419,7 @@ describe('app store reorder actions', () => {
     expect(useAppStore.getState().data.projectBullets[projectBulletId]?.level).toBe(defaultBulletLevel)
     expect(useAppStore.getState().data.additionalExperienceBullets[additionalExperienceBulletId]?.level).toBe(defaultBulletLevel)
 
-    actions.updateExperienceBullet({ experienceBulletId, changes: { level: 2 } })
+    await actions.updateExperienceBullet({ experienceBulletId, changes: { level: 2 } })
     actions.updateEducationBullet({ educationBulletId, changes: { level: 3 } })
     actions.updateProjectBullet({ projectBulletId, changes: { level: 2 } })
     actions.updateAdditionalExperienceBullet({ additionalExperienceBulletId, changes: { level: 3 } })
@@ -429,7 +429,7 @@ describe('app store reorder actions', () => {
     expect(useAppStore.getState().data.projectBullets[projectBulletId]?.level).toBe(2)
     expect(useAppStore.getState().data.additionalExperienceBullets[additionalExperienceBulletId]?.level).toBe(3)
 
-    actions.updateExperienceBullet({ experienceBulletId, changes: { level: 99 as never } })
+    await actions.updateExperienceBullet({ experienceBulletId, changes: { level: 99 as never } })
     actions.updateEducationBullet({ educationBulletId, changes: { level: 0 as never } })
     actions.updateProjectBullet({ projectBulletId, changes: { level: -1 as never } })
     actions.updateAdditionalExperienceBullet({ additionalExperienceBulletId, changes: { level: 4 as never } })
