@@ -16,6 +16,7 @@ import type {
 import type {
   DuplicateProfileInput,
   ProfileMutationResult,
+  ReorderAdditionalExperienceBulletsInput,
   ReorderEducationBulletsInput,
   ReorderExperienceBulletsInput,
   ReorderProjectBulletsInput,
@@ -25,6 +26,8 @@ import type {
   SetResumeSectionEnabledInput,
   SetResumeSectionLabelInput,
   UpdateAchievementInput,
+  UpdateAdditionalExperienceBulletInput,
+  UpdateAdditionalExperienceEntryInput,
   UpdateEducationBulletInput,
   UpdateEducationEntryInput,
   UpdateExperienceBulletInput,
@@ -91,6 +94,14 @@ export interface AppApiClient {
   updateProjectBullet(data: AppDataState, input: UpdateProjectBulletInput): Promise<ProfileMutationResult>
   deleteProjectBullet(data: AppDataState, projectBulletId: string): Promise<ProfileMutationResult>
   reorderProjectBullets(data: AppDataState, input: ReorderProjectBulletsInput): Promise<ProfileMutationResult>
+  createAdditionalExperienceEntry(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
+  updateAdditionalExperienceEntry(data: AppDataState, input: UpdateAdditionalExperienceEntryInput): Promise<ProfileMutationResult>
+  deleteAdditionalExperienceEntry(data: AppDataState, additionalExperienceEntryId: string): Promise<ProfileMutationResult>
+  reorderAdditionalExperienceEntries(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createAdditionalExperienceBullet(data: AppDataState, additionalExperienceEntryId: string): Promise<ProfileMutationResult>
+  updateAdditionalExperienceBullet(data: AppDataState, input: UpdateAdditionalExperienceBulletInput): Promise<ProfileMutationResult>
+  deleteAdditionalExperienceBullet(data: AppDataState, additionalExperienceBulletId: string): Promise<ProfileMutationResult>
+  reorderAdditionalExperienceBullets(data: AppDataState, input: ReorderAdditionalExperienceBulletsInput): Promise<ProfileMutationResult>
   createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult>
   updateJob(data: AppDataState, input: UpdateJobInput): Promise<JobMutationResult>
   deleteJob(data: AppDataState, jobId: string): Promise<JobMutationResult>
@@ -379,6 +390,46 @@ export class LocalAppApiClient implements AppApiClient {
   async reorderProjectBullets(data: AppDataState, input: ReorderProjectBulletsInput): Promise<ProfileMutationResult> {
     await this.sync(data)
     return this.service.reorderProjectBullets(input)
+  }
+
+  async createAdditionalExperienceEntry(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.createAdditionalExperienceEntry(profileId)
+  }
+
+  async updateAdditionalExperienceEntry(data: AppDataState, input: UpdateAdditionalExperienceEntryInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.updateAdditionalExperienceEntry(input)
+  }
+
+  async deleteAdditionalExperienceEntry(data: AppDataState, additionalExperienceEntryId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.deleteAdditionalExperienceEntry(additionalExperienceEntryId)
+  }
+
+  async reorderAdditionalExperienceEntries(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.reorderAdditionalExperienceEntries(input)
+  }
+
+  async createAdditionalExperienceBullet(data: AppDataState, additionalExperienceEntryId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.createAdditionalExperienceBullet(additionalExperienceEntryId)
+  }
+
+  async updateAdditionalExperienceBullet(data: AppDataState, input: UpdateAdditionalExperienceBulletInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.updateAdditionalExperienceBullet(input)
+  }
+
+  async deleteAdditionalExperienceBullet(data: AppDataState, additionalExperienceBulletId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.deleteAdditionalExperienceBullet(additionalExperienceBulletId)
+  }
+
+  async reorderAdditionalExperienceBullets(data: AppDataState, input: ReorderAdditionalExperienceBulletsInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.reorderAdditionalExperienceBullets(input)
   }
 
   async createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult> {

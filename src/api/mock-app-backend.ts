@@ -43,6 +43,8 @@ import {
 import {
   createBaseProfileMutation,
   createAchievementMutation,
+  createAdditionalExperienceBulletMutation,
+  createAdditionalExperienceEntryMutation,
   createEducationBulletMutation,
   createEducationEntryMutation,
   createExperienceBulletMutation,
@@ -53,6 +55,8 @@ import {
   createSkillCategoryMutation,
   createSkillMutation,
   deleteAchievementMutation,
+  deleteAdditionalExperienceBulletMutation,
+  deleteAdditionalExperienceEntryMutation,
   deleteEducationBulletMutation,
   deleteEducationEntryMutation,
   deleteExperienceBulletMutation,
@@ -64,6 +68,8 @@ import {
   deleteSkillCategoryMutation,
   deleteSkillMutation,
   duplicateProfileMutation,
+  reorderAdditionalExperienceBulletsMutation,
+  reorderAdditionalExperienceEntriesMutation,
   reorderEducationBulletsMutation,
   reorderEducationEntriesMutation,
   reorderExperienceBulletsMutation,
@@ -79,6 +85,8 @@ import {
   setResumeSectionEnabledMutation,
   setResumeSectionLabelMutation,
   updateAchievementMutation,
+  updateAdditionalExperienceBulletMutation,
+  updateAdditionalExperienceEntryMutation,
   updateEducationBulletMutation,
   updateEducationEntryMutation,
   updateExperienceBulletMutation,
@@ -92,6 +100,7 @@ import {
   type DuplicateProfileInput,
   type ProfileMutationContext,
   type ProfileMutationResult,
+  type ReorderAdditionalExperienceBulletsInput,
   type ReorderEducationBulletsInput,
   type ReorderExperienceBulletsInput,
   type ReorderProjectBulletsInput,
@@ -101,6 +110,8 @@ import {
   type SetResumeSectionEnabledInput,
   type SetResumeSectionLabelInput,
   type UpdateAchievementInput,
+  type UpdateAdditionalExperienceBulletInput,
+  type UpdateAdditionalExperienceEntryInput,
   type UpdateEducationBulletInput,
   type UpdateEducationEntryInput,
   type UpdateExperienceBulletInput,
@@ -368,6 +379,38 @@ export class MockAppBackend implements AppDataService {
 
   async reorderProjectBullets(input: ReorderProjectBulletsInput): Promise<ProfileMutationResult> {
     return this.mutateProfile((data, context) => reorderProjectBulletsMutation(data, input, context))
+  }
+
+  async createAdditionalExperienceEntry(profileId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => createAdditionalExperienceEntryMutation(data, profileId, context))
+  }
+
+  async updateAdditionalExperienceEntry(input: UpdateAdditionalExperienceEntryInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => updateAdditionalExperienceEntryMutation(data, input, context))
+  }
+
+  async deleteAdditionalExperienceEntry(additionalExperienceEntryId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => deleteAdditionalExperienceEntryMutation(data, additionalExperienceEntryId, context))
+  }
+
+  async reorderAdditionalExperienceEntries(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => reorderAdditionalExperienceEntriesMutation(data, input, context))
+  }
+
+  async createAdditionalExperienceBullet(additionalExperienceEntryId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => createAdditionalExperienceBulletMutation(data, additionalExperienceEntryId, context))
+  }
+
+  async updateAdditionalExperienceBullet(input: UpdateAdditionalExperienceBulletInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => updateAdditionalExperienceBulletMutation(data, input, context))
+  }
+
+  async deleteAdditionalExperienceBullet(additionalExperienceBulletId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => deleteAdditionalExperienceBulletMutation(data, additionalExperienceBulletId, context))
+  }
+
+  async reorderAdditionalExperienceBullets(input: ReorderAdditionalExperienceBulletsInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => reorderAdditionalExperienceBulletsMutation(data, input, context))
   }
 
   async createJob(input: CreateJobInput): Promise<JobMutationResult> {

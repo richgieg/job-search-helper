@@ -664,7 +664,7 @@ const AdditionalExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
       return
     }
 
-    updateAdditionalExperienceBullet({ additionalExperienceBulletId: bullet.id, changes: { content } })
+    void updateAdditionalExperienceBullet({ additionalExperienceBulletId: bullet.id, changes: { content } })
   }
 
   return (
@@ -673,29 +673,29 @@ const AdditionalExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
       <div className="flex flex-wrap items-center justify-end gap-2 md:self-center">
         <ActionToggle checked={enabled} label="Enable additional experience bullet" onChange={(value) => {
           setEnabled(value)
-          updateAdditionalExperienceBullet({ additionalExperienceBulletId: bullet.id, changes: { enabled: value } })
+          void updateAdditionalExperienceBullet({ additionalExperienceBulletId: bullet.id, changes: { enabled: value } })
         }} />
         <BulletLevelField level={level} onChange={(value) => {
           setLevel(value)
-          updateAdditionalExperienceBullet({ additionalExperienceBulletId: bullet.id, changes: { level: value } })
+          void updateAdditionalExperienceBullet({ additionalExperienceBulletId: bullet.id, changes: { level: value } })
         }} />
         <ReorderButtons
           canMoveDown={bulletIds.length > 1}
           canMoveUp={bulletIds.length > 1}
           onMoveDown={() =>
-            reorderAdditionalExperienceBullets({
+            void reorderAdditionalExperienceBullets({
               additionalExperienceEntryId: bullet.additionalExperienceEntryId,
               orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
             })
           }
           onMoveUp={() =>
-            reorderAdditionalExperienceBullets({
+            void reorderAdditionalExperienceBullets({
               additionalExperienceEntryId: bullet.additionalExperienceEntryId,
               orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
             })
           }
         />
-        <DeleteIconButton label="Delete additional experience bullet" onDelete={() => deleteAdditionalExperienceBullet(bullet.id)} />
+        <DeleteIconButton label="Delete additional experience bullet" onDelete={() => void deleteAdditionalExperienceBullet(bullet.id)} />
       </div>
     </div>
   )
@@ -1558,7 +1558,7 @@ const AdditionalExperienceCard = ({
   }
 
   const commitEntryChanges = (changes: Partial<Omit<AdditionalExperienceEntry, 'id' | 'profileId'>>) => {
-    updateAdditionalExperienceEntry({ additionalExperienceEntryId: entry.id, changes })
+    void updateAdditionalExperienceEntry({ additionalExperienceEntryId: entry.id, changes })
   }
 
   return (
@@ -1569,25 +1569,25 @@ const AdditionalExperienceCard = ({
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable additional experience entry" onChange={(value) => {
               setDraft({ ...draft, enabled: value })
-              updateAdditionalExperienceEntry({ additionalExperienceEntryId: entry.id, changes: { enabled: value } })
+              void updateAdditionalExperienceEntry({ additionalExperienceEntryId: entry.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
               canMoveDown={entryIds.length > 1}
               canMoveUp={entryIds.length > 1}
               onMoveDown={() =>
-                reorderAdditionalExperienceEntries({
+                void reorderAdditionalExperienceEntries({
                   profileId: entry.profileId,
                   orderedIds: moveOrderedItem(entryIds, entryIndex, 1),
                 })
               }
               onMoveUp={() =>
-                reorderAdditionalExperienceEntries({
+                void reorderAdditionalExperienceEntries({
                   profileId: entry.profileId,
                   orderedIds: moveOrderedItem(entryIds, entryIndex, -1),
                 })
               }
             />
-            <DeleteIconButton label="Delete additional experience entry" onDelete={() => deleteAdditionalExperienceEntry(entry.id)} />
+            <DeleteIconButton label="Delete additional experience entry" onDelete={() => void deleteAdditionalExperienceEntry(entry.id)} />
           </div>
         }
         summary={summary}
@@ -1605,7 +1605,7 @@ const AdditionalExperienceCard = ({
               <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Bullets</h4>
               <button
                 className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted"
-                onClick={() => createAdditionalExperienceBullet(entry.id)}
+                onClick={() => void createAdditionalExperienceBullet(entry.id)}
                 type="button"
               >
                 Add bullet
@@ -2141,8 +2141,8 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       <CollapsiblePanel
         actionLabel="Add additional experience"
         actionStyle="icon"
-        onAction={() => {
-          const createdId = createAdditionalExperienceEntry(profileId)
+        onAction={async () => {
+          const createdId = await createAdditionalExperienceEntry(profileId)
 
           if (createdId) {
             setNewAdditionalExperienceEntryId(createdId)

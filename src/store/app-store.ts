@@ -17,6 +17,7 @@ import type {
 } from '../domain/job-data'
 import type {
   DuplicateProfileInput,
+  ReorderAdditionalExperienceBulletsInput,
   ReorderEducationBulletsInput,
   ProfileMutationResult,
   ReorderExperienceBulletsInput,
@@ -27,6 +28,8 @@ import type {
   SetResumeSectionEnabledInput,
   SetResumeSectionLabelInput,
   UpdateAchievementInput,
+  UpdateAdditionalExperienceBulletInput,
+  UpdateAdditionalExperienceEntryInput,
   UpdateEducationBulletInput,
   UpdateEducationEntryInput,
   UpdateExperienceBulletInput,
@@ -39,14 +42,10 @@ import type {
   UpdateSkillInput,
 } from '../domain/profile-data'
 import { createDefaultUiState, createEmptyDataState } from './create-initial-state'
-import { defaultBulletLevel, isBulletLevel } from '../utils/bullet-levels'
 import type {
-  AdditionalExperienceBullet,
-  AdditionalExperienceEntry,
   AppDataState,
   AppExportFile,
   AppUiState,
-  BulletLevel,
   Certification,
   Id,
   Reference,
@@ -116,20 +115,14 @@ interface AppStoreState {
     updateProjectBullet: (input: UpdateProjectBulletInput) => Promise<void>
     deleteProjectBullet: (projectBulletId: Id) => Promise<void>
     reorderProjectBullets: (input: ReorderProjectBulletsInput) => Promise<void>
-    createAdditionalExperienceEntry: (profileId: Id) => Id | null
-    updateAdditionalExperienceEntry: (input: {
-      additionalExperienceEntryId: Id
-      changes: Partial<Omit<AdditionalExperienceEntry, 'id' | 'profileId'>>
-    }) => void
-    deleteAdditionalExperienceEntry: (additionalExperienceEntryId: Id) => void
-    reorderAdditionalExperienceEntries: (input: { profileId: Id; orderedIds: Id[] }) => void
-    createAdditionalExperienceBullet: (additionalExperienceEntryId: Id) => void
-    updateAdditionalExperienceBullet: (input: {
-      additionalExperienceBulletId: Id
-      changes: Partial<Pick<AdditionalExperienceBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>
-    }) => void
-    deleteAdditionalExperienceBullet: (additionalExperienceBulletId: Id) => void
-    reorderAdditionalExperienceBullets: (input: { additionalExperienceEntryId: Id; orderedIds: Id[] }) => void
+    createAdditionalExperienceEntry: (profileId: Id) => Promise<Id | null>
+    updateAdditionalExperienceEntry: (input: UpdateAdditionalExperienceEntryInput) => Promise<void>
+    deleteAdditionalExperienceEntry: (additionalExperienceEntryId: Id) => Promise<void>
+    reorderAdditionalExperienceEntries: (input: ReorderProfileEntitiesInput) => Promise<void>
+    createAdditionalExperienceBullet: (additionalExperienceEntryId: Id) => Promise<Id | null>
+    updateAdditionalExperienceBullet: (input: UpdateAdditionalExperienceBulletInput) => Promise<void>
+    deleteAdditionalExperienceBullet: (additionalExperienceBulletId: Id) => Promise<void>
+    reorderAdditionalExperienceBullets: (input: ReorderAdditionalExperienceBulletsInput) => Promise<void>
     createCertification: (profileId: Id) => Id | null
     updateCertification: (input: {
       certificationId: Id
@@ -228,33 +221,6 @@ const reorderSortableEntities = <T extends { id: Id; sortOrder: number }>(entiti
   return nextEntities
 }
 
-const normalizeAdditionalExperienceEntry = (
-  existing: AdditionalExperienceEntry,
-  changes: Partial<Omit<AdditionalExperienceEntry, 'id' | 'profileId'>>,
-): AdditionalExperienceEntry | null => {
-  const nextEntry: AdditionalExperienceEntry = {
-    ...existing,
-    ...changes,
-  }
-
-  if (nextEntry.startDate && nextEntry.endDate && nextEntry.startDate > nextEntry.endDate) {
-    return null
-  }
-
-  return nextEntry
-}
-
-const mergeBulletChanges = <T extends { level: BulletLevel }>(existing: T, changes: Partial<T>): T | null => {
-  if (changes.level !== undefined && !isBulletLevel(changes.level)) {
-    return null
-  }
-
-  return {
-    ...existing,
-    ...changes,
-  }
-}
-
 const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: string): AppDataState => {
   const profile = data.profiles[profileId]
 
@@ -271,25 +237,6 @@ const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: strin
         updatedAt: timestamp,
       },
     },
-  }
-}
-
-const deleteAdditionalExperienceEntryCascade = (data: AppDataState, additionalExperienceEntryId: Id): AppDataState => {
-  const nextAdditionalExperienceEntries = { ...data.additionalExperienceEntries }
-  const nextAdditionalExperienceBullets = { ...data.additionalExperienceBullets }
-
-  delete nextAdditionalExperienceEntries[additionalExperienceEntryId]
-
-  Object.values(data.additionalExperienceBullets).forEach((item) => {
-    if (item.additionalExperienceEntryId === additionalExperienceEntryId) {
-      delete nextAdditionalExperienceBullets[item.id]
-    }
-  })
-
-  return {
-    ...data,
-    additionalExperienceEntries: nextAdditionalExperienceEntries,
-    additionalExperienceBullets: nextAdditionalExperienceBullets,
   }
 }
 
@@ -608,224 +555,31 @@ const deleteAdditionalExperienceEntryCascade = (data: AppDataState, additionalEx
     reorderProjectBullets: async (input) => {
       await runPersistedProfileMutation((data) => getAppApiClient().reorderProjectBullets(data, input))
     },
-    createAdditionalExperienceEntry: (profileId) => {
-      const profile = get().data.profiles[profileId]
-
-      if (!profile) {
-        return null
-      }
-
-      const additionalExperienceEntry: AdditionalExperienceEntry = {
-        id: createId(),
-        profileId,
-        title: '',
-        organization: '',
-        location: '',
-        startDate: null,
-        endDate: null,
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.additionalExperienceEntries)
-            .filter((item) => item.profileId === profileId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            additionalExperienceEntries: {
-              ...state.data.additionalExperienceEntries,
-              [additionalExperienceEntry.id]: additionalExperienceEntry,
-            },
-          },
-          profileId,
-          now(),
-        ),
-      }))
-
-      return additionalExperienceEntry.id
+    createAdditionalExperienceEntry: async (profileId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createAdditionalExperienceEntry(data, profileId))
+      return result?.createdId ?? null
     },
-    updateAdditionalExperienceEntry: ({ additionalExperienceEntryId, changes }) => {
-      const existing = get().data.additionalExperienceEntries[additionalExperienceEntryId]
-
-      if (!existing) {
-        return
-      }
-
-      const nextEntry = normalizeAdditionalExperienceEntry(existing, changes)
-
-      if (!nextEntry) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            additionalExperienceEntries: {
-              ...state.data.additionalExperienceEntries,
-              [additionalExperienceEntryId]: nextEntry,
-            },
-          },
-          existing.profileId,
-          now(),
-        ),
-      }))
+    updateAdditionalExperienceEntry: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateAdditionalExperienceEntry(data, input))
     },
-    deleteAdditionalExperienceEntry: (additionalExperienceEntryId) => {
-      const existing = get().data.additionalExperienceEntries[additionalExperienceEntryId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(deleteAdditionalExperienceEntryCascade(state.data, additionalExperienceEntryId), existing.profileId, now()),
-      }))
+    deleteAdditionalExperienceEntry: async (additionalExperienceEntryId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteAdditionalExperienceEntry(data, additionalExperienceEntryId))
     },
-    reorderAdditionalExperienceEntries: ({ profileId, orderedIds }) => {
-      const existingIds = Object.values(get().data.additionalExperienceEntries)
-        .filter((item) => item.profileId === profileId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            additionalExperienceEntries: reorderSortableEntities(state.data.additionalExperienceEntries, orderedIds),
-          },
-          profileId,
-          now(),
-        ),
-      }))
+    reorderAdditionalExperienceEntries: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderAdditionalExperienceEntries(data, input))
     },
-    createAdditionalExperienceBullet: (additionalExperienceEntryId) => {
-      const entry = get().data.additionalExperienceEntries[additionalExperienceEntryId]
-
-      if (!entry) {
-        return
-      }
-
-      const additionalExperienceBullet: AdditionalExperienceBullet = {
-        id: createId(),
-        additionalExperienceEntryId,
-        content: '',
-        level: defaultBulletLevel,
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.additionalExperienceBullets)
-            .filter((item) => item.additionalExperienceEntryId === additionalExperienceEntryId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            additionalExperienceBullets: {
-              ...state.data.additionalExperienceBullets,
-              [additionalExperienceBullet.id]: additionalExperienceBullet,
-            },
-          },
-          entry.profileId,
-          now(),
-        ),
-      }))
+    createAdditionalExperienceBullet: async (additionalExperienceEntryId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createAdditionalExperienceBullet(data, additionalExperienceEntryId))
+      return result?.createdId ?? null
     },
-    updateAdditionalExperienceBullet: ({ additionalExperienceBulletId, changes }) => {
-      const existing = get().data.additionalExperienceBullets[additionalExperienceBulletId]
-
-      if (!existing) {
-        return
-      }
-
-      const entry = get().data.additionalExperienceEntries[existing.additionalExperienceEntryId]
-
-      if (!entry) {
-        return
-      }
-
-      const nextBullet = mergeBulletChanges<AdditionalExperienceBullet>(existing, changes)
-
-      if (!nextBullet) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            additionalExperienceBullets: {
-              ...state.data.additionalExperienceBullets,
-              [additionalExperienceBulletId]: nextBullet,
-            },
-          },
-          entry.profileId,
-          now(),
-        ),
-      }))
+    updateAdditionalExperienceBullet: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateAdditionalExperienceBullet(data, input))
     },
-    deleteAdditionalExperienceBullet: (additionalExperienceBulletId) => {
-      const existing = get().data.additionalExperienceBullets[additionalExperienceBulletId]
-
-      if (!existing) {
-        return
-      }
-
-      const entry = get().data.additionalExperienceEntries[existing.additionalExperienceEntryId]
-
-      if (!entry) {
-        return
-      }
-
-      set((state) => {
-        const nextAdditionalExperienceBullets = { ...state.data.additionalExperienceBullets }
-        delete nextAdditionalExperienceBullets[additionalExperienceBulletId]
-
-        return {
-          data: stampUpdatedProfile(
-            {
-              ...state.data,
-              additionalExperienceBullets: nextAdditionalExperienceBullets,
-            },
-            entry.profileId,
-            now(),
-          ),
-        }
-      })
+    deleteAdditionalExperienceBullet: async (additionalExperienceBulletId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteAdditionalExperienceBullet(data, additionalExperienceBulletId))
     },
-    reorderAdditionalExperienceBullets: ({ additionalExperienceEntryId, orderedIds }) => {
-      const entry = get().data.additionalExperienceEntries[additionalExperienceEntryId]
-
-      if (!entry) {
-        return
-      }
-
-      const existingIds = Object.values(get().data.additionalExperienceBullets)
-        .filter((item) => item.additionalExperienceEntryId === additionalExperienceEntryId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            additionalExperienceBullets: reorderSortableEntities(state.data.additionalExperienceBullets, orderedIds),
-          },
-          entry.profileId,
-          now(),
-        ),
-      }))
+    reorderAdditionalExperienceBullets: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderAdditionalExperienceBullets(data, input))
     },
     createCertification: (profileId) => {
       const profile = get().data.profiles[profileId]
