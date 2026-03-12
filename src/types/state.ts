@@ -41,6 +41,8 @@ export type JobStatusFilter = JobComputedStatus | 'all'
 
 export type ThemePreference = 'light' | 'dark' | 'system'
 
+export type DocumentHeaderTemplate = 'classic' | 'stacked'
+
 export type ResumeSectionKey =
   | 'summary'
   | 'skills'
@@ -59,6 +61,7 @@ export interface ResumeSectionSettings {
 }
 
 export interface ResumeSettings {
+  headerTemplate: DocumentHeaderTemplate
   sections: Record<ResumeSectionKey, ResumeSectionSettings>
 }
 

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { getOrderedResumeSections, selectProfileDocumentData } from '../features/documents/document-data'
 import { getJobComputedStatus } from '../features/jobs/job-status'
 import { createDefaultUiState, createEmptyDataState } from './create-initial-state'
+import { defaultDocumentHeaderTemplate } from '../utils/document-header-templates'
 import { useAppStore } from './app-store'
 
 const resetStore = () => {
@@ -162,6 +163,7 @@ describe('app store reorder actions', () => {
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     const initialProfile = useAppStore.getState().data.profiles[profileId]
+    expect(initialProfile?.resumeSettings.headerTemplate).toBe(defaultDocumentHeaderTemplate)
     expect(initialProfile?.resumeSettings.sections.summary.enabled).toBe(true)
     expect(initialProfile?.resumeSettings.sections.summary.sortOrder).toBe(1)
     expect(initialProfile?.resumeSettings.sections.summary.label).toBe('Summary')
@@ -169,6 +171,11 @@ describe('app store reorder actions', () => {
     expect(initialProfile?.resumeSettings.sections.projects.sortOrder).toBe(6)
     expect(initialProfile?.resumeSettings.sections.additional_experience.sortOrder).toBe(7)
     expect(initialProfile?.resumeSettings.sections.references.sortOrder).toBe(9)
+
+    actions.setDocumentHeaderTemplate({
+      profileId,
+      headerTemplate: 'stacked',
+    })
 
     actions.setResumeSectionLabel({
       profileId,
@@ -188,6 +195,7 @@ describe('app store reorder actions', () => {
     })
 
     const nextProfile = useAppStore.getState().data.profiles[profileId]
+    expect(nextProfile?.resumeSettings.headerTemplate).toBe('stacked')
     expect(nextProfile?.resumeSettings.sections.summary.label).toBe('Professional Summary')
     expect(nextProfile?.resumeSettings.sections.references.enabled).toBe(false)
     expect(getOrderedResumeSections(nextProfile!).map((section) => section.section)).toEqual([
@@ -1043,6 +1051,7 @@ describe('app store reorder actions', () => {
     actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
+    actions.setDocumentHeaderTemplate({ profileId, headerTemplate: 'stacked' })
     actions.setResumeSectionLabel({ profileId, section: 'summary', label: 'Career Summary' })
     actions.setResumeSectionEnabled({ profileId, section: 'references', enabled: false })
     actions.reorderResumeSections({
@@ -1097,6 +1106,7 @@ describe('app store reorder actions', () => {
       'certifications',
       'references',
     ])
+    expect(useAppStore.getState().data.profiles[duplicatedProfileId]?.resumeSettings.headerTemplate).toBe('stacked')
     expect(useAppStore.getState().data.profiles[duplicatedProfileId]?.resumeSettings.sections.summary.label).toBe('Career Summary')
     expect(useAppStore.getState().data.profiles[duplicatedProfileId]?.resumeSettings.sections.references.enabled).toBe(false)
     const duplicatedAchievement = Object.values(useAppStore.getState().data.achievements).find((item) => item.profileId === duplicatedProfileId)
@@ -1148,6 +1158,7 @@ describe('app store reorder actions', () => {
     useAppStore.getState().actions.importAppData(exported)
 
     const importedProfile = useAppStore.getState().data.profiles[duplicatedProfileId]
+  expect(importedProfile?.resumeSettings.headerTemplate).toBe('stacked')
     expect(importedProfile?.resumeSettings.sections.summary.label).toBe('Career Summary')
     expect(importedProfile?.resumeSettings.sections.references.enabled).toBe(false)
     expect(getOrderedResumeSections(importedProfile!).map((section) => section.section)).toEqual([

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState, emptyProfileDefaults } from './create-initial-state'
+import { normalizeDocumentHeaderTemplate } from '../utils/document-header-templates'
 import { defaultResumeSectionOrder } from '../utils/resume-section-labels'
 import { normalizeResumeSectionLabel } from '../utils/resume-section-labels'
 import type {
@@ -13,6 +14,7 @@ import type {
   AppUiState,
   Certification,
   ContactRelationshipType,
+  DocumentHeaderTemplate,
   EducationBullet,
   EducationEntry,
   EducationStatus,
@@ -49,6 +51,7 @@ interface AppStoreState {
       changes: Partial<Pick<Profile, 'name' | 'summary' | 'coverLetter'>>
       personalDetails?: Partial<PersonalDetails>
     }) => void
+    setDocumentHeaderTemplate: (input: { profileId: Id; headerTemplate: DocumentHeaderTemplate }) => void
     setResumeSectionEnabled: (input: { profileId: Id; section: ResumeSectionKey; enabled: boolean }) => void
     setResumeSectionLabel: (input: { profileId: Id; section: ResumeSectionKey; label: string }) => void
     reorderResumeSections: (input: { profileId: Id; orderedSections: ResumeSectionKey[] }) => void
@@ -863,6 +866,36 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         },
       }))
     },
+    setDocumentHeaderTemplate: ({ profileId, headerTemplate }) => {
+      const existingProfile = get().data.profiles[profileId]
+
+      if (!existingProfile) {
+        return
+      }
+
+      const nextHeaderTemplate = normalizeDocumentHeaderTemplate(headerTemplate)
+
+      if (existingProfile.resumeSettings.headerTemplate === nextHeaderTemplate) {
+        return
+      }
+
+      set((state) => ({
+        data: {
+          ...state.data,
+          profiles: {
+            ...state.data.profiles,
+            [profileId]: {
+              ...existingProfile,
+              resumeSettings: {
+                ...existingProfile.resumeSettings,
+                headerTemplate: nextHeaderTemplate,
+              },
+              updatedAt: now(),
+            },
+          },
+        },
+      }))
+    },
     setResumeSectionEnabled: ({ profileId, section, enabled }) => {
       const existingProfile = get().data.profiles[profileId]
 
@@ -878,6 +911,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
             [profileId]: {
               ...existingProfile,
               resumeSettings: {
+                ...existingProfile.resumeSettings,
                 sections: {
                   ...existingProfile.resumeSettings.sections,
                   [section]: {
@@ -913,6 +947,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
             [profileId]: {
               ...existingProfile,
               resumeSettings: {
+                ...existingProfile.resumeSettings,
                 sections: {
                   ...existingProfile.resumeSettings.sections,
                   [section]: {
@@ -952,6 +987,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
               [profileId]: {
                 ...existingProfile,
                 resumeSettings: {
+                  ...existingProfile.resumeSettings,
                   sections: nextSections,
                 },
                 updatedAt: now(),
@@ -980,6 +1016,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         id: createId(),
         name: nextName,
         resumeSettings: {
+          headerTemplate: sourceProfile.resumeSettings.headerTemplate,
           sections: resumeSectionKeys.reduce<ResumeSettings['sections']>((sections, section) => {
             sections[section] = { ...sourceProfile.resumeSettings.sections[section] }
             return sections

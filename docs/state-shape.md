@@ -156,6 +156,8 @@ type JobComputedStatus =
 
 type JobStatusFilter = JobComputedStatus | 'all';
 
+type DocumentHeaderTemplate = 'classic' | 'stacked';
+
 type ResumeSectionKey =
   | 'summary'
   | 'skills'
@@ -205,6 +207,7 @@ interface PersonalDetails {
 }
 
 interface ResumeSettings {
+  headerTemplate: DocumentHeaderTemplate;
   sections: Record<ResumeSectionKey, ResumeSectionSettings>;
 }
 
@@ -788,14 +791,19 @@ Resume settings should stay embedded on `Profile` for the MVP.
 Reasons:
 
 - the generated resume is part of how a specific base profile or job profile is presented
+- the same profile-level presentation choice should also drive the generated cover letter and references header
 - duplicating a profile should duplicate its resume settings automatically
-- keeping one resume settings object per profile keeps the model simple while still allowing tailored section order and visibility
+- keeping one resume settings object per profile keeps the model simple while still allowing tailored section order, visibility, labels, and a shared document header template
+
+`ResumeSettings.headerTemplate` should use a small enum of supported document header variants. The initial MVP can start with `classic` as the default and add `stacked` as the first alternate template.
 
 Recommended validation rules for `resumeSettings.sections`:
 
+- `headerTemplate` must be a valid `DocumentHeaderTemplate` value
 - every `ResumeSectionKey` must be present exactly once as an object key
 - every section must have a boolean `enabled` flag
 - every section must have a numeric `sortOrder`
+- every section must have a string `label`
 - `sortOrder` values should be unique within the profile's resume settings
 
 ## Recommended next step

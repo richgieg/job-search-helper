@@ -85,6 +85,7 @@ Each reusable profile should support:
    - control whether each resume section is shown or hidden
    - control the order of resume sections
    - customize the displayed label for each resume section
+   - select a shared document header template used by the resume, cover letter, and references document
    - stored per profile so base profiles and job profiles can differ
 - Skill categories and skills
 - Achievements with name, description, enabled state, and sort order
@@ -189,6 +190,7 @@ This allows the user to keep track of custom questions asked during online appli
 - Generated from either a base profile or a selected job-specific profile
 - Respects the profile's resume settings for section visibility and section order
 - Uses the profile's configured resume section labels for displayed headings
+- Uses the profile's selected document header template for the top-of-page header
 - Defaults to the following section order for new profiles: summary, skills, achievements, experience, education, projects, additional experience, certifications, references
 - Renders enabled achievements as bullets before experience by default
 - Formats each achievement bullet as bold name followed by a colon and plain-text description
@@ -201,15 +203,23 @@ This allows the user to keep track of custom questions asked during online appli
 - Displays additional experience entries using title, optional organization, optional location, and a date range when either date is present
 - Exportable as printable HTML in MVP
 - Optional PDF in phase 2
-- Simple templates only in MVP
-- No freeform template designer in MVP; resume settings control section visibility and ordering only
+- Simple templates only in MVP, including a small set of selectable header variants
+- No freeform template designer in MVP; resume settings control section visibility, ordering, displayed section labels, and the shared document header template only
 
 #### Cover letter
 
 - Generated from job data + selected contact + a selected job-specific profile
 - Also previewable from a base profile by using a dummy contact in MVP
 - Built from a single `cover_letter` field split on trimmed newline-separated paragraphs
+- Uses the profile's selected document header template for the top-of-page header
 - Editable before finalizing
+- Exportable as printable HTML in MVP
+
+#### References
+
+- Generated from either a base profile or a selected job-specific profile
+- Uses the profile's selected document header template for the top-of-page header
+- Renders the profile's enabled references in a printable format
 - Exportable as printable HTML in MVP
 
 #### Application page
@@ -280,7 +290,7 @@ If `job_id` is null, the profile is a base profile. If `job_id` is not null, the
 - enabled
 - sort_order
 
-`resume_settings_json` stores the profile's single resume settings configuration for the MVP, including whether each resume section is shown and the order in which sections should appear.
+`resume_settings_json` stores the profile's single resume settings configuration for the MVP, including whether each resume section is shown, the order in which sections should appear, the displayed section labels, and the shared document header template selection.
 
 `cloned_from_profile_id` is null for profiles created from scratch and points to the profile that was duplicated when a profile is copied.
 
@@ -532,8 +542,9 @@ Avoid relying on AI for the first version.
 
 Use deterministic templating:
 
-- Resume: map selected profile sections into a clean template, respecting the profile's configured section visibility and section order, including ordered `ExperienceBullet`, `ProjectBullet`, and `AdditionalExperienceBullet` records under their parent entries
-- Cover letter: combine contact/job/company data with a user-authored `cover_letter` text block, split into paragraphs by trimmed newlines; use a dummy contact when previewing from a base profile
+- Resume: map selected profile sections into a clean template, respecting the profile's configured section visibility and section order, including ordered `ExperienceBullet`, `ProjectBullet`, and `AdditionalExperienceBullet` records under their parent entries, and reuse the profile's selected document header template
+- Cover letter: combine contact/job/company data with a user-authored `cover_letter` text block, split into paragraphs by trimmed newlines; use a dummy contact when previewing from a base profile, and reuse the profile's selected document header template
+- References: render enabled references into a printable document and reuse the profile's selected document header template
 - Application page: render profile fields into copyable cards or rows
 
 This reduces cost, risk, and unpredictability.

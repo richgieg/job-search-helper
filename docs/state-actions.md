@@ -143,6 +143,7 @@ interface CreateBaseProfileInput {
 Behavior:
 
 - create a `Profile` with `jobId = null`
+- initialize default `resumeSettings.headerTemplate`
 - set `clonedFromProfileId = null`
 - initialize default `resumeSettings.sections` values
 - initialize missing nested objects with defaults
@@ -169,6 +170,25 @@ Behavior:
 ### Resume settings actions
 
 Resume settings should be updated through explicit actions rather than bundled into generic profile field updates.
+
+### `setDocumentHeaderTemplate(input)`
+
+Updates the shared document header template for a profile.
+
+```ts
+interface SetDocumentHeaderTemplateInput {
+  profileId: Id;
+  headerTemplate: DocumentHeaderTemplate;
+}
+```
+
+Behavior:
+
+- require an existing profile
+- require a valid `DocumentHeaderTemplate`
+- update `profile.resumeSettings.headerTemplate`
+- use the selected template for the generated resume, cover letter, and references document
+- update `updatedAt`
 
 ### `setResumeSectionEnabled(input)`
 
@@ -227,6 +247,7 @@ Behavior:
 - require every `ResumeSectionKey` exactly once in `orderedSections`
 - rewrite each section's `sortOrder`
 - preserve each section's existing `enabled` flag and `label`
+- preserve the existing `headerTemplate`
 - update `updatedAt`
 
 ### `duplicateProfile(input)`
@@ -258,6 +279,7 @@ Notes:
 - duplicating a base profile into another base profile uses `targetJobId = null`
 - duplicating a job profile into another job profile may target the same job or a different job
 - duplicating a profile should also duplicate its `resumeSettings`
+- duplicated resume settings should preserve the selected `headerTemplate`
 - duplicated resume settings should preserve section labels
 - duplicating a profile should also duplicate its `Achievement` records
 - duplicating a profile should also duplicate its `Project` and `ProjectBullet` records
@@ -674,6 +696,7 @@ Profile link actions should additionally validate:
 
 Resume settings actions should additionally validate:
 
+- valid `DocumentHeaderTemplate` values
 - valid `ResumeSectionKey` values
 - uniqueness and completeness of section keys during reordering
 - unique `sortOrder` values after reordering
@@ -683,6 +706,7 @@ Import validation should additionally verify:
 - all ids are unique within each entity collection
 - referenced entities exist
 - no dangling relationships remain
+- every profile has a valid `resumeSettings.headerTemplate` value
 - every profile has a complete and valid `resumeSettings.sections` object
 - every `InterviewContact` references an existing `Interview` and `JobContact`
 - every `InterviewContact` connects records belonging to the same job

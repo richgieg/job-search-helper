@@ -6,8 +6,10 @@ import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { ProfileChildEditors } from './ProfileChildEditors'
 import { useAppStore } from '../../store/app-store'
-import type { PersonalDetails, ResumeSectionKey } from '../../types/state'
+import type { DocumentHeaderTemplate, PersonalDetails, ResumeSectionKey } from '../../types/state'
+import { documentHeaderTemplateLabels, documentHeaderTemplates } from '../../utils/document-header-templates'
 import { defaultResumeSectionOrder } from '../../utils/resume-section-labels'
+import { normalizeResumeSectionLabel } from '../../utils/resume-section-labels'
 import { moveOrderedItem } from '../../utils/reorder'
 
 const buildResumeSectionLabels = (profile?: { resumeSettings: { sections: Record<ResumeSectionKey, { label: string }> } }) =>
@@ -15,7 +17,6 @@ const buildResumeSectionLabels = (profile?: { resumeSettings: { sections: Record
     labels[section] = profile?.resumeSettings.sections[section].label ?? ''
     return labels
   }, {} as Record<ResumeSectionKey, string>)
-import { normalizeResumeSectionLabel } from '../../utils/resume-section-labels'
 
 const createPersonalDetailsDraft = (personalDetails: PersonalDetails): PersonalDetails => ({
   ...personalDetails,
@@ -73,6 +74,7 @@ export const ProfilePage = () => {
   const profile = useAppStore((state) => state.data.profiles[profileId])
   const jobsById = useAppStore((state) => state.data.jobs)
   const updateProfile = useAppStore((state) => state.actions.updateProfile)
+  const setDocumentHeaderTemplate = useAppStore((state) => state.actions.setDocumentHeaderTemplate)
   const setResumeSectionEnabled = useAppStore((state) => state.actions.setResumeSectionEnabled)
   const setResumeSectionLabel = useAppStore((state) => state.actions.setResumeSectionLabel)
   const reorderResumeSections = useAppStore((state) => state.actions.reorderResumeSections)
@@ -280,8 +282,32 @@ export const ProfilePage = () => {
 
       <ProfileChildEditors profileId={profile.id} />
 
-      <CollapsiblePanel description="Control which sections appear on the resume and the order in which they are shown." title="Resume settings">
-        <div className="grid gap-3 md:grid-cols-2">
+      <CollapsiblePanel description="Control document header styling plus which sections appear on the resume and the order in which they are shown." title="Resume settings">
+        <div className="space-y-4">
+          <div className="max-w-lg rounded-xl border border-app-border-muted p-4">
+            <label className="flex flex-col gap-2 text-sm text-app-text-muted">
+              <span className="font-medium text-app-text">Document header</span>
+              <select
+                className="rounded-xl border border-app-border bg-app-surface px-3 py-2 text-sm text-app-text outline-none transition focus:border-app-focus-ring"
+                value={profile.resumeSettings.headerTemplate}
+                onChange={(event) =>
+                  setDocumentHeaderTemplate({
+                    profileId: profile.id,
+                    headerTemplate: event.target.value as DocumentHeaderTemplate,
+                  })
+                }
+              >
+                {documentHeaderTemplates.map((template) => (
+                  <option key={template} value={template}>
+                    {documentHeaderTemplateLabels[template]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p className="mt-2 text-xs text-app-text-subtle">Applies to the resume, cover letter, and references document.</p>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
           {[leftColumnResumeSections, rightColumnResumeSections].map((column, columnIndex) => (
             <div key={columnIndex} className="space-y-3">
               {column.map((resumeSection) => {
@@ -342,6 +368,7 @@ export const ProfilePage = () => {
               })}
             </div>
           ))}
+          </div>
         </div>
       </CollapsiblePanel>
     </div>

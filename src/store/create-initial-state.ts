@@ -1,5 +1,6 @@
 import { readStoredThemePreference } from '../app/theme'
 import type { AppDataState, AppUiState, PersonalDetails, ResumeSettings, ThemePreference } from '../types/state'
+import { defaultDocumentHeaderTemplate } from '../utils/document-header-templates'
 import { defaultResumeSectionLabels, defaultResumeSectionOrder } from '../utils/resume-section-labels'
 
 const createEmptyPersonalDetails = (): PersonalDetails => ({
@@ -15,6 +16,7 @@ const createEmptyPersonalDetails = (): PersonalDetails => ({
 })
 
 export const createDefaultResumeSettings = (): ResumeSettings => ({
+  headerTemplate: defaultDocumentHeaderTemplate,
   sections: defaultResumeSectionOrder.reduce<ResumeSettings['sections']>((sections, section, index) => {
     sections[section] = {
       enabled: true,
