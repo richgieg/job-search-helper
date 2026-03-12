@@ -360,6 +360,14 @@ These actions should:
 - `deleteExperienceBullet(input)`
 - `reorderExperienceBullets(input)`
 
+These actions should:
+
+- initialize new bullets with `level = 1`
+- allow `updateExperienceBullet()` to change `content`, `level`, `enabled`, and `sortOrder`
+- require `level` to stay within the supported `BulletLevel` range
+- preserve existing bullet order unless a reorder action explicitly changes `sortOrder`
+- treat `level` as presentation metadata for generated resume/application output, not as parent-child structure
+
 ### Education actions
 
 - `createEducationEntry(input)`
@@ -385,6 +393,14 @@ These actions should:
 - `deleteEducationBullet(input)`
 - `reorderEducationBullets(input)`
 
+These actions should:
+
+- initialize new bullets with `level = 1`
+- allow `updateEducationBullet()` to change `content`, `level`, `enabled`, and `sortOrder`
+- require `level` to stay within the supported `BulletLevel` range
+- preserve existing bullet order unless a reorder action explicitly changes `sortOrder`
+- treat `level` as presentation metadata for generated resume/application output, not as parent-child structure
+
 ### Project actions
 
 - `createProject(input)`
@@ -408,6 +424,14 @@ These actions should:
 - `deleteProjectBullet(input)`
 - `reorderProjectBullets(input)`
 
+These actions should:
+
+- initialize new bullets with `level = 1`
+- allow `updateProjectBullet()` to change `content`, `level`, `enabled`, and `sortOrder`
+- require `level` to stay within the supported `BulletLevel` range
+- preserve existing bullet order unless a reorder action explicitly changes `sortOrder`
+- treat `level` as presentation metadata for generated resume/application output, not as parent-child structure
+
 ### Additional experience actions
 
 - `createAdditionalExperienceEntry(input)`
@@ -430,6 +454,14 @@ These actions should:
 - `updateAdditionalExperienceBullet(input)`
 - `deleteAdditionalExperienceBullet(input)`
 - `reorderAdditionalExperienceBullets(input)`
+
+These actions should:
+
+- initialize new bullets with `level = 1`
+- allow `updateAdditionalExperienceBullet()` to change `content`, `level`, `enabled`, and `sortOrder`
+- require `level` to stay within the supported `BulletLevel` range
+- preserve existing bullet order unless a reorder action explicitly changes `sortOrder`
+- treat `level` as presentation metadata for generated resume/application output, not as parent-child structure
 
 ### Certification actions
 

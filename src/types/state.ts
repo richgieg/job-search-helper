@@ -42,6 +42,7 @@ export type JobStatusFilter = JobComputedStatus | 'all'
 export type ThemePreference = 'light' | 'dark' | 'system'
 
 export type DocumentHeaderTemplate = 'classic' | 'stacked'
+export type BulletLevel = 1 | 2 | 3
 
 export type ResumeSectionKey =
   | 'summary'
@@ -153,6 +154,7 @@ export interface ExperienceBullet {
   id: Id
   experienceEntryId: Id
   content: string
+  level: BulletLevel
   enabled: boolean
   sortOrder: number
 }
@@ -173,6 +175,7 @@ export interface EducationBullet {
   id: Id
   educationEntryId: Id
   content: string
+  level: BulletLevel
   enabled: boolean
   sortOrder: number
 }
@@ -192,6 +195,7 @@ export interface ProjectBullet {
   id: Id
   projectId: Id
   content: string
+  level: BulletLevel
   enabled: boolean
   sortOrder: number
 }
@@ -212,6 +216,7 @@ export interface AdditionalExperienceBullet {
   id: Id
   additionalExperienceEntryId: Id
   content: string
+  level: BulletLevel
   enabled: boolean
   sortOrder: number
 }

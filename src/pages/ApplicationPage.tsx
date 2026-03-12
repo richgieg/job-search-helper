@@ -3,8 +3,9 @@ import { Link, useParams } from 'react-router-dom'
 
 import { selectProfileDocumentData } from '../features/documents/document-data'
 import { useAppStore } from '../store/app-store'
+import { formatBulletCopyLine } from '../utils/bullet-levels'
 import { defaultResumeSectionLabels, defaultResumeSectionOrder } from '../utils/resume-section-labels'
-import type { ResumeSectionKey } from '../types/state'
+import type { BulletLevel, ResumeSectionKey } from '../types/state'
 
 interface CopyValueItem {
   display: string
@@ -89,11 +90,11 @@ const buildSingleValue = (value: string | null | undefined): CopyValueItem[] => 
   return trimmed ? [{ display: trimmed, copyValue: trimmed }] : []
 }
 
-const buildBulletListValue = (values: Array<string | null | undefined>): CopyValueItem[] => {
+const buildBulletListValue = (values: Array<{ content: string | null | undefined; level: BulletLevel }>): CopyValueItem[] => {
   const lines = values
-    .map((value) => value?.trim() ?? '')
-    .filter(Boolean)
-    .map((value) => `- ${value}`)
+    .map(({ content, level }) => ({ content: content?.trim() ?? '', level }))
+    .filter((value) => Boolean(value.content))
+    .map(({ content, level }) => formatBulletCopyLine(content, level))
 
   if (lines.length === 0) {
     return []
@@ -315,7 +316,7 @@ export const ApplicationPage = () => {
                   { label: 'Current role', values: buildSingleValue(entry.isCurrent ? 'Yes' : 'No') },
                   {
                     label: 'Bullets',
-                    values: buildBulletListValue(bullets.map((bullet) => bullet.content)),
+                    values: buildBulletListValue(bullets.map((bullet) => ({ content: bullet.content, level: bullet.level }))),
                     multiline: true,
                   },
                   { label: 'Reason for leaving (short)', values: buildSingleValue(entry.reasonForLeavingShort) },
@@ -375,7 +376,7 @@ export const ApplicationPage = () => {
                   buildDateRow('End date', item.entry.endDate),
                   {
                     label: 'Bullets',
-                    values: buildBulletListValue(item.bullets.map((bullet) => bullet.content)),
+                    values: buildBulletListValue(item.bullets.map((bullet) => ({ content: bullet.content, level: bullet.level }))),
                     multiline: true,
                   },
                 ]}
@@ -403,7 +404,7 @@ export const ApplicationPage = () => {
                   buildDateRow('End date', item.entry.endDate),
                   {
                     label: 'Bullets',
-                    values: buildBulletListValue(item.bullets.map((bullet) => bullet.content)),
+                    values: buildBulletListValue(item.bullets.map((bullet) => ({ content: bullet.content, level: bullet.level }))),
                     multiline: true,
                   },
                 ]}
@@ -432,7 +433,7 @@ export const ApplicationPage = () => {
                   buildDateRow('End date', item.entry.endDate),
                   {
                     label: 'Bullets',
-                    values: buildBulletListValue(item.bullets.map((bullet) => bullet.content)),
+                    values: buildBulletListValue(item.bullets.map((bullet) => ({ content: bullet.content, level: bullet.level }))),
                     multiline: true,
                   },
                 ]}

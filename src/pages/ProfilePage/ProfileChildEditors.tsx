@@ -4,7 +4,8 @@ import { ActionToggle, DeleteIconButton, getActionIconButtonClassName } from '..
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { useAppStore } from '../../store/app-store'
-import type { AdditionalExperienceEntry, EducationEntry, EducationStatus, ExperienceEntry, Project, ReferenceType } from '../../types/state'
+import type { AdditionalExperienceEntry, BulletLevel, EducationEntry, EducationStatus, ExperienceEntry, Project, ReferenceType } from '../../types/state'
+import { defaultBulletLevel } from '../../utils/bullet-levels'
 import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 import { moveOrderedItem } from '../../utils/reorder'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
@@ -105,6 +106,51 @@ const SelectField = <T extends string>({
     </select>
   </label>
 )
+
+const getNextBulletLevel = (level: BulletLevel): BulletLevel => {
+  if (level === 3) {
+    return 1
+  }
+
+  return (level + 1) as BulletLevel
+}
+
+const BulletLevelMarkerIcon = ({ level }: { level: BulletLevel }) => {
+  if (level === 1) {
+    return <span aria-hidden="true" className="inline-block h-2.5 w-2.5 rounded-full bg-app-text" />
+  }
+
+  if (level === 2) {
+    return <span aria-hidden="true" className="inline-block h-2.5 w-2.5 rounded-full border border-app-text" />
+  }
+
+  return <span aria-hidden="true" className="inline-block h-2.5 w-2.5 border border-app-text bg-app-text" />
+}
+
+const BulletLevelField = ({
+  level,
+  onChange,
+}: {
+  level: BulletLevel
+  onChange: (level: BulletLevel) => void
+}) => {
+  const nextLevel = getNextBulletLevel(level)
+
+  return (
+    <button
+      aria-label={`Bullet level ${level}. Activate to change to level ${nextLevel}.`}
+      className="inline-flex min-w-11 items-center gap-2 rounded-xl border border-app-border bg-app-surface px-2.5 py-2 text-sm font-medium text-app-text-muted transition hover:bg-app-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-focus-ring"
+      onClick={() => onChange(nextLevel)}
+      type="button"
+    >
+      <BulletLevelMarkerIcon level={level} />
+      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-app-surface-subtle px-1 text-xs font-semibold text-app-text">
+        {level}
+      </span>
+      <span className="sr-only">{`Current bullet level ${level}. Activate to change to level ${nextLevel}.`}</span>
+    </button>
+  )
+}
 
 const OrderBadge = ({ value }: { value: number }) => (
   <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-app-surface-subtle px-2 text-xs font-semibold text-app-text-subtle">
@@ -350,6 +396,7 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
   const deleteExperienceBullet = useAppStore((state) => state.actions.deleteExperienceBullet)
   const reorderExperienceBullets = useAppStore((state) => state.actions.reorderExperienceBullets)
   const [content, setContent] = useState(bullet?.content ?? '')
+  const [level, setLevel] = useState(bullet?.level ?? defaultBulletLevel)
   const [enabled, setEnabled] = useState(bullet?.enabled ?? true)
 
   const bulletIds = useMemo(
@@ -370,6 +417,7 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
     }
 
     setContent(bullet.content)
+    setLevel(bullet.level)
     setEnabled(bullet.enabled)
   }, [bullet])
 
@@ -392,6 +440,10 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
         <ActionToggle checked={enabled} label="Enable experience bullet" onChange={(value) => {
           setEnabled(value)
           updateExperienceBullet({ experienceBulletId: bullet.id, changes: { enabled: value } })
+        }} />
+        <BulletLevelField level={level} onChange={(value) => {
+          setLevel(value)
+          updateExperienceBullet({ experienceBulletId: bullet.id, changes: { level: value } })
         }} />
         <ReorderButtons
           canMoveDown={bulletIds.length > 1}
@@ -422,6 +474,7 @@ const EducationBulletRow = ({ bulletId }: { bulletId: string }) => {
   const deleteEducationBullet = useAppStore((state) => state.actions.deleteEducationBullet)
   const reorderEducationBullets = useAppStore((state) => state.actions.reorderEducationBullets)
   const [content, setContent] = useState(bullet?.content ?? '')
+  const [level, setLevel] = useState(bullet?.level ?? defaultBulletLevel)
   const [enabled, setEnabled] = useState(bullet?.enabled ?? true)
 
   const bulletIds = useMemo(
@@ -442,6 +495,7 @@ const EducationBulletRow = ({ bulletId }: { bulletId: string }) => {
     }
 
     setContent(bullet.content)
+    setLevel(bullet.level)
     setEnabled(bullet.enabled)
   }, [bullet])
 
@@ -464,6 +518,10 @@ const EducationBulletRow = ({ bulletId }: { bulletId: string }) => {
         <ActionToggle checked={enabled} label="Enable education bullet" onChange={(value) => {
           setEnabled(value)
           updateEducationBullet({ educationBulletId: bullet.id, changes: { enabled: value } })
+        }} />
+        <BulletLevelField level={level} onChange={(value) => {
+          setLevel(value)
+          updateEducationBullet({ educationBulletId: bullet.id, changes: { level: value } })
         }} />
         <ReorderButtons
           canMoveDown={bulletIds.length > 1}
@@ -494,6 +552,7 @@ const ProjectBulletRow = ({ bulletId }: { bulletId: string }) => {
   const deleteProjectBullet = useAppStore((state) => state.actions.deleteProjectBullet)
   const reorderProjectBullets = useAppStore((state) => state.actions.reorderProjectBullets)
   const [content, setContent] = useState(bullet?.content ?? '')
+  const [level, setLevel] = useState(bullet?.level ?? defaultBulletLevel)
   const [enabled, setEnabled] = useState(bullet?.enabled ?? true)
 
   const bulletIds = useMemo(
@@ -514,6 +573,7 @@ const ProjectBulletRow = ({ bulletId }: { bulletId: string }) => {
     }
 
     setContent(bullet.content)
+    setLevel(bullet.level)
     setEnabled(bullet.enabled)
   }, [bullet])
 
@@ -536,6 +596,10 @@ const ProjectBulletRow = ({ bulletId }: { bulletId: string }) => {
         <ActionToggle checked={enabled} label="Enable project bullet" onChange={(value) => {
           setEnabled(value)
           updateProjectBullet({ projectBulletId: bullet.id, changes: { enabled: value } })
+        }} />
+        <BulletLevelField level={level} onChange={(value) => {
+          setLevel(value)
+          updateProjectBullet({ projectBulletId: bullet.id, changes: { level: value } })
         }} />
         <ReorderButtons
           canMoveDown={bulletIds.length > 1}
@@ -566,6 +630,7 @@ const AdditionalExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
   const deleteAdditionalExperienceBullet = useAppStore((state) => state.actions.deleteAdditionalExperienceBullet)
   const reorderAdditionalExperienceBullets = useAppStore((state) => state.actions.reorderAdditionalExperienceBullets)
   const [content, setContent] = useState(bullet?.content ?? '')
+  const [level, setLevel] = useState(bullet?.level ?? defaultBulletLevel)
   const [enabled, setEnabled] = useState(bullet?.enabled ?? true)
 
   const bulletIds = useMemo(
@@ -586,6 +651,7 @@ const AdditionalExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
     }
 
     setContent(bullet.content)
+    setLevel(bullet.level)
     setEnabled(bullet.enabled)
   }, [bullet])
 
@@ -608,6 +674,10 @@ const AdditionalExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
         <ActionToggle checked={enabled} label="Enable additional experience bullet" onChange={(value) => {
           setEnabled(value)
           updateAdditionalExperienceBullet({ additionalExperienceBulletId: bullet.id, changes: { enabled: value } })
+        }} />
+        <BulletLevelField level={level} onChange={(value) => {
+          setLevel(value)
+          updateAdditionalExperienceBullet({ additionalExperienceBulletId: bullet.id, changes: { level: value } })
         }} />
         <ReorderButtons
           canMoveDown={bulletIds.length > 1}

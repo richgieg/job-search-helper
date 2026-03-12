@@ -158,6 +158,8 @@ type JobStatusFilter = JobComputedStatus | 'all';
 
 type DocumentHeaderTemplate = 'classic' | 'stacked';
 
+type BulletLevel = 1 | 2 | 3;
+
 type ResumeSectionKey =
   | 'summary'
   | 'skills'
@@ -286,6 +288,7 @@ interface ProjectBullet {
   id: Id;
   projectId: Id;
   content: string;
+  level: BulletLevel;
   enabled: boolean;
   sortOrder: number;
 }
@@ -316,6 +319,7 @@ interface ExperienceBullet {
   id: Id;
   experienceEntryId: Id;
   content: string;
+  level: BulletLevel;
   enabled: boolean;
   sortOrder: number;
 }
@@ -349,6 +353,7 @@ interface EducationBullet {
   id: Id;
   educationEntryId: Id;
   content: string;
+  level: BulletLevel;
   enabled: boolean;
   sortOrder: number;
 }
@@ -373,9 +378,17 @@ interface AdditionalExperienceBullet {
   id: Id;
   additionalExperienceEntryId: Id;
   content: string;
+  level: BulletLevel;
   enabled: boolean;
   sortOrder: number;
 }
+
+Notes:
+
+- `BulletLevel` controls indentation depth for generated resume bullet lists and copied application bullet text.
+- New bullets should default to `level = 1`.
+- Bullets remain a flat ordered list scoped to their parent entry plus `sortOrder`; `level` does not create parent-child relationships.
+- Import validation should reject unsupported bullet levels so persisted state only contains the supported MVP range.
 ```
 
 `AdditionalExperienceEntry` is intentionally general-purpose so the profile's `additional_experience` resume section can be relabeled to something like `Volunteer Service` without changing the stored shape.

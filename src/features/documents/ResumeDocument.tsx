@@ -1,7 +1,9 @@
 import { formatDateRange, getOrderedResumeSections, type ProfileDocumentData } from './document-data'
 import { DocumentProfileHeader } from './DocumentProfileHeader'
 import { ReferencesSection } from './ReferencesDocument'
+import { getBulletIndentClassName, getResumeBulletMarkerClassName } from '../../utils/bullet-levels'
 import { formatEmploymentType, formatWorkArrangement } from '../../utils/job-field-options'
+import type { AdditionalExperienceBullet, EducationBullet, ExperienceBullet, ProjectBullet } from '../../types/state'
 
 const formatExperienceMeta = (input: {
   company: string
@@ -97,6 +99,28 @@ const formatAdditionalExperienceDateDisplay = (input: {
   }
 
   return ''
+}
+
+const ResumeBulletList = ({
+  bullets,
+  className,
+}: {
+  bullets: Array<ExperienceBullet | EducationBullet | ProjectBullet | AdditionalExperienceBullet>
+  className: string
+}) => {
+  if (bullets.length === 0) {
+    return null
+  }
+
+  return (
+    <ul className={className}>
+      {bullets.map((bullet) => (
+        <li key={bullet.id} className={`${getBulletIndentClassName(bullet.level)} list-item ${getResumeBulletMarkerClassName(bullet.level)}`}>
+          {bullet.content}
+        </li>
+      ))}
+    </ul>
+  )
 }
 
 export const ResumeDocument = ({ documentData }: { documentData: ProfileDocumentData }) => {
@@ -202,19 +226,9 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
                               </div>
                               <p className="resume-experience-date text-sm text-black">{formatDateRange(entry.entry.startDate, entry.entry.endDate, entry.entry.isCurrent)}</p>
                             </div>
-                            {firstBullet ? (
-                              <ul className="mt-3 list-disc pl-10 text-sm leading-4.5 text-black">
-                                <li>{firstBullet.content}</li>
-                              </ul>
-                            ) : null}
+                            <ResumeBulletList bullets={firstBullet ? [firstBullet] : []} className="mt-3 pl-10 text-sm leading-4.5 text-black" />
                           </div>
-                          {remainingBullets.length > 0 ? (
-                            <ul className="mt-2 list-disc space-y-2 pl-10 text-sm leading-4.5 text-black">
-                              {remainingBullets.map((bullet) => (
-                                <li key={bullet.id}>{bullet.content}</li>
-                              ))}
-                            </ul>
-                          ) : null}
+                          <ResumeBulletList bullets={remainingBullets} className="mt-2 space-y-2 pl-10 text-sm leading-4.5 text-black" />
                         </div>
                       )
                     })}
@@ -239,19 +253,9 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
                               <p className="resume-experience-date text-black">{formatEducationDateDisplay(item.entry)}</p>
                             </div>
                             <p className="italic">{item.entry.school || 'School'}</p>
-                            {firstBullet ? (
-                              <ul className="mt-3 list-disc pl-10 text-sm leading-4.5 text-black">
-                                <li>{firstBullet.content}</li>
-                              </ul>
-                            ) : null}
+                            <ResumeBulletList bullets={firstBullet ? [firstBullet] : []} className="mt-3 pl-10 text-sm leading-4.5 text-black" />
                           </div>
-                          {remainingBullets.length > 0 ? (
-                            <ul className="mt-2 list-disc space-y-2 pl-10 text-sm leading-4.5 text-black">
-                              {remainingBullets.map((bullet) => (
-                                <li key={bullet.id}>{bullet.content}</li>
-                              ))}
-                            </ul>
-                          ) : null}
+                          <ResumeBulletList bullets={remainingBullets} className="mt-2 space-y-2 pl-10 text-sm leading-4.5 text-black" />
                         </div>
                       )
                     })
@@ -277,19 +281,9 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
                                 {dateRange ? <p className="resume-experience-date text-black">{dateRange}</p> : null}
                               </div>
                               {item.entry.organization ? <p className="italic">{item.entry.organization}</p> : null}
-                              {firstBullet ? (
-                                <ul className="mt-3 list-disc pl-10 text-sm leading-4.5 text-black">
-                                  <li>{firstBullet.content}</li>
-                                </ul>
-                              ) : null}
+                              <ResumeBulletList bullets={firstBullet ? [firstBullet] : []} className="mt-3 pl-10 text-sm leading-4.5 text-black" />
                             </div>
-                            {remainingBullets.length > 0 ? (
-                              <ul className="mt-2 list-disc space-y-2 pl-10 text-sm leading-4.5 text-black">
-                                {remainingBullets.map((bullet) => (
-                                  <li key={bullet.id}>{bullet.content}</li>
-                                ))}
-                              </ul>
-                            ) : null}
+                            <ResumeBulletList bullets={remainingBullets} className="mt-2 space-y-2 pl-10 text-sm leading-4.5 text-black" />
                           </div>
                         )
                       })
@@ -316,19 +310,9 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
                                 {dateRange ? <p className="resume-experience-date text-black">{dateRange}</p> : null}
                               </div>
                               {meta ? <p className="italic">{meta}</p> : null}
-                              {firstBullet ? (
-                                <ul className="mt-3 list-disc pl-10 text-sm leading-4.5 text-black">
-                                  <li>{firstBullet.content}</li>
-                                </ul>
-                              ) : null}
+                              <ResumeBulletList bullets={firstBullet ? [firstBullet] : []} className="mt-3 pl-10 text-sm leading-4.5 text-black" />
                             </div>
-                            {remainingBullets.length > 0 ? (
-                              <ul className="mt-2 list-disc space-y-2 pl-10 text-sm leading-4.5 text-black">
-                                {remainingBullets.map((bullet) => (
-                                  <li key={bullet.id}>{bullet.content}</li>
-                                ))}
-                              </ul>
-                            ) : null}
+                            <ResumeBulletList bullets={remainingBullets} className="mt-2 space-y-2 pl-10 text-sm leading-4.5 text-black" />
                           </div>
                         )
                       })

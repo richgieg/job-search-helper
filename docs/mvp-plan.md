@@ -93,6 +93,11 @@ Each reusable profile should support:
 - Education entries with zero or more bullets, attendance dates, and completion status
 - Project entries with optional organization, nullable start and end dates, and zero or more bullets
 - Additional experience entries with title, organization, location, nullable start and end dates, and zero or more bullets; this section defaults to `Additional Experience` and can be renamed per profile in resume settings, for example to `Volunteer Service`
+- Bullet levels for experience, education, project, and additional experience bullets
+   - support a small fixed set of levels in MVP, such as level 1 through level 3
+   - default new bullets to level 1
+   - let the user adjust bullet level in the profile editor
+   - treat bullet level as presentation metadata on a flat ordered bullet list, not as a true parent-child outline structure
 - Certifications
 - References (professional and personal)
 - Zero or more profile links with user-defined names and URLs
@@ -198,6 +203,7 @@ This allows the user to keep track of custom questions asked during online appli
 - Renders enabled education bullets beneath each enabled education entry
 - Renders enabled project bullets beneath each enabled project entry
 - Renders enabled additional experience bullets beneath each enabled additional experience entry
+- Renders higher-level experience, education, project, and additional experience bullets with deeper indentation than level 1 bullets
 - Displays education entries using either an attendance range or a completion date depending on the entry status
 - Displays project entries using an optional organization line and a date range when either project date is present
 - Displays additional experience entries using title, optional organization, optional location, and a date range when either date is present
@@ -230,6 +236,7 @@ This allows the user to keep track of custom questions asked during online appli
 - Shows education entries using the full set of stored education fields as entered by the user
 - Shows projects using the stored name, organization, dates, and combined bullet text as entered by the user
 - Shows additional experience entries using the stored title, organization, location, dates, and combined bullet text as entered by the user
+- Preserves bullet levels in copied bullet text by indenting higher-level bullets more deeply than level 1 bullets
 - Uses a fixed section order that mirrors the default resume section order, except that it remains independent from any user-driven resume section reordering
 - Includes common sections used in application forms
 

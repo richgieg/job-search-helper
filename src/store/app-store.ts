@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState, emptyProfileDefaults } from './create-initial-state'
 import { normalizeDocumentHeaderTemplate } from '../utils/document-header-templates'
+import { defaultBulletLevel, isBulletLevel } from '../utils/bullet-levels'
 import { defaultResumeSectionOrder } from '../utils/resume-section-labels'
 import { normalizeResumeSectionLabel } from '../utils/resume-section-labels'
 import type {
@@ -12,6 +13,7 @@ import type {
   AppDataState,
   AppExportFile,
   AppUiState,
+  BulletLevel,
   Certification,
   ContactRelationshipType,
   DocumentHeaderTemplate,
@@ -92,7 +94,7 @@ interface AppStoreState {
     createExperienceBullet: (experienceEntryId: Id) => void
     updateExperienceBullet: (input: {
       experienceBulletId: Id
-      changes: Partial<Pick<ExperienceBullet, 'content' | 'enabled' | 'sortOrder'>>
+      changes: Partial<Pick<ExperienceBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>
     }) => void
     deleteExperienceBullet: (experienceBulletId: Id) => void
     reorderExperienceBullets: (input: { experienceEntryId: Id; orderedIds: Id[] }) => void
@@ -106,7 +108,7 @@ interface AppStoreState {
     createEducationBullet: (educationEntryId: Id) => void
     updateEducationBullet: (input: {
       educationBulletId: Id
-      changes: Partial<Pick<EducationBullet, 'content' | 'enabled' | 'sortOrder'>>
+      changes: Partial<Pick<EducationBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>
     }) => void
     deleteEducationBullet: (educationBulletId: Id) => void
     reorderEducationBullets: (input: { educationEntryId: Id; orderedIds: Id[] }) => void
@@ -120,7 +122,7 @@ interface AppStoreState {
     createProjectBullet: (projectId: Id) => void
     updateProjectBullet: (input: {
       projectBulletId: Id
-      changes: Partial<Pick<ProjectBullet, 'content' | 'enabled' | 'sortOrder'>>
+      changes: Partial<Pick<ProjectBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>
     }) => void
     deleteProjectBullet: (projectBulletId: Id) => void
     reorderProjectBullets: (input: { projectId: Id; orderedIds: Id[] }) => void
@@ -134,7 +136,7 @@ interface AppStoreState {
     createAdditionalExperienceBullet: (additionalExperienceEntryId: Id) => void
     updateAdditionalExperienceBullet: (input: {
       additionalExperienceBulletId: Id
-      changes: Partial<Pick<AdditionalExperienceBullet, 'content' | 'enabled' | 'sortOrder'>>
+      changes: Partial<Pick<AdditionalExperienceBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>
     }) => void
     deleteAdditionalExperienceBullet: (additionalExperienceBulletId: Id) => void
     reorderAdditionalExperienceBullets: (input: { additionalExperienceEntryId: Id; orderedIds: Id[] }) => void
@@ -286,6 +288,17 @@ const normalizeAdditionalExperienceEntry = (
   }
 
   return nextEntry
+}
+
+const mergeBulletChanges = <T extends { level: BulletLevel }>(existing: T, changes: Partial<T>): T | null => {
+  if (changes.level !== undefined && !isBulletLevel(changes.level)) {
+    return null
+  }
+
+  return {
+    ...existing,
+    ...changes,
+  }
 }
 
 const hasExactResumeSections = (orderedSections: ResumeSectionKey[]) => {
@@ -1597,6 +1610,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         id: createId(),
         experienceEntryId,
         content: '',
+        level: defaultBulletLevel,
         enabled: true,
         sortOrder: getNextSortOrder(
           Object.values(get().data.experienceBullets)
@@ -1632,16 +1646,19 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         return
       }
 
+      const nextBullet = mergeBulletChanges<ExperienceBullet>(existing, changes)
+
+      if (!nextBullet) {
+        return
+      }
+
       set((state) => ({
         data: stampUpdatedProfile(
           {
             ...state.data,
             experienceBullets: {
               ...state.data.experienceBullets,
-              [experienceBulletId]: {
-                ...existing,
-                ...changes,
-              },
+              [experienceBulletId]: nextBullet,
             },
           },
           experienceEntry.profileId,
@@ -1812,6 +1829,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         id: createId(),
         educationEntryId,
         content: '',
+        level: defaultBulletLevel,
         enabled: true,
         sortOrder: getNextSortOrder(
           Object.values(get().data.educationBullets)
@@ -1847,16 +1865,19 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         return
       }
 
+      const nextBullet = mergeBulletChanges<EducationBullet>(existing, changes)
+
+      if (!nextBullet) {
+        return
+      }
+
       set((state) => ({
         data: stampUpdatedProfile(
           {
             ...state.data,
             educationBullets: {
               ...state.data.educationBullets,
-              [educationBulletId]: {
-                ...existing,
-                ...changes,
-              },
+              [educationBulletId]: nextBullet,
             },
           },
           educationEntry.profileId,
@@ -2026,6 +2047,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         id: createId(),
         projectId,
         content: '',
+        level: defaultBulletLevel,
         enabled: true,
         sortOrder: getNextSortOrder(
           Object.values(get().data.projectBullets)
@@ -2061,16 +2083,19 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         return
       }
 
+      const nextBullet = mergeBulletChanges<ProjectBullet>(existing, changes)
+
+      if (!nextBullet) {
+        return
+      }
+
       set((state) => ({
         data: stampUpdatedProfile(
           {
             ...state.data,
             projectBullets: {
               ...state.data.projectBullets,
-              [projectBulletId]: {
-                ...existing,
-                ...changes,
-              },
+              [projectBulletId]: nextBullet,
             },
           },
           project.profileId,
@@ -2241,6 +2266,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         id: createId(),
         additionalExperienceEntryId,
         content: '',
+        level: defaultBulletLevel,
         enabled: true,
         sortOrder: getNextSortOrder(
           Object.values(get().data.additionalExperienceBullets)
@@ -2276,16 +2302,19 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         return
       }
 
+      const nextBullet = mergeBulletChanges<AdditionalExperienceBullet>(existing, changes)
+
+      if (!nextBullet) {
+        return
+      }
+
       set((state) => ({
         data: stampUpdatedProfile(
           {
             ...state.data,
             additionalExperienceBullets: {
               ...state.data.additionalExperienceBullets,
-              [additionalExperienceBulletId]: {
-                ...existing,
-                ...changes,
-              },
+              [additionalExperienceBulletId]: nextBullet,
             },
           },
           entry.profileId,
