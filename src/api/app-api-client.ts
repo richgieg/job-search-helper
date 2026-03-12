@@ -16,11 +16,16 @@ import type {
 import type {
   DuplicateProfileInput,
   ProfileMutationResult,
+  ReorderProfileEntitiesInput,
   ReorderResumeSectionsInput,
   SetDocumentHeaderTemplateInput,
   SetResumeSectionEnabledInput,
   SetResumeSectionLabelInput,
+  UpdateAchievementInput,
+  UpdateProfileLinkInput,
   UpdateProfileInput,
+  UpdateSkillCategoryInput,
+  UpdateSkillInput,
 } from '../domain/profile-data'
 import type { AppDataService } from './app-data-service'
 
@@ -37,6 +42,22 @@ export interface AppApiClient {
   reorderResumeSections(data: AppDataState, input: ReorderResumeSectionsInput): Promise<ProfileMutationResult>
   duplicateProfile(data: AppDataState, input: DuplicateProfileInput): Promise<ProfileMutationResult>
   deleteProfile(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
+  createProfileLink(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
+  updateProfileLink(data: AppDataState, input: UpdateProfileLinkInput): Promise<ProfileMutationResult>
+  deleteProfileLink(data: AppDataState, profileLinkId: string): Promise<ProfileMutationResult>
+  reorderProfileLinks(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createSkillCategory(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
+  updateSkillCategory(data: AppDataState, input: UpdateSkillCategoryInput): Promise<ProfileMutationResult>
+  deleteSkillCategory(data: AppDataState, skillCategoryId: string): Promise<ProfileMutationResult>
+  reorderSkillCategories(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createSkill(data: AppDataState, skillCategoryId: string): Promise<ProfileMutationResult>
+  updateSkill(data: AppDataState, input: UpdateSkillInput): Promise<ProfileMutationResult>
+  deleteSkill(data: AppDataState, skillId: string): Promise<ProfileMutationResult>
+  reorderSkills(data: AppDataState, skillCategoryId: string, orderedIds: string[]): Promise<ProfileMutationResult>
+  createAchievement(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
+  updateAchievement(data: AppDataState, input: UpdateAchievementInput): Promise<ProfileMutationResult>
+  deleteAchievement(data: AppDataState, achievementId: string): Promise<ProfileMutationResult>
+  reorderAchievements(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
   createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult>
   updateJob(data: AppDataState, input: UpdateJobInput): Promise<JobMutationResult>
   deleteJob(data: AppDataState, jobId: string): Promise<JobMutationResult>
@@ -125,6 +146,86 @@ export class LocalAppApiClient implements AppApiClient {
   async deleteProfile(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
     await this.sync(data)
     return this.service.deleteProfile(profileId)
+  }
+
+  async createProfileLink(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.createProfileLink(profileId)
+  }
+
+  async updateProfileLink(data: AppDataState, input: UpdateProfileLinkInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.updateProfileLink(input)
+  }
+
+  async deleteProfileLink(data: AppDataState, profileLinkId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.deleteProfileLink(profileLinkId)
+  }
+
+  async reorderProfileLinks(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.reorderProfileLinks(input)
+  }
+
+  async createSkillCategory(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.createSkillCategory(profileId)
+  }
+
+  async updateSkillCategory(data: AppDataState, input: UpdateSkillCategoryInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.updateSkillCategory(input)
+  }
+
+  async deleteSkillCategory(data: AppDataState, skillCategoryId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.deleteSkillCategory(skillCategoryId)
+  }
+
+  async reorderSkillCategories(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.reorderSkillCategories(input)
+  }
+
+  async createSkill(data: AppDataState, skillCategoryId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.createSkill(skillCategoryId)
+  }
+
+  async updateSkill(data: AppDataState, input: UpdateSkillInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.updateSkill(input)
+  }
+
+  async deleteSkill(data: AppDataState, skillId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.deleteSkill(skillId)
+  }
+
+  async reorderSkills(data: AppDataState, skillCategoryId: string, orderedIds: string[]): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.reorderSkills(skillCategoryId, orderedIds)
+  }
+
+  async createAchievement(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.createAchievement(profileId)
+  }
+
+  async updateAchievement(data: AppDataState, input: UpdateAchievementInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.updateAchievement(input)
+  }
+
+  async deleteAchievement(data: AppDataState, achievementId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.deleteAchievement(achievementId)
+  }
+
+  async reorderAchievements(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.reorderAchievements(input)
   }
 
   async createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult> {

@@ -18,16 +18,20 @@ import type {
 import type {
   DuplicateProfileInput,
   ProfileMutationResult,
+  ReorderProfileEntitiesInput,
   ReorderResumeSectionsInput,
   SetDocumentHeaderTemplateInput,
   SetResumeSectionEnabledInput,
   SetResumeSectionLabelInput,
+  UpdateAchievementInput,
+  UpdateProfileLinkInput,
   UpdateProfileInput,
+  UpdateSkillCategoryInput,
+  UpdateSkillInput,
 } from '../domain/profile-data'
 import { createDefaultUiState, createEmptyDataState } from './create-initial-state'
 import { defaultBulletLevel, isBulletLevel } from '../utils/bullet-levels'
 import type {
-  Achievement,
   AdditionalExperienceBullet,
   AdditionalExperienceEntry,
   AppDataState,
@@ -41,12 +45,9 @@ import type {
   ExperienceBullet,
   ExperienceEntry,
   Id,
-  ProfileLink,
   Project,
   ProjectBullet,
   Reference,
-  Skill,
-  SkillCategory,
   ThemePreference,
 } from '../types/state'
 
@@ -73,31 +74,22 @@ interface AppStoreState {
     reorderResumeSections: (input: ReorderResumeSectionsInput) => Promise<void>
     duplicateProfile: (input: DuplicateProfileInput) => Promise<Id | null>
     deleteProfile: (profileId: Id) => Promise<void>
-    createProfileLink: (profileId: Id) => Id | null
-    updateProfileLink: (input: {
-      profileLinkId: Id
-      changes: Partial<Pick<ProfileLink, 'name' | 'url' | 'enabled' | 'sortOrder'>>
-    }) => void
-    deleteProfileLink: (profileLinkId: Id) => void
-    reorderProfileLinks: (input: { profileId: Id; orderedIds: Id[] }) => void
-    createSkillCategory: (profileId: Id) => Id | null
-    updateSkillCategory: (input: {
-      skillCategoryId: Id
-      changes: Partial<Pick<SkillCategory, 'name' | 'enabled' | 'sortOrder'>>
-    }) => void
-    deleteSkillCategory: (skillCategoryId: Id) => void
-    reorderSkillCategories: (input: { profileId: Id; orderedIds: Id[] }) => void
-    createSkill: (skillCategoryId: Id) => void
-    updateSkill: (input: { skillId: Id; changes: Partial<Pick<Skill, 'name' | 'enabled' | 'sortOrder'>> }) => void
-    deleteSkill: (skillId: Id) => void
-    reorderSkills: (input: { skillCategoryId: Id; orderedIds: Id[] }) => void
-    createAchievement: (profileId: Id) => Id | null
-    updateAchievement: (input: {
-      achievementId: Id
-      changes: Partial<Omit<Achievement, 'id' | 'profileId'>>
-    }) => void
-    deleteAchievement: (achievementId: Id) => void
-    reorderAchievements: (input: { profileId: Id; orderedIds: Id[] }) => void
+    createProfileLink: (profileId: Id) => Promise<Id | null>
+    updateProfileLink: (input: UpdateProfileLinkInput) => Promise<void>
+    deleteProfileLink: (profileLinkId: Id) => Promise<void>
+    reorderProfileLinks: (input: ReorderProfileEntitiesInput) => Promise<void>
+    createSkillCategory: (profileId: Id) => Promise<Id | null>
+    updateSkillCategory: (input: UpdateSkillCategoryInput) => Promise<void>
+    deleteSkillCategory: (skillCategoryId: Id) => Promise<void>
+    reorderSkillCategories: (input: ReorderProfileEntitiesInput) => Promise<void>
+    createSkill: (skillCategoryId: Id) => Promise<Id | null>
+    updateSkill: (input: UpdateSkillInput) => Promise<void>
+    deleteSkill: (skillId: Id) => Promise<void>
+    reorderSkills: (input: { skillCategoryId: Id; orderedIds: Id[] }) => Promise<void>
+    createAchievement: (profileId: Id) => Promise<Id | null>
+    updateAchievement: (input: UpdateAchievementInput) => Promise<void>
+    deleteAchievement: (achievementId: Id) => Promise<void>
+    reorderAchievements: (input: ReorderProfileEntitiesInput) => Promise<void>
     createExperienceEntry: (profileId: Id) => Id | null
     updateExperienceEntry: (input: {
       experienceEntryId: Id
@@ -407,25 +399,6 @@ const deleteAdditionalExperienceEntryCascade = (data: AppDataState, additionalEx
   }
 }
 
-const deleteSkillCategoryCascade = (data: AppDataState, skillCategoryId: Id): AppDataState => {
-  const nextSkillCategories = { ...data.skillCategories }
-  const nextSkills = { ...data.skills }
-
-  delete nextSkillCategories[skillCategoryId]
-
-  Object.values(data.skills).forEach((item) => {
-    if (item.skillCategoryId === skillCategoryId) {
-      delete nextSkills[item.id]
-    }
-  })
-
-  return {
-    ...data,
-    skillCategories: nextSkillCategories,
-    skills: nextSkills,
-  }
-}
-
  export const useAppStore = create<AppStoreState>((set, get) => {
   const runPersistedProfileMutation = async (
     mutation: (data: AppDataState) => Promise<ProfileMutationResult>,
@@ -611,417 +584,57 @@ const deleteSkillCategoryCascade = (data: AppDataState, skillCategoryId: Id): Ap
         }),
       )
     },
-    createProfileLink: (profileId) => {
-      const profile = get().data.profiles[profileId]
-
-      if (!profile) {
-        return null
-      }
-
-      const profileLink: ProfileLink = {
-        id: createId(),
-        profileId,
-        name: '',
-        url: '',
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.profileLinks)
-            .filter((item) => item.profileId === profileId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            profileLinks: {
-              ...state.data.profileLinks,
-              [profileLink.id]: profileLink,
-            },
-          },
-          profileId,
-          now(),
-        ),
-      }))
-
-      return profileLink.id
+    createProfileLink: async (profileId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createProfileLink(data, profileId))
+      return result?.createdId ?? null
     },
-    updateProfileLink: ({ profileLinkId, changes }) => {
-      const existing = get().data.profileLinks[profileLinkId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            profileLinks: {
-              ...state.data.profileLinks,
-              [profileLinkId]: {
-                ...existing,
-                ...changes,
-              },
-            },
-          },
-          existing.profileId,
-          now(),
-        ),
-      }))
+    updateProfileLink: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateProfileLink(data, input))
     },
-    deleteProfileLink: (profileLinkId) => {
-      const existing = get().data.profileLinks[profileLinkId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => {
-        const nextProfileLinks = { ...state.data.profileLinks }
-        delete nextProfileLinks[profileLinkId]
-
-        return {
-          data: stampUpdatedProfile(
-            {
-              ...state.data,
-              profileLinks: nextProfileLinks,
-            },
-            existing.profileId,
-            now(),
-          ),
-        }
-      })
+    deleteProfileLink: async (profileLinkId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteProfileLink(data, profileLinkId))
     },
-    reorderProfileLinks: ({ profileId, orderedIds }) => {
-      const existingIds = Object.values(get().data.profileLinks)
-        .filter((item) => item.profileId === profileId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            profileLinks: reorderSortableEntities(state.data.profileLinks, orderedIds),
-          },
-          profileId,
-          now(),
-        ),
-      }))
+    reorderProfileLinks: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderProfileLinks(data, input))
     },
-    createSkillCategory: (profileId) => {
-      const profile = get().data.profiles[profileId]
-
-      if (!profile) {
-        return null
-      }
-
-      const skillCategory: SkillCategory = {
-        id: createId(),
-        profileId,
-        name: '',
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.skillCategories)
-            .filter((item) => item.profileId === profileId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            skillCategories: {
-              ...state.data.skillCategories,
-              [skillCategory.id]: skillCategory,
-            },
-          },
-          profileId,
-          now(),
-        ),
-      }))
-
-      return skillCategory.id
+    createSkillCategory: async (profileId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createSkillCategory(data, profileId))
+      return result?.createdId ?? null
     },
-    updateSkillCategory: ({ skillCategoryId, changes }) => {
-      const existing = get().data.skillCategories[skillCategoryId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            skillCategories: {
-              ...state.data.skillCategories,
-              [skillCategoryId]: {
-                ...existing,
-                ...changes,
-              },
-            },
-          },
-          existing.profileId,
-          now(),
-        ),
-      }))
+    updateSkillCategory: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateSkillCategory(data, input))
     },
-    deleteSkillCategory: (skillCategoryId) => {
-      const existing = get().data.skillCategories[skillCategoryId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(deleteSkillCategoryCascade(state.data, skillCategoryId), existing.profileId, now()),
-      }))
+    deleteSkillCategory: async (skillCategoryId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteSkillCategory(data, skillCategoryId))
     },
-    reorderSkillCategories: ({ profileId, orderedIds }) => {
-      const existingIds = Object.values(get().data.skillCategories)
-        .filter((item) => item.profileId === profileId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            skillCategories: reorderSortableEntities(state.data.skillCategories, orderedIds),
-          },
-          profileId,
-          now(),
-        ),
-      }))
+    reorderSkillCategories: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderSkillCategories(data, input))
     },
-    createSkill: (skillCategoryId) => {
-      const category = get().data.skillCategories[skillCategoryId]
-
-      if (!category) {
-        return
-      }
-
-      const skill: Skill = {
-        id: createId(),
-        skillCategoryId,
-        name: '',
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.skills)
-            .filter((item) => item.skillCategoryId === skillCategoryId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            skills: {
-              ...state.data.skills,
-              [skill.id]: skill,
-            },
-          },
-          category.profileId,
-          now(),
-        ),
-      }))
+    createSkill: async (skillCategoryId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createSkill(data, skillCategoryId))
+      return result?.createdId ?? null
     },
-    updateSkill: ({ skillId, changes }) => {
-      const existing = get().data.skills[skillId]
-
-      if (!existing) {
-        return
-      }
-
-      const category = get().data.skillCategories[existing.skillCategoryId]
-      if (!category) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            skills: {
-              ...state.data.skills,
-              [skillId]: {
-                ...existing,
-                ...changes,
-              },
-            },
-          },
-          category.profileId,
-          now(),
-        ),
-      }))
+    updateSkill: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateSkill(data, input))
     },
-    deleteSkill: (skillId) => {
-      const existing = get().data.skills[skillId]
-
-      if (!existing) {
-        return
-      }
-
-      const category = get().data.skillCategories[existing.skillCategoryId]
-      if (!category) {
-        return
-      }
-
-      set((state) => {
-        const nextSkills = { ...state.data.skills }
-        delete nextSkills[skillId]
-
-        return {
-          data: stampUpdatedProfile(
-            {
-              ...state.data,
-              skills: nextSkills,
-            },
-            category.profileId,
-            now(),
-          ),
-        }
-      })
+    deleteSkill: async (skillId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteSkill(data, skillId))
     },
-    reorderSkills: ({ skillCategoryId, orderedIds }) => {
-      const category = get().data.skillCategories[skillCategoryId]
-
-      if (!category) {
-        return
-      }
-
-      const existingIds = Object.values(get().data.skills)
-        .filter((item) => item.skillCategoryId === skillCategoryId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            skills: reorderSortableEntities(state.data.skills, orderedIds),
-          },
-          category.profileId,
-          now(),
-        ),
-      }))
+    reorderSkills: async ({ skillCategoryId, orderedIds }) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderSkills(data, skillCategoryId, orderedIds))
     },
-    createAchievement: (profileId) => {
-      const profile = get().data.profiles[profileId]
-
-      if (!profile) {
-        return null
-      }
-
-      const achievement: Achievement = {
-        id: createId(),
-        profileId,
-        name: '',
-        description: '',
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.achievements)
-            .filter((item) => item.profileId === profileId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            achievements: {
-              ...state.data.achievements,
-              [achievement.id]: achievement,
-            },
-          },
-          profileId,
-          now(),
-        ),
-      }))
-
-      return achievement.id
+    createAchievement: async (profileId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createAchievement(data, profileId))
+      return result?.createdId ?? null
     },
-    updateAchievement: ({ achievementId, changes }) => {
-      const existing = get().data.achievements[achievementId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            achievements: {
-              ...state.data.achievements,
-              [achievementId]: {
-                ...existing,
-                ...changes,
-              },
-            },
-          },
-          existing.profileId,
-          now(),
-        ),
-      }))
+    updateAchievement: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateAchievement(data, input))
     },
-    deleteAchievement: (achievementId) => {
-      const existing = get().data.achievements[achievementId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => {
-        const nextAchievements = { ...state.data.achievements }
-        delete nextAchievements[achievementId]
-
-        return {
-          data: stampUpdatedProfile(
-            {
-              ...state.data,
-              achievements: nextAchievements,
-            },
-            existing.profileId,
-            now(),
-          ),
-        }
-      })
+    deleteAchievement: async (achievementId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteAchievement(data, achievementId))
     },
-    reorderAchievements: ({ profileId, orderedIds }) => {
-      const existingIds = Object.values(get().data.achievements)
-        .filter((item) => item.profileId === profileId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            achievements: reorderSortableEntities(state.data.achievements, orderedIds),
-          },
-          profileId,
-          now(),
-        ),
-      }))
+    reorderAchievements: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderAchievements(data, input))
     },
     createExperienceEntry: (profileId) => {
       const profile = get().data.profiles[profileId]

@@ -315,7 +315,7 @@ const ProfileLinkRow = ({
       return
     }
 
-    updateProfileLink({
+    void updateProfileLink({
       profileLinkId: profileLink.id,
       changes: { name },
     })
@@ -326,7 +326,7 @@ const ProfileLinkRow = ({
       return
     }
 
-    updateProfileLink({
+    void updateProfileLink({
       profileLinkId: profileLink.id,
       changes: { url },
     })
@@ -343,7 +343,7 @@ const ProfileLinkRow = ({
         <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
           <ActionToggle checked={enabled} label="Enable profile link" onChange={(value) => {
             setEnabled(value)
-            updateProfileLink({ profileLinkId: profileLink.id, changes: { enabled: value } })
+            void updateProfileLink({ profileLinkId: profileLink.id, changes: { enabled: value } })
           }} />
           {hasUrl ? (
             <a
@@ -370,19 +370,19 @@ const ProfileLinkRow = ({
             canMoveDown={profileLinkIds.length > 1}
             canMoveUp={profileLinkIds.length > 1}
             onMoveDown={() =>
-              reorderProfileLinks({
+              void reorderProfileLinks({
                 profileId: profileLink.profileId,
                 orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, 1),
               })
             }
             onMoveUp={() =>
-              reorderProfileLinks({
+              void reorderProfileLinks({
                 profileId: profileLink.profileId,
                 orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, -1),
               })
             }
           />
-          <DeleteIconButton label="Delete profile link" onDelete={() => deleteProfileLink(profileLink.id)} />
+          <DeleteIconButton label="Delete profile link" onDelete={() => void deleteProfileLink(profileLink.id)} />
         </div>
       </div>
     </div>
@@ -740,7 +740,7 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
       return
     }
 
-    updateSkill({ skillId: skill.id, changes: { name } })
+    void updateSkill({ skillId: skill.id, changes: { name } })
   }
 
   return (
@@ -755,25 +755,25 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
         <div className="flex flex-wrap items-center justify-end gap-2 md:self-end">
           <ActionToggle checked={enabled} label="Enable skill" onChange={(value) => {
             setEnabled(value)
-            updateSkill({ skillId: skill.id, changes: { enabled: value } })
+            void updateSkill({ skillId: skill.id, changes: { enabled: value } })
           }} />
           <ReorderButtons
             canMoveDown={skillIds.length > 1}
             canMoveUp={skillIds.length > 1}
             onMoveDown={() =>
-              reorderSkills({
+              void reorderSkills({
                 skillCategoryId: skill.skillCategoryId,
                 orderedIds: moveOrderedItem(skillIds, skillIndex, 1),
               })
             }
             onMoveUp={() =>
-              reorderSkills({
+              void reorderSkills({
                 skillCategoryId: skill.skillCategoryId,
                 orderedIds: moveOrderedItem(skillIds, skillIndex, -1),
               })
             }
           />
-          <DeleteIconButton label="Delete skill" onDelete={() => deleteSkill(skill.id)} />
+          <DeleteIconButton label="Delete skill" onDelete={() => void deleteSkill(skill.id)} />
         </div>
       </div>
     </div>
@@ -849,7 +849,7 @@ const SkillCategoryCard = ({
       return
     }
 
-    updateSkillCategory({ skillCategoryId: category.id, changes: { name } })
+    void updateSkillCategory({ skillCategoryId: category.id, changes: { name } })
   }
 
   return (
@@ -860,25 +860,25 @@ const SkillCategoryCard = ({
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={enabled} label="Enable skill category" onChange={(value) => {
               setEnabled(value)
-              updateSkillCategory({ skillCategoryId: category.id, changes: { enabled: value } })
+              void updateSkillCategory({ skillCategoryId: category.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
               canMoveDown={skillCategoryIds.length > 1}
               canMoveUp={skillCategoryIds.length > 1}
               onMoveDown={() =>
-                reorderSkillCategories({
+                void reorderSkillCategories({
                   profileId: category.profileId,
                   orderedIds: moveOrderedItem(skillCategoryIds, skillCategoryIndex, 1),
                 })
               }
               onMoveUp={() =>
-                reorderSkillCategories({
+                void reorderSkillCategories({
                   profileId: category.profileId,
                   orderedIds: moveOrderedItem(skillCategoryIds, skillCategoryIndex, -1),
                 })
               }
             />
-            <DeleteIconButton label="Delete skill category" onDelete={() => deleteSkillCategory(category.id)} />
+            <DeleteIconButton label="Delete skill category" onDelete={() => void deleteSkillCategory(category.id)} />
           </div>
         }
         summary={summary}
@@ -893,7 +893,7 @@ const SkillCategoryCard = ({
             <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Skills</h4>
             <button
               className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted"
-              onClick={() => createSkill(category.id)}
+              onClick={() => void createSkill(category.id)}
               type="button"
             >
               Add skill
@@ -974,25 +974,25 @@ const AchievementCard = ({
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable achievement" onChange={(value) => {
               setDraft({ ...draft, enabled: value })
-              updateAchievement({ achievementId: achievement.id, changes: { enabled: value } })
+              void updateAchievement({ achievementId: achievement.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
               canMoveDown={achievementIds.length > 1}
               canMoveUp={achievementIds.length > 1}
               onMoveDown={() =>
-                reorderAchievements({
+                void reorderAchievements({
                   profileId: achievement.profileId,
                   orderedIds: moveOrderedItem(achievementIds, achievementIndex, 1),
                 })
               }
               onMoveUp={() =>
-                reorderAchievements({
+                void reorderAchievements({
                   profileId: achievement.profileId,
                   orderedIds: moveOrderedItem(achievementIds, achievementIndex, -1),
                 })
               }
             />
-            <DeleteIconButton label="Delete achievement" onDelete={() => deleteAchievement(achievement.id)} />
+            <DeleteIconButton label="Delete achievement" onDelete={() => void deleteAchievement(achievement.id)} />
           </div>
         }
         summary={summary}
@@ -1001,13 +1001,13 @@ const AchievementCard = ({
         <div className="grid gap-4">
           <TextField
             label="Name"
-            onBlur={() => draft.name !== achievement.name && updateAchievement({ achievementId: achievement.id, changes: { name: draft.name } })}
+            onBlur={() => draft.name !== achievement.name && void updateAchievement({ achievementId: achievement.id, changes: { name: draft.name } })}
             value={draft.name}
             onChange={(value) => setDraft({ ...draft, name: value })}
           />
           <TextAreaField
             label="Description"
-            onBlur={() => draft.description !== achievement.description && updateAchievement({ achievementId: achievement.id, changes: { description: draft.description } })}
+            onBlur={() => draft.description !== achievement.description && void updateAchievement({ achievementId: achievement.id, changes: { description: draft.description } })}
             placeholder="Describe the outcome or recognition"
             value={draft.description}
             onChange={(value) => setDraft({ ...draft, description: value })}
@@ -1952,8 +1952,8 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         actionStyle="icon"
         collapsible={hasProfileLinks}
         description="Store the public URLs that should travel with this profile."
-        onAction={() => {
-          const createdId = createProfileLink(profileId)
+        onAction={async () => {
+          const createdId = await createProfileLink(profileId)
 
           if (createdId) {
             setNewProfileLinkId(createdId)
@@ -1983,8 +1983,8 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         actionStyle="icon"
         collapsible={hasSkillCategories}
         description="Organize skills into enabled or disabled categories."
-        onAction={() => {
-          const createdId = createSkillCategory(profileId)
+        onAction={async () => {
+          const createdId = await createSkillCategory(profileId)
 
           if (createdId) {
             setNewSkillCategoryId(createdId)
@@ -2015,8 +2015,8 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         actionStyle="icon"
         collapsible={hasAchievements}
         description="Capture notable accomplishments that should appear as a standalone resume section."
-        onAction={() => {
-          const createdId = createAchievement(profileId)
+        onAction={async () => {
+          const createdId = await createAchievement(profileId)
 
           if (createdId) {
             setNewAchievementId(createdId)

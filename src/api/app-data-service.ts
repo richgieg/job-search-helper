@@ -16,11 +16,16 @@ import type {
 import type {
   DuplicateProfileInput,
   ProfileMutationResult,
+  ReorderProfileEntitiesInput,
   ReorderResumeSectionsInput,
   SetDocumentHeaderTemplateInput,
   SetResumeSectionEnabledInput,
   SetResumeSectionLabelInput,
+  UpdateAchievementInput,
+  UpdateProfileLinkInput,
   UpdateProfileInput,
+  UpdateSkillCategoryInput,
+  UpdateSkillInput,
 } from '../domain/profile-data'
 
 export interface AppDataService {
@@ -36,6 +41,22 @@ export interface AppDataService {
   reorderResumeSections(input: ReorderResumeSectionsInput): Promise<ProfileMutationResult>
   duplicateProfile(input: DuplicateProfileInput): Promise<ProfileMutationResult>
   deleteProfile(profileId: string): Promise<ProfileMutationResult>
+  createProfileLink(profileId: string): Promise<ProfileMutationResult>
+  updateProfileLink(input: UpdateProfileLinkInput): Promise<ProfileMutationResult>
+  deleteProfileLink(profileLinkId: string): Promise<ProfileMutationResult>
+  reorderProfileLinks(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createSkillCategory(profileId: string): Promise<ProfileMutationResult>
+  updateSkillCategory(input: UpdateSkillCategoryInput): Promise<ProfileMutationResult>
+  deleteSkillCategory(skillCategoryId: string): Promise<ProfileMutationResult>
+  reorderSkillCategories(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createSkill(skillCategoryId: string): Promise<ProfileMutationResult>
+  updateSkill(input: UpdateSkillInput): Promise<ProfileMutationResult>
+  deleteSkill(skillId: string): Promise<ProfileMutationResult>
+  reorderSkills(skillCategoryId: string, orderedIds: string[]): Promise<ProfileMutationResult>
+  createAchievement(profileId: string): Promise<ProfileMutationResult>
+  updateAchievement(input: UpdateAchievementInput): Promise<ProfileMutationResult>
+  deleteAchievement(achievementId: string): Promise<ProfileMutationResult>
+  reorderAchievements(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
   createJob(input: CreateJobInput): Promise<JobMutationResult>
   updateJob(input: UpdateJobInput): Promise<JobMutationResult>
   deleteJob(jobId: string): Promise<JobMutationResult>

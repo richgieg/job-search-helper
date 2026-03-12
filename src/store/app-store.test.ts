@@ -124,8 +124,8 @@ describe('app store reorder actions', () => {
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    actions.createSkillCategory(profileId)
-    actions.createSkillCategory(profileId)
+    await actions.createSkillCategory(profileId)
+    await actions.createSkillCategory(profileId)
 
     const initialIds = getOrderedIds(
       Object.fromEntries(
@@ -140,7 +140,7 @@ describe('app store reorder actions', () => {
     const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
     await waitForNextTick()
 
-    actions.reorderSkillCategories({
+    await actions.reorderSkillCategories({
       profileId,
       orderedIds: [secondSkillCategoryId, firstSkillCategoryId],
     })
@@ -157,8 +157,8 @@ describe('app store reorder actions', () => {
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    actions.createProfileLink(profileId)
-    actions.createProfileLink(profileId)
+    await actions.createProfileLink(profileId)
+    await actions.createProfileLink(profileId)
 
     const createdLinks = Object.values(useAppStore.getState().data.profileLinks).filter((item) => item.profileId === profileId)
     expect(createdLinks.every((item) => item.enabled)).toBe(true)
@@ -175,16 +175,16 @@ describe('app store reorder actions', () => {
     const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
     await waitForNextTick()
 
-    actions.updateProfileLink({
+    await actions.updateProfileLink({
       profileLinkId: firstProfileLinkId,
       changes: { name: 'Portfolio', url: 'https://example.com/portfolio' },
     })
-    actions.updateProfileLink({
+    await actions.updateProfileLink({
       profileLinkId: secondProfileLinkId,
       changes: { name: 'LinkedIn', url: 'https://linkedin.com/in/example' },
     })
 
-    actions.reorderProfileLinks({
+    await actions.reorderProfileLinks({
       profileId,
       orderedIds: [secondProfileLinkId, firstProfileLinkId],
     })
@@ -204,8 +204,8 @@ describe('app store reorder actions', () => {
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    actions.createProfileLink(profileId)
-    actions.createProfileLink(profileId)
+    await actions.createProfileLink(profileId)
+    await actions.createProfileLink(profileId)
 
     const profileLinkIds = getOrderedIds(
       Object.fromEntries(
@@ -217,11 +217,11 @@ describe('app store reorder actions', () => {
     const firstProfileLinkId = expectDefined(profileLinkIds[0], 'Expected first profile link id')
     const secondProfileLinkId = expectDefined(profileLinkIds[1], 'Expected second profile link id')
 
-    actions.updateProfileLink({
+    await actions.updateProfileLink({
       profileLinkId: firstProfileLinkId,
       changes: { name: 'Portfolio', url: 'https://example.com/portfolio' },
     })
-    actions.updateProfileLink({
+    await actions.updateProfileLink({
       profileLinkId: secondProfileLinkId,
       changes: { name: 'LinkedIn', url: 'https://linkedin.com/in/example' },
     })
@@ -229,7 +229,7 @@ describe('app store reorder actions', () => {
     const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
     await waitForNextTick()
 
-    actions.updateProfileLink({
+    await actions.updateProfileLink({
       profileLinkId: firstProfileLinkId,
       changes: { enabled: false },
     })
@@ -492,14 +492,14 @@ describe('app store reorder actions', () => {
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    const firstAchievementId = expectDefined(actions.createAchievement(profileId), 'Expected first achievement id')
-    const secondAchievementId = expectDefined(actions.createAchievement(profileId), 'Expected second achievement id')
+    const firstAchievementId = expectDefined(await actions.createAchievement(profileId), 'Expected first achievement id')
+    const secondAchievementId = expectDefined(await actions.createAchievement(profileId), 'Expected second achievement id')
 
-    actions.updateAchievement({
+    await actions.updateAchievement({
       achievementId: firstAchievementId,
       changes: { name: 'First achievement', description: 'First description' },
     })
-    actions.updateAchievement({
+    await actions.updateAchievement({
       achievementId: secondAchievementId,
       changes: { name: 'Second achievement', description: 'Second description' },
     })
@@ -507,7 +507,7 @@ describe('app store reorder actions', () => {
     const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
     await waitForNextTick()
 
-    actions.reorderAchievements({
+    await actions.reorderAchievements({
       profileId,
       orderedIds: [secondAchievementId, firstAchievementId],
     })
@@ -525,16 +525,16 @@ describe('app store reorder actions', () => {
 
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
-    const achievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
+    const achievementId = expectDefined(await actions.createAchievement(profileId), 'Expected achievement id')
 
-    actions.updateAchievement({
+    await actions.updateAchievement({
       achievementId,
       changes: { name: 'Award', description: 'Received a company-wide award' },
     })
 
     expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.achievements).toHaveLength(1)
 
-    actions.updateAchievement({
+    await actions.updateAchievement({
       achievementId,
       changes: { enabled: false },
     })
@@ -1196,8 +1196,8 @@ describe('app store reorder actions', () => {
       orderedSections: ['experience', 'summary', 'skills', 'achievements', 'education', 'projects', 'additional_experience', 'certifications', 'references'],
     })
 
-    const achievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
-    actions.updateAchievement({
+    const achievementId = expectDefined(await actions.createAchievement(profileId), 'Expected achievement id')
+    await actions.updateAchievement({
       achievementId,
       changes: { name: 'Promotion', description: 'Promoted after leading a critical delivery' },
     })
@@ -1471,8 +1471,8 @@ describe('app store reorder actions', () => {
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    const originalAchievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
-    actions.updateAchievement({
+    const originalAchievementId = expectDefined(await actions.createAchievement(profileId), 'Expected achievement id')
+    await actions.updateAchievement({
       achievementId: originalAchievementId,
       changes: { name: 'Team award', description: 'Recognized for a cross-team platform initiative' },
     })
@@ -1506,9 +1506,9 @@ describe('app store reorder actions', () => {
 
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
-    const achievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
+    const achievementId = expectDefined(await actions.createAchievement(profileId), 'Expected achievement id')
 
-    actions.updateAchievement({
+    await actions.updateAchievement({
       achievementId,
       changes: { name: 'Conference speaker', description: 'Presented a talk on service reliability', enabled: false },
     })
@@ -1533,10 +1533,10 @@ describe('app store reorder actions', () => {
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    actions.createProfileLink(profileId)
+    await actions.createProfileLink(profileId)
     const originalLinkId = expectDefined(Object.keys(useAppStore.getState().data.profileLinks)[0], 'Expected a profile link id')
 
-    actions.updateProfileLink({
+    await actions.updateProfileLink({
       profileLinkId: originalLinkId,
       changes: { name: 'Portfolio', url: 'https://example.com/portfolio' },
     })
@@ -1697,8 +1697,8 @@ describe('app store reorder actions', () => {
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    actions.createProfileLink(profileId)
-    actions.createProfileLink(profileId)
+    await actions.createProfileLink(profileId)
+    await actions.createProfileLink(profileId)
 
     const profileLinkIds = getOrderedIds(
       Object.fromEntries(
@@ -1710,16 +1710,16 @@ describe('app store reorder actions', () => {
     const firstProfileLinkId = expectDefined(profileLinkIds[0], 'Expected first profile link id')
     const secondProfileLinkId = expectDefined(profileLinkIds[1], 'Expected second profile link id')
 
-    actions.updateProfileLink({
+    await actions.updateProfileLink({
       profileLinkId: firstProfileLinkId,
       changes: { name: 'GitHub', url: 'https://github.com/example', enabled: false },
     })
-    actions.updateProfileLink({
+    await actions.updateProfileLink({
       profileLinkId: secondProfileLinkId,
       changes: { name: 'Website', url: 'https://example.com' },
     })
 
-    actions.reorderProfileLinks({
+    await actions.reorderProfileLinks({
       profileId,
       orderedIds: [secondProfileLinkId, firstProfileLinkId],
     })

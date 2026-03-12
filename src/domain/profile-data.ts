@@ -60,6 +60,31 @@ export interface DuplicateProfileInput {
   name?: string
 }
 
+export interface UpdateProfileLinkInput {
+  profileLinkId: Id
+  changes: Partial<Pick<ProfileLink, 'name' | 'url' | 'enabled' | 'sortOrder'>>
+}
+
+export interface ReorderProfileEntitiesInput {
+  profileId: Id
+  orderedIds: Id[]
+}
+
+export interface UpdateSkillCategoryInput {
+  skillCategoryId: Id
+  changes: Partial<Pick<SkillCategory, 'name' | 'enabled' | 'sortOrder'>>
+}
+
+export interface UpdateSkillInput {
+  skillId: Id
+  changes: Partial<Pick<Skill, 'name' | 'enabled' | 'sortOrder'>>
+}
+
+export interface UpdateAchievementInput {
+  achievementId: Id
+  changes: Partial<Omit<Achievement, 'id' | 'profileId'>>
+}
+
 export interface ProfileMutationContext {
   now(): IsoTimestamp
   createId(): Id
@@ -84,6 +109,41 @@ const hasExactResumeSections = (orderedSections: ResumeSectionKey[]) => {
   }
 
   return resumeSectionKeys.every((section) => sectionSet.has(section))
+}
+
+const hasExactIds = (existingIds: Id[], orderedIds: Id[]) => {
+  if (existingIds.length !== orderedIds.length) {
+    return false
+  }
+
+  const existingSet = new Set(existingIds)
+
+  if (existingSet.size !== existingIds.length) {
+    return false
+  }
+
+  return orderedIds.every((id) => existingSet.has(id))
+}
+
+const getNextSortOrder = (sortOrders: number[]) => (sortOrders.length === 0 ? 1 : Math.max(...sortOrders) + 1)
+
+const reorderSortableEntities = <T extends { id: Id; sortOrder: number }>(entities: Record<Id, T>, orderedIds: Id[]) => {
+  const nextEntities = { ...entities }
+
+  orderedIds.forEach((id, index) => {
+    const entity = nextEntities[id]
+
+    if (!entity) {
+      return
+    }
+
+    nextEntities[id] = {
+      ...entity,
+      sortOrder: index + 1,
+    }
+  })
+
+  return nextEntities
 }
 
 const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: string): AppDataState => {
@@ -471,6 +531,25 @@ const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState =
   }
 }
 
+const deleteSkillCategoryCascade = (data: AppDataState, skillCategoryId: Id): AppDataState => {
+  const nextSkillCategories = { ...data.skillCategories }
+  const nextSkills = { ...data.skills }
+
+  delete nextSkillCategories[skillCategoryId]
+
+  Object.values(data.skills).forEach((item) => {
+    if (item.skillCategoryId === skillCategoryId) {
+      delete nextSkills[item.id]
+    }
+  })
+
+  return {
+    ...data,
+    skillCategories: nextSkillCategories,
+    skills: nextSkills,
+  }
+}
+
 const withResult = (data: AppDataState, createdId?: Id | null): ProfileMutationResult =>
   createdId === undefined ? { data } : { data, createdId }
 
@@ -696,3 +775,423 @@ export const duplicateProfileMutation = (data: AppDataState, input: DuplicatePro
 
 export const deleteProfileMutation = (data: AppDataState, profileId: Id): ProfileMutationResult =>
   withResult(deleteProfileCascade(data, profileId))
+
+export const createProfileLinkMutation = (data: AppDataState, profileId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const profile = data.profiles[profileId]
+
+  if (!profile) {
+    return withResult(data, null)
+  }
+
+  const profileLink: ProfileLink = {
+    id: context.createId(),
+    profileId,
+    name: '',
+    url: '',
+    enabled: true,
+    sortOrder: getNextSortOrder(
+      Object.values(data.profileLinks)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.sortOrder),
+    ),
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        profileLinks: {
+          ...data.profileLinks,
+          [profileLink.id]: profileLink,
+        },
+      },
+      profileId,
+      context.now(),
+    ),
+    profileLink.id,
+  )
+}
+
+export const updateProfileLinkMutation = (data: AppDataState, input: UpdateProfileLinkInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.profileLinks[input.profileLinkId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        profileLinks: {
+          ...data.profileLinks,
+          [input.profileLinkId]: {
+            ...existing,
+            ...input.changes,
+          },
+        },
+      },
+      existing.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const deleteProfileLinkMutation = (data: AppDataState, profileLinkId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.profileLinks[profileLinkId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  const nextProfileLinks = { ...data.profileLinks }
+  delete nextProfileLinks[profileLinkId]
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        profileLinks: nextProfileLinks,
+      },
+      existing.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const reorderProfileLinksMutation = (data: AppDataState, input: ReorderProfileEntitiesInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existingIds = Object.values(data.profileLinks)
+    .filter((item) => item.profileId === input.profileId)
+    .map((item) => item.id)
+
+  if (!hasExactIds(existingIds, input.orderedIds)) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        profileLinks: reorderSortableEntities(data.profileLinks, input.orderedIds),
+      },
+      input.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const createSkillCategoryMutation = (data: AppDataState, profileId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const profile = data.profiles[profileId]
+
+  if (!profile) {
+    return withResult(data, null)
+  }
+
+  const skillCategory: SkillCategory = {
+    id: context.createId(),
+    profileId,
+    name: '',
+    enabled: true,
+    sortOrder: getNextSortOrder(
+      Object.values(data.skillCategories)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.sortOrder),
+    ),
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        skillCategories: {
+          ...data.skillCategories,
+          [skillCategory.id]: skillCategory,
+        },
+      },
+      profileId,
+      context.now(),
+    ),
+    skillCategory.id,
+  )
+}
+
+export const updateSkillCategoryMutation = (data: AppDataState, input: UpdateSkillCategoryInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.skillCategories[input.skillCategoryId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        skillCategories: {
+          ...data.skillCategories,
+          [input.skillCategoryId]: {
+            ...existing,
+            ...input.changes,
+          },
+        },
+      },
+      existing.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const deleteSkillCategoryMutation = (data: AppDataState, skillCategoryId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.skillCategories[skillCategoryId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  return withResult(stampUpdatedProfile(deleteSkillCategoryCascade(data, skillCategoryId), existing.profileId, context.now()))
+}
+
+export const reorderSkillCategoriesMutation = (data: AppDataState, input: ReorderProfileEntitiesInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existingIds = Object.values(data.skillCategories)
+    .filter((item) => item.profileId === input.profileId)
+    .map((item) => item.id)
+
+  if (!hasExactIds(existingIds, input.orderedIds)) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        skillCategories: reorderSortableEntities(data.skillCategories, input.orderedIds),
+      },
+      input.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const createSkillMutation = (data: AppDataState, skillCategoryId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const category = data.skillCategories[skillCategoryId]
+
+  if (!category) {
+    return withResult(data, null)
+  }
+
+  const skill: Skill = {
+    id: context.createId(),
+    skillCategoryId,
+    name: '',
+    enabled: true,
+    sortOrder: getNextSortOrder(
+      Object.values(data.skills)
+        .filter((item) => item.skillCategoryId === skillCategoryId)
+        .map((item) => item.sortOrder),
+    ),
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        skills: {
+          ...data.skills,
+          [skill.id]: skill,
+        },
+      },
+      category.profileId,
+      context.now(),
+    ),
+    skill.id,
+  )
+}
+
+export const updateSkillMutation = (data: AppDataState, input: UpdateSkillInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.skills[input.skillId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  const category = data.skillCategories[existing.skillCategoryId]
+
+  if (!category) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        skills: {
+          ...data.skills,
+          [input.skillId]: {
+            ...existing,
+            ...input.changes,
+          },
+        },
+      },
+      category.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const deleteSkillMutation = (data: AppDataState, skillId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.skills[skillId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  const category = data.skillCategories[existing.skillCategoryId]
+
+  if (!category) {
+    return withResult(data)
+  }
+
+  const nextSkills = { ...data.skills }
+  delete nextSkills[skillId]
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        skills: nextSkills,
+      },
+      category.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const reorderSkillsMutation = (data: AppDataState, skillCategoryId: Id, orderedIds: Id[], context: ProfileMutationContext): ProfileMutationResult => {
+  const category = data.skillCategories[skillCategoryId]
+
+  if (!category) {
+    return withResult(data)
+  }
+
+  const existingIds = Object.values(data.skills)
+    .filter((item) => item.skillCategoryId === skillCategoryId)
+    .map((item) => item.id)
+
+  if (!hasExactIds(existingIds, orderedIds)) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        skills: reorderSortableEntities(data.skills, orderedIds),
+      },
+      category.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const createAchievementMutation = (data: AppDataState, profileId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const profile = data.profiles[profileId]
+
+  if (!profile) {
+    return withResult(data, null)
+  }
+
+  const achievement: Achievement = {
+    id: context.createId(),
+    profileId,
+    name: '',
+    description: '',
+    enabled: true,
+    sortOrder: getNextSortOrder(
+      Object.values(data.achievements)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.sortOrder),
+    ),
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        achievements: {
+          ...data.achievements,
+          [achievement.id]: achievement,
+        },
+      },
+      profileId,
+      context.now(),
+    ),
+    achievement.id,
+  )
+}
+
+export const updateAchievementMutation = (data: AppDataState, input: UpdateAchievementInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.achievements[input.achievementId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        achievements: {
+          ...data.achievements,
+          [input.achievementId]: {
+            ...existing,
+            ...input.changes,
+          },
+        },
+      },
+      existing.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const deleteAchievementMutation = (data: AppDataState, achievementId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.achievements[achievementId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  const nextAchievements = { ...data.achievements }
+  delete nextAchievements[achievementId]
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        achievements: nextAchievements,
+      },
+      existing.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const reorderAchievementsMutation = (data: AppDataState, input: ReorderProfileEntitiesInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existingIds = Object.values(data.achievements)
+    .filter((item) => item.profileId === input.profileId)
+    .map((item) => item.id)
+
+  if (!hasExactIds(existingIds, input.orderedIds)) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        achievements: reorderSortableEntities(data.achievements, input.orderedIds),
+      },
+      input.profileId,
+      context.now(),
+    ),
+  )
+}

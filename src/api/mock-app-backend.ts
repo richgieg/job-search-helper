@@ -42,21 +42,42 @@ import {
 } from '../domain/job-data'
 import {
   createBaseProfileMutation,
+  createAchievementMutation,
+  createProfileLinkMutation,
+  createSkillCategoryMutation,
+  createSkillMutation,
+  deleteAchievementMutation,
   deleteProfileMutation,
+  deleteProfileLinkMutation,
+  deleteSkillCategoryMutation,
+  deleteSkillMutation,
   duplicateProfileMutation,
+  reorderAchievementsMutation,
+  reorderProfileLinksMutation,
+  reorderSkillCategoriesMutation,
   reorderResumeSectionsMutation,
+  reorderSkillsMutation,
   setDocumentHeaderTemplateMutation,
   setResumeSectionEnabledMutation,
   setResumeSectionLabelMutation,
+  updateAchievementMutation,
+  updateProfileLinkMutation,
   updateProfileMutation,
+  updateSkillCategoryMutation,
+  updateSkillMutation,
   type DuplicateProfileInput,
   type ProfileMutationContext,
   type ProfileMutationResult,
+  type ReorderProfileEntitiesInput,
   type ReorderResumeSectionsInput,
   type SetDocumentHeaderTemplateInput,
   type SetResumeSectionEnabledInput,
   type SetResumeSectionLabelInput,
+  type UpdateAchievementInput,
+  type UpdateProfileLinkInput,
   type UpdateProfileInput,
+  type UpdateSkillCategoryInput,
+  type UpdateSkillInput,
 } from '../domain/profile-data'
 import type { AppDataService } from './app-data-service'
 
@@ -154,6 +175,70 @@ export class MockAppBackend implements AppDataService {
 
   async deleteProfile(profileId: string): Promise<ProfileMutationResult> {
     return this.mutateProfile((data) => deleteProfileMutation(data, profileId))
+  }
+
+  async createProfileLink(profileId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => createProfileLinkMutation(data, profileId, context))
+  }
+
+  async updateProfileLink(input: UpdateProfileLinkInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => updateProfileLinkMutation(data, input, context))
+  }
+
+  async deleteProfileLink(profileLinkId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => deleteProfileLinkMutation(data, profileLinkId, context))
+  }
+
+  async reorderProfileLinks(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => reorderProfileLinksMutation(data, input, context))
+  }
+
+  async createSkillCategory(profileId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => createSkillCategoryMutation(data, profileId, context))
+  }
+
+  async updateSkillCategory(input: UpdateSkillCategoryInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => updateSkillCategoryMutation(data, input, context))
+  }
+
+  async deleteSkillCategory(skillCategoryId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => deleteSkillCategoryMutation(data, skillCategoryId, context))
+  }
+
+  async reorderSkillCategories(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => reorderSkillCategoriesMutation(data, input, context))
+  }
+
+  async createSkill(skillCategoryId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => createSkillMutation(data, skillCategoryId, context))
+  }
+
+  async updateSkill(input: UpdateSkillInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => updateSkillMutation(data, input, context))
+  }
+
+  async deleteSkill(skillId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => deleteSkillMutation(data, skillId, context))
+  }
+
+  async reorderSkills(skillCategoryId: string, orderedIds: string[]): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => reorderSkillsMutation(data, skillCategoryId, orderedIds, context))
+  }
+
+  async createAchievement(profileId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => createAchievementMutation(data, profileId, context))
+  }
+
+  async updateAchievement(input: UpdateAchievementInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => updateAchievementMutation(data, input, context))
+  }
+
+  async deleteAchievement(achievementId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => deleteAchievementMutation(data, achievementId, context))
+  }
+
+  async reorderAchievements(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => reorderAchievementsMutation(data, input, context))
   }
 
   async createJob(input: CreateJobInput): Promise<JobMutationResult> {
