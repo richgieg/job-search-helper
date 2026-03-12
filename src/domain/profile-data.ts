@@ -101,6 +101,21 @@ export interface ReorderExperienceBulletsInput {
   orderedIds: Id[]
 }
 
+export interface UpdateEducationEntryInput {
+  educationEntryId: Id
+  changes: Partial<Omit<EducationEntry, 'id' | 'profileId'>>
+}
+
+export interface UpdateEducationBulletInput {
+  educationBulletId: Id
+  changes: Partial<Pick<EducationBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>
+}
+
+export interface ReorderEducationBulletsInput {
+  educationEntryId: Id
+  orderedIds: Id[]
+}
+
 export interface ProfileMutationContext {
   now(): IsoTimestamp
   createId(): Id
@@ -582,6 +597,59 @@ const deleteExperienceEntryCascade = (data: AppDataState, experienceEntryId: Id)
     ...data,
     experienceEntries: nextExperienceEntries,
     experienceBullets: nextExperienceBullets,
+  }
+}
+
+const deleteEducationEntryCascade = (data: AppDataState, educationEntryId: Id): AppDataState => {
+  const nextEducationEntries = { ...data.educationEntries }
+  const nextEducationBullets = { ...data.educationBullets }
+
+  delete nextEducationEntries[educationEntryId]
+
+  Object.values(data.educationBullets).forEach((item) => {
+    if (item.educationEntryId === educationEntryId) {
+      delete nextEducationBullets[item.id]
+    }
+  })
+
+  return {
+    ...data,
+    educationEntries: nextEducationEntries,
+    educationBullets: nextEducationBullets,
+  }
+}
+
+const normalizeEducationEntry = (
+  existing: EducationEntry,
+  changes: Partial<Omit<EducationEntry, 'id' | 'profileId'>>,
+) => {
+  const nextEntry: EducationEntry = {
+    ...existing,
+    ...changes,
+  }
+
+  if (nextEntry.status === 'in_progress') {
+    nextEntry.endDate = null
+  }
+
+  if (nextEntry.startDate && nextEntry.endDate && nextEntry.startDate > nextEntry.endDate) {
+    return null
+  }
+
+  return nextEntry
+}
+
+const mergeEducationBulletChanges = (
+  existing: EducationBullet,
+  changes: Partial<Pick<EducationBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>,
+) => {
+  if (changes.level !== undefined && !isBulletLevel(changes.level)) {
+    return null
+  }
+
+  return {
+    ...existing,
+    ...changes,
   }
 }
 
@@ -1480,6 +1548,229 @@ export const reorderExperienceBulletsMutation = (data: AppDataState, input: Reor
         experienceBullets: reorderSortableEntities(data.experienceBullets, input.orderedIds),
       },
       experienceEntry.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const createEducationEntryMutation = (data: AppDataState, profileId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const profile = data.profiles[profileId]
+
+  if (!profile) {
+    return withResult(data, null)
+  }
+
+  const educationEntry: EducationEntry = {
+    id: context.createId(),
+    profileId,
+    school: '',
+    degree: '',
+    startDate: null,
+    endDate: null,
+    status: 'graduated',
+    enabled: true,
+    sortOrder: getNextSortOrder(
+      Object.values(data.educationEntries)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.sortOrder),
+    ),
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        educationEntries: {
+          ...data.educationEntries,
+          [educationEntry.id]: educationEntry,
+        },
+      },
+      profileId,
+      context.now(),
+    ),
+    educationEntry.id,
+  )
+}
+
+export const updateEducationEntryMutation = (data: AppDataState, input: UpdateEducationEntryInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.educationEntries[input.educationEntryId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  const nextEducationEntry = normalizeEducationEntry(existing, input.changes)
+
+  if (!nextEducationEntry) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        educationEntries: {
+          ...data.educationEntries,
+          [input.educationEntryId]: nextEducationEntry,
+        },
+      },
+      existing.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const deleteEducationEntryMutation = (data: AppDataState, educationEntryId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.educationEntries[educationEntryId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  return withResult(stampUpdatedProfile(deleteEducationEntryCascade(data, educationEntryId), existing.profileId, context.now()))
+}
+
+export const reorderEducationEntriesMutation = (data: AppDataState, input: ReorderProfileEntitiesInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existingIds = Object.values(data.educationEntries)
+    .filter((item) => item.profileId === input.profileId)
+    .map((item) => item.id)
+
+  if (!hasExactIds(existingIds, input.orderedIds)) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        educationEntries: reorderSortableEntities(data.educationEntries, input.orderedIds),
+      },
+      input.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const createEducationBulletMutation = (data: AppDataState, educationEntryId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const educationEntry = data.educationEntries[educationEntryId]
+
+  if (!educationEntry) {
+    return withResult(data, null)
+  }
+
+  const educationBullet: EducationBullet = {
+    id: context.createId(),
+    educationEntryId,
+    content: '',
+    level: 1,
+    enabled: true,
+    sortOrder: getNextSortOrder(
+      Object.values(data.educationBullets)
+        .filter((item) => item.educationEntryId === educationEntryId)
+        .map((item) => item.sortOrder),
+    ),
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        educationBullets: {
+          ...data.educationBullets,
+          [educationBullet.id]: educationBullet,
+        },
+      },
+      educationEntry.profileId,
+      context.now(),
+    ),
+    educationBullet.id,
+  )
+}
+
+export const updateEducationBulletMutation = (data: AppDataState, input: UpdateEducationBulletInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.educationBullets[input.educationBulletId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  const educationEntry = data.educationEntries[existing.educationEntryId]
+
+  if (!educationEntry) {
+    return withResult(data)
+  }
+
+  const nextBullet = mergeEducationBulletChanges(existing, input.changes)
+
+  if (!nextBullet) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        educationBullets: {
+          ...data.educationBullets,
+          [input.educationBulletId]: nextBullet,
+        },
+      },
+      educationEntry.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const deleteEducationBulletMutation = (data: AppDataState, educationBulletId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.educationBullets[educationBulletId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  const educationEntry = data.educationEntries[existing.educationEntryId]
+
+  if (!educationEntry) {
+    return withResult(data)
+  }
+
+  const nextEducationBullets = { ...data.educationBullets }
+  delete nextEducationBullets[educationBulletId]
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        educationBullets: nextEducationBullets,
+      },
+      educationEntry.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const reorderEducationBulletsMutation = (data: AppDataState, input: ReorderEducationBulletsInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const educationEntry = data.educationEntries[input.educationEntryId]
+
+  if (!educationEntry) {
+    return withResult(data)
+  }
+
+  const existingIds = Object.values(data.educationBullets)
+    .filter((item) => item.educationEntryId === input.educationEntryId)
+    .map((item) => item.id)
+
+  if (!hasExactIds(existingIds, input.orderedIds)) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        educationBullets: reorderSortableEntities(data.educationBullets, input.orderedIds),
+      },
+      educationEntry.profileId,
       context.now(),
     ),
   )

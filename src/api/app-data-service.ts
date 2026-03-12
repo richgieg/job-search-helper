@@ -15,6 +15,7 @@ import type {
 } from '../domain/job-data'
 import type {
   DuplicateProfileInput,
+  ReorderEducationBulletsInput,
   ProfileMutationResult,
   ReorderProfileEntitiesInput,
   ReorderResumeSectionsInput,
@@ -23,6 +24,8 @@ import type {
   SetResumeSectionEnabledInput,
   SetResumeSectionLabelInput,
   UpdateAchievementInput,
+  UpdateEducationBulletInput,
+  UpdateEducationEntryInput,
   UpdateExperienceBulletInput,
   UpdateExperienceEntryInput,
   UpdateProfileLinkInput,
@@ -68,6 +71,14 @@ export interface AppDataService {
   updateExperienceBullet(input: UpdateExperienceBulletInput): Promise<ProfileMutationResult>
   deleteExperienceBullet(experienceBulletId: string): Promise<ProfileMutationResult>
   reorderExperienceBullets(input: ReorderExperienceBulletsInput): Promise<ProfileMutationResult>
+  createEducationEntry(profileId: string): Promise<ProfileMutationResult>
+  updateEducationEntry(input: UpdateEducationEntryInput): Promise<ProfileMutationResult>
+  deleteEducationEntry(educationEntryId: string): Promise<ProfileMutationResult>
+  reorderEducationEntries(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createEducationBullet(educationEntryId: string): Promise<ProfileMutationResult>
+  updateEducationBullet(input: UpdateEducationBulletInput): Promise<ProfileMutationResult>
+  deleteEducationBullet(educationBulletId: string): Promise<ProfileMutationResult>
+  reorderEducationBullets(input: ReorderEducationBulletsInput): Promise<ProfileMutationResult>
   createJob(input: CreateJobInput): Promise<JobMutationResult>
   updateJob(input: UpdateJobInput): Promise<JobMutationResult>
   deleteJob(jobId: string): Promise<JobMutationResult>

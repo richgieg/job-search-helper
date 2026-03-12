@@ -508,7 +508,7 @@ const EducationBulletRow = ({ bulletId }: { bulletId: string }) => {
       return
     }
 
-    updateEducationBullet({ educationBulletId: bullet.id, changes: { content } })
+    void updateEducationBullet({ educationBulletId: bullet.id, changes: { content } })
   }
 
   return (
@@ -517,29 +517,29 @@ const EducationBulletRow = ({ bulletId }: { bulletId: string }) => {
       <div className="flex flex-wrap items-center justify-end gap-2 md:self-center">
         <ActionToggle checked={enabled} label="Enable education bullet" onChange={(value) => {
           setEnabled(value)
-          updateEducationBullet({ educationBulletId: bullet.id, changes: { enabled: value } })
+          void updateEducationBullet({ educationBulletId: bullet.id, changes: { enabled: value } })
         }} />
         <BulletLevelField level={level} onChange={(value) => {
           setLevel(value)
-          updateEducationBullet({ educationBulletId: bullet.id, changes: { level: value } })
+          void updateEducationBullet({ educationBulletId: bullet.id, changes: { level: value } })
         }} />
         <ReorderButtons
           canMoveDown={bulletIds.length > 1}
           canMoveUp={bulletIds.length > 1}
           onMoveDown={() =>
-            reorderEducationBullets({
+            void reorderEducationBullets({
               educationEntryId: bullet.educationEntryId,
               orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
             })
           }
           onMoveUp={() =>
-            reorderEducationBullets({
+            void reorderEducationBullets({
               educationEntryId: bullet.educationEntryId,
               orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
             })
           }
         />
-        <DeleteIconButton label="Delete education bullet" onDelete={() => deleteEducationBullet(bullet.id)} />
+        <DeleteIconButton label="Delete education bullet" onDelete={() => void deleteEducationBullet(bullet.id)} />
       </div>
     </div>
   )
@@ -1293,7 +1293,7 @@ const EducationCard = ({
   }
 
   const commitEntryChanges = (changes: Partial<Omit<EducationEntry, 'id' | 'profileId'>>) => {
-    updateEducationEntry({ educationEntryId: entry.id, changes })
+    void updateEducationEntry({ educationEntryId: entry.id, changes })
   }
 
   return (
@@ -1304,25 +1304,25 @@ const EducationCard = ({
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable education entry" onChange={(value) => {
               setDraft({ ...draft, enabled: value })
-              updateEducationEntry({ educationEntryId: entry.id, changes: { enabled: value } })
+              void updateEducationEntry({ educationEntryId: entry.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
               canMoveDown={educationEntryIds.length > 1}
               canMoveUp={educationEntryIds.length > 1}
               onMoveDown={() =>
-                reorderEducationEntries({
+                void reorderEducationEntries({
                   profileId: entry.profileId,
                   orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, 1),
                 })
               }
               onMoveUp={() =>
-                reorderEducationEntries({
+                void reorderEducationEntries({
                   profileId: entry.profileId,
                   orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, -1),
                 })
               }
             />
-            <DeleteIconButton label="Delete education entry" onDelete={() => deleteEducationEntry(entry.id)} />
+            <DeleteIconButton label="Delete education entry" onDelete={() => void deleteEducationEntry(entry.id)} />
           </div>
         }
         summary={summary}
@@ -1351,7 +1351,7 @@ const EducationCard = ({
               <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Bullets</h4>
               <button
                 className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted"
-                onClick={() => createEducationBullet(entry.id)}
+                onClick={() => void createEducationBullet(entry.id)}
                 type="button"
               >
                 Add bullet
@@ -2077,8 +2077,8 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       <CollapsiblePanel
         actionLabel="Add education"
         actionStyle="icon"
-        onAction={() => {
-          const createdId = createEducationEntry(profileId)
+        onAction={async () => {
+          const createdId = await createEducationEntry(profileId)
 
           if (createdId) {
             setNewEducationEntryId(createdId)

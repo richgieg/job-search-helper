@@ -17,6 +17,7 @@ import type {
 } from '../domain/job-data'
 import type {
   DuplicateProfileInput,
+  ReorderEducationBulletsInput,
   ProfileMutationResult,
   ReorderExperienceBulletsInput,
   ReorderProfileEntitiesInput,
@@ -25,6 +26,8 @@ import type {
   SetResumeSectionEnabledInput,
   SetResumeSectionLabelInput,
   UpdateAchievementInput,
+  UpdateEducationBulletInput,
+  UpdateEducationEntryInput,
   UpdateExperienceBulletInput,
   UpdateExperienceEntryInput,
   UpdateProfileLinkInput,
@@ -42,9 +45,6 @@ import type {
   AppUiState,
   BulletLevel,
   Certification,
-  EducationBullet,
-  EducationEntry,
-  EducationStatus,
   Id,
   Project,
   ProjectBullet,
@@ -99,20 +99,14 @@ interface AppStoreState {
     updateExperienceBullet: (input: UpdateExperienceBulletInput) => Promise<void>
     deleteExperienceBullet: (experienceBulletId: Id) => Promise<void>
     reorderExperienceBullets: (input: ReorderExperienceBulletsInput) => Promise<void>
-    createEducationEntry: (profileId: Id) => Id | null
-    updateEducationEntry: (input: {
-      educationEntryId: Id
-      changes: Partial<Omit<EducationEntry, 'id' | 'profileId'>>
-    }) => void
-    deleteEducationEntry: (educationEntryId: Id) => void
-    reorderEducationEntries: (input: { profileId: Id; orderedIds: Id[] }) => void
-    createEducationBullet: (educationEntryId: Id) => void
-    updateEducationBullet: (input: {
-      educationBulletId: Id
-      changes: Partial<Pick<EducationBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>
-    }) => void
-    deleteEducationBullet: (educationBulletId: Id) => void
-    reorderEducationBullets: (input: { educationEntryId: Id; orderedIds: Id[] }) => void
+    createEducationEntry: (profileId: Id) => Promise<Id | null>
+    updateEducationEntry: (input: UpdateEducationEntryInput) => Promise<void>
+    deleteEducationEntry: (educationEntryId: Id) => Promise<void>
+    reorderEducationEntries: (input: ReorderProfileEntitiesInput) => Promise<void>
+    createEducationBullet: (educationEntryId: Id) => Promise<Id | null>
+    updateEducationBullet: (input: UpdateEducationBulletInput) => Promise<void>
+    deleteEducationBullet: (educationBulletId: Id) => Promise<void>
+    reorderEducationBullets: (input: ReorderEducationBulletsInput) => Promise<void>
     createProject: (profileId: Id) => Id | null
     updateProject: (input: {
       projectId: Id
@@ -239,26 +233,6 @@ const reorderSortableEntities = <T extends { id: Id; sortOrder: number }>(entiti
   return nextEntities
 }
 
-const normalizeEducationEntry = (
-  existing: EducationEntry,
-  changes: Partial<Omit<EducationEntry, 'id' | 'profileId'>>,
-): EducationEntry | null => {
-  const nextEntry: EducationEntry = {
-    ...existing,
-    ...changes,
-  }
-
-  if (nextEntry.status === 'in_progress') {
-    nextEntry.endDate = null
-  }
-
-  if (nextEntry.startDate && nextEntry.endDate && nextEntry.startDate > nextEntry.endDate) {
-    return null
-  }
-
-  return nextEntry
-}
-
 const normalizeProject = (existing: Project, changes: Partial<Omit<Project, 'id' | 'profileId'>>): Project | null => {
   const nextProject: Project = {
     ...existing,
@@ -315,25 +289,6 @@ const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: strin
         updatedAt: timestamp,
       },
     },
-  }
-}
-
-const deleteEducationEntryCascade = (data: AppDataState, educationEntryId: Id): AppDataState => {
-  const nextEducationEntries = { ...data.educationEntries }
-  const nextEducationBullets = { ...data.educationBullets }
-
-  delete nextEducationEntries[educationEntryId]
-
-  Object.values(data.educationBullets).forEach((item) => {
-    if (item.educationEntryId === educationEntryId) {
-      delete nextEducationBullets[item.id]
-    }
-  })
-
-  return {
-    ...data,
-    educationEntries: nextEducationEntries,
-    educationBullets: nextEducationBullets,
   }
 }
 
@@ -638,224 +593,31 @@ const deleteAdditionalExperienceEntryCascade = (data: AppDataState, additionalEx
     reorderExperienceBullets: async (input) => {
       await runPersistedProfileMutation((data) => getAppApiClient().reorderExperienceBullets(data, input))
     },
-    createEducationEntry: (profileId) => {
-      const profile = get().data.profiles[profileId]
-
-      if (!profile) {
-        return null
-      }
-
-      const educationEntry: EducationEntry = {
-        id: createId(),
-        profileId,
-        school: '',
-        degree: '',
-        startDate: null,
-        endDate: null,
-        status: 'graduated' as EducationStatus,
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.educationEntries)
-            .filter((item) => item.profileId === profileId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            educationEntries: {
-              ...state.data.educationEntries,
-              [educationEntry.id]: educationEntry,
-            },
-          },
-          profileId,
-          now(),
-        ),
-      }))
-
-      return educationEntry.id
+    createEducationEntry: async (profileId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createEducationEntry(data, profileId))
+      return result?.createdId ?? null
     },
-    updateEducationEntry: ({ educationEntryId, changes }) => {
-      const existing = get().data.educationEntries[educationEntryId]
-
-      if (!existing) {
-        return
-      }
-
-      const nextEducationEntry = normalizeEducationEntry(existing, changes)
-
-      if (!nextEducationEntry) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            educationEntries: {
-              ...state.data.educationEntries,
-              [educationEntryId]: nextEducationEntry,
-            },
-          },
-          existing.profileId,
-          now(),
-        ),
-      }))
+    updateEducationEntry: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateEducationEntry(data, input))
     },
-    deleteEducationEntry: (educationEntryId) => {
-      const existing = get().data.educationEntries[educationEntryId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(deleteEducationEntryCascade(state.data, educationEntryId), existing.profileId, now()),
-      }))
+    deleteEducationEntry: async (educationEntryId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteEducationEntry(data, educationEntryId))
     },
-    reorderEducationEntries: ({ profileId, orderedIds }) => {
-      const existingIds = Object.values(get().data.educationEntries)
-        .filter((item) => item.profileId === profileId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            educationEntries: reorderSortableEntities(state.data.educationEntries, orderedIds),
-          },
-          profileId,
-          now(),
-        ),
-      }))
+    reorderEducationEntries: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderEducationEntries(data, input))
     },
-    createEducationBullet: (educationEntryId) => {
-      const educationEntry = get().data.educationEntries[educationEntryId]
-
-      if (!educationEntry) {
-        return
-      }
-
-      const educationBullet: EducationBullet = {
-        id: createId(),
-        educationEntryId,
-        content: '',
-        level: defaultBulletLevel,
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.educationBullets)
-            .filter((item) => item.educationEntryId === educationEntryId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            educationBullets: {
-              ...state.data.educationBullets,
-              [educationBullet.id]: educationBullet,
-            },
-          },
-          educationEntry.profileId,
-          now(),
-        ),
-      }))
+    createEducationBullet: async (educationEntryId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createEducationBullet(data, educationEntryId))
+      return result?.createdId ?? null
     },
-    updateEducationBullet: ({ educationBulletId, changes }) => {
-      const existing = get().data.educationBullets[educationBulletId]
-
-      if (!existing) {
-        return
-      }
-
-      const educationEntry = get().data.educationEntries[existing.educationEntryId]
-
-      if (!educationEntry) {
-        return
-      }
-
-      const nextBullet = mergeBulletChanges<EducationBullet>(existing, changes)
-
-      if (!nextBullet) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            educationBullets: {
-              ...state.data.educationBullets,
-              [educationBulletId]: nextBullet,
-            },
-          },
-          educationEntry.profileId,
-          now(),
-        ),
-      }))
+    updateEducationBullet: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateEducationBullet(data, input))
     },
-    deleteEducationBullet: (educationBulletId) => {
-      const existing = get().data.educationBullets[educationBulletId]
-
-      if (!existing) {
-        return
-      }
-
-      const educationEntry = get().data.educationEntries[existing.educationEntryId]
-
-      if (!educationEntry) {
-        return
-      }
-
-      set((state) => {
-        const nextEducationBullets = { ...state.data.educationBullets }
-        delete nextEducationBullets[educationBulletId]
-
-        return {
-          data: stampUpdatedProfile(
-            {
-              ...state.data,
-              educationBullets: nextEducationBullets,
-            },
-            educationEntry.profileId,
-            now(),
-          ),
-        }
-      })
+    deleteEducationBullet: async (educationBulletId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteEducationBullet(data, educationBulletId))
     },
-    reorderEducationBullets: ({ educationEntryId, orderedIds }) => {
-      const educationEntry = get().data.educationEntries[educationEntryId]
-
-      if (!educationEntry) {
-        return
-      }
-
-      const existingIds = Object.values(get().data.educationBullets)
-        .filter((item) => item.educationEntryId === educationEntryId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            educationBullets: reorderSortableEntities(state.data.educationBullets, orderedIds),
-          },
-          educationEntry.profileId,
-          now(),
-        ),
-      }))
+    reorderEducationBullets: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderEducationBullets(data, input))
     },
     createProject: (profileId) => {
       const profile = get().data.profiles[profileId]
