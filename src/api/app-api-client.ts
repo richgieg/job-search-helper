@@ -28,6 +28,7 @@ import type {
   UpdateAchievementInput,
   UpdateAdditionalExperienceBulletInput,
   UpdateAdditionalExperienceEntryInput,
+  UpdateCertificationInput,
   UpdateEducationBulletInput,
   UpdateEducationEntryInput,
   UpdateExperienceBulletInput,
@@ -102,6 +103,10 @@ export interface AppApiClient {
   updateAdditionalExperienceBullet(data: AppDataState, input: UpdateAdditionalExperienceBulletInput): Promise<ProfileMutationResult>
   deleteAdditionalExperienceBullet(data: AppDataState, additionalExperienceBulletId: string): Promise<ProfileMutationResult>
   reorderAdditionalExperienceBullets(data: AppDataState, input: ReorderAdditionalExperienceBulletsInput): Promise<ProfileMutationResult>
+  createCertification(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
+  updateCertification(data: AppDataState, input: UpdateCertificationInput): Promise<ProfileMutationResult>
+  deleteCertification(data: AppDataState, certificationId: string): Promise<ProfileMutationResult>
+  reorderCertifications(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
   createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult>
   updateJob(data: AppDataState, input: UpdateJobInput): Promise<JobMutationResult>
   deleteJob(data: AppDataState, jobId: string): Promise<JobMutationResult>
@@ -430,6 +435,26 @@ export class LocalAppApiClient implements AppApiClient {
   async reorderAdditionalExperienceBullets(data: AppDataState, input: ReorderAdditionalExperienceBulletsInput): Promise<ProfileMutationResult> {
     await this.sync(data)
     return this.service.reorderAdditionalExperienceBullets(input)
+  }
+
+  async createCertification(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.createCertification(profileId)
+  }
+
+  async updateCertification(data: AppDataState, input: UpdateCertificationInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.updateCertification(input)
+  }
+
+  async deleteCertification(data: AppDataState, certificationId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.deleteCertification(certificationId)
+  }
+
+  async reorderCertifications(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.reorderCertifications(input)
   }
 
   async createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult> {

@@ -30,6 +30,7 @@ import type {
   UpdateAchievementInput,
   UpdateAdditionalExperienceBulletInput,
   UpdateAdditionalExperienceEntryInput,
+  UpdateCertificationInput,
   UpdateEducationBulletInput,
   UpdateEducationEntryInput,
   UpdateExperienceBulletInput,
@@ -46,7 +47,6 @@ import type {
   AppDataState,
   AppExportFile,
   AppUiState,
-  Certification,
   Id,
   Reference,
   ThemePreference,
@@ -123,13 +123,10 @@ interface AppStoreState {
     updateAdditionalExperienceBullet: (input: UpdateAdditionalExperienceBulletInput) => Promise<void>
     deleteAdditionalExperienceBullet: (additionalExperienceBulletId: Id) => Promise<void>
     reorderAdditionalExperienceBullets: (input: ReorderAdditionalExperienceBulletsInput) => Promise<void>
-    createCertification: (profileId: Id) => Id | null
-    updateCertification: (input: {
-      certificationId: Id
-      changes: Partial<Omit<Certification, 'id' | 'profileId'>>
-    }) => void
-    deleteCertification: (certificationId: Id) => void
-    reorderCertifications: (input: { profileId: Id; orderedIds: Id[] }) => void
+    createCertification: (profileId: Id) => Promise<Id | null>
+    updateCertification: (input: UpdateCertificationInput) => Promise<void>
+    deleteCertification: (certificationId: Id) => Promise<void>
+    reorderCertifications: (input: ReorderProfileEntitiesInput) => Promise<void>
     createReference: (profileId: Id) => Id | null
     updateReference: (input: {
       referenceId: Id
@@ -581,112 +578,18 @@ const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: strin
     reorderAdditionalExperienceBullets: async (input) => {
       await runPersistedProfileMutation((data) => getAppApiClient().reorderAdditionalExperienceBullets(data, input))
     },
-    createCertification: (profileId) => {
-      const profile = get().data.profiles[profileId]
-
-      if (!profile) {
-        return null
-      }
-
-      const certification: Certification = {
-        id: createId(),
-        profileId,
-        name: '',
-        issuer: '',
-        issueDate: null,
-        expiryDate: null,
-        credentialId: '',
-        credentialUrl: '',
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.certifications)
-            .filter((item) => item.profileId === profileId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            certifications: {
-              ...state.data.certifications,
-              [certification.id]: certification,
-            },
-          },
-          profileId,
-          now(),
-        ),
-      }))
-
-      return certification.id
+    createCertification: async (profileId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createCertification(data, profileId))
+      return result?.createdId ?? null
     },
-    updateCertification: ({ certificationId, changes }) => {
-      const existing = get().data.certifications[certificationId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            certifications: {
-              ...state.data.certifications,
-              [certificationId]: {
-                ...existing,
-                ...changes,
-              },
-            },
-          },
-          existing.profileId,
-          now(),
-        ),
-      }))
+    updateCertification: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateCertification(data, input))
     },
-    deleteCertification: (certificationId) => {
-      const existing = get().data.certifications[certificationId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => {
-        const nextCertifications = { ...state.data.certifications }
-        delete nextCertifications[certificationId]
-
-        return {
-          data: stampUpdatedProfile(
-            {
-              ...state.data,
-              certifications: nextCertifications,
-            },
-            existing.profileId,
-            now(),
-          ),
-        }
-      })
+    deleteCertification: async (certificationId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteCertification(data, certificationId))
     },
-    reorderCertifications: ({ profileId, orderedIds }) => {
-      const existingIds = Object.values(get().data.certifications)
-        .filter((item) => item.profileId === profileId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            certifications: reorderSortableEntities(state.data.certifications, orderedIds),
-          },
-          profileId,
-          now(),
-        ),
-      }))
+    reorderCertifications: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderCertifications(data, input))
     },
     createReference: (profileId) => {
       const profile = get().data.profiles[profileId]

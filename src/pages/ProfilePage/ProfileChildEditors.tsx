@@ -1681,37 +1681,37 @@ const CertificationCard = ({
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable certification" onChange={(value) => {
               setDraft({ ...draft, enabled: value })
-              updateCertification({ certificationId: certification.id, changes: { enabled: value } })
+              void updateCertification({ certificationId: certification.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
               canMoveDown={certificationIds.length > 1}
               canMoveUp={certificationIds.length > 1}
               onMoveDown={() =>
-                reorderCertifications({
+                void reorderCertifications({
                   profileId: certification.profileId,
                   orderedIds: moveOrderedItem(certificationIds, certificationIndex, 1),
                 })
               }
               onMoveUp={() =>
-                reorderCertifications({
+                void reorderCertifications({
                   profileId: certification.profileId,
                   orderedIds: moveOrderedItem(certificationIds, certificationIndex, -1),
                 })
               }
             />
-            <DeleteIconButton label="Delete certification" onDelete={() => deleteCertification(certification.id)} />
+            <DeleteIconButton label="Delete certification" onDelete={() => void deleteCertification(certification.id)} />
           </div>
         }
         summary={summary}
         title={draft.name || certification.name || 'Certification'}
       >
         <div className="grid gap-4 xl:grid-cols-3">
-          <TextField label="Name" onBlur={() => draft.name !== certification.name && updateCertification({ certificationId: certification.id, changes: { name: draft.name } })} value={draft.name} onChange={(value) => setDraft({ ...draft, name: value })} />
-          <TextField label="Issuer" onBlur={() => draft.issuer !== certification.issuer && updateCertification({ certificationId: certification.id, changes: { issuer: draft.issuer } })} value={draft.issuer} onChange={(value) => setDraft({ ...draft, issuer: value })} />
-          <TextField label="Credential ID" onBlur={() => draft.credentialId !== certification.credentialId && updateCertification({ certificationId: certification.id, changes: { credentialId: draft.credentialId } })} value={draft.credentialId} onChange={(value) => setDraft({ ...draft, credentialId: value })} />
-          <TextField label="Issue date" type="date" onBlur={() => draft.issueDate !== certification.issueDate && updateCertification({ certificationId: certification.id, changes: { issueDate: draft.issueDate } })} value={draft.issueDate ?? ''} onChange={(value) => setDraft({ ...draft, issueDate: value || null })} />
-          <TextField label="Expiry date" type="date" onBlur={() => draft.expiryDate !== certification.expiryDate && updateCertification({ certificationId: certification.id, changes: { expiryDate: draft.expiryDate } })} value={draft.expiryDate ?? ''} onChange={(value) => setDraft({ ...draft, expiryDate: value || null })} />
-          <TextField label="Credential URL" type="url" onBlur={() => draft.credentialUrl !== certification.credentialUrl && updateCertification({ certificationId: certification.id, changes: { credentialUrl: draft.credentialUrl } })} value={draft.credentialUrl} onChange={(value) => setDraft({ ...draft, credentialUrl: value })} />
+          <TextField label="Name" onBlur={() => draft.name !== certification.name && void updateCertification({ certificationId: certification.id, changes: { name: draft.name } })} value={draft.name} onChange={(value) => setDraft({ ...draft, name: value })} />
+          <TextField label="Issuer" onBlur={() => draft.issuer !== certification.issuer && void updateCertification({ certificationId: certification.id, changes: { issuer: draft.issuer } })} value={draft.issuer} onChange={(value) => setDraft({ ...draft, issuer: value })} />
+          <TextField label="Credential ID" onBlur={() => draft.credentialId !== certification.credentialId && void updateCertification({ certificationId: certification.id, changes: { credentialId: draft.credentialId } })} value={draft.credentialId} onChange={(value) => setDraft({ ...draft, credentialId: value })} />
+          <TextField label="Issue date" type="date" onBlur={() => draft.issueDate !== certification.issueDate && void updateCertification({ certificationId: certification.id, changes: { issueDate: draft.issueDate } })} value={draft.issueDate ?? ''} onChange={(value) => setDraft({ ...draft, issueDate: value || null })} />
+          <TextField label="Expiry date" type="date" onBlur={() => draft.expiryDate !== certification.expiryDate && void updateCertification({ certificationId: certification.id, changes: { expiryDate: draft.expiryDate } })} value={draft.expiryDate ?? ''} onChange={(value) => setDraft({ ...draft, expiryDate: value || null })} />
+          <TextField label="Credential URL" type="url" onBlur={() => draft.credentialUrl !== certification.credentialUrl && void updateCertification({ certificationId: certification.id, changes: { credentialUrl: draft.credentialUrl } })} value={draft.credentialUrl} onChange={(value) => setDraft({ ...draft, credentialUrl: value })} />
         </div>
       </CollapsiblePanel>
     </div>
@@ -2173,8 +2173,8 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       <CollapsiblePanel
         actionLabel="Add certification"
         actionStyle="icon"
-        onAction={() => {
-          const createdId = createCertification(profileId)
+        onAction={async () => {
+          const createdId = await createCertification(profileId)
 
           if (createdId) {
             setNewCertificationId(createdId)

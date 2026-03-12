@@ -828,6 +828,50 @@ describe('app store reorder actions', () => {
     expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.additionalExperienceEntries).toHaveLength(0)
   })
 
+  it('reorders certifications and excludes disabled certifications from preview data', async () => {
+    const { actions } = useAppStore.getState()
+
+    await actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    const firstCertificationId = expectDefined(await actions.createCertification(profileId), 'Expected first certification id')
+    const secondCertificationId = expectDefined(await actions.createCertification(profileId), 'Expected second certification id')
+
+    await actions.updateCertification({
+      certificationId: firstCertificationId,
+      changes: { name: 'AWS Solutions Architect', issuer: 'Amazon', issueDate: '2024-03-01', enabled: true },
+    })
+    await actions.updateCertification({
+      certificationId: secondCertificationId,
+      changes: { name: 'Security+', issuer: 'CompTIA', issueDate: '2024-06-01', enabled: true },
+    })
+
+    const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
+    await waitForNextTick()
+
+    await actions.reorderCertifications({
+      profileId,
+      orderedIds: [secondCertificationId, firstCertificationId],
+    })
+
+    expect(useAppStore.getState().data.certifications[secondCertificationId]?.sortOrder).toBe(1)
+    expect(useAppStore.getState().data.certifications[firstCertificationId]?.sortOrder).toBe(2)
+    expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
+    expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.certifications.map((item) => item.name)).toEqual([
+      'Security+',
+      'AWS Solutions Architect',
+    ])
+
+    await actions.updateCertification({
+      certificationId: secondCertificationId,
+      changes: { enabled: false },
+    })
+
+    expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.certifications.map((item) => item.name)).toEqual([
+      'AWS Solutions Architect',
+    ])
+  })
+
   it('reorders job contacts for a job', async () => {
     const { actions } = useAppStore.getState()
 
@@ -1226,6 +1270,18 @@ describe('app store reorder actions', () => {
       additionalExperienceBulletId,
       changes: { content: 'Led CBRN readiness training', enabled: true, level: 3 },
     })
+    const certificationId = expectDefined(await actions.createCertification(profileId), 'Expected certification id')
+    await actions.updateCertification({
+      certificationId,
+      changes: {
+        name: 'Security+',
+        issuer: 'CompTIA',
+        issueDate: '2024-06-01',
+        expiryDate: '2027-06-01',
+        credentialId: 'ABC-123',
+        credentialUrl: 'https://example.com/cert/security-plus',
+      },
+    })
 
     const duplicatedProfileId = expectDefined(
       await actions.duplicateProfile({ sourceProfileId: profileId }),
@@ -1290,6 +1346,17 @@ describe('app store reorder actions', () => {
       enabled: true,
       sortOrder: 1,
     })
+    const duplicatedCertification = Object.values(useAppStore.getState().data.certifications).find((item) => item.profileId === duplicatedProfileId)
+    expect(duplicatedCertification).toMatchObject({
+      name: 'Security+',
+      issuer: 'CompTIA',
+      issueDate: '2024-06-01',
+      expiryDate: '2027-06-01',
+      credentialId: 'ABC-123',
+      credentialUrl: 'https://example.com/cert/security-plus',
+      enabled: true,
+      sortOrder: 1,
+    })
 
     const exported = await actions.exportAppData()
 
@@ -1330,6 +1397,11 @@ describe('app store reorder actions', () => {
     expect(useAppStore.getState().data.additionalExperienceBullets[duplicatedAdditionalExperienceBullet!.id]).toMatchObject({
       content: 'Led CBRN readiness training',
       level: 3,
+    })
+    expect(useAppStore.getState().data.certifications[duplicatedCertification!.id]).toMatchObject({
+      name: 'Security+',
+      issuer: 'CompTIA',
+      credentialId: 'ABC-123',
     })
   })
 
@@ -1462,6 +1534,54 @@ describe('app store reorder actions', () => {
       Object.values(useAppStore.getState().data.additionalExperienceBullets).filter(
         (item) => item.additionalExperienceEntryId === duplicatedEntry.id,
       ),
+    ).toHaveLength(0)
+  })
+
+  it('duplicates and cascades deletes certifications with their parent profile', async () => {
+    const { actions } = useAppStore.getState()
+
+    await actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    const originalCertificationId = expectDefined(await actions.createCertification(profileId), 'Expected certification id')
+    await actions.updateCertification({
+      certificationId: originalCertificationId,
+      changes: {
+        name: 'Security+',
+        issuer: 'CompTIA',
+        issueDate: '2024-06-01',
+        expiryDate: '2027-06-01',
+        credentialId: 'ABC-123',
+        credentialUrl: 'https://example.com/cert/security-plus',
+      },
+    })
+
+    const duplicatedProfileId = expectDefined(await actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
+    const duplicatedCertification = expectDefined(
+      Object.values(useAppStore.getState().data.certifications).find((item) => item.profileId === duplicatedProfileId),
+      'Expected duplicated certification',
+    )
+
+    expect(duplicatedCertification).toMatchObject({
+      name: 'Security+',
+      issuer: 'CompTIA',
+      issueDate: '2024-06-01',
+      expiryDate: '2027-06-01',
+      credentialId: 'ABC-123',
+      credentialUrl: 'https://example.com/cert/security-plus',
+      enabled: true,
+      sortOrder: 1,
+    })
+    expect(duplicatedCertification.id).not.toBe(originalCertificationId)
+
+    await actions.deleteCertification(originalCertificationId)
+    expect(useAppStore.getState().data.certifications[originalCertificationId]).toBeUndefined()
+    expect(useAppStore.getState().data.certifications[duplicatedCertification.id]).toBeDefined()
+
+    await actions.deleteProfile(duplicatedProfileId)
+
+    expect(
+      Object.values(useAppStore.getState().data.certifications).filter((item) => item.profileId === duplicatedProfileId),
     ).toHaveLength(0)
   })
 

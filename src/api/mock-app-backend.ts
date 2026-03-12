@@ -45,6 +45,7 @@ import {
   createAchievementMutation,
   createAdditionalExperienceBulletMutation,
   createAdditionalExperienceEntryMutation,
+  createCertificationMutation,
   createEducationBulletMutation,
   createEducationEntryMutation,
   createExperienceBulletMutation,
@@ -57,6 +58,7 @@ import {
   deleteAchievementMutation,
   deleteAdditionalExperienceBulletMutation,
   deleteAdditionalExperienceEntryMutation,
+  deleteCertificationMutation,
   deleteEducationBulletMutation,
   deleteEducationEntryMutation,
   deleteExperienceBulletMutation,
@@ -70,6 +72,7 @@ import {
   duplicateProfileMutation,
   reorderAdditionalExperienceBulletsMutation,
   reorderAdditionalExperienceEntriesMutation,
+  reorderCertificationsMutation,
   reorderEducationBulletsMutation,
   reorderEducationEntriesMutation,
   reorderExperienceBulletsMutation,
@@ -87,6 +90,7 @@ import {
   updateAchievementMutation,
   updateAdditionalExperienceBulletMutation,
   updateAdditionalExperienceEntryMutation,
+  updateCertificationMutation,
   updateEducationBulletMutation,
   updateEducationEntryMutation,
   updateExperienceBulletMutation,
@@ -112,6 +116,7 @@ import {
   type UpdateAchievementInput,
   type UpdateAdditionalExperienceBulletInput,
   type UpdateAdditionalExperienceEntryInput,
+  type UpdateCertificationInput,
   type UpdateEducationBulletInput,
   type UpdateEducationEntryInput,
   type UpdateExperienceBulletInput,
@@ -411,6 +416,22 @@ export class MockAppBackend implements AppDataService {
 
   async reorderAdditionalExperienceBullets(input: ReorderAdditionalExperienceBulletsInput): Promise<ProfileMutationResult> {
     return this.mutateProfile((data, context) => reorderAdditionalExperienceBulletsMutation(data, input, context))
+  }
+
+  async createCertification(profileId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => createCertificationMutation(data, profileId, context))
+  }
+
+  async updateCertification(input: UpdateCertificationInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => updateCertificationMutation(data, input, context))
+  }
+
+  async deleteCertification(certificationId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => deleteCertificationMutation(data, certificationId, context))
+  }
+
+  async reorderCertifications(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => reorderCertificationsMutation(data, input, context))
   }
 
   async createJob(input: CreateJobInput): Promise<JobMutationResult> {

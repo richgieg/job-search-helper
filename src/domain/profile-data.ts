@@ -146,6 +146,11 @@ export interface ReorderAdditionalExperienceBulletsInput {
   orderedIds: Id[]
 }
 
+export interface UpdateCertificationInput {
+  certificationId: Id
+  changes: Partial<Omit<Certification, 'id' | 'profileId'>>
+}
+
 export interface ProfileMutationContext {
   now(): IsoTimestamp
   createId(): Id
@@ -2341,6 +2346,114 @@ export const reorderAdditionalExperienceBulletsMutation = (data: AppDataState, i
         additionalExperienceBullets: reorderSortableEntities(data.additionalExperienceBullets, input.orderedIds),
       },
       entry.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const createCertificationMutation = (data: AppDataState, profileId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const profile = data.profiles[profileId]
+
+  if (!profile) {
+    return withResult(data, null)
+  }
+
+  const certification: Certification = {
+    id: context.createId(),
+    profileId,
+    name: '',
+    issuer: '',
+    issueDate: null,
+    expiryDate: null,
+    credentialId: '',
+    credentialUrl: '',
+    enabled: true,
+    sortOrder: getNextSortOrder(
+      Object.values(data.certifications)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.sortOrder),
+    ),
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        certifications: {
+          ...data.certifications,
+          [certification.id]: certification,
+        },
+      },
+      profileId,
+      context.now(),
+    ),
+    certification.id,
+  )
+}
+
+export const updateCertificationMutation = (data: AppDataState, input: UpdateCertificationInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.certifications[input.certificationId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        certifications: {
+          ...data.certifications,
+          [input.certificationId]: {
+            ...existing,
+            ...input.changes,
+          },
+        },
+      },
+      existing.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const deleteCertificationMutation = (data: AppDataState, certificationId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.certifications[certificationId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  const nextCertifications = { ...data.certifications }
+  delete nextCertifications[certificationId]
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        certifications: nextCertifications,
+      },
+      existing.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const reorderCertificationsMutation = (data: AppDataState, input: ReorderProfileEntitiesInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existingIds = Object.values(data.certifications)
+    .filter((item) => item.profileId === input.profileId)
+    .map((item) => item.id)
+
+  if (!hasExactIds(existingIds, input.orderedIds)) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        certifications: reorderSortableEntities(data.certifications, input.orderedIds),
+      },
+      input.profileId,
       context.now(),
     ),
   )
