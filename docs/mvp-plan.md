@@ -22,6 +22,9 @@ The first version should let a user:
 
 Keep the MVP focused on a single primary user: an individual job seeker, with no multi-user support or authentication in the first release.
 
+Implementation note:
+The MVP can remain fully local while still routing persisted data through a small backend or service boundary. That keeps the product scope unchanged while making a later move to IndexedDB-backed persistence lower risk.
+
 ### In scope
 
 - Single-user local application workflow

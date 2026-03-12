@@ -19,9 +19,27 @@ The action layer should be:
 - compatible with JSON import/export
 - explicit about cascade and duplication behavior
 
+## Runtime boundary
+
+The current implementation separates responsibilities across three layers:
+
+- UI components dispatch intent-specific store actions
+- store actions call an asynchronous API client
+- the API client delegates to the persisted data service or backend, which applies domain mutations and returns an updated `AppDataState`
+
+That means persisted entity updates should not be described as direct in-store mutations. The store is responsible for request state, selection state, and caching the latest returned data snapshot.
+
 ## Recommended approach
 
 Use a small set of explicit domain actions instead of generic patch-style updates.
+
+Recommended execution flow:
+
+1. UI triggers a store action.
+2. The store action calls the API client.
+3. The backend or service applies the domain mutation.
+4. The updated persisted data snapshot is returned.
+5. The store replaces its cached `state.data` with that returned snapshot and updates any transient UI state.
 
 Good:
 
@@ -48,6 +66,8 @@ Avoid for core domain behavior:
 ## Suggested store shape
 
 The implementation could use a reducer, Zustand store, or another client-side store, but the action surface should remain similar.
+
+In the current codebase, Zustand exposes this action surface while delegating persisted domain mutations to the API boundary.
 
 ```ts
 interface AppStore {
@@ -85,7 +105,7 @@ interface ActionContext {
 
 ### `exportAppData()`
 
-Creates an exportable JSON-safe object from `state.data`.
+Creates an exportable JSON-safe object from the persisted app data boundary.
 
 ```ts
 interface ExportAppDataResult {
@@ -95,8 +115,8 @@ interface ExportAppDataResult {
 
 Behavior:
 
-1. Read `state.data`.
-2. Stamp `exportedAt`.
+1. Ask the API client or service for the current export file.
+2. Stamp `exportedAt` at the persistence boundary.
 3. Return a versioned export object.
 
 ### `importAppData(file)`
@@ -113,8 +133,9 @@ Behavior:
 
 1. Parse and validate the import payload.
 2. Validate relationships and foreign keys.
-3. Replace `state.data` completely.
-4. Reset `state.ui` to safe defaults.
+3. Replace persisted app data through the API or service boundary.
+4. Refresh the store's cached `state.data` from the returned result.
+5. Reset `state.ui` to safe defaults.
 
 Important:
 

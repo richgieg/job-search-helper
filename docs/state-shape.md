@@ -20,12 +20,24 @@ This document turns the higher-level model in [docs/mvp-plan.md](docs/mvp-plan.m
 5. Keep transient UI state separate from exported/imported data.
 6. Prefer typed nested objects over raw `*_json` blobs in application code.
 
+## Runtime architecture
+
+At runtime, the app uses a persisted data boundary behind the UI:
+
+- the backend or service owns the canonical `AppDataState`
+- the API client is the asynchronous read/write boundary
+- the client-side store caches the latest returned data snapshot plus transient UI state
+
+In the current MVP implementation, that persisted layer is a local mock backend. The important architectural rule is that the store is not the persisted source of truth for domain entities.
+
 ## Recommended split
 
 Use two top-level state buckets in the app runtime:
 
-- `data`: persisted domain state that is exported/imported
+- `data`: the latest persisted domain snapshot returned from the API boundary; this is what gets exported/imported
 - `ui`: transient browser state that should not be exported
+
+The current implementation also tracks runtime request status separately from `data` and `ui`, for example hydration and save progress. That status is not part of exported app data.
 
 ## Type aliases
 
@@ -115,8 +127,9 @@ Recommended import behavior:
 1. Parse JSON.
 2. Validate `version`.
 3. Validate entity shapes and foreign-key relationships.
-4. Replace `state.data` completely.
-5. Reset or reinitialize `state.ui`.
+4. Replace persisted app data through the API or service boundary.
+5. Refresh the store's `data` snapshot from the returned result.
+6. Reset or reinitialize `state.ui`.
 
 ## Enums and unions
 

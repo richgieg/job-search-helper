@@ -12,7 +12,8 @@ A browser-based web app for organizing job opportunities and generating tailored
 
 - Single-user MVP
 - Fully browser-based
-- In-memory state
+- Local persisted data boundary behind a mock backend and API client
+- Zustand as the app-facing cache and UI state layer
 - JSON import/export for persistence
 - React + Vite + TypeScript
 
