@@ -29,6 +29,7 @@ const applicationSectionIdByResumeSection: Record<Exclude<ResumeSectionKey, 'sum
   experience: 'experience-entries',
   education: 'education-entries',
   projects: 'projects',
+  additional_experience: 'additional-experience',
   certifications: 'certifications',
   references: 'references',
 }
@@ -407,6 +408,35 @@ export const ApplicationPage = () => {
                   },
                 ]}
                 title={`${item.entry.name || 'Project'}${item.entry.organization ? ` · ${item.entry.organization}` : ''}`}
+              />
+            ))
+          )}
+        </section>
+
+        <section className="scroll-mt-32 space-y-4" id="additional-experience">
+          <h2 className="text-lg font-semibold text-app-heading">Additional Experience</h2>
+          {documentData.additionalExperienceEntries.length === 0 ? (
+            <p className="text-sm text-app-text-subtle">No additional experience entries enabled.</p>
+          ) : (
+            documentData.additionalExperienceEntries.map((item, index) => (
+              <DataTable
+                key={item.entry.id}
+                copiedKey={copiedKey}
+                description={`Additional experience entry ${index + 1}`}
+                onCopy={handleCopy}
+                rows={[
+                  { label: 'Title', values: buildSingleValue(item.entry.title) },
+                  { label: 'Organization', values: buildSingleValue(item.entry.organization) },
+                  { label: 'Location', values: buildSingleValue(item.entry.location) },
+                  buildDateRow('Start date', item.entry.startDate),
+                  buildDateRow('End date', item.entry.endDate),
+                  {
+                    label: 'Bullets',
+                    values: buildBulletListValue(item.bullets.map((bullet) => bullet.content)),
+                    multiline: true,
+                  },
+                ]}
+                title={`${item.entry.title || 'Additional Experience'}${item.entry.organization ? ` · ${item.entry.organization}` : ''}`}
               />
             ))
           )}

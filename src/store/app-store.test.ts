@@ -167,7 +167,8 @@ describe('app store reorder actions', () => {
     expect(initialProfile?.resumeSettings.sections.summary.label).toBe('Summary')
     expect(initialProfile?.resumeSettings.sections.achievements.sortOrder).toBe(3)
     expect(initialProfile?.resumeSettings.sections.projects.sortOrder).toBe(6)
-    expect(initialProfile?.resumeSettings.sections.references.sortOrder).toBe(8)
+    expect(initialProfile?.resumeSettings.sections.additional_experience.sortOrder).toBe(7)
+    expect(initialProfile?.resumeSettings.sections.references.sortOrder).toBe(9)
 
     actions.setResumeSectionLabel({
       profileId,
@@ -183,7 +184,7 @@ describe('app store reorder actions', () => {
 
     actions.reorderResumeSections({
       profileId,
-      orderedSections: ['skills', 'achievements', 'experience', 'summary', 'education', 'projects', 'certifications', 'references'],
+      orderedSections: ['skills', 'achievements', 'experience', 'summary', 'education', 'projects', 'additional_experience', 'certifications', 'references'],
     })
 
     const nextProfile = useAppStore.getState().data.profiles[profileId]
@@ -196,6 +197,7 @@ describe('app store reorder actions', () => {
       'summary',
       'education',
       'projects',
+      'additional_experience',
       'certifications',
       'references',
     ])
@@ -576,6 +578,111 @@ describe('app store reorder actions', () => {
     expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.projectEntries).toHaveLength(0)
   })
 
+  it('reorders additional experience entries and bullets and preview data reflects the new order', async () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    const firstEntryId = expectDefined(actions.createAdditionalExperienceEntry(profileId), 'Expected first additional experience id')
+    const secondEntryId = expectDefined(actions.createAdditionalExperienceEntry(profileId), 'Expected second additional experience id')
+
+    actions.updateAdditionalExperienceEntry({
+      additionalExperienceEntryId: firstEntryId,
+      changes: { title: 'Sergeant', organization: 'Army Reserve' },
+    })
+    actions.updateAdditionalExperienceEntry({
+      additionalExperienceEntryId: secondEntryId,
+      changes: { title: 'Board Member', organization: 'Neighborhood Council' },
+    })
+
+    const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
+    await waitForNextTick()
+
+    actions.reorderAdditionalExperienceEntries({
+      profileId,
+      orderedIds: [secondEntryId, firstEntryId],
+    })
+
+    expect(useAppStore.getState().data.additionalExperienceEntries[secondEntryId]?.sortOrder).toBe(1)
+    expect(useAppStore.getState().data.additionalExperienceEntries[firstEntryId]?.sortOrder).toBe(2)
+    expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
+
+    actions.createAdditionalExperienceBullet(secondEntryId)
+    actions.createAdditionalExperienceBullet(secondEntryId)
+
+    const bulletIds = getOrderedIds(
+      Object.fromEntries(
+        Object.values(useAppStore.getState().data.additionalExperienceBullets)
+          .filter((item) => item.additionalExperienceEntryId === secondEntryId)
+          .map((item) => [item.id, item]),
+      ),
+    )
+    const firstBulletId = expectDefined(bulletIds[0], 'Expected first additional experience bullet id')
+    const secondBulletId = expectDefined(bulletIds[1], 'Expected second additional experience bullet id')
+
+    actions.updateAdditionalExperienceBullet({
+      additionalExperienceBulletId: firstBulletId,
+      changes: { content: 'Led training exercises', enabled: true },
+    })
+    actions.updateAdditionalExperienceBullet({
+      additionalExperienceBulletId: secondBulletId,
+      changes: { content: 'Coordinated emergency response drills', enabled: true },
+    })
+
+    actions.reorderAdditionalExperienceBullets({
+      additionalExperienceEntryId: secondEntryId,
+      orderedIds: [secondBulletId, firstBulletId],
+    })
+
+    const preview = selectProfileDocumentData(useAppStore.getState().data, profileId)
+    expect(preview?.additionalExperienceEntries.map((item) => item.entry.title)).toEqual(['Board Member', 'Sergeant'])
+    expect(preview?.additionalExperienceEntries[0]?.bullets.map((bullet) => bullet.content)).toEqual([
+      'Coordinated emergency response drills',
+      'Led training exercises',
+    ])
+  })
+
+  it('rejects invalid additional experience date ranges and excludes disabled additional experience from preview data', async () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+    const entryId = expectDefined(actions.createAdditionalExperienceEntry(profileId), 'Expected additional experience id')
+
+    actions.updateAdditionalExperienceEntry({
+      additionalExperienceEntryId: entryId,
+      changes: {
+        title: 'Sergeant',
+        organization: 'Army Reserve',
+        location: 'Los Angeles, CA',
+        startDate: '2020-01-01',
+        endDate: '2022-01-01',
+        enabled: true,
+      },
+    })
+
+    const validEntry = expectDefined(useAppStore.getState().data.additionalExperienceEntries[entryId], 'Expected valid additional experience entry')
+    const updatedAtBeforeInvalidRange = useAppStore.getState().data.profiles[profileId]?.updatedAt
+    await waitForNextTick()
+
+    actions.updateAdditionalExperienceEntry({
+      additionalExperienceEntryId: entryId,
+      changes: { startDate: '2023-01-01' },
+    })
+
+    expect(useAppStore.getState().data.additionalExperienceEntries[entryId]).toEqual(validEntry)
+    expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).toBe(updatedAtBeforeInvalidRange)
+    expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.additionalExperienceEntries).toHaveLength(1)
+
+    actions.updateAdditionalExperienceEntry({
+      additionalExperienceEntryId: entryId,
+      changes: { enabled: false },
+    })
+
+    expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.additionalExperienceEntries).toHaveLength(0)
+  })
+
   it('reorders job contacts for a job', () => {
     const { actions } = useAppStore.getState()
 
@@ -940,7 +1047,7 @@ describe('app store reorder actions', () => {
     actions.setResumeSectionEnabled({ profileId, section: 'references', enabled: false })
     actions.reorderResumeSections({
       profileId,
-      orderedSections: ['experience', 'summary', 'skills', 'achievements', 'education', 'projects', 'certifications', 'references'],
+      orderedSections: ['experience', 'summary', 'skills', 'achievements', 'education', 'projects', 'additional_experience', 'certifications', 'references'],
     })
 
     const achievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
@@ -959,6 +1066,20 @@ describe('app store reorder actions', () => {
       projectBulletId,
       changes: { content: 'Automated bulk migration workflow', enabled: true },
     })
+    const additionalExperienceEntryId = expectDefined(actions.createAdditionalExperienceEntry(profileId), 'Expected additional experience id')
+    actions.updateAdditionalExperienceEntry({
+      additionalExperienceEntryId,
+      changes: { title: 'Sergeant', organization: 'Army Reserve', location: 'Los Angeles, CA', startDate: '2020-01-01', endDate: '2022-01-01' },
+    })
+    actions.createAdditionalExperienceBullet(additionalExperienceEntryId)
+    const additionalExperienceBulletId = expectDefined(
+      Object.keys(useAppStore.getState().data.additionalExperienceBullets)[0],
+      'Expected additional experience bullet id',
+    )
+    actions.updateAdditionalExperienceBullet({
+      additionalExperienceBulletId,
+      changes: { content: 'Led CBRN readiness training', enabled: true },
+    })
 
     const duplicatedProfileId = expectDefined(
       actions.duplicateProfile({ sourceProfileId: profileId }),
@@ -972,6 +1093,7 @@ describe('app store reorder actions', () => {
       'achievements',
       'education',
       'projects',
+      'additional_experience',
       'certifications',
       'references',
     ])
@@ -999,6 +1121,26 @@ describe('app store reorder actions', () => {
       enabled: true,
       sortOrder: 1,
     })
+    const duplicatedAdditionalExperience = Object.values(useAppStore.getState().data.additionalExperienceEntries).find(
+      (item) => item.profileId === duplicatedProfileId,
+    )
+    expect(duplicatedAdditionalExperience).toMatchObject({
+      title: 'Sergeant',
+      organization: 'Army Reserve',
+      location: 'Los Angeles, CA',
+      startDate: '2020-01-01',
+      endDate: '2022-01-01',
+      enabled: true,
+      sortOrder: 1,
+    })
+    const duplicatedAdditionalExperienceBullet = Object.values(useAppStore.getState().data.additionalExperienceBullets).find(
+      (item) => item.additionalExperienceEntryId === duplicatedAdditionalExperience?.id,
+    )
+    expect(duplicatedAdditionalExperienceBullet).toMatchObject({
+      content: 'Led CBRN readiness training',
+      enabled: true,
+      sortOrder: 1,
+    })
 
     const exported = actions.exportAppData()
 
@@ -1015,6 +1157,7 @@ describe('app store reorder actions', () => {
       'achievements',
       'education',
       'projects',
+      'additional_experience',
       'certifications',
       'references',
     ])
@@ -1028,6 +1171,13 @@ describe('app store reorder actions', () => {
     })
     expect(useAppStore.getState().data.projectBullets[duplicatedProjectBullet!.id]).toMatchObject({
       content: 'Automated bulk migration workflow',
+    })
+    expect(useAppStore.getState().data.additionalExperienceEntries[duplicatedAdditionalExperience!.id]).toMatchObject({
+      title: 'Sergeant',
+      organization: 'Army Reserve',
+    })
+    expect(useAppStore.getState().data.additionalExperienceBullets[duplicatedAdditionalExperienceBullet!.id]).toMatchObject({
+      content: 'Led CBRN readiness training',
     })
   })
 
@@ -1085,6 +1235,82 @@ describe('app store reorder actions', () => {
 
     expect(Object.values(useAppStore.getState().data.projects).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(0)
     expect(Object.values(useAppStore.getState().data.projectBullets).filter((item) => item.projectId === duplicatedProject.id)).toHaveLength(0)
+  })
+
+  it('duplicates and cascades deletes additional experience entries and bullets with their parent profile', () => {
+    const { actions } = useAppStore.getState()
+
+    actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    const originalEntryId = expectDefined(actions.createAdditionalExperienceEntry(profileId), 'Expected additional experience id')
+    actions.updateAdditionalExperienceEntry({
+      additionalExperienceEntryId: originalEntryId,
+      changes: { title: 'Sergeant', organization: 'Army Reserve', location: 'Los Angeles, CA', startDate: '2020-01-01', endDate: '2022-01-01' },
+    })
+    actions.createAdditionalExperienceBullet(originalEntryId)
+    const originalBulletId = expectDefined(
+      Object.keys(useAppStore.getState().data.additionalExperienceBullets)[0],
+      'Expected additional experience bullet id',
+    )
+    actions.updateAdditionalExperienceBullet({
+      additionalExperienceBulletId: originalBulletId,
+      changes: { content: 'Led CBRN readiness training', enabled: true },
+    })
+
+    const duplicatedProfileId = expectDefined(actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
+    const duplicatedEntry = expectDefined(
+      Object.values(useAppStore.getState().data.additionalExperienceEntries).find((item) => item.profileId === duplicatedProfileId),
+      'Expected duplicated additional experience entry',
+    )
+
+    expect(duplicatedEntry).toMatchObject({
+      title: 'Sergeant',
+      organization: 'Army Reserve',
+      location: 'Los Angeles, CA',
+      startDate: '2020-01-01',
+      endDate: '2022-01-01',
+      enabled: true,
+      sortOrder: 1,
+    })
+    expect(duplicatedEntry.id).not.toBe(originalEntryId)
+
+    const duplicatedBullet = expectDefined(
+      Object.values(useAppStore.getState().data.additionalExperienceBullets).find(
+        (item) => item.additionalExperienceEntryId === duplicatedEntry.id,
+      ),
+      'Expected duplicated additional experience bullet',
+    )
+
+    expect(duplicatedBullet).toMatchObject({
+      content: 'Led CBRN readiness training',
+      enabled: true,
+      sortOrder: 1,
+    })
+    expect(duplicatedBullet.id).not.toBe(originalBulletId)
+
+    actions.deleteAdditionalExperienceEntry(originalEntryId)
+    expect(
+      Object.values(useAppStore.getState().data.additionalExperienceBullets).filter(
+        (item) => item.additionalExperienceEntryId === originalEntryId,
+      ),
+    ).toHaveLength(0)
+    expect(
+      Object.values(useAppStore.getState().data.additionalExperienceBullets).filter(
+        (item) => item.additionalExperienceEntryId === duplicatedEntry.id,
+      ),
+    ).toHaveLength(1)
+
+    actions.deleteProfile(duplicatedProfileId)
+
+    expect(
+      Object.values(useAppStore.getState().data.additionalExperienceEntries).filter((item) => item.profileId === duplicatedProfileId),
+    ).toHaveLength(0)
+    expect(
+      Object.values(useAppStore.getState().data.additionalExperienceBullets).filter(
+        (item) => item.additionalExperienceEntryId === duplicatedEntry.id,
+      ),
+    ).toHaveLength(0)
   })
 
   it('duplicates and cascades deletes achievements with their parent profile', () => {

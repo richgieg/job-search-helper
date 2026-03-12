@@ -48,6 +48,7 @@ export type ResumeSectionKey =
   | 'experience'
   | 'education'
   | 'projects'
+  | 'additional_experience'
   | 'certifications'
   | 'references'
 
@@ -192,6 +193,26 @@ export interface ProjectBullet {
   sortOrder: number
 }
 
+export interface AdditionalExperienceEntry {
+  id: Id
+  profileId: Id
+  title: string
+  organization: string
+  location: string
+  startDate: IsoDate | null
+  endDate: IsoDate | null
+  enabled: boolean
+  sortOrder: number
+}
+
+export interface AdditionalExperienceBullet {
+  id: Id
+  additionalExperienceEntryId: Id
+  content: string
+  enabled: boolean
+  sortOrder: number
+}
+
 export interface Certification {
   id: Id
   profileId: Id
@@ -306,6 +327,8 @@ export interface AppDataState {
   educationBullets: Record<Id, EducationBullet>
   projects: Record<Id, Project>
   projectBullets: Record<Id, ProjectBullet>
+  additionalExperienceEntries: Record<Id, AdditionalExperienceEntry>
+  additionalExperienceBullets: Record<Id, AdditionalExperienceBullet>
   certifications: Record<Id, Certification>
   references: Record<Id, Reference>
   jobs: Record<Id, Job>

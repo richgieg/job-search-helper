@@ -64,7 +64,7 @@ This keeps job creation lightweight while still enabling tailored resumes, cover
 2. User adds a job.
 3. User decides whether the job is worth tailoring.
 4. User creates one or more job-specific profiles for that job by duplicating a base profile or an existing job profile.
-6. User tailors summary, achievements, experience bullets, education bullets, project bullets, skills, references, and letter content for that job.
+5. User tailors summary, achievements, experience bullets, education bullets, project bullets, additional experience bullets, skills, references, and letter content for that job.
 6. User adds recruiter/hiring manager contacts.
 7. User selects one of the job's profiles and generates:
    - a resume
@@ -91,6 +91,7 @@ Each reusable profile should support:
 - Professional experience entries with zero or more bullets
 - Education entries with zero or more bullets, attendance dates, and completion status
 - Project entries with optional organization, nullable start and end dates, and zero or more bullets
+- Additional experience entries with title, organization, location, nullable start and end dates, and zero or more bullets; this section defaults to `Additional Experience` and can be renamed per profile in resume settings, for example to `Volunteer Service`
 - Certifications
 - References (professional and personal)
 - Zero or more profile links with user-defined names and URLs
@@ -188,14 +189,16 @@ This allows the user to keep track of custom questions asked during online appli
 - Generated from either a base profile or a selected job-specific profile
 - Respects the profile's resume settings for section visibility and section order
 - Uses the profile's configured resume section labels for displayed headings
-- Defaults to the following section order for new profiles: summary, skills, achievements, experience, education, projects, certifications, references
+- Defaults to the following section order for new profiles: summary, skills, achievements, experience, education, projects, additional experience, certifications, references
 - Renders enabled achievements as bullets before experience by default
 - Formats each achievement bullet as bold name followed by a colon and plain-text description
 - Renders enabled experience bullets beneath each enabled experience entry
 - Renders enabled education bullets beneath each enabled education entry
 - Renders enabled project bullets beneath each enabled project entry
+- Renders enabled additional experience bullets beneath each enabled additional experience entry
 - Displays education entries using either an attendance range or a completion date depending on the entry status
 - Displays project entries using an optional organization line and a date range when either project date is present
+- Displays additional experience entries using title, optional organization, optional location, and a date range when either date is present
 - Exportable as printable HTML in MVP
 - Optional PDF in phase 2
 - Simple templates only in MVP
@@ -216,6 +219,8 @@ This allows the user to keep track of custom questions asked during online appli
 - Can include achievements as name-and-description items if the selected profile has them enabled
 - Shows education entries using the full set of stored education fields as entered by the user
 - Shows projects using the stored name, organization, dates, and combined bullet text as entered by the user
+- Shows additional experience entries using the stored title, organization, location, dates, and combined bullet text as entered by the user
+- Uses a fixed section order that mirrors the default resume section order, except that it remains independent from any user-driven resume section reordering
 - Includes common sections used in application forms
 
 ### 7. Data portability
@@ -289,6 +294,10 @@ The copied related records include:
 - `ExperienceBullet`
 - `EducationEntry`
 - `EducationBullet`
+- `Project`
+- `ProjectBullet`
+- `AdditionalExperienceEntry`
+- `AdditionalExperienceBullet`
 - `Certification`
 - `Reference`
 - `ProfileLink`
@@ -360,6 +369,45 @@ The copied related records include:
 ### EducationBullet
 - id
 - education_entry_id
+- content
+- enabled
+- sort_order
+
+### Project
+- id
+- profile_id
+- name
+- organization
+- start_date
+- end_date
+- enabled
+- sort_order
+
+`organization` can be empty for personal projects.
+
+### ProjectBullet
+- id
+- project_id
+- content
+- enabled
+- sort_order
+
+### AdditionalExperienceEntry
+- id
+- profile_id
+- title
+- organization
+- location
+- start_date
+- end_date
+- enabled
+- sort_order
+
+This section is intentionally general-purpose so the user can relabel it to things like `Volunteer Service` without the data model being tied to a single use case.
+
+### AdditionalExperienceBullet
+- id
+- additional_experience_entry_id
 - content
 - enabled
 - sort_order
@@ -484,7 +532,7 @@ Avoid relying on AI for the first version.
 
 Use deterministic templating:
 
-- Resume: map selected profile sections into a clean template, respecting the profile's configured section visibility and section order, including ordered `ExperienceBullet` records under each experience entry
+- Resume: map selected profile sections into a clean template, respecting the profile's configured section visibility and section order, including ordered `ExperienceBullet`, `ProjectBullet`, and `AdditionalExperienceBullet` records under their parent entries
 - Cover letter: combine contact/job/company data with a user-authored `cover_letter` text block, split into paragraphs by trimmed newlines; use a dummy contact when previewing from a base profile
 - Application page: render profile fields into copyable cards or rows
 

@@ -16,8 +16,9 @@
             "experience": { "enabled": true, "sortOrder": 4, "label": "Experience" },
             "education": { "enabled": true, "sortOrder": 5, "label": "Education" },
             "projects": { "enabled": true, "sortOrder": 6, "label": "Projects" },
-            "certifications": { "enabled": true, "sortOrder": 7, "label": "Certifications" },
-            "references": { "enabled": true, "sortOrder": 8, "label": "References" }
+            "additional_experience": { "enabled": true, "sortOrder": 7, "label": "Additional Experience" },
+            "certifications": { "enabled": true, "sortOrder": 8, "label": "Certifications" },
+            "references": { "enabled": true, "sortOrder": 9, "label": "References" }
           }
         },
         "personalDetails": {
@@ -49,8 +50,9 @@
             "experience": { "enabled": true, "sortOrder": 4, "label": "Experience" },
             "education": { "enabled": true, "sortOrder": 5, "label": "Education" },
             "projects": { "enabled": true, "sortOrder": 6, "label": "Projects" },
-            "certifications": { "enabled": true, "sortOrder": 7, "label": "Certifications" },
-            "references": { "enabled": true, "sortOrder": 8, "label": "References" }
+            "additional_experience": { "enabled": true, "sortOrder": 7, "label": "Additional Experience" },
+            "certifications": { "enabled": true, "sortOrder": 8, "label": "Certifications" },
+            "references": { "enabled": true, "sortOrder": 9, "label": "References" }
           }
         },
         "personalDetails": {
@@ -82,8 +84,9 @@
             "experience": { "enabled": true, "sortOrder": 4, "label": "Experience" },
             "education": { "enabled": true, "sortOrder": 5, "label": "Education" },
             "projects": { "enabled": true, "sortOrder": 6, "label": "Projects" },
-            "certifications": { "enabled": true, "sortOrder": 7, "label": "Certifications" },
-            "references": { "enabled": true, "sortOrder": 8, "label": "References" }
+            "additional_experience": { "enabled": true, "sortOrder": 7, "label": "Additional Experience" },
+            "certifications": { "enabled": true, "sortOrder": 8, "label": "Certifications" },
+            "references": { "enabled": true, "sortOrder": 9, "label": "References" }
           }
         },
         "personalDetails": {
@@ -627,6 +630,19 @@
       "project-bullet-cloud-blueridge-2": { "id": "project-bullet-cloud-blueridge-2", "projectId": "project-cloud-blueridge-modernization", "content": "Improved cloud-hosted service resilience through better alarms, resource tuning, and infrastructure conventions that reduced surprise production behavior.", "enabled": true, "sortOrder": 2 },
       "project-bullet-cloud-personal-1": { "id": "project-bullet-cloud-personal-1", "projectId": "project-cloud-personal-costwatch", "content": "Built a small serverless reporting tool with Lambda, EventBridge, and S3 to summarize personal AWS usage and surface avoidable spend patterns.", "enabled": true, "sortOrder": 1 },
       "project-bullet-cloud-personal-2": { "id": "project-bullet-cloud-personal-2", "projectId": "project-cloud-personal-costwatch", "content": "Defined the infrastructure in Terraform and used the project to explore practical tradeoffs around cloud visibility, automation, and low-cost operations.", "enabled": true, "sortOrder": 2 }
+    },
+    "additionalExperienceEntries": {
+      "additional-exp-se-volunteer": { "id": "additional-exp-se-volunteer", "profileId": "profile-base-software-engineer", "title": "Volunteer Instructor", "organization": "Triangle Youth Code Collective", "location": "Raleigh, NC", "startDate": "2021-09-01", "endDate": "2023-05-01", "enabled": true, "sortOrder": 1 },
+      "additional-exp-devops-volunteer": { "id": "additional-exp-devops-volunteer", "profileId": "profile-base-devops-engineer", "title": "Volunteer Instructor", "organization": "Triangle Youth Code Collective", "location": "Raleigh, NC", "startDate": "2021-09-01", "endDate": "2023-05-01", "enabled": true, "sortOrder": 1 },
+      "additional-exp-cloud-volunteer": { "id": "additional-exp-cloud-volunteer", "profileId": "profile-base-cloud-engineer", "title": "Volunteer Instructor", "organization": "Triangle Youth Code Collective", "location": "Raleigh, NC", "startDate": "2021-09-01", "endDate": "2023-05-01", "enabled": true, "sortOrder": 1 }
+    },
+    "additionalExperienceBullets": {
+      "additional-exp-bullet-se-1": { "id": "additional-exp-bullet-se-1", "additionalExperienceEntryId": "additional-exp-se-volunteer", "content": "Guided middle-school students through building simple full stack web apps, explaining how browser interactions, routes, and data storage fit together in practice.", "enabled": true, "sortOrder": 1 },
+      "additional-exp-bullet-se-2": { "id": "additional-exp-bullet-se-2", "additionalExperienceEntryId": "additional-exp-se-volunteer", "content": "Helped students debug JavaScript, HTML, and API integration issues while breaking larger web concepts into approachable workshop exercises.", "enabled": true, "sortOrder": 2 },
+      "additional-exp-bullet-devops-1": { "id": "additional-exp-bullet-devops-1", "additionalExperienceEntryId": "additional-exp-devops-volunteer", "content": "Introduced students to practical development workflow habits such as version control, repeatable setup steps, and the difference between local work and deployed applications.", "enabled": true, "sortOrder": 1 },
+      "additional-exp-bullet-devops-2": { "id": "additional-exp-bullet-devops-2", "additionalExperienceEntryId": "additional-exp-devops-volunteer", "content": "Built workshop material that covered lightweight deployment and automation concepts so students could see how small web projects move from code to usable environments.", "enabled": true, "sortOrder": 2 },
+      "additional-exp-bullet-cloud-1": { "id": "additional-exp-bullet-cloud-1", "additionalExperienceEntryId": "additional-exp-cloud-volunteer", "content": "Taught students the basics of how web applications are hosted, including the roles of servers, storage, networking, and cloud-managed services beyond local development.", "enabled": true, "sortOrder": 1 },
+      "additional-exp-bullet-cloud-2": { "id": "additional-exp-bullet-cloud-2", "additionalExperienceEntryId": "additional-exp-cloud-volunteer", "content": "Used age-appropriate examples to explain reliability, scalability, and platform fundamentals while helping students publish small projects to shared web environments.", "enabled": true, "sortOrder": 2 }
     },
     "certifications": {
       "cert-se-saa": { "id": "cert-se-saa", "profileId": "profile-base-software-engineer", "name": "AWS Certified Solutions Architect - Associate", "issuer": "Amazon Web Services", "issueDate": "2023-06-15", "expiryDate": "2026-06-15", "credentialId": "AWS-SAA-EXAMPLE-001", "credentialUrl": "https://www.credly.com/example/aws-saa-rowan-mercer", "enabled": true, "sortOrder": 1 },

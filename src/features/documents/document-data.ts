@@ -1,6 +1,8 @@
 import { getJobComputedStatus } from '../jobs/job-status'
 import type {
   Achievement,
+  AdditionalExperienceBullet,
+  AdditionalExperienceEntry,
   AppDataState,
   Certification,
   EducationBullet,
@@ -41,6 +43,11 @@ export interface DocumentProjectEntry {
   bullets: ProjectBullet[]
 }
 
+export interface DocumentAdditionalExperienceEntry {
+  entry: AdditionalExperienceEntry
+  bullets: AdditionalExperienceBullet[]
+}
+
 export interface ProfileDocumentData {
   profile: Profile
   profileLinks: ProfileLink[]
@@ -53,6 +60,7 @@ export interface ProfileDocumentData {
   experienceEntries: DocumentExperienceEntry[]
   educationEntries: DocumentEducationEntry[]
   projectEntries: DocumentProjectEntry[]
+  additionalExperienceEntries: DocumentAdditionalExperienceEntry[]
   certifications: Certification[]
   references: Reference[]
   computedStatus: ReturnType<typeof getJobComputedStatus>
@@ -243,6 +251,25 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
     }))
     .filter((item) => item.entry.name.trim() || item.entry.organization.trim() || item.bullets.length > 0 || item.entry.startDate || item.entry.endDate)
 
+  const additionalExperienceEntries = Object.values(data.additionalExperienceEntries)
+    .filter((entry) => entry.profileId === profileId && entry.enabled)
+    .sort(compareSortOrder)
+    .map((entry) => ({
+      entry,
+      bullets: Object.values(data.additionalExperienceBullets)
+        .filter((bullet) => bullet.additionalExperienceEntryId === entry.id && bullet.enabled && bullet.content.trim())
+        .sort(compareSortOrder),
+    }))
+    .filter(
+      (item) =>
+        item.entry.title.trim() ||
+        item.entry.organization.trim() ||
+        item.entry.location.trim() ||
+        item.bullets.length > 0 ||
+        item.entry.startDate ||
+        item.entry.endDate,
+    )
+
   const certifications = Object.values(data.certifications)
     .filter((entry) => entry.profileId === profileId && entry.enabled)
     .sort(compareSortOrder)
@@ -263,6 +290,7 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
     experienceEntries,
     educationEntries,
     projectEntries,
+    additionalExperienceEntries,
     certifications,
     references,
     computedStatus: getJobComputedStatus({

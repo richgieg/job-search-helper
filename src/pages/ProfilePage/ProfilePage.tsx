@@ -7,7 +7,14 @@ import { ReorderButtons } from '../../components/ReorderButtons'
 import { ProfileChildEditors } from './ProfileChildEditors'
 import { useAppStore } from '../../store/app-store'
 import type { PersonalDetails, ResumeSectionKey } from '../../types/state'
+import { defaultResumeSectionOrder } from '../../utils/resume-section-labels'
 import { moveOrderedItem } from '../../utils/reorder'
+
+const buildResumeSectionLabels = (profile?: { resumeSettings: { sections: Record<ResumeSectionKey, { label: string }> } }) =>
+  defaultResumeSectionOrder.reduce<Record<ResumeSectionKey, string>>((labels, section) => {
+    labels[section] = profile?.resumeSettings.sections[section].label ?? ''
+    return labels
+  }, {} as Record<ResumeSectionKey, string>)
 import { normalizeResumeSectionLabel } from '../../utils/resume-section-labels'
 
 const createPersonalDetailsDraft = (personalDetails: PersonalDetails): PersonalDetails => ({
@@ -72,29 +79,7 @@ export const ProfilePage = () => {
   const [name, setName] = useState(profile?.name ?? '')
   const [summary, setSummary] = useState(profile?.summary ?? '')
   const [coverLetter, setCoverLetter] = useState(profile?.coverLetter ?? '')
-  const [resumeSectionLabels, setResumeSectionLabels] = useState<Record<ResumeSectionKey, string>>(
-    profile
-      ? {
-          summary: profile.resumeSettings.sections.summary.label,
-          skills: profile.resumeSettings.sections.skills.label,
-          achievements: profile.resumeSettings.sections.achievements.label,
-          experience: profile.resumeSettings.sections.experience.label,
-          education: profile.resumeSettings.sections.education.label,
-          projects: profile.resumeSettings.sections.projects.label,
-          certifications: profile.resumeSettings.sections.certifications.label,
-          references: profile.resumeSettings.sections.references.label,
-        }
-      : {
-          summary: '',
-          skills: '',
-          achievements: '',
-          experience: '',
-          education: '',
-          projects: '',
-          certifications: '',
-          references: '',
-        },
-  )
+  const [resumeSectionLabels, setResumeSectionLabels] = useState<Record<ResumeSectionKey, string>>(buildResumeSectionLabels(profile))
   const [personalDetails, setPersonalDetails] = useState(profile ? createPersonalDetailsDraft(profile.personalDetails) : emptyPersonalDetails)
 
   useEffect(() => {
@@ -105,16 +90,7 @@ export const ProfilePage = () => {
     setName(profile.name)
     setSummary(profile.summary)
     setCoverLetter(profile.coverLetter)
-    setResumeSectionLabels({
-      summary: profile.resumeSettings.sections.summary.label,
-      skills: profile.resumeSettings.sections.skills.label,
-      achievements: profile.resumeSettings.sections.achievements.label,
-      experience: profile.resumeSettings.sections.experience.label,
-      education: profile.resumeSettings.sections.education.label,
-      projects: profile.resumeSettings.sections.projects.label,
-      certifications: profile.resumeSettings.sections.certifications.label,
-      references: profile.resumeSettings.sections.references.label,
-    })
+    setResumeSectionLabels(buildResumeSectionLabels(profile))
     setPersonalDetails(createPersonalDetailsDraft(profile.personalDetails))
   }, [profile])
 

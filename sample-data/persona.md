@@ -12,7 +12,7 @@ The sample data should represent one real person adapting shared professional hi
 
 ## Motivation
 
-Rowan is actively exploring new roles and wants one place to manage tailored resumes, cover letters, links, achievements, projects, experience bullets, education bullets, and job-specific application materials.
+Rowan is actively exploring new roles and wants one place to manage tailored resumes, cover letters, links, achievements, projects, additional experience, experience bullets, education bullets, and job-specific application materials.
 
 The purpose of the sample data is to demonstrate how the app supports:
 
@@ -130,6 +130,40 @@ Tailoring direction:
 - Software Engineer: emphasize application architecture, backend services, data flows, internal developer tools, or product-adjacent systems
 - DevOps Engineer: emphasize CI/CD systems, deployment automation, internal platforms, observability tooling, or reliability automation
 - Cloud Engineer: emphasize AWS platform design, infrastructure modernization, resiliency, IAM/security improvements, or cost-aware cloud tooling
+
+## Additional Experience
+
+Additional experience should be included in all three base profiles.
+
+Each base profile should include exactly 1 additional experience entry tailored to that profile's target role.
+
+Suggested shared entry:
+
+1. Volunteer Instructor at Triangle Youth Code Collective
+- Location: Raleigh, NC
+- Start: 2021-09
+- End: 2023-05
+
+Additional experience structure guidance:
+
+- use `title`, `organization`, `location`, `startDate`, and `endDate`
+- include 2 or 3 bullets per base profile
+- keep the underlying role the same across all three profiles
+- frame the work as volunteer community teaching, not as a second professional employer
+
+Additional experience content guidance:
+
+- center the entry on teaching kids or teens the fundamentals of full stack web development
+- keep the organization fictional but believable for a local volunteer or community program
+- make the work feel meaningful and technically relevant without overstating scope or impact
+- tailor the bullets per profile while preserving one shared volunteer story
+- avoid turning the entry into generic mentoring fluff; keep it concrete and grounded in real workshop or curriculum work
+
+Tailoring direction:
+
+- Software Engineer: emphasize teaching HTTP basics, front-end and back-end responsibilities, debugging, and helping students build simple interactive web apps
+- DevOps Engineer: emphasize introducing development workflow habits, version control, deployment basics, environment setup, and lightweight automation concepts
+- Cloud Engineer: emphasize hosting concepts, cloud fundamentals, reliability thinking, and helping students understand how web applications run beyond local development
 
 ## Education
 

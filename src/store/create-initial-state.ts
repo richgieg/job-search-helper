@@ -39,6 +39,8 @@ export const createEmptyDataState = (): AppDataState => ({
   educationBullets: {},
   projects: {},
   projectBullets: {},
+  additionalExperienceEntries: {},
+  additionalExperienceBullets: {},
   certifications: {},
   references: {},
   jobs: {},

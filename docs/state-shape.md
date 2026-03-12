@@ -57,6 +57,8 @@ interface AppDataState {
   educationBullets: Record<Id, EducationBullet>;
   projects: Record<Id, Project>;
   projectBullets: Record<Id, ProjectBullet>;
+  additionalExperienceEntries: Record<Id, AdditionalExperienceEntry>;
+  additionalExperienceBullets: Record<Id, AdditionalExperienceBullet>;
   certifications: Record<Id, Certification>;
   references: Record<Id, Reference>;
   jobs: Record<Id, Job>;
@@ -161,6 +163,7 @@ type ResumeSectionKey =
   | 'experience'
   | 'education'
   | 'projects'
+  | 'additional_experience'
   | 'certifications'
   | 'references';
 ```
@@ -348,6 +351,32 @@ interface EducationBullet {
 }
 ```
 
+### AdditionalExperienceEntry
+
+```ts
+interface AdditionalExperienceEntry {
+  id: Id;
+  profileId: Id;
+  title: string;
+  organization: string;
+  location: string;
+  startDate: IsoDate | null;
+  endDate: IsoDate | null;
+  enabled: boolean;
+  sortOrder: number;
+}
+
+interface AdditionalExperienceBullet {
+  id: Id;
+  additionalExperienceEntryId: Id;
+  content: string;
+  enabled: boolean;
+  sortOrder: number;
+}
+```
+
+`AdditionalExperienceEntry` is intentionally general-purpose so the profile's `additional_experience` resume section can be relabeled to something like `Volunteer Service` without changing the stored shape.
+
 ### Certification
 
 ```ts
@@ -513,6 +542,10 @@ The following relationships should be enforced during normal app operations and 
 - If both `Project.startDate` and `Project.endDate` are present, then `Project.startDate <= Project.endDate`.
 - `Project.organization` may be blank to represent a personal or unaffiliated project.
 - `ProjectBullet.projectId` points to an existing `Project`.
+- `AdditionalExperienceEntry.profileId` points to an existing `Profile`.
+- If both `AdditionalExperienceEntry.startDate` and `AdditionalExperienceEntry.endDate` are present, then `AdditionalExperienceEntry.startDate <= AdditionalExperienceEntry.endDate`.
+- `AdditionalExperienceEntry.organization` may be blank when the user wants a more general or relabeled section context.
+- `AdditionalExperienceBullet.additionalExperienceEntryId` points to an existing `AdditionalExperienceEntry`.
 - `Certification.profileId` points to an existing `Profile`.
 - `Reference.profileId` points to an existing `Profile`.
 
@@ -541,6 +574,8 @@ When duplicating a profile, create a new `Profile` and duplicate all profile-own
 - `EducationBullet`
 - `Project`
 - `ProjectBullet`
+- `AdditionalExperienceEntry`
+- `AdditionalExperienceBullet`
 - `Certification`
 - `Reference`
 
@@ -563,6 +598,10 @@ Additional duplication rule for education bullets:
 Additional duplication rule for project bullets:
 
 - when duplicating a `Project`, duplicate all of its `ProjectBullet` records and re-point them to the new project
+
+Additional duplication rule for additional experience bullets:
+
+- when duplicating an `AdditionalExperienceEntry`, duplicate all of its `AdditionalExperienceBullet` records and re-point them to the new additional experience entry
 
 ## Deletion rules
 
@@ -592,6 +631,8 @@ Cascade delete these records:
 - `EducationBullet`
 - `Project`
 - `ProjectBullet`
+- `AdditionalExperienceEntry`
+- `AdditionalExperienceBullet`
 - `Certification`
 - `Reference`
 
@@ -636,6 +677,8 @@ The following records can be hard deleted directly:
 - `EducationBullet`
 - `Project`
 - `ProjectBullet`
+- `AdditionalExperienceEntry`
+- `AdditionalExperienceBullet`
 - `Certification`
 - `Reference`
 - `JobLink`
@@ -650,6 +693,7 @@ Additional rule:
 - deleting an `ExperienceEntry` should also delete all `ExperienceBullet` records that belong to that entry
 - deleting an `EducationEntry` should also delete all `EducationBullet` records that belong to that entry
 - deleting a `Project` should also delete all `ProjectBullet` records that belong to that project
+- deleting an `AdditionalExperienceEntry` should also delete all `AdditionalExperienceBullet` records that belong to that entry
 - deleting an `Interview` should also delete all `InterviewContact` records that belong to that interview
 
 ### Generated outputs and deletion
@@ -702,6 +746,8 @@ These values should be computed, not stored.
 - `getOrderedEducationBullets(educationEntryId)`
 - `getOrderedProjects(profileId)`
 - `getOrderedProjectBullets(projectId)`
+- `getOrderedAdditionalExperienceEntries(profileId)`
+- `getOrderedAdditionalExperienceBullets(additionalExperienceEntryId)`
 - `getOrderedCertifications(profileId)`
 - `getOrderedReferences(profileId)`
 

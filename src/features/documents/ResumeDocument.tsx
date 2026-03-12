@@ -77,6 +77,28 @@ const formatProjectDateDisplay = (input: {
   return ''
 }
 
+const formatAdditionalExperienceDateDisplay = (input: {
+  startDate: string | null
+  endDate: string | null
+}) => {
+  const start = input.startDate ? formatMonthYear(input.startDate) : ''
+  const end = input.endDate ? formatMonthYear(input.endDate) : ''
+
+  if (start && end) {
+    return `${start} – ${end}`
+  }
+
+  if (start) {
+    return `${start} – Present`
+  }
+
+  if (end) {
+    return end
+  }
+
+  return ''
+}
+
 export const ResumeDocument = ({ documentData }: { documentData: ProfileDocumentData }) => {
   const summaryParagraphs = documentData.profile.summary
     .split(/\n+/g)
@@ -255,6 +277,45 @@ export const ResumeDocument = ({ documentData }: { documentData: ProfileDocument
                                 {dateRange ? <p className="resume-experience-date text-black">{dateRange}</p> : null}
                               </div>
                               {item.entry.organization ? <p className="italic">{item.entry.organization}</p> : null}
+                              {firstBullet ? (
+                                <ul className="mt-3 list-disc pl-10 text-sm leading-4.5 text-black">
+                                  <li>{firstBullet.content}</li>
+                                </ul>
+                              ) : null}
+                            </div>
+                            {remainingBullets.length > 0 ? (
+                              <ul className="mt-2 list-disc space-y-2 pl-10 text-sm leading-4.5 text-black">
+                                {remainingBullets.map((bullet) => (
+                                  <li key={bullet.id}>{bullet.content}</li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </div>
+                        )
+                      })
+                    : null}
+                </div>
+              </section>
+            )
+          case 'additional_experience':
+            return (
+              <section key="additional_experience" className={sectionClassName}>
+                <h3 className="resume-section-heading border-b border-black pb-0.5 text-sm font-semibold uppercase tracking-[0.18em] text-black">{orderedSection.label}</h3>
+                <div className="mt-4 space-y-4 text-sm text-black">
+                  {documentData.additionalExperienceEntries.length > 0
+                    ? documentData.additionalExperienceEntries.map((item) => {
+                        const [firstBullet, ...remainingBullets] = item.bullets
+                        const dateRange = formatAdditionalExperienceDateDisplay(item.entry)
+                        const meta = [item.entry.organization, item.entry.location].filter(Boolean).join(' · ')
+
+                        return (
+                          <div key={item.entry.id}>
+                            <div className="print-keep-together">
+                              <div className="resume-experience-header">
+                                <p className="font-semibold text-black">{item.entry.title || 'Additional Experience'}</p>
+                                {dateRange ? <p className="resume-experience-date text-black">{dateRange}</p> : null}
+                              </div>
+                              {meta ? <p className="italic">{meta}</p> : null}
                               {firstBullet ? (
                                 <ul className="mt-3 list-disc pl-10 text-sm leading-4.5 text-black">
                                   <li>{firstBullet.content}</li>

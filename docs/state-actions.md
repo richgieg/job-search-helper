@@ -261,6 +261,7 @@ Notes:
 - duplicated resume settings should preserve section labels
 - duplicating a profile should also duplicate its `Achievement` records
 - duplicating a profile should also duplicate its `Project` and `ProjectBullet` records
+- duplicating a profile should also duplicate its `AdditionalExperienceEntry` and `AdditionalExperienceBullet` records
 
 ### `deleteProfile(input)`
 
@@ -384,6 +385,29 @@ These actions should:
 - `updateProjectBullet(input)`
 - `deleteProjectBullet(input)`
 - `reorderProjectBullets(input)`
+
+### Additional experience actions
+
+- `createAdditionalExperienceEntry(input)`
+- `updateAdditionalExperienceEntry(input)`
+- `deleteAdditionalExperienceEntry(input)`
+- `reorderAdditionalExperienceEntries(input)`
+
+These actions should:
+
+- support enable/disable behavior through the record's `enabled` field
+- allow `organization` to be blank for more general or relabeled section use cases
+- store `startDate` and `endDate` as nullable date fields
+- reject or ignore invalid date ranges where both `startDate` and `endDate` are present and `startDate > endDate`
+
+`deleteAdditionalExperienceEntry()` must also delete all child `AdditionalExperienceBullet` records for that entry.
+
+### Additional experience bullet actions
+
+- `createAdditionalExperienceBullet(input)`
+- `updateAdditionalExperienceBullet(input)`
+- `deleteAdditionalExperienceBullet(input)`
+- `reorderAdditionalExperienceBullets(input)`
 
 ### Certification actions
 

@@ -7,6 +7,7 @@ export const defaultResumeSectionOrder: ResumeSectionKey[] = [
   'experience',
   'education',
   'projects',
+  'additional_experience',
   'certifications',
   'references',
 ]
@@ -18,6 +19,7 @@ export const defaultResumeSectionLabels: Record<ResumeSectionKey, string> = {
   experience: 'Experience',
   education: 'Education',
   projects: 'Projects',
+  additional_experience: 'Additional Experience',
   certifications: 'Certifications',
   references: 'References',
 }
