@@ -586,7 +586,7 @@ const ProjectBulletRow = ({ bulletId }: { bulletId: string }) => {
       return
     }
 
-    updateProjectBullet({ projectBulletId: bullet.id, changes: { content } })
+    void updateProjectBullet({ projectBulletId: bullet.id, changes: { content } })
   }
 
   return (
@@ -595,29 +595,29 @@ const ProjectBulletRow = ({ bulletId }: { bulletId: string }) => {
       <div className="flex flex-wrap items-center justify-end gap-2 md:self-center">
         <ActionToggle checked={enabled} label="Enable project bullet" onChange={(value) => {
           setEnabled(value)
-          updateProjectBullet({ projectBulletId: bullet.id, changes: { enabled: value } })
+          void updateProjectBullet({ projectBulletId: bullet.id, changes: { enabled: value } })
         }} />
         <BulletLevelField level={level} onChange={(value) => {
           setLevel(value)
-          updateProjectBullet({ projectBulletId: bullet.id, changes: { level: value } })
+          void updateProjectBullet({ projectBulletId: bullet.id, changes: { level: value } })
         }} />
         <ReorderButtons
           canMoveDown={bulletIds.length > 1}
           canMoveUp={bulletIds.length > 1}
           onMoveDown={() =>
-            reorderProjectBullets({
+            void reorderProjectBullets({
               projectId: bullet.projectId,
               orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
             })
           }
           onMoveUp={() =>
-            reorderProjectBullets({
+            void reorderProjectBullets({
               projectId: bullet.projectId,
               orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
             })
           }
         />
-        <DeleteIconButton label="Delete project bullet" onDelete={() => deleteProjectBullet(bullet.id)} />
+        <DeleteIconButton label="Delete project bullet" onDelete={() => void deleteProjectBullet(bullet.id)} />
       </div>
     </div>
   )
@@ -1431,7 +1431,7 @@ const ProjectCard = ({
   }
 
   const commitProjectChanges = (changes: Partial<Omit<Project, 'id' | 'profileId'>>) => {
-    updateProject({ projectId: project.id, changes })
+    void updateProject({ projectId: project.id, changes })
   }
 
   return (
@@ -1442,25 +1442,25 @@ const ProjectCard = ({
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable project" onChange={(value) => {
               setDraft({ ...draft, enabled: value })
-              updateProject({ projectId: project.id, changes: { enabled: value } })
+              void updateProject({ projectId: project.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
               canMoveDown={projectIds.length > 1}
               canMoveUp={projectIds.length > 1}
               onMoveDown={() =>
-                reorderProjects({
+                void reorderProjects({
                   profileId: project.profileId,
                   orderedIds: moveOrderedItem(projectIds, projectIndex, 1),
                 })
               }
               onMoveUp={() =>
-                reorderProjects({
+                void reorderProjects({
                   profileId: project.profileId,
                   orderedIds: moveOrderedItem(projectIds, projectIndex, -1),
                 })
               }
             />
-            <DeleteIconButton label="Delete project" onDelete={() => deleteProject(project.id)} />
+            <DeleteIconButton label="Delete project" onDelete={() => void deleteProject(project.id)} />
           </div>
         }
         summary={summary}
@@ -1477,7 +1477,7 @@ const ProjectCard = ({
               <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Bullets</h4>
               <button
                 className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted"
-                onClick={() => createProjectBullet(project.id)}
+                onClick={() => void createProjectBullet(project.id)}
                 type="button"
               >
                 Add bullet
@@ -2109,8 +2109,8 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       <CollapsiblePanel
         actionLabel="Add project"
         actionStyle="icon"
-        onAction={() => {
-          const createdId = createProject(profileId)
+        onAction={async () => {
+          const createdId = await createProject(profileId)
 
           if (createdId) {
             setNewProjectId(createdId)

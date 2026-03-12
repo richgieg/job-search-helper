@@ -16,6 +16,7 @@ import type {
 import type {
   DuplicateProfileInput,
   ReorderEducationBulletsInput,
+  ReorderProjectBulletsInput,
   ProfileMutationResult,
   ReorderProfileEntitiesInput,
   ReorderResumeSectionsInput,
@@ -28,6 +29,8 @@ import type {
   UpdateEducationEntryInput,
   UpdateExperienceBulletInput,
   UpdateExperienceEntryInput,
+  UpdateProjectBulletInput,
+  UpdateProjectInput,
   UpdateProfileLinkInput,
   UpdateProfileInput,
   UpdateSkillCategoryInput,
@@ -79,6 +82,14 @@ export interface AppDataService {
   updateEducationBullet(input: UpdateEducationBulletInput): Promise<ProfileMutationResult>
   deleteEducationBullet(educationBulletId: string): Promise<ProfileMutationResult>
   reorderEducationBullets(input: ReorderEducationBulletsInput): Promise<ProfileMutationResult>
+  createProject(profileId: string): Promise<ProfileMutationResult>
+  updateProject(input: UpdateProjectInput): Promise<ProfileMutationResult>
+  deleteProject(projectId: string): Promise<ProfileMutationResult>
+  reorderProjects(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createProjectBullet(projectId: string): Promise<ProfileMutationResult>
+  updateProjectBullet(input: UpdateProjectBulletInput): Promise<ProfileMutationResult>
+  deleteProjectBullet(projectBulletId: string): Promise<ProfileMutationResult>
+  reorderProjectBullets(input: ReorderProjectBulletsInput): Promise<ProfileMutationResult>
   createJob(input: CreateJobInput): Promise<JobMutationResult>
   updateJob(input: UpdateJobInput): Promise<JobMutationResult>
   deleteJob(jobId: string): Promise<JobMutationResult>

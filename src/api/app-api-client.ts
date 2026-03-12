@@ -18,6 +18,7 @@ import type {
   ProfileMutationResult,
   ReorderEducationBulletsInput,
   ReorderExperienceBulletsInput,
+  ReorderProjectBulletsInput,
   ReorderProfileEntitiesInput,
   ReorderResumeSectionsInput,
   SetDocumentHeaderTemplateInput,
@@ -28,6 +29,8 @@ import type {
   UpdateEducationEntryInput,
   UpdateExperienceBulletInput,
   UpdateExperienceEntryInput,
+  UpdateProjectBulletInput,
+  UpdateProjectInput,
   UpdateProfileLinkInput,
   UpdateProfileInput,
   UpdateSkillCategoryInput,
@@ -80,6 +83,14 @@ export interface AppApiClient {
   updateEducationBullet(data: AppDataState, input: UpdateEducationBulletInput): Promise<ProfileMutationResult>
   deleteEducationBullet(data: AppDataState, educationBulletId: string): Promise<ProfileMutationResult>
   reorderEducationBullets(data: AppDataState, input: ReorderEducationBulletsInput): Promise<ProfileMutationResult>
+  createProject(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
+  updateProject(data: AppDataState, input: UpdateProjectInput): Promise<ProfileMutationResult>
+  deleteProject(data: AppDataState, projectId: string): Promise<ProfileMutationResult>
+  reorderProjects(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createProjectBullet(data: AppDataState, projectId: string): Promise<ProfileMutationResult>
+  updateProjectBullet(data: AppDataState, input: UpdateProjectBulletInput): Promise<ProfileMutationResult>
+  deleteProjectBullet(data: AppDataState, projectBulletId: string): Promise<ProfileMutationResult>
+  reorderProjectBullets(data: AppDataState, input: ReorderProjectBulletsInput): Promise<ProfileMutationResult>
   createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult>
   updateJob(data: AppDataState, input: UpdateJobInput): Promise<JobMutationResult>
   deleteJob(data: AppDataState, jobId: string): Promise<JobMutationResult>
@@ -328,6 +339,46 @@ export class LocalAppApiClient implements AppApiClient {
   async reorderEducationBullets(data: AppDataState, input: ReorderEducationBulletsInput): Promise<ProfileMutationResult> {
     await this.sync(data)
     return this.service.reorderEducationBullets(input)
+  }
+
+  async createProject(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.createProject(profileId)
+  }
+
+  async updateProject(data: AppDataState, input: UpdateProjectInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.updateProject(input)
+  }
+
+  async deleteProject(data: AppDataState, projectId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.deleteProject(projectId)
+  }
+
+  async reorderProjects(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.reorderProjects(input)
+  }
+
+  async createProjectBullet(data: AppDataState, projectId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.createProjectBullet(projectId)
+  }
+
+  async updateProjectBullet(data: AppDataState, input: UpdateProjectBulletInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.updateProjectBullet(input)
+  }
+
+  async deleteProjectBullet(data: AppDataState, projectBulletId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.deleteProjectBullet(projectBulletId)
+  }
+
+  async reorderProjectBullets(data: AppDataState, input: ReorderProjectBulletsInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.reorderProjectBullets(input)
   }
 
   async createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult> {

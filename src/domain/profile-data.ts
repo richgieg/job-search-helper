@@ -116,6 +116,21 @@ export interface ReorderEducationBulletsInput {
   orderedIds: Id[]
 }
 
+export interface UpdateProjectInput {
+  projectId: Id
+  changes: Partial<Omit<Project, 'id' | 'profileId'>>
+}
+
+export interface UpdateProjectBulletInput {
+  projectBulletId: Id
+  changes: Partial<Pick<ProjectBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>
+}
+
+export interface ReorderProjectBulletsInput {
+  projectId: Id
+  orderedIds: Id[]
+}
+
 export interface ProfileMutationContext {
   now(): IsoTimestamp
   createId(): Id
@@ -619,6 +634,25 @@ const deleteEducationEntryCascade = (data: AppDataState, educationEntryId: Id): 
   }
 }
 
+const deleteProjectCascade = (data: AppDataState, projectId: Id): AppDataState => {
+  const nextProjects = { ...data.projects }
+  const nextProjectBullets = { ...data.projectBullets }
+
+  delete nextProjects[projectId]
+
+  Object.values(data.projectBullets).forEach((item) => {
+    if (item.projectId === projectId) {
+      delete nextProjectBullets[item.id]
+    }
+  })
+
+  return {
+    ...data,
+    projects: nextProjects,
+    projectBullets: nextProjectBullets,
+  }
+}
+
 const normalizeEducationEntry = (
   existing: EducationEntry,
   changes: Partial<Omit<EducationEntry, 'id' | 'profileId'>>,
@@ -639,6 +673,19 @@ const normalizeEducationEntry = (
   return nextEntry
 }
 
+const normalizeProject = (existing: Project, changes: Partial<Omit<Project, 'id' | 'profileId'>>) => {
+  const nextProject: Project = {
+    ...existing,
+    ...changes,
+  }
+
+  if (nextProject.startDate && nextProject.endDate && nextProject.startDate > nextProject.endDate) {
+    return null
+  }
+
+  return nextProject
+}
+
 const mergeEducationBulletChanges = (
   existing: EducationBullet,
   changes: Partial<Pick<EducationBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>,
@@ -656,6 +703,20 @@ const mergeEducationBulletChanges = (
 const mergeExperienceBulletChanges = (
   existing: ExperienceBullet,
   changes: Partial<Pick<ExperienceBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>,
+) => {
+  if (changes.level !== undefined && !isBulletLevel(changes.level)) {
+    return null
+  }
+
+  return {
+    ...existing,
+    ...changes,
+  }
+}
+
+const mergeProjectBulletChanges = (
+  existing: ProjectBullet,
+  changes: Partial<Pick<ProjectBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>,
 ) => {
   if (changes.level !== undefined && !isBulletLevel(changes.level)) {
     return null
@@ -1771,6 +1832,228 @@ export const reorderEducationBulletsMutation = (data: AppDataState, input: Reord
         educationBullets: reorderSortableEntities(data.educationBullets, input.orderedIds),
       },
       educationEntry.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const createProjectMutation = (data: AppDataState, profileId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const profile = data.profiles[profileId]
+
+  if (!profile) {
+    return withResult(data, null)
+  }
+
+  const project: Project = {
+    id: context.createId(),
+    profileId,
+    name: '',
+    organization: '',
+    startDate: null,
+    endDate: null,
+    enabled: true,
+    sortOrder: getNextSortOrder(
+      Object.values(data.projects)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.sortOrder),
+    ),
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        projects: {
+          ...data.projects,
+          [project.id]: project,
+        },
+      },
+      profileId,
+      context.now(),
+    ),
+    project.id,
+  )
+}
+
+export const updateProjectMutation = (data: AppDataState, input: UpdateProjectInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.projects[input.projectId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  const nextProject = normalizeProject(existing, input.changes)
+
+  if (!nextProject) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        projects: {
+          ...data.projects,
+          [input.projectId]: nextProject,
+        },
+      },
+      existing.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const deleteProjectMutation = (data: AppDataState, projectId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.projects[projectId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  return withResult(stampUpdatedProfile(deleteProjectCascade(data, projectId), existing.profileId, context.now()))
+}
+
+export const reorderProjectsMutation = (data: AppDataState, input: ReorderProfileEntitiesInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existingIds = Object.values(data.projects)
+    .filter((item) => item.profileId === input.profileId)
+    .map((item) => item.id)
+
+  if (!hasExactIds(existingIds, input.orderedIds)) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        projects: reorderSortableEntities(data.projects, input.orderedIds),
+      },
+      input.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const createProjectBulletMutation = (data: AppDataState, projectId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const project = data.projects[projectId]
+
+  if (!project) {
+    return withResult(data, null)
+  }
+
+  const projectBullet: ProjectBullet = {
+    id: context.createId(),
+    projectId,
+    content: '',
+    level: 1,
+    enabled: true,
+    sortOrder: getNextSortOrder(
+      Object.values(data.projectBullets)
+        .filter((item) => item.projectId === projectId)
+        .map((item) => item.sortOrder),
+    ),
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        projectBullets: {
+          ...data.projectBullets,
+          [projectBullet.id]: projectBullet,
+        },
+      },
+      project.profileId,
+      context.now(),
+    ),
+    projectBullet.id,
+  )
+}
+
+export const updateProjectBulletMutation = (data: AppDataState, input: UpdateProjectBulletInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.projectBullets[input.projectBulletId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  const project = data.projects[existing.projectId]
+
+  if (!project) {
+    return withResult(data)
+  }
+
+  const nextBullet = mergeProjectBulletChanges(existing, input.changes)
+
+  if (!nextBullet) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        projectBullets: {
+          ...data.projectBullets,
+          [input.projectBulletId]: nextBullet,
+        },
+      },
+      project.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const deleteProjectBulletMutation = (data: AppDataState, projectBulletId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.projectBullets[projectBulletId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  const project = data.projects[existing.projectId]
+
+  if (!project) {
+    return withResult(data)
+  }
+
+  const nextProjectBullets = { ...data.projectBullets }
+  delete nextProjectBullets[projectBulletId]
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        projectBullets: nextProjectBullets,
+      },
+      project.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const reorderProjectBulletsMutation = (data: AppDataState, input: ReorderProjectBulletsInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const project = data.projects[input.projectId]
+
+  if (!project) {
+    return withResult(data)
+  }
+
+  const existingIds = Object.values(data.projectBullets)
+    .filter((item) => item.projectId === input.projectId)
+    .map((item) => item.id)
+
+  if (!hasExactIds(existingIds, input.orderedIds)) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        projectBullets: reorderSortableEntities(data.projectBullets, input.orderedIds),
+      },
+      project.profileId,
       context.now(),
     ),
   )

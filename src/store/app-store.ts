@@ -20,6 +20,7 @@ import type {
   ReorderEducationBulletsInput,
   ProfileMutationResult,
   ReorderExperienceBulletsInput,
+  ReorderProjectBulletsInput,
   ReorderProfileEntitiesInput,
   ReorderResumeSectionsInput,
   SetDocumentHeaderTemplateInput,
@@ -30,6 +31,8 @@ import type {
   UpdateEducationEntryInput,
   UpdateExperienceBulletInput,
   UpdateExperienceEntryInput,
+  UpdateProjectBulletInput,
+  UpdateProjectInput,
   UpdateProfileLinkInput,
   UpdateProfileInput,
   UpdateSkillCategoryInput,
@@ -46,8 +49,6 @@ import type {
   BulletLevel,
   Certification,
   Id,
-  Project,
-  ProjectBullet,
   Reference,
   ThemePreference,
 } from '../types/state'
@@ -107,20 +108,14 @@ interface AppStoreState {
     updateEducationBullet: (input: UpdateEducationBulletInput) => Promise<void>
     deleteEducationBullet: (educationBulletId: Id) => Promise<void>
     reorderEducationBullets: (input: ReorderEducationBulletsInput) => Promise<void>
-    createProject: (profileId: Id) => Id | null
-    updateProject: (input: {
-      projectId: Id
-      changes: Partial<Omit<Project, 'id' | 'profileId'>>
-    }) => void
-    deleteProject: (projectId: Id) => void
-    reorderProjects: (input: { profileId: Id; orderedIds: Id[] }) => void
-    createProjectBullet: (projectId: Id) => void
-    updateProjectBullet: (input: {
-      projectBulletId: Id
-      changes: Partial<Pick<ProjectBullet, 'content' | 'level' | 'enabled' | 'sortOrder'>>
-    }) => void
-    deleteProjectBullet: (projectBulletId: Id) => void
-    reorderProjectBullets: (input: { projectId: Id; orderedIds: Id[] }) => void
+    createProject: (profileId: Id) => Promise<Id | null>
+    updateProject: (input: UpdateProjectInput) => Promise<void>
+    deleteProject: (projectId: Id) => Promise<void>
+    reorderProjects: (input: ReorderProfileEntitiesInput) => Promise<void>
+    createProjectBullet: (projectId: Id) => Promise<Id | null>
+    updateProjectBullet: (input: UpdateProjectBulletInput) => Promise<void>
+    deleteProjectBullet: (projectBulletId: Id) => Promise<void>
+    reorderProjectBullets: (input: ReorderProjectBulletsInput) => Promise<void>
     createAdditionalExperienceEntry: (profileId: Id) => Id | null
     updateAdditionalExperienceEntry: (input: {
       additionalExperienceEntryId: Id
@@ -233,19 +228,6 @@ const reorderSortableEntities = <T extends { id: Id; sortOrder: number }>(entiti
   return nextEntities
 }
 
-const normalizeProject = (existing: Project, changes: Partial<Omit<Project, 'id' | 'profileId'>>): Project | null => {
-  const nextProject: Project = {
-    ...existing,
-    ...changes,
-  }
-
-  if (nextProject.startDate && nextProject.endDate && nextProject.startDate > nextProject.endDate) {
-    return null
-  }
-
-  return nextProject
-}
-
 const normalizeAdditionalExperienceEntry = (
   existing: AdditionalExperienceEntry,
   changes: Partial<Omit<AdditionalExperienceEntry, 'id' | 'profileId'>>,
@@ -289,25 +271,6 @@ const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: strin
         updatedAt: timestamp,
       },
     },
-  }
-}
-
-const deleteProjectCascade = (data: AppDataState, projectId: Id): AppDataState => {
-  const nextProjects = { ...data.projects }
-  const nextProjectBullets = { ...data.projectBullets }
-
-  delete nextProjects[projectId]
-
-  Object.values(data.projectBullets).forEach((item) => {
-    if (item.projectId === projectId) {
-      delete nextProjectBullets[item.id]
-    }
-  })
-
-  return {
-    ...data,
-    projects: nextProjects,
-    projectBullets: nextProjectBullets,
   }
 }
 
@@ -619,223 +582,31 @@ const deleteAdditionalExperienceEntryCascade = (data: AppDataState, additionalEx
     reorderEducationBullets: async (input) => {
       await runPersistedProfileMutation((data) => getAppApiClient().reorderEducationBullets(data, input))
     },
-    createProject: (profileId) => {
-      const profile = get().data.profiles[profileId]
-
-      if (!profile) {
-        return null
-      }
-
-      const project: Project = {
-        id: createId(),
-        profileId,
-        name: '',
-        organization: '',
-        startDate: null,
-        endDate: null,
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.projects)
-            .filter((item) => item.profileId === profileId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            projects: {
-              ...state.data.projects,
-              [project.id]: project,
-            },
-          },
-          profileId,
-          now(),
-        ),
-      }))
-
-      return project.id
+    createProject: async (profileId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createProject(data, profileId))
+      return result?.createdId ?? null
     },
-    updateProject: ({ projectId, changes }) => {
-      const existing = get().data.projects[projectId]
-
-      if (!existing) {
-        return
-      }
-
-      const nextProject = normalizeProject(existing, changes)
-
-      if (!nextProject) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            projects: {
-              ...state.data.projects,
-              [projectId]: nextProject,
-            },
-          },
-          existing.profileId,
-          now(),
-        ),
-      }))
+    updateProject: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateProject(data, input))
     },
-    deleteProject: (projectId) => {
-      const existing = get().data.projects[projectId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(deleteProjectCascade(state.data, projectId), existing.profileId, now()),
-      }))
+    deleteProject: async (projectId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteProject(data, projectId))
     },
-    reorderProjects: ({ profileId, orderedIds }) => {
-      const existingIds = Object.values(get().data.projects)
-        .filter((item) => item.profileId === profileId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            projects: reorderSortableEntities(state.data.projects, orderedIds),
-          },
-          profileId,
-          now(),
-        ),
-      }))
+    reorderProjects: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderProjects(data, input))
     },
-    createProjectBullet: (projectId) => {
-      const project = get().data.projects[projectId]
-
-      if (!project) {
-        return
-      }
-
-      const projectBullet: ProjectBullet = {
-        id: createId(),
-        projectId,
-        content: '',
-        level: defaultBulletLevel,
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.projectBullets)
-            .filter((item) => item.projectId === projectId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            projectBullets: {
-              ...state.data.projectBullets,
-              [projectBullet.id]: projectBullet,
-            },
-          },
-          project.profileId,
-          now(),
-        ),
-      }))
+    createProjectBullet: async (projectId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createProjectBullet(data, projectId))
+      return result?.createdId ?? null
     },
-    updateProjectBullet: ({ projectBulletId, changes }) => {
-      const existing = get().data.projectBullets[projectBulletId]
-
-      if (!existing) {
-        return
-      }
-
-      const project = get().data.projects[existing.projectId]
-
-      if (!project) {
-        return
-      }
-
-      const nextBullet = mergeBulletChanges<ProjectBullet>(existing, changes)
-
-      if (!nextBullet) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            projectBullets: {
-              ...state.data.projectBullets,
-              [projectBulletId]: nextBullet,
-            },
-          },
-          project.profileId,
-          now(),
-        ),
-      }))
+    updateProjectBullet: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateProjectBullet(data, input))
     },
-    deleteProjectBullet: (projectBulletId) => {
-      const existing = get().data.projectBullets[projectBulletId]
-
-      if (!existing) {
-        return
-      }
-
-      const project = get().data.projects[existing.projectId]
-
-      if (!project) {
-        return
-      }
-
-      set((state) => {
-        const nextProjectBullets = { ...state.data.projectBullets }
-        delete nextProjectBullets[projectBulletId]
-
-        return {
-          data: stampUpdatedProfile(
-            {
-              ...state.data,
-              projectBullets: nextProjectBullets,
-            },
-            project.profileId,
-            now(),
-          ),
-        }
-      })
+    deleteProjectBullet: async (projectBulletId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteProjectBullet(data, projectBulletId))
     },
-    reorderProjectBullets: ({ projectId, orderedIds }) => {
-      const project = get().data.projects[projectId]
-
-      if (!project) {
-        return
-      }
-
-      const existingIds = Object.values(get().data.projectBullets)
-        .filter((item) => item.projectId === projectId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            projectBullets: reorderSortableEntities(state.data.projectBullets, orderedIds),
-          },
-          project.profileId,
-          now(),
-        ),
-      }))
+    reorderProjectBullets: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderProjectBullets(data, input))
     },
     createAdditionalExperienceEntry: (profileId) => {
       const profile = get().data.profiles[profileId]

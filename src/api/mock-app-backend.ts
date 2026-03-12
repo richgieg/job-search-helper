@@ -47,6 +47,8 @@ import {
   createEducationEntryMutation,
   createExperienceBulletMutation,
   createExperienceEntryMutation,
+  createProjectBulletMutation,
+  createProjectMutation,
   createProfileLinkMutation,
   createSkillCategoryMutation,
   createSkillMutation,
@@ -55,6 +57,8 @@ import {
   deleteEducationEntryMutation,
   deleteExperienceBulletMutation,
   deleteExperienceEntryMutation,
+  deleteProjectBulletMutation,
+  deleteProjectMutation,
   deleteProfileMutation,
   deleteProfileLinkMutation,
   deleteSkillCategoryMutation,
@@ -64,6 +68,8 @@ import {
   reorderEducationEntriesMutation,
   reorderExperienceBulletsMutation,
   reorderExperienceEntriesMutation,
+  reorderProjectBulletsMutation,
+  reorderProjectsMutation,
   reorderAchievementsMutation,
   reorderProfileLinksMutation,
   reorderSkillCategoriesMutation,
@@ -77,6 +83,8 @@ import {
   updateEducationEntryMutation,
   updateExperienceBulletMutation,
   updateExperienceEntryMutation,
+  updateProjectBulletMutation,
+  updateProjectMutation,
   updateProfileLinkMutation,
   updateProfileMutation,
   updateSkillCategoryMutation,
@@ -86,6 +94,7 @@ import {
   type ProfileMutationResult,
   type ReorderEducationBulletsInput,
   type ReorderExperienceBulletsInput,
+  type ReorderProjectBulletsInput,
   type ReorderProfileEntitiesInput,
   type ReorderResumeSectionsInput,
   type SetDocumentHeaderTemplateInput,
@@ -96,6 +105,8 @@ import {
   type UpdateEducationEntryInput,
   type UpdateExperienceBulletInput,
   type UpdateExperienceEntryInput,
+  type UpdateProjectBulletInput,
+  type UpdateProjectInput,
   type UpdateProfileLinkInput,
   type UpdateProfileInput,
   type UpdateSkillCategoryInput,
@@ -325,6 +336,38 @@ export class MockAppBackend implements AppDataService {
 
   async reorderEducationBullets(input: ReorderEducationBulletsInput): Promise<ProfileMutationResult> {
     return this.mutateProfile((data, context) => reorderEducationBulletsMutation(data, input, context))
+  }
+
+  async createProject(profileId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => createProjectMutation(data, profileId, context))
+  }
+
+  async updateProject(input: UpdateProjectInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => updateProjectMutation(data, input, context))
+  }
+
+  async deleteProject(projectId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => deleteProjectMutation(data, projectId, context))
+  }
+
+  async reorderProjects(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => reorderProjectsMutation(data, input, context))
+  }
+
+  async createProjectBullet(projectId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => createProjectBulletMutation(data, projectId, context))
+  }
+
+  async updateProjectBullet(input: UpdateProjectBulletInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => updateProjectBulletMutation(data, input, context))
+  }
+
+  async deleteProjectBullet(projectBulletId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => deleteProjectBulletMutation(data, projectBulletId, context))
+  }
+
+  async reorderProjectBullets(input: ReorderProjectBulletsInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => reorderProjectBulletsMutation(data, input, context))
   }
 
   async createJob(input: CreateJobInput): Promise<JobMutationResult> {

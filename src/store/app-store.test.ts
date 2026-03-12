@@ -398,12 +398,12 @@ describe('app store reorder actions', () => {
 
     const experienceEntryId = expectDefined(await actions.createExperienceEntry(profileId), 'Expected an experience entry id')
     const educationEntryId = expectDefined(await actions.createEducationEntry(profileId), 'Expected an education entry id')
-    const projectId = expectDefined(actions.createProject(profileId), 'Expected a project id')
+    const projectId = expectDefined(await actions.createProject(profileId), 'Expected a project id')
     const additionalExperienceEntryId = expectDefined(actions.createAdditionalExperienceEntry(profileId), 'Expected additional experience id')
 
     await actions.createExperienceBullet(experienceEntryId)
     await actions.createEducationBullet(educationEntryId)
-    actions.createProjectBullet(projectId)
+    await actions.createProjectBullet(projectId)
     actions.createAdditionalExperienceBullet(additionalExperienceEntryId)
 
     const experienceBulletId = expectDefined(Object.keys(useAppStore.getState().data.experienceBullets)[0], 'Expected an experience bullet id')
@@ -421,7 +421,7 @@ describe('app store reorder actions', () => {
 
     await actions.updateExperienceBullet({ experienceBulletId, changes: { level: 2 } })
     await actions.updateEducationBullet({ educationBulletId, changes: { level: 3 } })
-    actions.updateProjectBullet({ projectBulletId, changes: { level: 2 } })
+    await actions.updateProjectBullet({ projectBulletId, changes: { level: 2 } })
     actions.updateAdditionalExperienceBullet({ additionalExperienceBulletId, changes: { level: 3 } })
 
     expect(useAppStore.getState().data.experienceBullets[experienceBulletId]?.level).toBe(2)
@@ -431,7 +431,7 @@ describe('app store reorder actions', () => {
 
     await actions.updateExperienceBullet({ experienceBulletId, changes: { level: 99 as never } })
     await actions.updateEducationBullet({ educationBulletId, changes: { level: 0 as never } })
-    actions.updateProjectBullet({ projectBulletId, changes: { level: -1 as never } })
+    await actions.updateProjectBullet({ projectBulletId, changes: { level: -1 as never } })
     actions.updateAdditionalExperienceBullet({ additionalExperienceBulletId, changes: { level: 4 as never } })
 
     expect(useAppStore.getState().data.experienceBullets[experienceBulletId]?.level).toBe(2)
@@ -631,14 +631,14 @@ describe('app store reorder actions', () => {
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    const firstProjectId = expectDefined(actions.createProject(profileId), 'Expected first project id')
-    const secondProjectId = expectDefined(actions.createProject(profileId), 'Expected second project id')
+    const firstProjectId = expectDefined(await actions.createProject(profileId), 'Expected first project id')
+    const secondProjectId = expectDefined(await actions.createProject(profileId), 'Expected second project id')
 
-    actions.updateProject({
+    await actions.updateProject({
       projectId: firstProjectId,
       changes: { name: 'Alpha', organization: 'Acme', startDate: '2024-01-01', endDate: '2024-03-01' },
     })
-    actions.updateProject({
+    await actions.updateProject({
       projectId: secondProjectId,
       changes: { name: 'Beta', organization: '', startDate: '2024-04-01', endDate: '2024-05-01' },
     })
@@ -646,7 +646,7 @@ describe('app store reorder actions', () => {
     const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
     await waitForNextTick()
 
-    actions.reorderProjects({
+    await actions.reorderProjects({
       profileId,
       orderedIds: [secondProjectId, firstProjectId],
     })
@@ -655,8 +655,8 @@ describe('app store reorder actions', () => {
     expect(useAppStore.getState().data.projects[firstProjectId]?.sortOrder).toBe(2)
     expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
 
-    actions.createProjectBullet(secondProjectId)
-    actions.createProjectBullet(secondProjectId)
+    await actions.createProjectBullet(secondProjectId)
+    await actions.createProjectBullet(secondProjectId)
 
     const bulletIds = getOrderedIds(
       Object.fromEntries(
@@ -668,16 +668,16 @@ describe('app store reorder actions', () => {
     const firstBulletId = expectDefined(bulletIds[0], 'Expected first project bullet id')
     const secondBulletId = expectDefined(bulletIds[1], 'Expected second project bullet id')
 
-    actions.updateProjectBullet({
+    await actions.updateProjectBullet({
       projectBulletId: firstBulletId,
       changes: { content: 'First project bullet', enabled: true },
     })
-    actions.updateProjectBullet({
+    await actions.updateProjectBullet({
       projectBulletId: secondBulletId,
       changes: { content: 'Second project bullet', enabled: true },
     })
 
-    actions.reorderProjectBullets({
+    await actions.reorderProjectBullets({
       projectId: secondProjectId,
       orderedIds: [secondBulletId, firstBulletId],
     })
@@ -695,9 +695,9 @@ describe('app store reorder actions', () => {
 
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
-    const projectId = expectDefined(actions.createProject(profileId), 'Expected project id')
+    const projectId = expectDefined(await actions.createProject(profileId), 'Expected project id')
 
-    actions.updateProject({
+    await actions.updateProject({
       projectId,
       changes: { name: 'Portfolio rebuild', startDate: '2024-02-01', endDate: '2024-04-01', enabled: true },
     })
@@ -706,7 +706,7 @@ describe('app store reorder actions', () => {
     const updatedAtBeforeInvalidRange = useAppStore.getState().data.profiles[profileId]?.updatedAt
     await waitForNextTick()
 
-    actions.updateProject({
+    await actions.updateProject({
       projectId,
       changes: { startDate: '2024-05-01' },
     })
@@ -715,7 +715,7 @@ describe('app store reorder actions', () => {
     expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).toBe(updatedAtBeforeInvalidRange)
     expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.projectEntries).toHaveLength(1)
 
-    actions.updateProject({
+    await actions.updateProject({
       projectId,
       changes: { enabled: false },
     })
@@ -1201,14 +1201,14 @@ describe('app store reorder actions', () => {
       achievementId,
       changes: { name: 'Promotion', description: 'Promoted after leading a critical delivery' },
     })
-    const projectId = expectDefined(actions.createProject(profileId), 'Expected project id')
-    actions.updateProject({
+    const projectId = expectDefined(await actions.createProject(profileId), 'Expected project id')
+    await actions.updateProject({
       projectId,
       changes: { name: 'Migration tool', organization: 'Acme', startDate: '2024-01-01', endDate: '2024-02-01' },
     })
-    actions.createProjectBullet(projectId)
+    await actions.createProjectBullet(projectId)
     const projectBulletId = expectDefined(Object.keys(useAppStore.getState().data.projectBullets)[0], 'Expected project bullet id')
-    actions.updateProjectBullet({
+    await actions.updateProjectBullet({
       projectBulletId,
       changes: { content: 'Automated bulk migration workflow', enabled: true, level: 2 },
     })
@@ -1339,14 +1339,14 @@ describe('app store reorder actions', () => {
     await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    const originalProjectId = expectDefined(actions.createProject(profileId), 'Expected project id')
-    actions.updateProject({
+    const originalProjectId = expectDefined(await actions.createProject(profileId), 'Expected project id')
+    await actions.updateProject({
       projectId: originalProjectId,
       changes: { name: 'Internal dashboard', organization: 'Acme', startDate: '2024-01-01', endDate: '2024-03-01' },
     })
-    actions.createProjectBullet(originalProjectId)
+    await actions.createProjectBullet(originalProjectId)
     const originalProjectBulletId = expectDefined(Object.keys(useAppStore.getState().data.projectBullets)[0], 'Expected project bullet id')
-    actions.updateProjectBullet({
+    await actions.updateProjectBullet({
       projectBulletId: originalProjectBulletId,
       changes: { content: 'Built analytics reporting view', enabled: true },
     })
@@ -1379,7 +1379,7 @@ describe('app store reorder actions', () => {
     })
     expect(duplicatedProjectBullet.id).not.toBe(originalProjectBulletId)
 
-    actions.deleteProject(originalProjectId)
+    await actions.deleteProject(originalProjectId)
     expect(Object.values(useAppStore.getState().data.projectBullets).filter((item) => item.projectId === originalProjectId)).toHaveLength(0)
     expect(Object.values(useAppStore.getState().data.projectBullets).filter((item) => item.projectId === duplicatedProject.id)).toHaveLength(1)
 
