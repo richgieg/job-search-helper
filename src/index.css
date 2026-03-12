@@ -315,6 +315,11 @@ a[class*='border-app-danger-muted']:not(:hover):not(:focus-visible):not(:active)
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
 }
 
+.document-header-preview {
+  width: 8.5in;
+  margin-inline: auto;
+}
+
 .document-page-break {
   margin-top: 2rem;
 }

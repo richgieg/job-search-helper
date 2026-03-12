@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { ActionToggle } from '../../components/CompactActionControls'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
+import { DocumentProfileHeader } from '../../features/documents/DocumentProfileHeader'
+import { selectProfileDocumentData } from '../../features/documents/document-data'
 import { ProfileChildEditors } from './ProfileChildEditors'
 import { useAppStore } from '../../store/app-store'
 import type { DocumentHeaderTemplate, PersonalDetails, ResumeSectionKey } from '../../types/state'
@@ -71,7 +73,9 @@ const OrderBadge = ({ value }: { value: number }) => (
 
 export const ProfilePage = () => {
   const { profileId = '' } = useParams()
+  const data = useAppStore((state) => state.data)
   const profile = useAppStore((state) => state.data.profiles[profileId])
+  const documentData = useMemo(() => selectProfileDocumentData(data, profileId), [data, profileId])
   const jobsById = useAppStore((state) => state.data.jobs)
   const updateProfile = useAppStore((state) => state.actions.updateProfile)
   const setDocumentHeaderTemplate = useAppStore((state) => state.actions.setDocumentHeaderTemplate)
@@ -284,7 +288,7 @@ export const ProfilePage = () => {
 
       <CollapsiblePanel description="Control document header styling plus which sections appear on the resume and the order in which they are shown." title="Resume settings">
         <div className="space-y-4">
-          <div className="max-w-lg rounded-xl border border-app-border-muted p-4">
+          <div className="rounded-xl border border-app-border-muted p-4">
             <label className="flex flex-col gap-2 text-sm text-app-text-muted">
               <span className="font-medium text-app-text">Document header</span>
               <select
@@ -305,6 +309,17 @@ export const ProfilePage = () => {
               </select>
             </label>
             <p className="mt-2 text-xs text-app-text-subtle">Applies to the resume, cover letter, and references document.</p>
+
+            {documentData ? (
+              <div className="mt-4 overflow-hidden rounded-xl border border-app-border bg-white p-4 shadow-sm">
+                <p className="mb-3 text-xs font-medium uppercase tracking-[0.16em] text-app-text-subtle">Preview</p>
+                <div className="overflow-x-auto pb-1">
+                  <div className="document-header-preview">
+                    <DocumentProfileHeader documentData={documentData} />
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
