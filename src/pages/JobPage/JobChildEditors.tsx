@@ -210,11 +210,11 @@ const AttachedProfileCard = ({
       return
     }
 
-    deleteProfile(profile.id)
+    void deleteProfile(profile.id)
   }
 
-  const handleDuplicate = () => {
-    const createdId = duplicateProfile({ sourceProfileId: profile.id })
+  const handleDuplicate = async () => {
+    const createdId = await duplicateProfile({ sourceProfileId: profile.id })
 
     if (createdId) {
       onDuplicateComplete?.(createdId)
@@ -831,12 +831,12 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
     })
   }, [baseProfiles])
 
-  const handleAddJobProfile = () => {
+  const handleAddJobProfile = async () => {
     if (!selectedBaseProfileId) {
       return
     }
 
-    const createdId = duplicateProfile({
+    const createdId = await duplicateProfile({
       sourceProfileId: selectedBaseProfileId,
       targetJobId: jobId,
     })

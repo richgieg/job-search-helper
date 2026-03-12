@@ -40,6 +40,24 @@ import {
   type UpdateJobInput,
   type UpdateJobLinkInput,
 } from '../domain/job-data'
+import {
+  createBaseProfileMutation,
+  deleteProfileMutation,
+  duplicateProfileMutation,
+  reorderResumeSectionsMutation,
+  setDocumentHeaderTemplateMutation,
+  setResumeSectionEnabledMutation,
+  setResumeSectionLabelMutation,
+  updateProfileMutation,
+  type DuplicateProfileInput,
+  type ProfileMutationContext,
+  type ProfileMutationResult,
+  type ReorderResumeSectionsInput,
+  type SetDocumentHeaderTemplateInput,
+  type SetResumeSectionEnabledInput,
+  type SetResumeSectionLabelInput,
+  type UpdateProfileInput,
+} from '../domain/profile-data'
 import type { AppDataService } from './app-data-service'
 
 interface MockAppBackendOptions {
@@ -95,6 +113,47 @@ export class MockAppBackend implements AppDataService {
       ...result,
       data: cloneAppData(this.data),
     }
+  }
+
+  private mutateProfile(mutation: (data: AppDataState, context: ProfileMutationContext) => ProfileMutationResult): ProfileMutationResult {
+    const result = mutation(this.data, { now: this.now, createId: () => crypto.randomUUID() })
+    this.data = cloneAppData(result.data)
+    return {
+      ...result,
+      data: cloneAppData(this.data),
+    }
+  }
+
+  async createBaseProfile(name: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => createBaseProfileMutation(data, name, context))
+  }
+
+  async updateProfile(input: UpdateProfileInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => updateProfileMutation(data, input, context))
+  }
+
+  async setDocumentHeaderTemplate(input: SetDocumentHeaderTemplateInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => setDocumentHeaderTemplateMutation(data, input, context))
+  }
+
+  async setResumeSectionEnabled(input: SetResumeSectionEnabledInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => setResumeSectionEnabledMutation(data, input, context))
+  }
+
+  async setResumeSectionLabel(input: SetResumeSectionLabelInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => setResumeSectionLabelMutation(data, input, context))
+  }
+
+  async reorderResumeSections(input: ReorderResumeSectionsInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => reorderResumeSectionsMutation(data, input, context))
+  }
+
+  async duplicateProfile(input: DuplicateProfileInput): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data, context) => duplicateProfileMutation(data, input, context))
+  }
+
+  async deleteProfile(profileId: string): Promise<ProfileMutationResult> {
+    return this.mutateProfile((data) => deleteProfileMutation(data, profileId))
   }
 
   async createJob(input: CreateJobInput): Promise<JobMutationResult> {

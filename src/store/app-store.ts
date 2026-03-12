@@ -15,11 +15,17 @@ import type {
   UpdateJobInput,
   UpdateJobLinkInput,
 } from '../domain/job-data'
-import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState, emptyProfileDefaults } from './create-initial-state'
-import { normalizeDocumentHeaderTemplate } from '../utils/document-header-templates'
+import type {
+  DuplicateProfileInput,
+  ProfileMutationResult,
+  ReorderResumeSectionsInput,
+  SetDocumentHeaderTemplateInput,
+  SetResumeSectionEnabledInput,
+  SetResumeSectionLabelInput,
+  UpdateProfileInput,
+} from '../domain/profile-data'
+import { createDefaultUiState, createEmptyDataState } from './create-initial-state'
 import { defaultBulletLevel, isBulletLevel } from '../utils/bullet-levels'
-import { defaultResumeSectionOrder } from '../utils/resume-section-labels'
-import { normalizeResumeSectionLabel } from '../utils/resume-section-labels'
 import type {
   Achievement,
   AdditionalExperienceBullet,
@@ -29,21 +35,16 @@ import type {
   AppUiState,
   BulletLevel,
   Certification,
-  DocumentHeaderTemplate,
   EducationBullet,
   EducationEntry,
   EducationStatus,
   ExperienceBullet,
   ExperienceEntry,
   Id,
-  PersonalDetails,
-  Profile,
   ProfileLink,
   Project,
   ProjectBullet,
   Reference,
-  ResumeSectionKey,
-  ResumeSettings,
   Skill,
   SkillCategory,
   ThemePreference,
@@ -64,18 +65,14 @@ interface AppStoreState {
   status: AppStoreStatus
   actions: {
     hydrate: () => Promise<void>
-    createBaseProfile: (name: string) => void
-    updateProfile: (input: {
-      profileId: Id
-      changes: Partial<Pick<Profile, 'name' | 'summary' | 'coverLetter'>>
-      personalDetails?: Partial<PersonalDetails>
-    }) => void
-    setDocumentHeaderTemplate: (input: { profileId: Id; headerTemplate: DocumentHeaderTemplate }) => void
-    setResumeSectionEnabled: (input: { profileId: Id; section: ResumeSectionKey; enabled: boolean }) => void
-    setResumeSectionLabel: (input: { profileId: Id; section: ResumeSectionKey; label: string }) => void
-    reorderResumeSections: (input: { profileId: Id; orderedSections: ResumeSectionKey[] }) => void
-    duplicateProfile: (input: { sourceProfileId: Id; targetJobId?: Id | null; name?: string }) => Id | null
-    deleteProfile: (profileId: Id) => void
+    createBaseProfile: (name: string) => Promise<Id | null>
+    updateProfile: (input: UpdateProfileInput) => Promise<void>
+    setDocumentHeaderTemplate: (input: SetDocumentHeaderTemplateInput) => Promise<void>
+    setResumeSectionEnabled: (input: SetResumeSectionEnabledInput) => Promise<void>
+    setResumeSectionLabel: (input: SetResumeSectionLabelInput) => Promise<void>
+    reorderResumeSections: (input: ReorderResumeSectionsInput) => Promise<void>
+    duplicateProfile: (input: DuplicateProfileInput) => Promise<Id | null>
+    deleteProfile: (profileId: Id) => Promise<void>
     createProfileLink: (profileId: Id) => Id | null
     updateProfileLink: (input: {
       profileLinkId: Id
@@ -255,8 +252,6 @@ const reorderSortableEntities = <T extends { id: Id; sortOrder: number }>(entiti
   return nextEntities
 }
 
-const resumeSectionKeys: ResumeSectionKey[] = defaultResumeSectionOrder
-
 const normalizeEducationEntry = (
   existing: EducationEntry,
   changes: Partial<Omit<EducationEntry, 'id' | 'profileId'>>,
@@ -317,20 +312,6 @@ const mergeBulletChanges = <T extends { level: BulletLevel }>(existing: T, chang
   }
 }
 
-const hasExactResumeSections = (orderedSections: ResumeSectionKey[]) => {
-  if (orderedSections.length !== resumeSectionKeys.length) {
-    return false
-  }
-
-  const sectionSet = new Set(orderedSections)
-
-  if (sectionSet.size !== resumeSectionKeys.length) {
-    return false
-  }
-
-  return resumeSectionKeys.every((section) => sectionSet.has(section))
-}
-
 const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: string): AppDataState => {
   const profile = data.profiles[profileId]
 
@@ -350,354 +331,7 @@ const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: strin
   }
 }
 
-const cloneProfileChildren = (data: AppDataState, sourceProfileId: Id, targetProfileId: Id): AppDataState => {
-  const clonedSkillCategoryIds = new Map<Id, Id>()
-  const clonedExperienceEntryIds = new Map<Id, Id>()
-  const clonedEducationEntryIds = new Map<Id, Id>()
-  const clonedProjectIds = new Map<Id, Id>()
-  const clonedAdditionalExperienceEntryIds = new Map<Id, Id>()
-  const nextData: AppDataState = {
-    ...data,
-    profileLinks: { ...data.profileLinks },
-    skillCategories: { ...data.skillCategories },
-    skills: { ...data.skills },
-    achievements: { ...data.achievements },
-    experienceEntries: { ...data.experienceEntries },
-    experienceBullets: { ...data.experienceBullets },
-    educationEntries: { ...data.educationEntries },
-    educationBullets: { ...data.educationBullets },
-    projects: { ...data.projects },
-    projectBullets: { ...data.projectBullets },
-    additionalExperienceEntries: { ...data.additionalExperienceEntries },
-    additionalExperienceBullets: { ...data.additionalExperienceBullets },
-    certifications: { ...data.certifications },
-    references: { ...data.references },
-  }
-  const timestamp = now()
-
-  Object.values(data.profileLinks)
-    .filter((item) => item.profileId === sourceProfileId)
-    .forEach((item) => {
-      const cloned: ProfileLink = {
-        ...item,
-        id: createId(),
-        profileId: targetProfileId,
-      }
-      nextData.profileLinks[cloned.id] = cloned
-    })
-
-  Object.values(data.skillCategories)
-    .filter((item) => item.profileId === sourceProfileId)
-    .forEach((item) => {
-      const newId = createId()
-      clonedSkillCategoryIds.set(item.id, newId)
-      const cloned: SkillCategory = {
-        ...item,
-        id: newId,
-        profileId: targetProfileId,
-      }
-      nextData.skillCategories[newId] = cloned
-    })
-
-  Object.values(data.skills)
-    .filter((item) => clonedSkillCategoryIds.has(item.skillCategoryId))
-    .forEach((item) => {
-      const cloned: Skill = {
-        ...item,
-        id: createId(),
-        skillCategoryId: clonedSkillCategoryIds.get(item.skillCategoryId)!,
-      }
-      nextData.skills[cloned.id] = cloned
-    })
-
-  Object.values(data.achievements)
-    .filter((item) => item.profileId === sourceProfileId)
-    .forEach((item) => {
-      const cloned: Achievement = {
-        ...item,
-        id: createId(),
-        profileId: targetProfileId,
-      }
-      nextData.achievements[cloned.id] = cloned
-    })
-
-  Object.values(data.experienceEntries)
-    .filter((item) => item.profileId === sourceProfileId)
-    .forEach((item) => {
-      const newId = createId()
-      clonedExperienceEntryIds.set(item.id, newId)
-      const cloned: ExperienceEntry = {
-        ...item,
-        id: newId,
-        profileId: targetProfileId,
-      }
-      nextData.experienceEntries[cloned.id] = cloned
-    })
-
-  Object.values(data.experienceBullets)
-    .filter((item) => clonedExperienceEntryIds.has(item.experienceEntryId))
-    .forEach((item) => {
-      const cloned: ExperienceBullet = {
-        ...item,
-        id: createId(),
-        experienceEntryId: clonedExperienceEntryIds.get(item.experienceEntryId)!,
-      }
-      nextData.experienceBullets[cloned.id] = cloned
-    })
-
-  Object.values(data.educationEntries)
-    .filter((item) => item.profileId === sourceProfileId)
-    .forEach((item) => {
-      const newId = createId()
-      clonedEducationEntryIds.set(item.id, newId)
-      const cloned: EducationEntry = {
-        ...item,
-        id: newId,
-        profileId: targetProfileId,
-      }
-      nextData.educationEntries[cloned.id] = cloned
-    })
-
-  Object.values(data.educationBullets)
-    .filter((item) => clonedEducationEntryIds.has(item.educationEntryId))
-    .forEach((item) => {
-      const cloned: EducationBullet = {
-        ...item,
-        id: createId(),
-        educationEntryId: clonedEducationEntryIds.get(item.educationEntryId)!,
-      }
-      nextData.educationBullets[cloned.id] = cloned
-    })
-
-  Object.values(data.projects)
-    .filter((item) => item.profileId === sourceProfileId)
-    .forEach((item) => {
-      const newId = createId()
-      clonedProjectIds.set(item.id, newId)
-      const cloned: Project = {
-        ...item,
-        id: newId,
-        profileId: targetProfileId,
-      }
-      nextData.projects[cloned.id] = cloned
-    })
-
-  Object.values(data.projectBullets)
-    .filter((item) => clonedProjectIds.has(item.projectId))
-    .forEach((item) => {
-      const cloned: ProjectBullet = {
-        ...item,
-        id: createId(),
-        projectId: clonedProjectIds.get(item.projectId)!,
-      }
-      nextData.projectBullets[cloned.id] = cloned
-    })
-
-  Object.values(data.additionalExperienceEntries)
-    .filter((item) => item.profileId === sourceProfileId)
-    .forEach((item) => {
-      const newId = createId()
-      clonedAdditionalExperienceEntryIds.set(item.id, newId)
-      const cloned: AdditionalExperienceEntry = {
-        ...item,
-        id: newId,
-        profileId: targetProfileId,
-      }
-      nextData.additionalExperienceEntries[cloned.id] = cloned
-    })
-
-  Object.values(data.additionalExperienceBullets)
-    .filter((item) => clonedAdditionalExperienceEntryIds.has(item.additionalExperienceEntryId))
-    .forEach((item) => {
-      const cloned: AdditionalExperienceBullet = {
-        ...item,
-        id: createId(),
-        additionalExperienceEntryId: clonedAdditionalExperienceEntryIds.get(item.additionalExperienceEntryId)!,
-      }
-      nextData.additionalExperienceBullets[cloned.id] = cloned
-    })
-
-  Object.values(data.certifications)
-    .filter((item) => item.profileId === sourceProfileId)
-    .forEach((item) => {
-      const cloned: Certification = {
-        ...item,
-        id: createId(),
-        profileId: targetProfileId,
-      }
-      nextData.certifications[cloned.id] = cloned
-    })
-
-  Object.values(data.references)
-    .filter((item) => item.profileId === sourceProfileId)
-    .forEach((item) => {
-      const cloned: Reference = {
-        ...item,
-        id: createId(),
-        profileId: targetProfileId,
-      }
-      nextData.references[cloned.id] = cloned
-    })
-
-  return stampUpdatedProfile(nextData, targetProfileId, timestamp)
-}
-
-const deleteProfileCascade = (data: AppDataState, profileId: Id): AppDataState => {
-  const skillCategoryIds = new Set(
-    Object.values(data.skillCategories)
-      .filter((item) => item.profileId === profileId)
-      .map((item) => item.id),
-  )
-  const experienceEntryIds = new Set(
-    Object.values(data.experienceEntries)
-      .filter((item) => item.profileId === profileId)
-      .map((item) => item.id),
-  )
-  const projectIds = new Set(
-    Object.values(data.projects)
-      .filter((item) => item.profileId === profileId)
-      .map((item) => item.id),
-  )
-  const additionalExperienceEntryIds = new Set(
-    Object.values(data.additionalExperienceEntries)
-      .filter((item) => item.profileId === profileId)
-      .map((item) => item.id),
-  )
-
-  const nextProfiles = { ...data.profiles }
-  const nextProfileLinks = { ...data.profileLinks }
-  const nextSkillCategories = { ...data.skillCategories }
-  const nextSkills = { ...data.skills }
-  const nextAchievements = { ...data.achievements }
-  const nextExperienceEntries = { ...data.experienceEntries }
-  const nextExperienceBullets = { ...data.experienceBullets }
-  const nextEducationEntries = { ...data.educationEntries }
-  const nextEducationBullets = { ...data.educationBullets }
-  const nextProjects = { ...data.projects }
-  const nextProjectBullets = { ...data.projectBullets }
-  const nextAdditionalExperienceEntries = { ...data.additionalExperienceEntries }
-  const nextAdditionalExperienceBullets = { ...data.additionalExperienceBullets }
-  const nextCertifications = { ...data.certifications }
-  const nextReferences = { ...data.references }
-
-  delete nextProfiles[profileId]
-
-  Object.values(nextProfiles).forEach((profile) => {
-    if (profile.clonedFromProfileId === profileId) {
-      nextProfiles[profile.id] = {
-        ...profile,
-        clonedFromProfileId: null,
-      }
-    }
-  })
-
-  Object.values(data.skillCategories).forEach((item) => {
-    if (item.profileId === profileId) {
-      delete nextSkillCategories[item.id]
-    }
-  })
-
-  Object.values(data.profileLinks).forEach((item) => {
-    if (item.profileId === profileId) {
-      delete nextProfileLinks[item.id]
-    }
-  })
-
-  Object.values(data.skills).forEach((item) => {
-    if (skillCategoryIds.has(item.skillCategoryId)) {
-      delete nextSkills[item.id]
-    }
-  })
-
-  Object.values(data.achievements).forEach((item) => {
-    if (item.profileId === profileId) {
-      delete nextAchievements[item.id]
-    }
-  })
-
-  Object.values(data.experienceEntries).forEach((item) => {
-    if (item.profileId === profileId) {
-      delete nextExperienceEntries[item.id]
-    }
-  })
-
-  Object.values(data.experienceBullets).forEach((item) => {
-    if (experienceEntryIds.has(item.experienceEntryId)) {
-      delete nextExperienceBullets[item.id]
-    }
-  })
-
-  Object.values(data.educationEntries).forEach((item) => {
-    if (item.profileId === profileId) {
-      delete nextEducationEntries[item.id]
-    }
-  })
-
-  Object.values(data.educationBullets).forEach((item) => {
-    const educationEntry = data.educationEntries[item.educationEntryId]
-
-    if (educationEntry?.profileId === profileId) {
-      delete nextEducationBullets[item.id]
-    }
-  })
-
-  Object.values(data.projects).forEach((item) => {
-    if (item.profileId === profileId) {
-      delete nextProjects[item.id]
-    }
-  })
-
-  Object.values(data.projectBullets).forEach((item) => {
-    if (projectIds.has(item.projectId)) {
-      delete nextProjectBullets[item.id]
-    }
-  })
-
-  Object.values(data.additionalExperienceEntries).forEach((item) => {
-    if (item.profileId === profileId) {
-      delete nextAdditionalExperienceEntries[item.id]
-    }
-  })
-
-  Object.values(data.additionalExperienceBullets).forEach((item) => {
-    if (additionalExperienceEntryIds.has(item.additionalExperienceEntryId)) {
-      delete nextAdditionalExperienceBullets[item.id]
-    }
-  })
-
-  Object.values(data.certifications).forEach((item) => {
-    if (item.profileId === profileId) {
-      delete nextCertifications[item.id]
-    }
-  })
-
-  Object.values(data.references).forEach((item) => {
-    if (item.profileId === profileId) {
-      delete nextReferences[item.id]
-    }
-  })
-
-  return {
-    ...data,
-    profiles: nextProfiles,
-    profileLinks: nextProfileLinks,
-    skillCategories: nextSkillCategories,
-    skills: nextSkills,
-    achievements: nextAchievements,
-    experienceEntries: nextExperienceEntries,
-    experienceBullets: nextExperienceBullets,
-    educationEntries: nextEducationEntries,
-    educationBullets: nextEducationBullets,
-    projects: nextProjects,
-    projectBullets: nextProjectBullets,
-    additionalExperienceEntries: nextAdditionalExperienceEntries,
-    additionalExperienceBullets: nextAdditionalExperienceBullets,
-    certifications: nextCertifications,
-    references: nextReferences,
-  }
-}
-
-const deleteExperienceEntryCascade = (data: AppDataState, experienceEntryId: Id): AppDataState => {
+ const deleteExperienceEntryCascade = (data: AppDataState, experienceEntryId: Id): AppDataState => {
   const nextExperienceEntries = { ...data.experienceEntries }
   const nextExperienceBullets = { ...data.experienceBullets }
 
@@ -792,26 +426,51 @@ const deleteSkillCategoryCascade = (data: AppDataState, skillCategoryId: Id): Ap
   }
 }
 
-const createProfileRecord = (name: string): Profile => {
-  const timestamp = now()
+ export const useAppStore = create<AppStoreState>((set, get) => {
+  const runPersistedProfileMutation = async (
+    mutation: (data: AppDataState) => Promise<ProfileMutationResult>,
+    updateUi?: (state: AppStoreState, result: ProfileMutationResult) => AppUiState,
+  ): Promise<ProfileMutationResult | null> => {
+    set((state) => ({
+      ...state,
+      status: {
+        ...state.status,
+        saving: 'saving',
+        errorMessage: null,
+      },
+    }))
 
-  return {
-    id: createId(),
-    name,
-    summary: emptyProfileDefaults.summary,
-    coverLetter: emptyProfileDefaults.coverLetter,
-    resumeSettings: createDefaultResumeSettings(),
-    personalDetails: {
-      ...emptyProfileDefaults.personalDetails,
-    },
-    jobId: null,
-    clonedFromProfileId: null,
-    createdAt: timestamp,
-    updatedAt: timestamp,
+    try {
+      const result = await mutation(get().data)
+
+      set((state) => ({
+        ...state,
+        data: result.data,
+        ui: updateUi ? updateUi(state, result) : state.ui,
+        status: {
+          ...state.status,
+          saving: 'idle',
+          errorMessage: null,
+        },
+      }))
+
+      return result
+    } catch (caughtError) {
+      const errorMessage = caughtError instanceof Error ? caughtError.message : 'Unknown profile mutation error.'
+
+      set((state) => ({
+        ...state,
+        status: {
+          ...state.status,
+          saving: 'error',
+          errorMessage,
+        },
+      }))
+
+      return null
+    }
   }
-}
 
-export const useAppStore = create<AppStoreState>((set, get) => {
   const runPersistedJobMutation = async (
     mutation: (data: AppDataState) => Promise<JobMutationResult>,
     updateUi?: (state: AppStoreState, result: JobMutationResult) => AppUiState,
@@ -900,241 +559,57 @@ export const useAppStore = create<AppStoreState>((set, get) => {
         }))
       }
     },
-    createBaseProfile: (name) => {
-      const profile = createProfileRecord(name)
-
-      set((state) => ({
-        data: {
-          ...state.data,
-          profiles: {
-            ...state.data.profiles,
-            [profile.id]: profile,
-          },
-        },
-        ui: {
+    createBaseProfile: async (name) => {
+      const result = await runPersistedProfileMutation(
+        (data) => getAppApiClient().createBaseProfile(data, name),
+        (state, mutationResult) => ({
           ...state.ui,
-          selectedProfileId: profile.id,
-        },
-      }))
+          selectedProfileId: mutationResult.createdId ?? state.ui.selectedProfileId,
+        }),
+      )
+
+      return result?.createdId ?? null
     },
-    updateProfile: ({ profileId, changes, personalDetails }) => {
-      const existingProfile = get().data.profiles[profileId]
-
-      if (!existingProfile) {
-        return
-      }
-
-      set((state) => ({
-        data: {
-          ...state.data,
-          profiles: {
-            ...state.data.profiles,
-            [profileId]: {
-              ...existingProfile,
-              ...changes,
-              personalDetails: {
-                ...existingProfile.personalDetails,
-                ...personalDetails,
-              },
-              updatedAt: now(),
-            },
-          },
-        },
-      }))
+    updateProfile: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateProfile(data, input))
     },
-    setDocumentHeaderTemplate: ({ profileId, headerTemplate }) => {
-      const existingProfile = get().data.profiles[profileId]
-
-      if (!existingProfile) {
-        return
-      }
-
-      const nextHeaderTemplate = normalizeDocumentHeaderTemplate(headerTemplate)
-
-      if (existingProfile.resumeSettings.headerTemplate === nextHeaderTemplate) {
-        return
-      }
-
-      set((state) => ({
-        data: {
-          ...state.data,
-          profiles: {
-            ...state.data.profiles,
-            [profileId]: {
-              ...existingProfile,
-              resumeSettings: {
-                ...existingProfile.resumeSettings,
-                headerTemplate: nextHeaderTemplate,
-              },
-              updatedAt: now(),
-            },
-          },
-        },
-      }))
+    setDocumentHeaderTemplate: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().setDocumentHeaderTemplate(data, input))
     },
-    setResumeSectionEnabled: ({ profileId, section, enabled }) => {
-      const existingProfile = get().data.profiles[profileId]
-
-      if (!existingProfile) {
-        return
-      }
-
-      set((state) => ({
-        data: {
-          ...state.data,
-          profiles: {
-            ...state.data.profiles,
-            [profileId]: {
-              ...existingProfile,
-              resumeSettings: {
-                ...existingProfile.resumeSettings,
-                sections: {
-                  ...existingProfile.resumeSettings.sections,
-                  [section]: {
-                    ...existingProfile.resumeSettings.sections[section],
-                    enabled,
-                  },
-                },
-              },
-              updatedAt: now(),
-            },
-          },
-        },
-      }))
+    setResumeSectionEnabled: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().setResumeSectionEnabled(data, input))
     },
-    setResumeSectionLabel: ({ profileId, section, label }) => {
-      const existingProfile = get().data.profiles[profileId]
-
-      if (!existingProfile) {
-        return
-      }
-
-      const nextLabel = normalizeResumeSectionLabel(section, label)
-
-      if (existingProfile.resumeSettings.sections[section].label === nextLabel) {
-        return
-      }
-
-      set((state) => ({
-        data: {
-          ...state.data,
-          profiles: {
-            ...state.data.profiles,
-            [profileId]: {
-              ...existingProfile,
-              resumeSettings: {
-                ...existingProfile.resumeSettings,
-                sections: {
-                  ...existingProfile.resumeSettings.sections,
-                  [section]: {
-                    ...existingProfile.resumeSettings.sections[section],
-                    label: nextLabel,
-                  },
-                },
-              },
-              updatedAt: now(),
-            },
-          },
-        },
-      }))
+    setResumeSectionLabel: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().setResumeSectionLabel(data, input))
     },
-    reorderResumeSections: ({ profileId, orderedSections }) => {
-      const existingProfile = get().data.profiles[profileId]
-
-      if (!existingProfile || !hasExactResumeSections(orderedSections)) {
-        return
-      }
-
-      set((state) => {
-        const nextSections = orderedSections.reduce<ResumeSettings['sections']>((accumulator, section, index) => {
-          accumulator[section] = {
-            ...existingProfile.resumeSettings.sections[section],
-            sortOrder: index + 1,
-          }
-
-          return accumulator
-        }, {} as ResumeSettings['sections'])
-
-        return {
-          data: {
-            ...state.data,
-            profiles: {
-              ...state.data.profiles,
-              [profileId]: {
-                ...existingProfile,
-                resumeSettings: {
-                  ...existingProfile.resumeSettings,
-                  sections: nextSections,
-                },
-                updatedAt: now(),
-              },
-            },
-          },
-        }
-      })
+    reorderResumeSections: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderResumeSections(data, input))
     },
-    duplicateProfile: ({ sourceProfileId, targetJobId, name }) => {
-      const sourceProfile = get().data.profiles[sourceProfileId]
+    duplicateProfile: async (input) => {
+      const result = await runPersistedProfileMutation(
+        (data) => getAppApiClient().duplicateProfile(data, input),
+        (state, mutationResult) => {
+          const createdProfileId = mutationResult.createdId ?? null
+          const createdProfile = createdProfileId ? mutationResult.data.profiles[createdProfileId] : null
 
-      if (!sourceProfile) {
-        return null
-      }
-
-      const timestamp = now()
-      const nextName = name?.trim()
-        ? name.trim()
-        : sourceProfile.jobId === null && targetJobId !== undefined && targetJobId !== null
-          ? sourceProfile.name
-          : `${sourceProfile.name} Copy`
-
-      const clonedProfile: Profile = {
-        ...sourceProfile,
-        id: createId(),
-        name: nextName,
-        resumeSettings: {
-          headerTemplate: sourceProfile.resumeSettings.headerTemplate,
-          sections: resumeSectionKeys.reduce<ResumeSettings['sections']>((sections, section) => {
-            sections[section] = { ...sourceProfile.resumeSettings.sections[section] }
-            return sections
-          }, {} as ResumeSettings['sections']),
-        },
-        jobId: targetJobId === undefined ? sourceProfile.jobId : targetJobId,
-        clonedFromProfileId: sourceProfileId,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      }
-
-      set((state) => {
-        const withProfile: AppDataState = {
-          ...state.data,
-          profiles: {
-            ...state.data.profiles,
-            [clonedProfile.id]: clonedProfile,
-          },
-        }
-
-        const nextData = cloneProfileChildren(withProfile, sourceProfileId, clonedProfile.id)
-
-        return {
-          data: nextData,
-          ui: {
+          return {
             ...state.ui,
-            selectedProfileId: clonedProfile.id,
-            selectedJobId: clonedProfile.jobId ?? state.ui.selectedJobId,
-          },
-        }
-      })
+            selectedProfileId: createdProfileId ?? state.ui.selectedProfileId,
+            selectedJobId: createdProfile?.jobId ?? state.ui.selectedJobId,
+          }
+        },
+      )
 
-      return clonedProfile.id
+      return result?.createdId ?? null
     },
-    deleteProfile: (profileId) => {
-      set((state) => ({
-        data: deleteProfileCascade(state.data, profileId),
-        ui: {
+    deleteProfile: async (profileId) => {
+      await runPersistedProfileMutation(
+        (data) => getAppApiClient().deleteProfile(data, profileId),
+        (state) => ({
           ...state.ui,
           selectedProfileId: state.ui.selectedProfileId === profileId ? null : state.ui.selectedProfileId,
-        },
-      }))
+        }),
+      )
     },
     createProfileLink: (profileId) => {
       const profile = get().data.profiles[profileId]

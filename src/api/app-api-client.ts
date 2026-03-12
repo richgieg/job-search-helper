@@ -13,6 +13,15 @@ import type {
   UpdateJobInput,
   UpdateJobLinkInput,
 } from '../domain/job-data'
+import type {
+  DuplicateProfileInput,
+  ProfileMutationResult,
+  ReorderResumeSectionsInput,
+  SetDocumentHeaderTemplateInput,
+  SetResumeSectionEnabledInput,
+  SetResumeSectionLabelInput,
+  UpdateProfileInput,
+} from '../domain/profile-data'
 import type { AppDataService } from './app-data-service'
 
 export interface AppApiClient {
@@ -20,6 +29,14 @@ export interface AppApiClient {
   replaceAppData(data: AppDataState): Promise<AppDataState>
   importAppData(file: AppExportFile): Promise<AppDataState>
   exportAppData(data: AppDataState): Promise<AppExportFile>
+  createBaseProfile(data: AppDataState, name: string): Promise<ProfileMutationResult>
+  updateProfile(data: AppDataState, input: UpdateProfileInput): Promise<ProfileMutationResult>
+  setDocumentHeaderTemplate(data: AppDataState, input: SetDocumentHeaderTemplateInput): Promise<ProfileMutationResult>
+  setResumeSectionEnabled(data: AppDataState, input: SetResumeSectionEnabledInput): Promise<ProfileMutationResult>
+  setResumeSectionLabel(data: AppDataState, input: SetResumeSectionLabelInput): Promise<ProfileMutationResult>
+  reorderResumeSections(data: AppDataState, input: ReorderResumeSectionsInput): Promise<ProfileMutationResult>
+  duplicateProfile(data: AppDataState, input: DuplicateProfileInput): Promise<ProfileMutationResult>
+  deleteProfile(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
   createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult>
   updateJob(data: AppDataState, input: UpdateJobInput): Promise<JobMutationResult>
   deleteJob(data: AppDataState, jobId: string): Promise<JobMutationResult>
@@ -68,6 +85,46 @@ export class LocalAppApiClient implements AppApiClient {
 
   exportAppData(data: AppDataState): Promise<AppExportFile> {
     return this.service.exportAppData(data)
+  }
+
+  async createBaseProfile(data: AppDataState, name: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.createBaseProfile(name)
+  }
+
+  async updateProfile(data: AppDataState, input: UpdateProfileInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.updateProfile(input)
+  }
+
+  async setDocumentHeaderTemplate(data: AppDataState, input: SetDocumentHeaderTemplateInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.setDocumentHeaderTemplate(input)
+  }
+
+  async setResumeSectionEnabled(data: AppDataState, input: SetResumeSectionEnabledInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.setResumeSectionEnabled(input)
+  }
+
+  async setResumeSectionLabel(data: AppDataState, input: SetResumeSectionLabelInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.setResumeSectionLabel(input)
+  }
+
+  async reorderResumeSections(data: AppDataState, input: ReorderResumeSectionsInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.reorderResumeSections(input)
+  }
+
+  async duplicateProfile(data: AppDataState, input: DuplicateProfileInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.duplicateProfile(input)
+  }
+
+  async deleteProfile(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.deleteProfile(profileId)
   }
 
   async createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult> {

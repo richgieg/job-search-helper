@@ -121,7 +121,7 @@ describe('app store reorder actions', () => {
   it('reorders skill categories for a profile', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     actions.createSkillCategory(profileId)
@@ -154,7 +154,7 @@ describe('app store reorder actions', () => {
   it('reorders enabled profile links for a profile and preview data reflects the new order', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     actions.createProfileLink(profileId)
@@ -201,7 +201,7 @@ describe('app store reorder actions', () => {
   it('toggles profile link enabled state and excludes disabled links from preview data', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     actions.createProfileLink(profileId)
@@ -242,10 +242,10 @@ describe('app store reorder actions', () => {
     expect(preview?.profileLinks.map((link) => link.url)).toEqual(['https://linkedin.com/in/example'])
   })
 
-  it('initializes, updates, and reorders per-profile resume settings', () => {
+  it('initializes, updates, and reorders per-profile resume settings', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     const initialProfile = useAppStore.getState().data.profiles[profileId]
@@ -258,24 +258,24 @@ describe('app store reorder actions', () => {
     expect(initialProfile?.resumeSettings.sections.additional_experience.sortOrder).toBe(7)
     expect(initialProfile?.resumeSettings.sections.references.sortOrder).toBe(9)
 
-    actions.setDocumentHeaderTemplate({
+    await actions.setDocumentHeaderTemplate({
       profileId,
       headerTemplate: 'stacked',
     })
 
-    actions.setResumeSectionLabel({
+    await actions.setResumeSectionLabel({
       profileId,
       section: 'summary',
       label: 'Professional Summary',
     })
 
-    actions.setResumeSectionEnabled({
+    await actions.setResumeSectionEnabled({
       profileId,
       section: 'references',
       enabled: false,
     })
 
-    actions.reorderResumeSections({
+    await actions.reorderResumeSections({
       profileId,
       orderedSections: ['skills', 'achievements', 'experience', 'summary', 'education', 'projects', 'additional_experience', 'certifications', 'references'],
     })
@@ -300,7 +300,7 @@ describe('app store reorder actions', () => {
   it('clears and protects endDate when an experience entry is marked current', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     actions.createExperienceEntry(profileId)
@@ -346,10 +346,10 @@ describe('app store reorder actions', () => {
     })
   })
 
-  it('reorders experience bullets and preview data reflects the new order', () => {
+  it('reorders experience bullets and preview data reflects the new order', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     actions.createExperienceEntry(profileId)
@@ -390,10 +390,10 @@ describe('app store reorder actions', () => {
     expect(preview?.experienceEntries[0]?.bullets.map((bullet) => bullet.level)).toEqual([3, 2])
   })
 
-  it('defaults bullet levels to level 1 and rejects unsupported bullet level updates', () => {
+  it('defaults bullet levels to level 1 and rejects unsupported bullet level updates', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     const experienceEntryId = expectDefined(actions.createExperienceEntry(profileId), 'Expected an experience entry id')
@@ -440,10 +440,10 @@ describe('app store reorder actions', () => {
     expect(useAppStore.getState().data.additionalExperienceBullets[additionalExperienceBulletId]?.level).toBe(3)
   })
 
-  it('reorders education bullets and preview data reflects the new order', () => {
+  it('reorders education bullets and preview data reflects the new order', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     actions.createEducationEntry(profileId)
@@ -489,7 +489,7 @@ describe('app store reorder actions', () => {
   it('reorders achievements for a profile and preview data reflects the new order', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     const firstAchievementId = expectDefined(actions.createAchievement(profileId), 'Expected first achievement id')
@@ -520,10 +520,10 @@ describe('app store reorder actions', () => {
     expect(preview?.achievements.map((item) => item.name)).toEqual(['Second achievement', 'First achievement'])
   })
 
-  it('toggles achievement enabled state and excludes disabled achievements from preview data', () => {
+  it('toggles achievement enabled state and excludes disabled achievements from preview data', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
     const achievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
 
@@ -546,7 +546,7 @@ describe('app store reorder actions', () => {
   it('normalizes education entry dates for status changes and rejects invalid ranges', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     actions.createEducationEntry(profileId)
@@ -628,7 +628,7 @@ describe('app store reorder actions', () => {
   it('reorders projects and project bullets and preview data reflects the new order', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     const firstProjectId = expectDefined(actions.createProject(profileId), 'Expected first project id')
@@ -693,7 +693,7 @@ describe('app store reorder actions', () => {
   it('rejects invalid project date ranges and excludes disabled projects from preview data', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
     const projectId = expectDefined(actions.createProject(profileId), 'Expected project id')
 
@@ -726,7 +726,7 @@ describe('app store reorder actions', () => {
   it('reorders additional experience entries and bullets and preview data reflects the new order', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     const firstEntryId = expectDefined(actions.createAdditionalExperienceEntry(profileId), 'Expected first additional experience id')
@@ -791,7 +791,7 @@ describe('app store reorder actions', () => {
   it('rejects invalid additional experience date ranges and excludes disabled additional experience from preview data', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
     const entryId = expectDefined(actions.createAdditionalExperienceEntry(profileId), 'Expected additional experience id')
 
@@ -1062,7 +1062,7 @@ describe('app store reorder actions', () => {
     expect(Object.keys(useAppStore.getState().data.interviewContacts)).toHaveLength(0)
   })
 
-  it('computes job status from appliedAt, interviews, and finalOutcome', () => {
+  it('computes job status from appliedAt, interviews, and finalOutcome', async () => {
     expect(getJobComputedStatus({ appliedAt: null, finalOutcome: null, interviewCount: 0 })).toBe('interested')
     expect(getJobComputedStatus({ appliedAt: '2026-03-09T12:00:00.000Z', finalOutcome: null, interviewCount: 0 })).toBe('applied')
     expect(getJobComputedStatus({ appliedAt: '2026-03-09T12:00:00.000Z', finalOutcome: null, interviewCount: 1 })).toBe('interview')
@@ -1185,13 +1185,13 @@ describe('app store reorder actions', () => {
   it('preserves resume settings through profile duplication and export/import', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
-    actions.setDocumentHeaderTemplate({ profileId, headerTemplate: 'stacked' })
-    actions.setResumeSectionLabel({ profileId, section: 'summary', label: 'Career Summary' })
-    actions.setResumeSectionEnabled({ profileId, section: 'references', enabled: false })
-    actions.reorderResumeSections({
+    await actions.setDocumentHeaderTemplate({ profileId, headerTemplate: 'stacked' })
+    await actions.setResumeSectionLabel({ profileId, section: 'summary', label: 'Career Summary' })
+    await actions.setResumeSectionEnabled({ profileId, section: 'references', enabled: false })
+    await actions.reorderResumeSections({
       profileId,
       orderedSections: ['experience', 'summary', 'skills', 'achievements', 'education', 'projects', 'additional_experience', 'certifications', 'references'],
     })
@@ -1228,7 +1228,7 @@ describe('app store reorder actions', () => {
     })
 
     const duplicatedProfileId = expectDefined(
-      actions.duplicateProfile({ sourceProfileId: profileId }),
+      await actions.duplicateProfile({ sourceProfileId: profileId }),
       'Expected duplicate profile id',
     )
 
@@ -1333,10 +1333,10 @@ describe('app store reorder actions', () => {
     })
   })
 
-  it('duplicates and cascades deletes projects and project bullets with their parent profile', () => {
+  it('duplicates and cascades deletes projects and project bullets with their parent profile', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     const originalProjectId = expectDefined(actions.createProject(profileId), 'Expected project id')
@@ -1351,7 +1351,7 @@ describe('app store reorder actions', () => {
       changes: { content: 'Built analytics reporting view', enabled: true },
     })
 
-    const duplicatedProfileId = expectDefined(actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
+    const duplicatedProfileId = expectDefined(await actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
     const duplicatedProject = expectDefined(
       Object.values(useAppStore.getState().data.projects).find((item) => item.profileId === duplicatedProfileId),
       'Expected duplicated project',
@@ -1383,16 +1383,16 @@ describe('app store reorder actions', () => {
     expect(Object.values(useAppStore.getState().data.projectBullets).filter((item) => item.projectId === originalProjectId)).toHaveLength(0)
     expect(Object.values(useAppStore.getState().data.projectBullets).filter((item) => item.projectId === duplicatedProject.id)).toHaveLength(1)
 
-    actions.deleteProfile(duplicatedProfileId)
+    await actions.deleteProfile(duplicatedProfileId)
 
     expect(Object.values(useAppStore.getState().data.projects).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(0)
     expect(Object.values(useAppStore.getState().data.projectBullets).filter((item) => item.projectId === duplicatedProject.id)).toHaveLength(0)
   })
 
-  it('duplicates and cascades deletes additional experience entries and bullets with their parent profile', () => {
+  it('duplicates and cascades deletes additional experience entries and bullets with their parent profile', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     const originalEntryId = expectDefined(actions.createAdditionalExperienceEntry(profileId), 'Expected additional experience id')
@@ -1410,7 +1410,7 @@ describe('app store reorder actions', () => {
       changes: { content: 'Led CBRN readiness training', enabled: true },
     })
 
-    const duplicatedProfileId = expectDefined(actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
+    const duplicatedProfileId = expectDefined(await actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
     const duplicatedEntry = expectDefined(
       Object.values(useAppStore.getState().data.additionalExperienceEntries).find((item) => item.profileId === duplicatedProfileId),
       'Expected duplicated additional experience entry',
@@ -1453,7 +1453,7 @@ describe('app store reorder actions', () => {
       ),
     ).toHaveLength(1)
 
-    actions.deleteProfile(duplicatedProfileId)
+    await actions.deleteProfile(duplicatedProfileId)
 
     expect(
       Object.values(useAppStore.getState().data.additionalExperienceEntries).filter((item) => item.profileId === duplicatedProfileId),
@@ -1465,10 +1465,10 @@ describe('app store reorder actions', () => {
     ).toHaveLength(0)
   })
 
-  it('duplicates and cascades deletes achievements with their parent profile', () => {
+  it('duplicates and cascades deletes achievements with their parent profile', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     const originalAchievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
@@ -1477,7 +1477,7 @@ describe('app store reorder actions', () => {
       changes: { name: 'Team award', description: 'Recognized for a cross-team platform initiative' },
     })
 
-    const duplicatedProfileId = expectDefined(actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
+    const duplicatedProfileId = expectDefined(await actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
     const duplicatedAchievements = Object.values(useAppStore.getState().data.achievements)
       .filter((item) => item.profileId === duplicatedProfileId)
       .sort((left, right) => left.sortOrder - right.sortOrder)
@@ -1491,12 +1491,12 @@ describe('app store reorder actions', () => {
     })
     expect(duplicatedAchievements[0]?.id).not.toBe(originalAchievementId)
 
-    actions.deleteProfile(profileId)
+    await actions.deleteProfile(profileId)
 
     expect(Object.values(useAppStore.getState().data.achievements).filter((item) => item.profileId === profileId)).toHaveLength(0)
     expect(Object.values(useAppStore.getState().data.achievements).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
 
-    actions.deleteProfile(duplicatedProfileId)
+    await actions.deleteProfile(duplicatedProfileId)
 
     expect(Object.keys(useAppStore.getState().data.achievements)).toHaveLength(0)
   })
@@ -1504,7 +1504,7 @@ describe('app store reorder actions', () => {
   it('preserves achievement data through export and import', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
     const achievementId = expectDefined(actions.createAchievement(profileId), 'Expected achievement id')
 
@@ -1527,10 +1527,10 @@ describe('app store reorder actions', () => {
     })
   })
 
-  it('duplicates and cascades deletes profile links with their parent profile', () => {
+  it('duplicates and cascades deletes profile links with their parent profile', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     actions.createProfileLink(profileId)
@@ -1541,7 +1541,7 @@ describe('app store reorder actions', () => {
       changes: { name: 'Portfolio', url: 'https://example.com/portfolio' },
     })
 
-    const duplicatedProfileId = expectDefined(actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
+    const duplicatedProfileId = expectDefined(await actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
 
     const duplicatedLinks = Object.values(useAppStore.getState().data.profileLinks)
       .filter((item) => item.profileId === duplicatedProfileId)
@@ -1556,20 +1556,20 @@ describe('app store reorder actions', () => {
     })
     expect(duplicatedLinks[0]?.id).not.toBe(originalLinkId)
 
-    actions.deleteProfile(profileId)
+    await actions.deleteProfile(profileId)
 
     expect(Object.values(useAppStore.getState().data.profileLinks).filter((item) => item.profileId === profileId)).toHaveLength(0)
     expect(Object.values(useAppStore.getState().data.profileLinks).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
 
-    actions.deleteProfile(duplicatedProfileId)
+    await actions.deleteProfile(duplicatedProfileId)
 
     expect(Object.keys(useAppStore.getState().data.profileLinks)).toHaveLength(0)
   })
 
-  it('duplicates and cascades deletes education bullets with their parent profile and education entry', () => {
+  it('duplicates and cascades deletes education bullets with their parent profile and education entry', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     actions.createEducationEntry(profileId)
@@ -1600,7 +1600,7 @@ describe('app store reorder actions', () => {
       changes: { content: 'Graduated magna cum laude', enabled: true },
     })
 
-    const duplicatedProfileId = expectDefined(actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
+    const duplicatedProfileId = expectDefined(await actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
 
     const duplicatedEducationEntry = expectDefined(
       Object.values(useAppStore.getState().data.educationEntries).find((item) => item.profileId === duplicatedProfileId),
@@ -1631,7 +1631,7 @@ describe('app store reorder actions', () => {
     expect(Object.values(useAppStore.getState().data.educationBullets).filter((item) => item.educationEntryId === educationEntryId)).toHaveLength(0)
     expect(Object.values(useAppStore.getState().data.educationBullets).filter((item) => item.educationEntryId === duplicatedEducationEntry.id)).toHaveLength(1)
 
-    actions.deleteProfile(duplicatedProfileId)
+    await actions.deleteProfile(duplicatedProfileId)
 
     expect(Object.values(useAppStore.getState().data.educationBullets).filter((item) => item.educationEntryId === duplicatedEducationEntry.id)).toHaveLength(0)
   })
@@ -1639,7 +1639,7 @@ describe('app store reorder actions', () => {
   it('preserves education bullet data through export and import', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     actions.createEducationEntry(profileId)
@@ -1694,7 +1694,7 @@ describe('app store reorder actions', () => {
   it('preserves profile link order through export and import', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createBaseProfile('General Profile')
+    await actions.createBaseProfile('General Profile')
     const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
 
     actions.createProfileLink(profileId)
@@ -1744,7 +1744,7 @@ describe('app store theme preference', () => {
     resetStore()
   })
 
-  it('updates the theme preference and preserves it when resetting ui state', () => {
+  it('updates the theme preference and preserves it when resetting ui state', async () => {
     const { actions } = useAppStore.getState()
 
     actions.setThemePreference('dark')

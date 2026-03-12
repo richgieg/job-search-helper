@@ -138,7 +138,7 @@ export const ProfilePage = () => {
       return
     }
 
-    updateProfile({
+    void updateProfile({
       profileId: profile.id,
       changes: {
         name: trimmed,
@@ -154,7 +154,7 @@ export const ProfilePage = () => {
       return
     }
 
-    updateProfile({
+    void updateProfile({
       profileId: profile.id,
       changes: {
         [field]: value,
@@ -167,7 +167,7 @@ export const ProfilePage = () => {
       return
     }
 
-    updateProfile({
+    void updateProfile({
       profileId: profile.id,
       changes: {},
       personalDetails: {
@@ -190,7 +190,7 @@ export const ProfilePage = () => {
       return
     }
 
-    setResumeSectionLabel({
+    void setResumeSectionLabel({
       profileId: profile.id,
       section,
       label: nextLabel,
@@ -300,7 +300,7 @@ export const ProfilePage = () => {
                 className="rounded-xl border border-app-border bg-app-surface px-3 py-2 text-sm text-app-text outline-none transition focus:border-app-focus-ring"
                 value={profile.resumeSettings.headerTemplate}
                 onChange={(event) =>
-                  setDocumentHeaderTemplate({
+                  void setDocumentHeaderTemplate({
                     profileId: profile.id,
                     headerTemplate: event.target.value as DocumentHeaderTemplate,
                   })
@@ -363,7 +363,7 @@ export const ProfilePage = () => {
                         checked={resumeSection.enabled}
                         label={`Enable ${resumeSection.label} section`}
                         onChange={(value) =>
-                          setResumeSectionEnabled({
+                          void setResumeSectionEnabled({
                             profileId: profile.id,
                             section: resumeSection.section,
                             enabled: value,
@@ -375,13 +375,13 @@ export const ProfilePage = () => {
                         canMoveDown={orderedResumeSectionKeys.length > 1}
                         canMoveUp={orderedResumeSectionKeys.length > 1}
                         onMoveDown={() =>
-                          reorderResumeSections({
+                          void reorderResumeSections({
                             profileId: profile.id,
                             orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, 1) as ResumeSectionKey[],
                           })
                         }
                         onMoveUp={() =>
-                          reorderResumeSections({
+                          void reorderResumeSections({
                             profileId: profile.id,
                             orderedSections: moveOrderedItem(orderedResumeSectionKeys, index, -1) as ResumeSectionKey[],
                           })

@@ -14,7 +14,7 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
   }
 
   const handleDuplicate = () => {
-    duplicateProfile({ sourceProfileId: profile.id })
+    void duplicateProfile({ sourceProfileId: profile.id })
   }
 
   const handleDelete = () => {
@@ -23,7 +23,7 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
       return
     }
 
-    deleteProfile(profile.id)
+    void deleteProfile(profile.id)
   }
 
   return (
@@ -66,7 +66,7 @@ export const ProfilesPage = () => {
 
   const sortedProfileIds = useMemo(() => [...profiles].sort((left, right) => right.createdAt.localeCompare(left.createdAt)).map((profile) => profile.id), [profiles])
 
-  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const trimmed = name.trim()
@@ -74,7 +74,7 @@ export const ProfilesPage = () => {
       return
     }
 
-    createBaseProfile(trimmed)
+    await createBaseProfile(trimmed)
     setName('')
   }
 
