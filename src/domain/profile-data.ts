@@ -151,6 +151,11 @@ export interface UpdateCertificationInput {
   changes: Partial<Omit<Certification, 'id' | 'profileId'>>
 }
 
+export interface UpdateReferenceInput {
+  referenceId: Id
+  changes: Partial<Omit<Reference, 'id' | 'profileId'>>
+}
+
 export interface ProfileMutationContext {
   now(): IsoTimestamp
   createId(): Id
@@ -2452,6 +2457,116 @@ export const reorderCertificationsMutation = (data: AppDataState, input: Reorder
       {
         ...data,
         certifications: reorderSortableEntities(data.certifications, input.orderedIds),
+      },
+      input.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const createReferenceMutation = (data: AppDataState, profileId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const profile = data.profiles[profileId]
+
+  if (!profile) {
+    return withResult(data, null)
+  }
+
+  const reference: Reference = {
+    id: context.createId(),
+    profileId,
+    type: 'professional',
+    name: '',
+    relationship: '',
+    company: '',
+    title: '',
+    email: '',
+    phone: '',
+    notes: '',
+    enabled: true,
+    sortOrder: getNextSortOrder(
+      Object.values(data.references)
+        .filter((item) => item.profileId === profileId)
+        .map((item) => item.sortOrder),
+    ),
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        references: {
+          ...data.references,
+          [reference.id]: reference,
+        },
+      },
+      profileId,
+      context.now(),
+    ),
+    reference.id,
+  )
+}
+
+export const updateReferenceMutation = (data: AppDataState, input: UpdateReferenceInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.references[input.referenceId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        references: {
+          ...data.references,
+          [input.referenceId]: {
+            ...existing,
+            ...input.changes,
+          },
+        },
+      },
+      existing.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const deleteReferenceMutation = (data: AppDataState, referenceId: Id, context: ProfileMutationContext): ProfileMutationResult => {
+  const existing = data.references[referenceId]
+
+  if (!existing) {
+    return withResult(data)
+  }
+
+  const nextReferences = { ...data.references }
+  delete nextReferences[referenceId]
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        references: nextReferences,
+      },
+      existing.profileId,
+      context.now(),
+    ),
+  )
+}
+
+export const reorderReferencesMutation = (data: AppDataState, input: ReorderProfileEntitiesInput, context: ProfileMutationContext): ProfileMutationResult => {
+  const existingIds = Object.values(data.references)
+    .filter((item) => item.profileId === input.profileId)
+    .map((item) => item.id)
+
+  if (!hasExactIds(existingIds, input.orderedIds)) {
+    return withResult(data)
+  }
+
+  return withResult(
+    stampUpdatedProfile(
+      {
+        ...data,
+        references: reorderSortableEntities(data.references, input.orderedIds),
       },
       input.profileId,
       context.now(),

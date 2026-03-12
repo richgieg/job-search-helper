@@ -31,6 +31,7 @@ import type {
   UpdateAdditionalExperienceBulletInput,
   UpdateAdditionalExperienceEntryInput,
   UpdateCertificationInput,
+  UpdateReferenceInput,
   UpdateEducationBulletInput,
   UpdateEducationEntryInput,
   UpdateExperienceBulletInput,
@@ -48,7 +49,6 @@ import type {
   AppExportFile,
   AppUiState,
   Id,
-  Reference,
   ThemePreference,
 } from '../types/state'
 
@@ -127,13 +127,10 @@ interface AppStoreState {
     updateCertification: (input: UpdateCertificationInput) => Promise<void>
     deleteCertification: (certificationId: Id) => Promise<void>
     reorderCertifications: (input: ReorderProfileEntitiesInput) => Promise<void>
-    createReference: (profileId: Id) => Id | null
-    updateReference: (input: {
-      referenceId: Id
-      changes: Partial<Omit<Reference, 'id' | 'profileId'>>
-    }) => void
-    deleteReference: (referenceId: Id) => void
-    reorderReferences: (input: { profileId: Id; orderedIds: Id[] }) => void
+    createReference: (profileId: Id) => Promise<Id | null>
+    updateReference: (input: UpdateReferenceInput) => Promise<void>
+    deleteReference: (referenceId: Id) => Promise<void>
+    reorderReferences: (input: ReorderProfileEntitiesInput) => Promise<void>
     createJob: (input: CreateJobInput) => Promise<Id | null>
     updateJob: (input: UpdateJobInput) => Promise<void>
     deleteJob: (jobId: Id) => Promise<void>
@@ -168,74 +165,11 @@ interface AppStoreState {
   }
 }
 
-const now = () => new Date().toISOString()
-const createId = () => crypto.randomUUID()
 const createInitialStoreStatus = (): AppStoreStatus => ({
   hydration: 'idle',
   saving: 'idle',
   errorMessage: null,
 })
-
-const getNextSortOrder = (sortOrders: number[]) => {
-  if (sortOrders.length === 0) {
-    return 1
-  }
-
-  return Math.max(...sortOrders) + 1
-}
-
-const hasExactIds = (expectedIds: Id[], orderedIds: Id[]) => {
-  if (expectedIds.length !== orderedIds.length) {
-    return false
-  }
-
-  const expectedIdSet = new Set(expectedIds)
-  const orderedIdSet = new Set(orderedIds)
-
-  if (expectedIdSet.size !== orderedIdSet.size) {
-    return false
-  }
-
-  return expectedIds.every((id) => orderedIdSet.has(id))
-}
-
-const reorderSortableEntities = <T extends { id: Id; sortOrder: number }>(entities: Record<Id, T>, orderedIds: Id[]) => {
-  const nextEntities = { ...entities }
-
-  orderedIds.forEach((id, index) => {
-    const entity = nextEntities[id]
-
-    if (!entity) {
-      return
-    }
-
-    nextEntities[id] = {
-      ...entity,
-      sortOrder: index + 1,
-    }
-  })
-
-  return nextEntities
-}
-
-const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: string): AppDataState => {
-  const profile = data.profiles[profileId]
-
-  if (!profile) {
-    return data
-  }
-
-  return {
-    ...data,
-    profiles: {
-      ...data.profiles,
-      [profileId]: {
-        ...profile,
-        updatedAt: timestamp,
-      },
-    },
-  }
-}
 
  export const useAppStore = create<AppStoreState>((set, get) => {
   const runPersistedProfileMutation = async (
@@ -591,114 +525,18 @@ const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: strin
     reorderCertifications: async (input) => {
       await runPersistedProfileMutation((data) => getAppApiClient().reorderCertifications(data, input))
     },
-    createReference: (profileId) => {
-      const profile = get().data.profiles[profileId]
-
-      if (!profile) {
-        return null
-      }
-
-      const reference: Reference = {
-        id: createId(),
-        profileId,
-        type: 'professional',
-        name: '',
-        relationship: '',
-        company: '',
-        title: '',
-        email: '',
-        phone: '',
-        notes: '',
-        enabled: true,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.references)
-            .filter((item) => item.profileId === profileId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            references: {
-              ...state.data.references,
-              [reference.id]: reference,
-            },
-          },
-          profileId,
-          now(),
-        ),
-      }))
-
-      return reference.id
+    createReference: async (profileId) => {
+      const result = await runPersistedProfileMutation((data) => getAppApiClient().createReference(data, profileId))
+      return result?.createdId ?? null
     },
-    updateReference: ({ referenceId, changes }) => {
-      const existing = get().data.references[referenceId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            references: {
-              ...state.data.references,
-              [referenceId]: {
-                ...existing,
-                ...changes,
-              },
-            },
-          },
-          existing.profileId,
-          now(),
-        ),
-      }))
+    updateReference: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().updateReference(data, input))
     },
-    deleteReference: (referenceId) => {
-      const existing = get().data.references[referenceId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => {
-        const nextReferences = { ...state.data.references }
-        delete nextReferences[referenceId]
-
-        return {
-          data: stampUpdatedProfile(
-            {
-              ...state.data,
-              references: nextReferences,
-            },
-            existing.profileId,
-            now(),
-          ),
-        }
-      })
+    deleteReference: async (referenceId) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().deleteReference(data, referenceId))
     },
-    reorderReferences: ({ profileId, orderedIds }) => {
-      const existingIds = Object.values(get().data.references)
-        .filter((item) => item.profileId === profileId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedProfile(
-          {
-            ...state.data,
-            references: reorderSortableEntities(state.data.references, orderedIds),
-          },
-          profileId,
-          now(),
-        ),
-      }))
+    reorderReferences: async (input) => {
+      await runPersistedProfileMutation((data) => getAppApiClient().reorderReferences(data, input))
     },
     createJob: async (input) => {
       const result = await runPersistedJobMutation(

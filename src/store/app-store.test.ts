@@ -872,6 +872,50 @@ describe('app store reorder actions', () => {
     ])
   })
 
+  it('reorders references and excludes disabled references from preview data', async () => {
+    const { actions } = useAppStore.getState()
+
+    await actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    const firstReferenceId = expectDefined(await actions.createReference(profileId), 'Expected first reference id')
+    const secondReferenceId = expectDefined(await actions.createReference(profileId), 'Expected second reference id')
+
+    await actions.updateReference({
+      referenceId: firstReferenceId,
+      changes: { name: 'Pat Doe', company: 'Amazon', relationship: 'Manager', enabled: true },
+    })
+    await actions.updateReference({
+      referenceId: secondReferenceId,
+      changes: { name: 'Sam Lee', company: 'CompTIA', relationship: 'Mentor', enabled: true },
+    })
+
+    const updatedAtBefore = useAppStore.getState().data.profiles[profileId]?.updatedAt
+    await waitForNextTick()
+
+    await actions.reorderReferences({
+      profileId,
+      orderedIds: [secondReferenceId, firstReferenceId],
+    })
+
+    expect(useAppStore.getState().data.references[secondReferenceId]?.sortOrder).toBe(1)
+    expect(useAppStore.getState().data.references[firstReferenceId]?.sortOrder).toBe(2)
+    expect(useAppStore.getState().data.profiles[profileId]?.updatedAt).not.toBe(updatedAtBefore)
+    expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.references.map((item) => item.name)).toEqual([
+      'Sam Lee',
+      'Pat Doe',
+    ])
+
+    await actions.updateReference({
+      referenceId: secondReferenceId,
+      changes: { enabled: false },
+    })
+
+    expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.references.map((item) => item.name)).toEqual([
+      'Pat Doe',
+    ])
+  })
+
   it('reorders job contacts for a job', async () => {
     const { actions } = useAppStore.getState()
 
@@ -1282,6 +1326,20 @@ describe('app store reorder actions', () => {
         credentialUrl: 'https://example.com/cert/security-plus',
       },
     })
+    const referenceId = expectDefined(await actions.createReference(profileId), 'Expected reference id')
+    await actions.updateReference({
+      referenceId,
+      changes: {
+        type: 'professional',
+        name: 'Pat Doe',
+        relationship: 'Manager',
+        company: 'Amazon',
+        title: 'Senior Manager',
+        email: 'pat@example.com',
+        phone: '555-0100',
+        notes: 'Former direct manager',
+      },
+    })
 
     const duplicatedProfileId = expectDefined(
       await actions.duplicateProfile({ sourceProfileId: profileId }),
@@ -1357,6 +1415,19 @@ describe('app store reorder actions', () => {
       enabled: true,
       sortOrder: 1,
     })
+    const duplicatedReference = Object.values(useAppStore.getState().data.references).find((item) => item.profileId === duplicatedProfileId)
+    expect(duplicatedReference).toMatchObject({
+      type: 'professional',
+      name: 'Pat Doe',
+      relationship: 'Manager',
+      company: 'Amazon',
+      title: 'Senior Manager',
+      email: 'pat@example.com',
+      phone: '555-0100',
+      notes: 'Former direct manager',
+      enabled: true,
+      sortOrder: 1,
+    })
 
     const exported = await actions.exportAppData()
 
@@ -1402,6 +1473,11 @@ describe('app store reorder actions', () => {
       name: 'Security+',
       issuer: 'CompTIA',
       credentialId: 'ABC-123',
+    })
+    expect(useAppStore.getState().data.references[duplicatedReference!.id]).toMatchObject({
+      name: 'Pat Doe',
+      relationship: 'Manager',
+      email: 'pat@example.com',
     })
   })
 
@@ -1582,6 +1658,58 @@ describe('app store reorder actions', () => {
 
     expect(
       Object.values(useAppStore.getState().data.certifications).filter((item) => item.profileId === duplicatedProfileId),
+    ).toHaveLength(0)
+  })
+
+  it('duplicates and cascades deletes references with their parent profile', async () => {
+    const { actions } = useAppStore.getState()
+
+    await actions.createBaseProfile('General Profile')
+    const profileId = expectDefined(Object.keys(useAppStore.getState().data.profiles)[0], 'Expected a profile id')
+
+    const originalReferenceId = expectDefined(await actions.createReference(profileId), 'Expected reference id')
+    await actions.updateReference({
+      referenceId: originalReferenceId,
+      changes: {
+        type: 'professional',
+        name: 'Pat Doe',
+        relationship: 'Manager',
+        company: 'Amazon',
+        title: 'Senior Manager',
+        email: 'pat@example.com',
+        phone: '555-0100',
+        notes: 'Former direct manager',
+      },
+    })
+
+    const duplicatedProfileId = expectDefined(await actions.duplicateProfile({ sourceProfileId: profileId }), 'Expected duplicate profile id')
+    const duplicatedReference = expectDefined(
+      Object.values(useAppStore.getState().data.references).find((item) => item.profileId === duplicatedProfileId),
+      'Expected duplicated reference',
+    )
+
+    expect(duplicatedReference).toMatchObject({
+      type: 'professional',
+      name: 'Pat Doe',
+      relationship: 'Manager',
+      company: 'Amazon',
+      title: 'Senior Manager',
+      email: 'pat@example.com',
+      phone: '555-0100',
+      notes: 'Former direct manager',
+      enabled: true,
+      sortOrder: 1,
+    })
+    expect(duplicatedReference.id).not.toBe(originalReferenceId)
+
+    await actions.deleteReference(originalReferenceId)
+    expect(useAppStore.getState().data.references[originalReferenceId]).toBeUndefined()
+    expect(useAppStore.getState().data.references[duplicatedReference.id]).toBeDefined()
+
+    await actions.deleteProfile(duplicatedProfileId)
+
+    expect(
+      Object.values(useAppStore.getState().data.references).filter((item) => item.profileId === duplicatedProfileId),
     ).toHaveLength(0)
   })
 

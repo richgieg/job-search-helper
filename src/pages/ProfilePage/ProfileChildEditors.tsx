@@ -1773,25 +1773,25 @@ const ReferenceCard = ({
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable reference" onChange={(value) => {
               setDraft({ ...draft, enabled: value })
-              updateReference({ referenceId: reference.id, changes: { enabled: value } })
+              void updateReference({ referenceId: reference.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
               canMoveDown={referenceIds.length > 1}
               canMoveUp={referenceIds.length > 1}
               onMoveDown={() =>
-                reorderReferences({
+                void reorderReferences({
                   profileId: reference.profileId,
                   orderedIds: moveOrderedItem(referenceIds, referenceIndex, 1),
                 })
               }
               onMoveUp={() =>
-                reorderReferences({
+                void reorderReferences({
                   profileId: reference.profileId,
                   orderedIds: moveOrderedItem(referenceIds, referenceIndex, -1),
                 })
               }
             />
-            <DeleteIconButton label="Delete reference" onDelete={() => deleteReference(reference.id)} />
+            <DeleteIconButton label="Delete reference" onDelete={() => void deleteReference(reference.id)} />
           </div>
         }
         summary={summary}
@@ -1802,7 +1802,7 @@ const ReferenceCard = ({
           <span className="font-medium">Type</span>
           <select
             className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-            onBlur={() => draft.type !== reference.type && updateReference({ referenceId: reference.id, changes: { type: draft.type } })}
+            onBlur={() => draft.type !== reference.type && void updateReference({ referenceId: reference.id, changes: { type: draft.type } })}
             value={draft.type}
             onChange={(event) => setDraft({ ...draft, type: event.target.value as ReferenceType })}
           >
@@ -1810,14 +1810,14 @@ const ReferenceCard = ({
             <option value="personal">Personal</option>
           </select>
         </label>
-        <TextField label="Name" onBlur={() => draft.name !== reference.name && updateReference({ referenceId: reference.id, changes: { name: draft.name } })} value={draft.name} onChange={(value) => setDraft({ ...draft, name: value })} />
-        <TextField label="Relationship" onBlur={() => draft.relationship !== reference.relationship && updateReference({ referenceId: reference.id, changes: { relationship: draft.relationship } })} value={draft.relationship} onChange={(value) => setDraft({ ...draft, relationship: value })} />
-        <TextField label="Company" onBlur={() => draft.company !== reference.company && updateReference({ referenceId: reference.id, changes: { company: draft.company } })} value={draft.company} onChange={(value) => setDraft({ ...draft, company: value })} />
-        <TextField label="Title" onBlur={() => draft.title !== reference.title && updateReference({ referenceId: reference.id, changes: { title: draft.title } })} value={draft.title} onChange={(value) => setDraft({ ...draft, title: value })} />
-        <TextField label="Email" type="email" onBlur={() => draft.email !== reference.email && updateReference({ referenceId: reference.id, changes: { email: draft.email } })} value={draft.email} onChange={(value) => setDraft({ ...draft, email: value })} />
-        <TextField label="Phone" type="tel" onBlur={() => draft.phone !== reference.phone && updateReference({ referenceId: reference.id, changes: { phone: draft.phone } })} value={draft.phone} onChange={(value) => setDraft({ ...draft, phone: value })} />
+        <TextField label="Name" onBlur={() => draft.name !== reference.name && void updateReference({ referenceId: reference.id, changes: { name: draft.name } })} value={draft.name} onChange={(value) => setDraft({ ...draft, name: value })} />
+        <TextField label="Relationship" onBlur={() => draft.relationship !== reference.relationship && void updateReference({ referenceId: reference.id, changes: { relationship: draft.relationship } })} value={draft.relationship} onChange={(value) => setDraft({ ...draft, relationship: value })} />
+        <TextField label="Company" onBlur={() => draft.company !== reference.company && void updateReference({ referenceId: reference.id, changes: { company: draft.company } })} value={draft.company} onChange={(value) => setDraft({ ...draft, company: value })} />
+        <TextField label="Title" onBlur={() => draft.title !== reference.title && void updateReference({ referenceId: reference.id, changes: { title: draft.title } })} value={draft.title} onChange={(value) => setDraft({ ...draft, title: value })} />
+        <TextField label="Email" type="email" onBlur={() => draft.email !== reference.email && void updateReference({ referenceId: reference.id, changes: { email: draft.email } })} value={draft.email} onChange={(value) => setDraft({ ...draft, email: value })} />
+        <TextField label="Phone" type="tel" onBlur={() => draft.phone !== reference.phone && void updateReference({ referenceId: reference.id, changes: { phone: draft.phone } })} value={draft.phone} onChange={(value) => setDraft({ ...draft, phone: value })} />
         <div className="xl:col-span-2">
-          <TextAreaField label="Notes" onBlur={() => draft.notes !== reference.notes && updateReference({ referenceId: reference.id, changes: { notes: draft.notes } })} value={draft.notes} onChange={(value) => setDraft({ ...draft, notes: value })} />
+          <TextAreaField label="Notes" onBlur={() => draft.notes !== reference.notes && void updateReference({ referenceId: reference.id, changes: { notes: draft.notes } })} value={draft.notes} onChange={(value) => setDraft({ ...draft, notes: value })} />
         </div>
         </div>
       </CollapsiblePanel>
@@ -2207,8 +2207,8 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
         actionStyle="icon"
         collapsible={hasReferences}
         description="Maintain both professional and personal references."
-        onAction={() => {
-          const createdId = createReference(profileId)
+        onAction={async () => {
+          const createdId = await createReference(profileId)
 
           if (createdId) {
             setNewReferenceId(createdId)

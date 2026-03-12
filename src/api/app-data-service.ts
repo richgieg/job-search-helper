@@ -29,6 +29,7 @@ import type {
   UpdateAdditionalExperienceBulletInput,
   UpdateAdditionalExperienceEntryInput,
   UpdateCertificationInput,
+  UpdateReferenceInput,
   UpdateEducationBulletInput,
   UpdateEducationEntryInput,
   UpdateExperienceBulletInput,
@@ -106,6 +107,10 @@ export interface AppDataService {
   updateCertification(input: UpdateCertificationInput): Promise<ProfileMutationResult>
   deleteCertification(certificationId: string): Promise<ProfileMutationResult>
   reorderCertifications(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createReference(profileId: string): Promise<ProfileMutationResult>
+  updateReference(input: UpdateReferenceInput): Promise<ProfileMutationResult>
+  deleteReference(referenceId: string): Promise<ProfileMutationResult>
+  reorderReferences(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
   createJob(input: CreateJobInput): Promise<JobMutationResult>
   updateJob(input: UpdateJobInput): Promise<JobMutationResult>
   deleteJob(jobId: string): Promise<JobMutationResult>

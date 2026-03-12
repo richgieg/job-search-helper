@@ -29,6 +29,7 @@ import type {
   UpdateAdditionalExperienceBulletInput,
   UpdateAdditionalExperienceEntryInput,
   UpdateCertificationInput,
+  UpdateReferenceInput,
   UpdateEducationBulletInput,
   UpdateEducationEntryInput,
   UpdateExperienceBulletInput,
@@ -107,6 +108,10 @@ export interface AppApiClient {
   updateCertification(data: AppDataState, input: UpdateCertificationInput): Promise<ProfileMutationResult>
   deleteCertification(data: AppDataState, certificationId: string): Promise<ProfileMutationResult>
   reorderCertifications(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createReference(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
+  updateReference(data: AppDataState, input: UpdateReferenceInput): Promise<ProfileMutationResult>
+  deleteReference(data: AppDataState, referenceId: string): Promise<ProfileMutationResult>
+  reorderReferences(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
   createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult>
   updateJob(data: AppDataState, input: UpdateJobInput): Promise<JobMutationResult>
   deleteJob(data: AppDataState, jobId: string): Promise<JobMutationResult>
@@ -455,6 +460,26 @@ export class LocalAppApiClient implements AppApiClient {
   async reorderCertifications(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
     await this.sync(data)
     return this.service.reorderCertifications(input)
+  }
+
+  async createReference(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.createReference(profileId)
+  }
+
+  async updateReference(data: AppDataState, input: UpdateReferenceInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.updateReference(input)
+  }
+
+  async deleteReference(data: AppDataState, referenceId: string): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.deleteReference(referenceId)
+  }
+
+  async reorderReferences(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
+    await this.sync(data)
+    return this.service.reorderReferences(input)
   }
 
   async createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult> {
