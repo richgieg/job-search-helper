@@ -828,14 +828,14 @@ describe('app store reorder actions', () => {
     expect(selectProfileDocumentData(useAppStore.getState().data, profileId)?.additionalExperienceEntries).toHaveLength(0)
   })
 
-  it('reorders job contacts for a job', () => {
+  it('reorders job contacts for a job', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
+    await actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
     const jobId = expectDefined(Object.keys(useAppStore.getState().data.jobs)[0], 'Expected a job id')
 
-    actions.createJobContact(jobId)
-    actions.createJobContact(jobId)
+    await actions.createJobContact(jobId)
+    await actions.createJobContact(jobId)
 
     const contactIds = getOrderedIds(
       Object.fromEntries(
@@ -847,16 +847,16 @@ describe('app store reorder actions', () => {
     const firstContactId = expectDefined(contactIds[0], 'Expected first contact id')
     const secondContactId = expectDefined(contactIds[1], 'Expected second contact id')
 
-    actions.updateJobContact({
+    await actions.updateJobContact({
       jobContactId: firstContactId,
       changes: { name: 'Contact One' },
     })
-    actions.updateJobContact({
+    await actions.updateJobContact({
       jobContactId: secondContactId,
       changes: { name: 'Contact Two' },
     })
 
-    actions.reorderJobContacts({
+    await actions.reorderJobContacts({
       jobId,
       orderedIds: [secondContactId, firstContactId],
     })
@@ -868,14 +868,14 @@ describe('app store reorder actions', () => {
     expect(reorderedContacts.map((item) => item.name)).toEqual(['Contact Two', 'Contact One'])
   })
 
-  it('creates a job with an optional initial link', () => {
+  it('creates a job with an optional initial link', async () => {
     const { actions } = useAppStore.getState()
 
-    const jobId = actions.createJob({
+    const jobId = expectDefined(await actions.createJob({
       companyName: 'Example Co',
       jobTitle: 'Engineer',
       initialLinkUrl: 'https://example.com/job',
-    })
+    }), 'Expected job id')
 
     expect(useAppStore.getState().data.jobs[jobId]).toMatchObject({
       jobTitle: 'Engineer',
@@ -894,12 +894,12 @@ describe('app store reorder actions', () => {
   it('sets and clears job progress fields', async () => {
     const { actions } = useAppStore.getState()
 
-    const jobId = actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
+    const jobId = expectDefined(await actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' }), 'Expected job id')
     const updatedAtBefore = useAppStore.getState().data.jobs[jobId]?.updatedAt
     await waitForNextTick()
 
-    actions.setJobAppliedAt({ jobId, appliedAt: '2026-03-09T12:00:00.000Z' })
-    actions.setJobFinalOutcome({ jobId, status: 'offer_received', setAt: '2026-03-10T09:30:00.000Z' })
+    await actions.setJobAppliedAt({ jobId, appliedAt: '2026-03-09T12:00:00.000Z' })
+    await actions.setJobFinalOutcome({ jobId, status: 'offer_received', setAt: '2026-03-10T09:30:00.000Z' })
 
     expect(useAppStore.getState().data.jobs[jobId]).toMatchObject({
       appliedAt: '2026-03-09T12:00:00.000Z',
@@ -910,7 +910,7 @@ describe('app store reorder actions', () => {
     })
     expect(useAppStore.getState().data.jobs[jobId]?.updatedAt).not.toBe(updatedAtBefore)
 
-    actions.clearJobAppliedAt(jobId)
+    await actions.clearJobAppliedAt(jobId)
 
     expect(useAppStore.getState().data.jobs[jobId]).toMatchObject({
       appliedAt: null,
@@ -918,20 +918,20 @@ describe('app store reorder actions', () => {
     })
   })
 
-  it('does not allow a final outcome when the job is not applied', () => {
+  it('does not allow a final outcome when the job is not applied', async () => {
     const { actions } = useAppStore.getState()
 
-    const jobId = actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
+    const jobId = expectDefined(await actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' }), 'Expected job id')
 
-    actions.setJobFinalOutcome({ jobId, status: 'rejected', setAt: '2026-03-10T09:30:00.000Z' })
+    await actions.setJobFinalOutcome({ jobId, status: 'rejected', setAt: '2026-03-10T09:30:00.000Z' })
 
     expect(useAppStore.getState().data.jobs[jobId]).toMatchObject({
       appliedAt: null,
       finalOutcome: null,
     })
 
-    actions.setJobAppliedAt({ jobId, appliedAt: '2026-03-09T12:00:00.000Z' })
-    actions.setJobFinalOutcome({ jobId, status: 'rejected', setAt: '2026-03-10T09:30:00.000Z' })
+    await actions.setJobAppliedAt({ jobId, appliedAt: '2026-03-09T12:00:00.000Z' })
+    await actions.setJobFinalOutcome({ jobId, status: 'rejected', setAt: '2026-03-10T09:30:00.000Z' })
 
     expect(useAppStore.getState().data.jobs[jobId]).toMatchObject({
       appliedAt: '2026-03-09T12:00:00.000Z',
@@ -945,10 +945,10 @@ describe('app store reorder actions', () => {
   it('creates interviews, manages associated contacts, and preserves interview contact order through export/import', async () => {
     const { actions } = useAppStore.getState()
 
-    const jobId = actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
+    const jobId = expectDefined(await actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' }), 'Expected job id')
 
-    actions.createJobContact(jobId)
-    actions.createJobContact(jobId)
+    await actions.createJobContact(jobId)
+    await actions.createJobContact(jobId)
 
     const contactIds = getOrderedIds(
       Object.fromEntries(
@@ -960,16 +960,16 @@ describe('app store reorder actions', () => {
     const firstContactId = expectDefined(contactIds[0], 'Expected first contact id')
     const secondContactId = expectDefined(contactIds[1], 'Expected second contact id')
 
-    actions.updateJobContact({ jobContactId: firstContactId, changes: { name: 'Contact One' } })
-    actions.updateJobContact({ jobContactId: secondContactId, changes: { name: 'Contact Two' } })
+    await actions.updateJobContact({ jobContactId: firstContactId, changes: { name: 'Contact One' } })
+    await actions.updateJobContact({ jobContactId: secondContactId, changes: { name: 'Contact Two' } })
 
-    const interviewId = expectDefined(actions.createInterview(jobId), 'Expected interview id')
+    const interviewId = expectDefined(await actions.createInterview(jobId), 'Expected interview id')
 
     expect(useAppStore.getState().data.interviews[interviewId]).toMatchObject({
       startAt: null,
     })
 
-    actions.updateInterview({
+    await actions.updateInterview({
       interviewId,
       changes: {
         startAt: '2026-03-12T15:00:00.000Z',
@@ -977,8 +977,8 @@ describe('app store reorder actions', () => {
       },
     })
 
-    actions.addInterviewContact({ interviewId, jobContactId: firstContactId })
-    actions.addInterviewContact({ interviewId, jobContactId: secondContactId })
+    await actions.addInterviewContact({ interviewId, jobContactId: firstContactId })
+    await actions.addInterviewContact({ interviewId, jobContactId: secondContactId })
 
     const interviewContactIds = getOrderedIds(
       Object.fromEntries(
@@ -990,7 +990,7 @@ describe('app store reorder actions', () => {
     const firstInterviewContactId = expectDefined(interviewContactIds[0], 'Expected first interview contact id')
     const secondInterviewContactId = expectDefined(interviewContactIds[1], 'Expected second interview contact id')
 
-    actions.reorderInterviewContacts({
+    await actions.reorderInterviewContacts({
       interviewId,
       orderedIds: [secondInterviewContactId, firstInterviewContactId],
     })
@@ -1010,13 +1010,13 @@ describe('app store reorder actions', () => {
     ])
   })
 
-  it('allows an interview to remain unscheduled', () => {
+  it('allows an interview to remain unscheduled', async () => {
     const { actions } = useAppStore.getState()
 
-    const jobId = actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
-    const interviewId = expectDefined(actions.createInterview(jobId), 'Expected interview id')
+    const jobId = expectDefined(await actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' }), 'Expected job id')
+    const interviewId = expectDefined(await actions.createInterview(jobId), 'Expected interview id')
 
-    actions.updateInterview({
+    await actions.updateInterview({
       interviewId,
       changes: {
         notes: 'Awaiting scheduling confirmation',
@@ -1029,34 +1029,34 @@ describe('app store reorder actions', () => {
     })
   })
 
-  it('cascades interview associations when deleting a contact, interview, or job', () => {
+  it('cascades interview associations when deleting a contact, interview, or job', async () => {
     const { actions } = useAppStore.getState()
 
-    const jobId = actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
-    actions.createJobContact(jobId)
+    const jobId = expectDefined(await actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' }), 'Expected job id')
+    await actions.createJobContact(jobId)
     const contactId = expectDefined(Object.keys(useAppStore.getState().data.jobContacts)[0], 'Expected contact id')
-    const interviewId = expectDefined(actions.createInterview(jobId), 'Expected interview id')
+    const interviewId = expectDefined(await actions.createInterview(jobId), 'Expected interview id')
 
-    actions.addInterviewContact({ interviewId, jobContactId: contactId })
+    await actions.addInterviewContact({ interviewId, jobContactId: contactId })
     const interviewContactId = expectDefined(Object.keys(useAppStore.getState().data.interviewContacts)[0], 'Expected interview contact id')
 
-    actions.deleteJobContact(contactId)
+    await actions.deleteJobContact(contactId)
     expect(useAppStore.getState().data.interviewContacts[interviewContactId]).toBeUndefined()
 
-    actions.createJobContact(jobId)
+    await actions.createJobContact(jobId)
     const replacementContactId = expectDefined(Object.keys(useAppStore.getState().data.jobContacts)[0], 'Expected replacement contact id')
-    actions.addInterviewContact({ interviewId, jobContactId: replacementContactId })
+    await actions.addInterviewContact({ interviewId, jobContactId: replacementContactId })
     const replacementAssociationId = expectDefined(Object.keys(useAppStore.getState().data.interviewContacts)[0], 'Expected replacement interview contact id')
 
-    actions.deleteInterview(interviewId)
+    await actions.deleteInterview(interviewId)
     expect(useAppStore.getState().data.interviews[interviewId]).toBeUndefined()
     expect(useAppStore.getState().data.interviewContacts[replacementAssociationId]).toBeUndefined()
 
-    const secondInterviewId = expectDefined(actions.createInterview(jobId), 'Expected second interview id')
-    actions.addInterviewContact({ interviewId: secondInterviewId, jobContactId: replacementContactId })
+    const secondInterviewId = expectDefined(await actions.createInterview(jobId), 'Expected second interview id')
+    await actions.addInterviewContact({ interviewId: secondInterviewId, jobContactId: replacementContactId })
     expect(Object.keys(useAppStore.getState().data.interviewContacts)).toHaveLength(1)
 
-    actions.deleteJob(jobId)
+    await actions.deleteJob(jobId)
     expect(useAppStore.getState().data.jobs[jobId]).toBeUndefined()
     expect(Object.keys(useAppStore.getState().data.interviews)).toHaveLength(0)
     expect(Object.keys(useAppStore.getState().data.interviewContacts)).toHaveLength(0)
@@ -1092,11 +1092,11 @@ describe('app store reorder actions', () => {
   it('preserves job link order through export and import', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
+    await actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
     const jobId = expectDefined(Object.keys(useAppStore.getState().data.jobs)[0], 'Expected a job id')
 
-    actions.createJobLink(jobId)
-    actions.createJobLink(jobId)
+    await actions.createJobLink(jobId)
+    await actions.createJobLink(jobId)
 
     const jobLinkIds = getOrderedIds(
       Object.fromEntries(
@@ -1108,16 +1108,16 @@ describe('app store reorder actions', () => {
     const firstJobLinkId = expectDefined(jobLinkIds[0], 'Expected first job link id')
     const secondJobLinkId = expectDefined(jobLinkIds[1], 'Expected second job link id')
 
-    actions.updateJobLink({
+    await actions.updateJobLink({
       jobLinkId: firstJobLinkId,
       changes: { url: 'https://example.com/job' },
     })
-    actions.updateJobLink({
+    await actions.updateJobLink({
       jobLinkId: secondJobLinkId,
       changes: { url: 'https://linkedin.com/jobs/view/example' },
     })
 
-    actions.reorderJobLinks({
+    await actions.reorderJobLinks({
       jobId,
       orderedIds: [secondJobLinkId, firstJobLinkId],
     })
@@ -1140,11 +1140,11 @@ describe('app store reorder actions', () => {
   it('preserves application question order through export and import', async () => {
     const { actions } = useAppStore.getState()
 
-    actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
+    await actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
     const jobId = expectDefined(Object.keys(useAppStore.getState().data.jobs)[0], 'Expected a job id')
 
-    actions.createApplicationQuestion(jobId)
-    actions.createApplicationQuestion(jobId)
+    await actions.createApplicationQuestion(jobId)
+    await actions.createApplicationQuestion(jobId)
 
     const questionIds = getOrderedIds(
       Object.fromEntries(
@@ -1156,16 +1156,16 @@ describe('app store reorder actions', () => {
     const firstQuestionId = expectDefined(questionIds[0], 'Expected first application question id')
     const secondQuestionId = expectDefined(questionIds[1], 'Expected second application question id')
 
-    actions.updateApplicationQuestion({
+    await actions.updateApplicationQuestion({
       applicationQuestionId: firstQuestionId,
       changes: { question: 'Question One', answer: 'Answer One' },
     })
-    actions.updateApplicationQuestion({
+    await actions.updateApplicationQuestion({
       applicationQuestionId: secondQuestionId,
       changes: { question: 'Question Two', answer: 'Answer Two' },
     })
 
-    actions.reorderApplicationQuestions({
+    await actions.reorderApplicationQuestions({
       jobId,
       orderedIds: [secondQuestionId, firstQuestionId],
     })

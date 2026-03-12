@@ -178,7 +178,7 @@ export const JobPage = () => {
       return
     }
 
-    updateJob({
+    void updateJob({
       jobId: job.id,
       changes: {
         [field]: trimmed,
@@ -198,7 +198,7 @@ export const JobPage = () => {
       return
     }
 
-    updateJob({
+    void updateJob({
       jobId: job.id,
       changes: {
         [field]: value,
@@ -211,7 +211,7 @@ export const JobPage = () => {
       return
     }
 
-    updateJob({
+    void updateJob({
       jobId: job.id,
       changes: {
         [field]: value,
@@ -226,7 +226,7 @@ export const JobPage = () => {
       return
     }
 
-    updateJob({
+    void updateJob({
       jobId: job.id,
       changes: {
         datePosted: nextValue,
@@ -236,23 +236,23 @@ export const JobPage = () => {
 
   const handleAppliedToggle = (checked: boolean) => {
     if (checked) {
-      setJobAppliedAt({
+      void setJobAppliedAt({
         jobId: job.id,
         appliedAt: new Date().toISOString(),
       })
       return
     }
 
-    clearJobAppliedAt(job.id)
+    void clearJobAppliedAt(job.id)
   }
 
   const handleFinalOutcomeChange = (value: FinalOutcomeDraftStatus) => {
     if (!value) {
-      clearJobFinalOutcome(job.id)
+      void clearJobFinalOutcome(job.id)
       return
     }
 
-    setJobFinalOutcome({
+    void setJobFinalOutcome({
       jobId: job.id,
       status: value,
       setAt: new Date().toISOString(),

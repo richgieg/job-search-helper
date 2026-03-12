@@ -291,7 +291,7 @@ const JobLinkCard = ({
   }
 
   const commitLinkChanges = (changes: Partial<typeof link>) => {
-    updateJobLink({
+    void updateJobLink({
       jobLinkId: link.id,
       changes,
     })
@@ -344,7 +344,7 @@ const JobLinkCard = ({
               })
             }
           />
-          <DeleteIconButton label="Delete link" onDelete={() => deleteJobLink(link.id)} />
+          <DeleteIconButton label="Delete link" onDelete={() => void deleteJobLink(link.id)} />
         </div>
       </div>
     </div>
@@ -394,7 +394,7 @@ const JobContactCard = ({
   }
 
   const commitContactChanges = (changes: Partial<typeof contact>) => {
-    updateJobContact({
+    void updateJobContact({
       jobContactId: contact.id,
       changes,
     })
@@ -428,7 +428,7 @@ const JobContactCard = ({
                 })
               }
             />
-            <DeleteIconButton label="Delete contact" onDelete={() => deleteJobContact(contact.id)} />
+            <DeleteIconButton label="Delete contact" onDelete={() => void deleteJobContact(contact.id)} />
           </div>
         }
         summary={summary}
@@ -539,7 +539,7 @@ const InterviewCard = ({
   }
 
   const commitInterviewChanges = (changes: Partial<typeof interview>) => {
-    updateInterview({
+    void updateInterview({
       interviewId: interview.id,
       changes,
     })
@@ -563,7 +563,7 @@ const InterviewCard = ({
         defaultExpanded={defaultExpanded}
         summary={formatInterviewSummary(draft.startAt)}
         title={formatInterviewTitle(draft.startAt)}
-        headerActions={<DeleteIconButton label="Delete interview" onDelete={() => deleteInterview(interview.id)} />}
+        headerActions={<DeleteIconButton label="Delete interview" onDelete={() => void deleteInterview(interview.id)} />}
       >
         <div className="space-y-5">
         <div className="grid gap-4 xl:grid-cols-1">
@@ -603,7 +603,7 @@ const InterviewCard = ({
                   return
                 }
 
-                addInterviewContact({ interviewId: interview.id, jobContactId: selectedContactId })
+                void addInterviewContact({ interviewId: interview.id, jobContactId: selectedContactId })
               }}
             />
           </div>
@@ -633,7 +633,7 @@ const InterviewCard = ({
                         })
                       }
                     />
-                    <DeleteIconButton label="Remove contact from interview" onDelete={() => removeInterviewContact(association.id)} />
+                    <DeleteIconButton label="Remove contact from interview" onDelete={() => void removeInterviewContact(association.id)} />
                   </div>
                 </div>
               ))}
@@ -691,7 +691,7 @@ const ApplicationQuestionCard = ({
   }
 
   const commitQuestionChanges = (changes: Partial<typeof applicationQuestion>) => {
-    updateApplicationQuestion({
+    void updateApplicationQuestion({
       applicationQuestionId: applicationQuestion.id,
       changes,
     })
@@ -722,7 +722,7 @@ const ApplicationQuestionCard = ({
                 })
               }
             />
-            <DeleteIconButton label="Delete application question" onDelete={() => deleteApplicationQuestion(applicationQuestion.id)} />
+            <DeleteIconButton label="Delete application question" onDelete={() => void deleteApplicationQuestion(applicationQuestion.id)} />
           </div>
         }
         summary={summary}
@@ -896,8 +896,8 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
         actionStyle="icon"
         collapsible={hasJobLinks}
         description="Track the relevant job URLs for this role."
-        onAction={() => {
-          const createdId = createJobLink(jobId)
+        onAction={async () => {
+          const createdId = await createJobLink(jobId)
 
           if (createdId) {
             setNewJobLinkId(createdId)
@@ -927,8 +927,8 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
         actionStyle="icon"
         collapsible={hasApplicationQuestions}
         description="Track custom questions asked during the application flow and the answers you submitted."
-        onAction={() => {
-          const createdId = createApplicationQuestion(jobId)
+        onAction={async () => {
+          const createdId = await createApplicationQuestion(jobId)
 
           if (createdId) {
             setNewApplicationQuestionId(createdId)
@@ -959,8 +959,8 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
         actionStyle="icon"
         collapsible={hasJobContacts}
         description="Maintain recruiters, hiring managers, referrals, and interviewers for the job."
-        onAction={() => {
-          const createdId = createJobContact(jobId)
+        onAction={async () => {
+          const createdId = await createJobContact(jobId)
 
           if (createdId) {
             setNewJobContactId(createdId)
@@ -991,8 +991,8 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
         actionStyle="icon"
         collapsible={hasInterviews}
         description="Track interviews in chronological order."
-        onAction={() => {
-          const createdId = createInterview(jobId)
+        onAction={async () => {
+          const createdId = await createInterview(jobId)
 
           if (createdId) {
             setNewInterviewId(createdId)

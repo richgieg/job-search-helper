@@ -1,5 +1,45 @@
 import { createEmptyDataState } from '../store/create-initial-state'
 import type { AppDataState, AppExportFile, IsoTimestamp } from '../types/state'
+import {
+  addInterviewContactMutation,
+  clearJobAppliedAtMutation,
+  clearJobFinalOutcomeMutation,
+  createApplicationQuestionMutation,
+  createInterviewMutation,
+  createJobContactMutation,
+  createJobLinkMutation,
+  createJobMutation,
+  deleteApplicationQuestionMutation,
+  deleteInterviewMutation,
+  deleteJobContactMutation,
+  deleteJobLinkMutation,
+  deleteJobMutation,
+  removeInterviewContactMutation,
+  reorderApplicationQuestionsMutation,
+  reorderInterviewContactsMutation,
+  reorderJobContactsMutation,
+  reorderJobLinksMutation,
+  setJobAppliedAtMutation,
+  setJobFinalOutcomeMutation,
+  updateApplicationQuestionMutation,
+  updateInterviewMutation,
+  updateJobContactMutation,
+  updateJobLinkMutation,
+  updateJobMutation,
+  type AddInterviewContactInput,
+  type CreateJobInput,
+  type JobMutationContext,
+  type JobMutationResult,
+  type ReorderInterviewContactsInput,
+  type ReorderJobEntitiesInput,
+  type SetJobAppliedAtInput,
+  type SetJobFinalOutcomeInput,
+  type UpdateApplicationQuestionInput,
+  type UpdateInterviewInput,
+  type UpdateJobContactInput,
+  type UpdateJobInput,
+  type UpdateJobLinkInput,
+} from '../domain/job-data'
 import type { AppDataService } from './app-data-service'
 
 interface MockAppBackendOptions {
@@ -46,5 +86,114 @@ export class MockAppBackend implements AppDataService {
       exportedAt: this.now(),
       data: cloneAppData(this.data),
     }
+  }
+
+  private mutate(mutation: (data: AppDataState, context: JobMutationContext) => JobMutationResult): JobMutationResult {
+    const result = mutation(this.data, { now: this.now, createId: () => crypto.randomUUID() })
+    this.data = cloneAppData(result.data)
+    return {
+      ...result,
+      data: cloneAppData(this.data),
+    }
+  }
+
+  async createJob(input: CreateJobInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => createJobMutation(data, input, context))
+  }
+
+  async updateJob(input: UpdateJobInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => updateJobMutation(data, input, context))
+  }
+
+  async deleteJob(jobId: string): Promise<JobMutationResult> {
+    return this.mutate((data) => deleteJobMutation(data, jobId))
+  }
+
+  async createJobLink(jobId: string): Promise<JobMutationResult> {
+    return this.mutate((data, context) => createJobLinkMutation(data, jobId, context))
+  }
+
+  async updateJobLink(input: UpdateJobLinkInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => updateJobLinkMutation(data, input, context))
+  }
+
+  async deleteJobLink(jobLinkId: string): Promise<JobMutationResult> {
+    return this.mutate((data, context) => deleteJobLinkMutation(data, jobLinkId, context))
+  }
+
+  async reorderJobLinks(input: ReorderJobEntitiesInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => reorderJobLinksMutation(data, input, context))
+  }
+
+  async createJobContact(jobId: string): Promise<JobMutationResult> {
+    return this.mutate((data, context) => createJobContactMutation(data, jobId, context))
+  }
+
+  async updateJobContact(input: UpdateJobContactInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => updateJobContactMutation(data, input, context))
+  }
+
+  async deleteJobContact(jobContactId: string): Promise<JobMutationResult> {
+    return this.mutate((data, context) => deleteJobContactMutation(data, jobContactId, context))
+  }
+
+  async reorderJobContacts(input: ReorderJobEntitiesInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => reorderJobContactsMutation(data, input, context))
+  }
+
+  async createApplicationQuestion(jobId: string): Promise<JobMutationResult> {
+    return this.mutate((data, context) => createApplicationQuestionMutation(data, jobId, context))
+  }
+
+  async updateApplicationQuestion(input: UpdateApplicationQuestionInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => updateApplicationQuestionMutation(data, input, context))
+  }
+
+  async deleteApplicationQuestion(applicationQuestionId: string): Promise<JobMutationResult> {
+    return this.mutate((data, context) => deleteApplicationQuestionMutation(data, applicationQuestionId, context))
+  }
+
+  async reorderApplicationQuestions(input: ReorderJobEntitiesInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => reorderApplicationQuestionsMutation(data, input, context))
+  }
+
+  async setJobAppliedAt(input: SetJobAppliedAtInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => setJobAppliedAtMutation(data, input, context))
+  }
+
+  async clearJobAppliedAt(jobId: string): Promise<JobMutationResult> {
+    return this.mutate((data, context) => clearJobAppliedAtMutation(data, jobId, context))
+  }
+
+  async setJobFinalOutcome(input: SetJobFinalOutcomeInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => setJobFinalOutcomeMutation(data, input, context))
+  }
+
+  async clearJobFinalOutcome(jobId: string): Promise<JobMutationResult> {
+    return this.mutate((data, context) => clearJobFinalOutcomeMutation(data, jobId, context))
+  }
+
+  async createInterview(jobId: string): Promise<JobMutationResult> {
+    return this.mutate((data, context) => createInterviewMutation(data, jobId, context))
+  }
+
+  async updateInterview(input: UpdateInterviewInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => updateInterviewMutation(data, input, context))
+  }
+
+  async deleteInterview(interviewId: string): Promise<JobMutationResult> {
+    return this.mutate((data, context) => deleteInterviewMutation(data, interviewId, context))
+  }
+
+  async addInterviewContact(input: AddInterviewContactInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => addInterviewContactMutation(data, input, context))
+  }
+
+  async removeInterviewContact(interviewContactId: string): Promise<JobMutationResult> {
+    return this.mutate((data, context) => removeInterviewContactMutation(data, interviewContactId, context))
+  }
+
+  async reorderInterviewContacts(input: ReorderInterviewContactsInput): Promise<JobMutationResult> {
+    return this.mutate((data, context) => reorderInterviewContactsMutation(data, input, context))
   }
 }

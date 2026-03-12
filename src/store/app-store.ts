@@ -1,6 +1,20 @@
 import { create } from 'zustand'
 
 import { getAppApiClient } from '../api'
+import type {
+  AddInterviewContactInput,
+  CreateJobInput,
+  JobMutationResult,
+  ReorderInterviewContactsInput,
+  ReorderJobEntitiesInput,
+  SetJobAppliedAtInput,
+  SetJobFinalOutcomeInput,
+  UpdateApplicationQuestionInput,
+  UpdateInterviewInput,
+  UpdateJobContactInput,
+  UpdateJobInput,
+  UpdateJobLinkInput,
+} from '../domain/job-data'
 import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState, emptyProfileDefaults } from './create-initial-state'
 import { normalizeDocumentHeaderTemplate } from '../utils/document-header-templates'
 import { defaultBulletLevel, isBulletLevel } from '../utils/bullet-levels'
@@ -10,27 +24,18 @@ import type {
   Achievement,
   AdditionalExperienceBullet,
   AdditionalExperienceEntry,
-  ApplicationQuestion,
   AppDataState,
   AppExportFile,
   AppUiState,
   BulletLevel,
   Certification,
-  ContactRelationshipType,
   DocumentHeaderTemplate,
   EducationBullet,
   EducationEntry,
   EducationStatus,
   ExperienceBullet,
   ExperienceEntry,
-  FinalOutcome,
-  FinalOutcomeStatus,
   Id,
-  Interview,
-  InterviewContact,
-  Job,
-  JobContact,
-  JobLink,
   PersonalDetails,
   Profile,
   ProfileLink,
@@ -166,37 +171,31 @@ interface AppStoreState {
     }) => void
     deleteReference: (referenceId: Id) => void
     reorderReferences: (input: { profileId: Id; orderedIds: Id[] }) => void
-    createJob: (input: Pick<Job, 'companyName' | 'jobTitle'> & Partial<Job> & { initialLinkUrl?: string }) => Id
-    updateJob: (input: { jobId: Id; changes: Partial<Omit<Job, 'id' | 'createdAt' | 'updatedAt' | 'appliedAt' | 'finalOutcome'>> }) => void
-    deleteJob: (jobId: Id) => void
-    createJobLink: (jobId: Id) => Id | null
-    updateJobLink: (input: {
-      jobLinkId: Id
-      changes: Partial<Omit<JobLink, 'id' | 'jobId' | 'createdAt'>>
-    }) => void
-    deleteJobLink: (jobLinkId: Id) => void
-    reorderJobLinks: (input: { jobId: Id; orderedIds: Id[] }) => void
-    createJobContact: (jobId: Id) => Id | null
-    updateJobContact: (input: { jobContactId: Id; changes: Partial<Omit<JobContact, 'id' | 'jobId'>> }) => void
-    deleteJobContact: (jobContactId: Id) => void
-    reorderJobContacts: (input: { jobId: Id; orderedIds: Id[] }) => void
-    createApplicationQuestion: (jobId: Id) => Id | null
-    updateApplicationQuestion: (input: {
-      applicationQuestionId: Id
-      changes: Partial<Omit<ApplicationQuestion, 'id' | 'jobId'>>
-    }) => void
-    deleteApplicationQuestion: (applicationQuestionId: Id) => void
-    reorderApplicationQuestions: (input: { jobId: Id; orderedIds: Id[] }) => void
-    setJobAppliedAt: (input: { jobId: Id; appliedAt: string }) => void
-    clearJobAppliedAt: (jobId: Id) => void
-    setJobFinalOutcome: (input: { jobId: Id; status: FinalOutcomeStatus; setAt: string }) => void
-    clearJobFinalOutcome: (jobId: Id) => void
-    createInterview: (jobId: Id) => Id | null
-    updateInterview: (input: { interviewId: Id; changes: Partial<Omit<Interview, 'id' | 'jobId'>> }) => void
-    deleteInterview: (interviewId: Id) => void
-    addInterviewContact: (input: { interviewId: Id; jobContactId: Id }) => void
-    removeInterviewContact: (interviewContactId: Id) => void
-    reorderInterviewContacts: (input: { interviewId: Id; orderedIds: Id[] }) => void
+    createJob: (input: CreateJobInput) => Promise<Id | null>
+    updateJob: (input: UpdateJobInput) => Promise<void>
+    deleteJob: (jobId: Id) => Promise<void>
+    createJobLink: (jobId: Id) => Promise<Id | null>
+    updateJobLink: (input: UpdateJobLinkInput) => Promise<void>
+    deleteJobLink: (jobLinkId: Id) => Promise<void>
+    reorderJobLinks: (input: ReorderJobEntitiesInput) => Promise<void>
+    createJobContact: (jobId: Id) => Promise<Id | null>
+    updateJobContact: (input: UpdateJobContactInput) => Promise<void>
+    deleteJobContact: (jobContactId: Id) => Promise<void>
+    reorderJobContacts: (input: ReorderJobEntitiesInput) => Promise<void>
+    createApplicationQuestion: (jobId: Id) => Promise<Id | null>
+    updateApplicationQuestion: (input: UpdateApplicationQuestionInput) => Promise<void>
+    deleteApplicationQuestion: (applicationQuestionId: Id) => Promise<void>
+    reorderApplicationQuestions: (input: ReorderJobEntitiesInput) => Promise<void>
+    setJobAppliedAt: (input: SetJobAppliedAtInput) => Promise<void>
+    clearJobAppliedAt: (jobId: Id) => Promise<void>
+    setJobFinalOutcome: (input: SetJobFinalOutcomeInput) => Promise<void>
+    clearJobFinalOutcome: (jobId: Id) => Promise<void>
+    createInterview: (jobId: Id) => Promise<Id | null>
+    updateInterview: (input: UpdateInterviewInput) => Promise<void>
+    deleteInterview: (interviewId: Id) => Promise<void>
+    addInterviewContact: (input: AddInterviewContactInput) => Promise<void>
+    removeInterviewContact: (interviewContactId: Id) => Promise<void>
+    reorderInterviewContacts: (input: ReorderInterviewContactsInput) => Promise<void>
     importAppData: (file: AppExportFile) => Promise<void>
     exportAppData: () => Promise<AppExportFile>
     resetUiState: () => void
@@ -345,25 +344,6 @@ const stampUpdatedProfile = (data: AppDataState, profileId: Id, timestamp: strin
       ...data.profiles,
       [profileId]: {
         ...profile,
-        updatedAt: timestamp,
-      },
-    },
-  }
-}
-
-const stampUpdatedJob = (data: AppDataState, jobId: Id, timestamp: string): AppDataState => {
-  const job = data.jobs[jobId]
-
-  if (!job) {
-    return data
-  }
-
-  return {
-    ...data,
-    jobs: {
-      ...data.jobs,
-      [jobId]: {
-        ...job,
         updatedAt: timestamp,
       },
     },
@@ -812,25 +792,6 @@ const deleteSkillCategoryCascade = (data: AppDataState, skillCategoryId: Id): Ap
   }
 }
 
-const deleteInterviewCascade = (data: AppDataState, interviewId: Id): AppDataState => {
-  const nextInterviews = { ...data.interviews }
-  const nextInterviewContacts = { ...data.interviewContacts }
-
-  delete nextInterviews[interviewId]
-
-  Object.values(data.interviewContacts).forEach((item) => {
-    if (item.interviewId === interviewId) {
-      delete nextInterviewContacts[item.id]
-    }
-  })
-
-  return {
-    ...data,
-    interviews: nextInterviews,
-    interviewContacts: nextInterviewContacts,
-  }
-}
-
 const createProfileRecord = (name: string): Profile => {
   const timestamp = now()
 
@@ -850,7 +811,52 @@ const createProfileRecord = (name: string): Profile => {
   }
 }
 
-export const useAppStore = create<AppStoreState>((set, get) => ({
+export const useAppStore = create<AppStoreState>((set, get) => {
+  const runPersistedJobMutation = async (
+    mutation: (data: AppDataState) => Promise<JobMutationResult>,
+    updateUi?: (state: AppStoreState, result: JobMutationResult) => AppUiState,
+  ): Promise<JobMutationResult | null> => {
+    set((state) => ({
+      ...state,
+      status: {
+        ...state.status,
+        saving: 'saving',
+        errorMessage: null,
+      },
+    }))
+
+    try {
+      const result = await mutation(get().data)
+
+      set((state) => ({
+        ...state,
+        data: result.data,
+        ui: updateUi ? updateUi(state, result) : state.ui,
+        status: {
+          ...state.status,
+          saving: 'idle',
+          errorMessage: null,
+        },
+      }))
+
+      return result
+    } catch (caughtError) {
+      const errorMessage = caughtError instanceof Error ? caughtError.message : 'Unknown job mutation error.'
+
+      set((state) => ({
+        ...state,
+        status: {
+          ...state.status,
+          saving: 'error',
+          errorMessage,
+        },
+      }))
+
+      return null
+    }
+  }
+
+  return {
   data: createEmptyDataState(),
   ui: createDefaultUiState(),
   status: createInitialStoreStatus(),
@@ -2650,725 +2656,102 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         ),
       }))
     },
-    createJob: (input) => {
-      const timestamp = now()
-      const initialLinkUrl = input.initialLinkUrl?.trim() ?? ''
-      const job: Job = {
-        id: createId(),
-        companyName: input.companyName,
-        jobTitle: input.jobTitle,
-        description: input.description ?? '',
-        location: input.location ?? '',
-        postedCompensation: input.postedCompensation ?? '',
-        desiredCompensation: input.desiredCompensation ?? '',
-        compensationNotes: input.compensationNotes ?? '',
-        workArrangement: input.workArrangement ?? 'unknown',
-        employmentType: input.employmentType ?? 'other',
-        datePosted: input.datePosted ?? null,
-        appliedAt: null,
-        finalOutcome: null,
-        notes: input.notes ?? '',
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      }
-
-      const initialJobLink: JobLink | null = initialLinkUrl
-        ? {
-            id: createId(),
-            jobId: job.id,
-            url: initialLinkUrl,
-            sortOrder: 1,
-            createdAt: timestamp,
-          }
-        : null
-
-      set((state) => ({
-        data: {
-          ...state.data,
-          jobs: {
-            ...state.data.jobs,
-            [job.id]: job,
-          },
-          jobLinks: initialJobLink
-            ? {
-                ...state.data.jobLinks,
-                [initialJobLink.id]: initialJobLink,
-              }
-            : state.data.jobLinks,
-        },
-        ui: {
+    createJob: async (input) => {
+      const result = await runPersistedJobMutation(
+        (data) => getAppApiClient().createJob(data, input),
+        (state, mutationResult) => ({
           ...state.ui,
-          selectedJobId: job.id,
-        },
-      }))
-
-      return job.id
-    },
-    updateJob: ({ jobId, changes }) => {
-      const existingJob = get().data.jobs[jobId]
-
-      if (!existingJob) {
-        return
-      }
-
-      set((state) => ({
-        data: {
-          ...state.data,
-          jobs: {
-            ...state.data.jobs,
-            [jobId]: {
-              ...existingJob,
-              ...changes,
-              updatedAt: now(),
-            },
-          },
-        },
-      }))
-    },
-    deleteJob: (jobId) => {
-      set((state) => {
-        let nextData = state.data
-
-        Object.values(state.data.profiles)
-          .filter((profile) => profile.jobId === jobId)
-          .forEach((profile) => {
-            nextData = deleteProfileCascade(nextData, profile.id)
-          })
-
-        const nextJobs = { ...nextData.jobs }
-        const nextJobLinks = { ...nextData.jobLinks }
-        const nextJobContacts = { ...nextData.jobContacts }
-        const nextInterviews = { ...nextData.interviews }
-        const nextInterviewContacts = { ...nextData.interviewContacts }
-        const nextApplicationQuestions = { ...nextData.applicationQuestions }
-
-        delete nextJobs[jobId]
-
-        Object.values(nextData.jobLinks).forEach((item) => {
-          if (item.jobId === jobId) {
-            delete nextJobLinks[item.id]
-          }
-        })
-
-        Object.values(nextData.jobContacts).forEach((item) => {
-          if (item.jobId === jobId) {
-            delete nextJobContacts[item.id]
-          }
-        })
-
-        Object.values(nextData.interviews).forEach((item) => {
-          if (item.jobId === jobId) {
-            delete nextInterviews[item.id]
-          }
-        })
-
-        Object.values(nextData.interviewContacts).forEach((item) => {
-          const interview = nextData.interviews[item.interviewId]
-
-          if (interview?.jobId === jobId) {
-            delete nextInterviewContacts[item.id]
-          }
-        })
-
-        Object.values(nextData.applicationQuestions).forEach((item) => {
-          if (item.jobId === jobId) {
-            delete nextApplicationQuestions[item.id]
-          }
-        })
-
-        return {
-          data: {
-            ...nextData,
-            jobs: nextJobs,
-            jobLinks: nextJobLinks,
-            jobContacts: nextJobContacts,
-            interviews: nextInterviews,
-            interviewContacts: nextInterviewContacts,
-            applicationQuestions: nextApplicationQuestions,
-          },
-          ui: {
-            ...state.ui,
-            selectedJobId: state.ui.selectedJobId === jobId ? null : state.ui.selectedJobId,
-            selectedProfileId:
-              state.ui.selectedProfileId && nextData.profiles[state.ui.selectedProfileId] === undefined
-                ? null
-                : state.ui.selectedProfileId,
-          },
-        }
-      })
-    },
-    createJobLink: (jobId) => {
-      const job = get().data.jobs[jobId]
-
-      if (!job) {
-        return null
-      }
-
-      const jobLink: JobLink = {
-        id: createId(),
-        jobId,
-        url: '',
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.jobLinks)
-            .filter((item) => item.jobId === jobId)
-            .map((item) => item.sortOrder),
-        ),
-        createdAt: now(),
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            jobLinks: {
-              ...state.data.jobLinks,
-              [jobLink.id]: jobLink,
-            },
-          },
-          jobId,
-          now(),
-        ),
-      }))
-
-      return jobLink.id
-    },
-    updateJobLink: ({ jobLinkId, changes }) => {
-      const existing = get().data.jobLinks[jobLinkId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            jobLinks: {
-              ...state.data.jobLinks,
-              [jobLinkId]: {
-                ...existing,
-                ...changes,
-              },
-            },
-          },
-          existing.jobId,
-          now(),
-        ),
-      }))
-    },
-    deleteJobLink: (jobLinkId) => {
-      const existing = get().data.jobLinks[jobLinkId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => {
-        const nextJobLinks = { ...state.data.jobLinks }
-        delete nextJobLinks[jobLinkId]
-
-        return {
-          data: stampUpdatedJob(
-            {
-              ...state.data,
-              jobLinks: nextJobLinks,
-            },
-            existing.jobId,
-            now(),
-          ),
-        }
-      })
-    },
-    reorderJobLinks: ({ jobId, orderedIds }) => {
-      const existingIds = Object.values(get().data.jobLinks)
-        .filter((item) => item.jobId === jobId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            jobLinks: reorderSortableEntities(state.data.jobLinks, orderedIds),
-          },
-          jobId,
-          now(),
-        ),
-      }))
-    },
-    createJobContact: (jobId) => {
-      const job = get().data.jobs[jobId]
-
-      if (!job) {
-        return null
-      }
-
-      const jobContact: JobContact = {
-        id: createId(),
-        jobId,
-        name: '',
-        title: '',
-        company: job.companyName,
-        addressLine1: '',
-        addressLine2: '',
-        addressLine3: '',
-        addressLine4: '',
-        email: '',
-        phone: '',
-        linkedinUrl: '',
-        relationshipType: 'recruiter' satisfies ContactRelationshipType,
-        notes: '',
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.jobContacts)
-            .filter((item) => item.jobId === jobId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            jobContacts: {
-              ...state.data.jobContacts,
-              [jobContact.id]: jobContact,
-            },
-          },
-          jobId,
-          now(),
-        ),
-      }))
-
-      return jobContact.id
-    },
-    updateJobContact: ({ jobContactId, changes }) => {
-      const existing = get().data.jobContacts[jobContactId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            jobContacts: {
-              ...state.data.jobContacts,
-              [jobContactId]: {
-                ...existing,
-                ...changes,
-              },
-            },
-          },
-          existing.jobId,
-          now(),
-        ),
-      }))
-    },
-    deleteJobContact: (jobContactId) => {
-      const existing = get().data.jobContacts[jobContactId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => {
-        const nextJobContacts = { ...state.data.jobContacts }
-        const nextInterviewContacts = { ...state.data.interviewContacts }
-        delete nextJobContacts[jobContactId]
-
-        Object.values(state.data.interviewContacts).forEach((item) => {
-          if (item.jobContactId === jobContactId) {
-            delete nextInterviewContacts[item.id]
-          }
-        })
-
-        return {
-          data: stampUpdatedJob(
-            {
-              ...state.data,
-              jobContacts: nextJobContacts,
-              interviewContacts: nextInterviewContacts,
-            },
-            existing.jobId,
-            now(),
-          ),
-        }
-      })
-    },
-    reorderJobContacts: ({ jobId, orderedIds }) => {
-      const existingIds = Object.values(get().data.jobContacts)
-        .filter((item) => item.jobId === jobId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            jobContacts: reorderSortableEntities(state.data.jobContacts, orderedIds),
-          },
-          jobId,
-          now(),
-        ),
-      }))
-    },
-    createApplicationQuestion: (jobId) => {
-      const job = get().data.jobs[jobId]
-
-      if (!job) {
-        return null
-      }
-
-      const applicationQuestion: ApplicationQuestion = {
-        id: createId(),
-        jobId,
-        question: '',
-        answer: '',
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.applicationQuestions)
-            .filter((item) => item.jobId === jobId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            applicationQuestions: {
-              ...state.data.applicationQuestions,
-              [applicationQuestion.id]: applicationQuestion,
-            },
-          },
-          jobId,
-          now(),
-        ),
-      }))
-
-      return applicationQuestion.id
-    },
-    updateApplicationQuestion: ({ applicationQuestionId, changes }) => {
-      const existing = get().data.applicationQuestions[applicationQuestionId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            applicationQuestions: {
-              ...state.data.applicationQuestions,
-              [applicationQuestionId]: {
-                ...existing,
-                ...changes,
-              },
-            },
-          },
-          existing.jobId,
-          now(),
-        ),
-      }))
-    },
-    deleteApplicationQuestion: (applicationQuestionId) => {
-      const existing = get().data.applicationQuestions[applicationQuestionId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => {
-        const nextApplicationQuestions = { ...state.data.applicationQuestions }
-        delete nextApplicationQuestions[applicationQuestionId]
-
-        return {
-          data: stampUpdatedJob(
-            {
-              ...state.data,
-              applicationQuestions: nextApplicationQuestions,
-            },
-            existing.jobId,
-            now(),
-          ),
-        }
-      })
-    },
-    reorderApplicationQuestions: ({ jobId, orderedIds }) => {
-      const existingIds = Object.values(get().data.applicationQuestions)
-        .filter((item) => item.jobId === jobId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            applicationQuestions: reorderSortableEntities(state.data.applicationQuestions, orderedIds),
-          },
-          jobId,
-          now(),
-        ),
-      }))
-    },
-    setJobAppliedAt: ({ jobId, appliedAt }) => {
-      const existingJob = get().data.jobs[jobId]
-
-      if (!existingJob) {
-        return
-      }
-
-      set((state) => ({
-        data: {
-          ...state.data,
-          jobs: {
-            ...state.data.jobs,
-            [jobId]: {
-              ...existingJob,
-              appliedAt,
-              updatedAt: now(),
-            },
-          },
-        },
-      }))
-    },
-    clearJobAppliedAt: (jobId) => {
-      const existingJob = get().data.jobs[jobId]
-
-      if (!existingJob) {
-        return
-      }
-
-      set((state) => ({
-        data: {
-          ...state.data,
-          jobs: {
-            ...state.data.jobs,
-            [jobId]: {
-              ...existingJob,
-              appliedAt: null,
-              finalOutcome: null,
-              updatedAt: now(),
-            },
-          },
-        },
-      }))
-    },
-    setJobFinalOutcome: ({ jobId, status, setAt }) => {
-      const existingJob = get().data.jobs[jobId]
-
-      if (!existingJob || !existingJob.appliedAt) {
-        return
-      }
-
-      const finalOutcome: FinalOutcome = { status, setAt }
-
-      set((state) => ({
-        data: {
-          ...state.data,
-          jobs: {
-            ...state.data.jobs,
-            [jobId]: {
-              ...existingJob,
-              finalOutcome,
-              updatedAt: now(),
-            },
-          },
-        },
-      }))
-    },
-    clearJobFinalOutcome: (jobId) => {
-      const existingJob = get().data.jobs[jobId]
-
-      if (!existingJob) {
-        return
-      }
-
-      set((state) => ({
-        data: {
-          ...state.data,
-          jobs: {
-            ...state.data.jobs,
-            [jobId]: {
-              ...existingJob,
-              finalOutcome: null,
-              updatedAt: now(),
-            },
-          },
-        },
-      }))
-    },
-    createInterview: (jobId) => {
-      const job = get().data.jobs[jobId]
-
-      if (!job) {
-        return null
-      }
-
-      const timestamp = now()
-      const interview: Interview = {
-        id: createId(),
-        jobId,
-        startAt: null,
-        notes: '',
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            interviews: {
-              ...state.data.interviews,
-              [interview.id]: interview,
-            },
-          },
-          jobId,
-          timestamp,
-        ),
-      }))
-
-      return interview.id
-    },
-    updateInterview: ({ interviewId, changes }) => {
-      const existing = get().data.interviews[interviewId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            interviews: {
-              ...state.data.interviews,
-              [interviewId]: {
-                ...existing,
-                ...changes,
-              },
-            },
-          },
-          existing.jobId,
-          now(),
-        ),
-      }))
-    },
-    deleteInterview: (interviewId) => {
-      const existing = get().data.interviews[interviewId]
-
-      if (!existing) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(deleteInterviewCascade(state.data, interviewId), existing.jobId, now()),
-      }))
-    },
-    addInterviewContact: ({ interviewId, jobContactId }) => {
-      const interview = get().data.interviews[interviewId]
-      const jobContact = get().data.jobContacts[jobContactId]
-
-      if (!interview || !jobContact || interview.jobId !== jobContact.jobId) {
-        return
-      }
-
-      const hasExistingAssociation = Object.values(get().data.interviewContacts).some(
-        (item) => item.interviewId === interviewId && item.jobContactId === jobContactId,
+          selectedJobId: mutationResult.createdId ?? state.ui.selectedJobId,
+        }),
       )
 
-      if (hasExistingAssociation) {
-        return
-      }
-
-      const interviewContact: InterviewContact = {
-        id: createId(),
-        interviewId,
-        jobContactId,
-        sortOrder: getNextSortOrder(
-          Object.values(get().data.interviewContacts)
-            .filter((item) => item.interviewId === interviewId)
-            .map((item) => item.sortOrder),
-        ),
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            interviewContacts: {
-              ...state.data.interviewContacts,
-              [interviewContact.id]: interviewContact,
-            },
-          },
-          interview.jobId,
-          now(),
-        ),
-      }))
+      return result?.createdId ?? null
     },
-    removeInterviewContact: (interviewContactId) => {
-      const existing = get().data.interviewContacts[interviewContactId]
-
-      if (!existing) {
-        return
-      }
-
-      const interview = get().data.interviews[existing.interviewId]
-
-      if (!interview) {
-        return
-      }
-
-      set((state) => {
-        const nextInterviewContacts = { ...state.data.interviewContacts }
-        delete nextInterviewContacts[interviewContactId]
-
-        return {
-          data: stampUpdatedJob(
-            {
-              ...state.data,
-              interviewContacts: nextInterviewContacts,
-            },
-            interview.jobId,
-            now(),
-          ),
-        }
-      })
+    updateJob: async (input) => {
+      await runPersistedJobMutation((data) => getAppApiClient().updateJob(data, input))
     },
-    reorderInterviewContacts: ({ interviewId, orderedIds }) => {
-      const interview = get().data.interviews[interviewId]
-
-      if (!interview) {
-        return
-      }
-
-      const existingIds = Object.values(get().data.interviewContacts)
-        .filter((item) => item.interviewId === interviewId)
-        .map((item) => item.id)
-
-      if (!hasExactIds(existingIds, orderedIds)) {
-        return
-      }
-
-      set((state) => ({
-        data: stampUpdatedJob(
-          {
-            ...state.data,
-            interviewContacts: reorderSortableEntities(state.data.interviewContacts, orderedIds),
-          },
-          interview.jobId,
-          now(),
-        ),
-      }))
+    deleteJob: async (jobId) => {
+      await runPersistedJobMutation(
+        (data) => getAppApiClient().deleteJob(data, jobId),
+        (state, mutationResult) => ({
+          ...state.ui,
+          selectedJobId: state.ui.selectedJobId === jobId ? null : state.ui.selectedJobId,
+          selectedProfileId:
+            state.ui.selectedProfileId && mutationResult.data.profiles[state.ui.selectedProfileId] === undefined
+              ? null
+              : state.ui.selectedProfileId,
+        }),
+      )
+    },
+    createJobLink: async (jobId) => {
+      const result = await runPersistedJobMutation((data) => getAppApiClient().createJobLink(data, jobId))
+      return result?.createdId ?? null
+    },
+    updateJobLink: async (input) => {
+      await runPersistedJobMutation((data) => getAppApiClient().updateJobLink(data, input))
+    },
+    deleteJobLink: async (jobLinkId) => {
+      await runPersistedJobMutation((data) => getAppApiClient().deleteJobLink(data, jobLinkId))
+    },
+    reorderJobLinks: async (input) => {
+      await runPersistedJobMutation((data) => getAppApiClient().reorderJobLinks(data, input))
+    },
+    createJobContact: async (jobId) => {
+      const result = await runPersistedJobMutation((data) => getAppApiClient().createJobContact(data, jobId))
+      return result?.createdId ?? null
+    },
+    updateJobContact: async (input) => {
+      await runPersistedJobMutation((data) => getAppApiClient().updateJobContact(data, input))
+    },
+    deleteJobContact: async (jobContactId) => {
+      await runPersistedJobMutation((data) => getAppApiClient().deleteJobContact(data, jobContactId))
+    },
+    reorderJobContacts: async (input) => {
+      await runPersistedJobMutation((data) => getAppApiClient().reorderJobContacts(data, input))
+    },
+    createApplicationQuestion: async (jobId) => {
+      const result = await runPersistedJobMutation((data) => getAppApiClient().createApplicationQuestion(data, jobId))
+      return result?.createdId ?? null
+    },
+    updateApplicationQuestion: async (input) => {
+      await runPersistedJobMutation((data) => getAppApiClient().updateApplicationQuestion(data, input))
+    },
+    deleteApplicationQuestion: async (applicationQuestionId) => {
+      await runPersistedJobMutation((data) => getAppApiClient().deleteApplicationQuestion(data, applicationQuestionId))
+    },
+    reorderApplicationQuestions: async (input) => {
+      await runPersistedJobMutation((data) => getAppApiClient().reorderApplicationQuestions(data, input))
+    },
+    setJobAppliedAt: async (input) => {
+      await runPersistedJobMutation((data) => getAppApiClient().setJobAppliedAt(data, input))
+    },
+    clearJobAppliedAt: async (jobId) => {
+      await runPersistedJobMutation((data) => getAppApiClient().clearJobAppliedAt(data, jobId))
+    },
+    setJobFinalOutcome: async (input) => {
+      await runPersistedJobMutation((data) => getAppApiClient().setJobFinalOutcome(data, input))
+    },
+    clearJobFinalOutcome: async (jobId) => {
+      await runPersistedJobMutation((data) => getAppApiClient().clearJobFinalOutcome(data, jobId))
+    },
+    createInterview: async (jobId) => {
+      const result = await runPersistedJobMutation((data) => getAppApiClient().createInterview(data, jobId))
+      return result?.createdId ?? null
+    },
+    updateInterview: async (input) => {
+      await runPersistedJobMutation((data) => getAppApiClient().updateInterview(data, input))
+    },
+    deleteInterview: async (interviewId) => {
+      await runPersistedJobMutation((data) => getAppApiClient().deleteInterview(data, interviewId))
+    },
+    addInterviewContact: async (input) => {
+      await runPersistedJobMutation((data) => getAppApiClient().addInterviewContact(data, input))
+    },
+    removeInterviewContact: async (interviewContactId) => {
+      await runPersistedJobMutation((data) => getAppApiClient().removeInterviewContact(data, interviewContactId))
+    },
+    reorderInterviewContacts: async (input) => {
+      await runPersistedJobMutation((data) => getAppApiClient().reorderInterviewContacts(data, input))
     },
     importAppData: async (file) => {
       const currentThemePreference = get().ui.themePreference
@@ -3454,4 +2837,5 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
     selectProfile: (profileId) =>
       set((state) => ({ ...state, ui: { ...state.ui, selectedProfileId: profileId } })),
   },
-}))
+}
+})

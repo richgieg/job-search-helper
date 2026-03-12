@@ -33,13 +33,13 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
     interviewCount,
   })
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     const confirmed = window.confirm(`Delete job "${job.jobTitle}" at "${job.companyName}"? This removes attached job profiles too.`)
     if (!confirmed) {
       return
     }
 
-    deleteJob(job.id)
+    await deleteJob(job.id)
   }
 
   return (
@@ -134,7 +134,7 @@ export const JobsPage = () => {
   const jobs = useMemo(() => Object.values(jobsById), [jobsById])
   const sortedJobIds = useMemo(() => [...jobs].sort((left, right) => right.createdAt.localeCompare(left.createdAt)).map((job) => job.id), [jobs])
 
-  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const trimmedCompany = companyName.trim()
@@ -145,7 +145,7 @@ export const JobsPage = () => {
       return
     }
 
-    createJob({
+    await createJob({
       companyName: trimmedCompany,
       jobTitle: trimmedTitle,
       ...(trimmedInitialLinkUrl ? { initialLinkUrl: trimmedInitialLinkUrl } : {}),
