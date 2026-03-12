@@ -286,11 +286,16 @@ export const ProfilePage = () => {
 
       <ProfileChildEditors profileId={profile.id} />
 
-      <CollapsiblePanel description="Control document header styling plus which sections appear on the resume and the order in which they are shown." title="Resume settings">
-        <div className="space-y-4">
-          <div className="rounded-xl border border-app-border-muted p-4">
+      <CollapsiblePanel description="Control document header styling plus which sections appear on the resume and the order in which they are shown." title="Document settings">
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-app-heading">Shared header</h3>
+              <p className="mt-1 text-sm text-app-text-subtle">Applies to the resume, cover letter, and references documents.</p>
+            </div>
+
             <label className="flex flex-col gap-2 text-sm text-app-text-muted">
-              <span className="font-medium text-app-text">Document header</span>
+              <span className="sr-only">Shared header template</span>
               <select
                 className="rounded-xl border border-app-border bg-app-surface px-3 py-2 text-sm text-app-text outline-none transition focus:border-app-focus-ring"
                 value={profile.resumeSettings.headerTemplate}
@@ -308,10 +313,9 @@ export const ProfilePage = () => {
                 ))}
               </select>
             </label>
-            <p className="mt-2 text-xs text-app-text-subtle">Applies to the resume, cover letter, and references document.</p>
 
             {documentData ? (
-              <div className="mt-4 overflow-hidden rounded-xl border border-app-border bg-white p-4 shadow-sm">
+              <div className="overflow-hidden rounded-xl border border-app-border bg-white p-4 shadow-sm">
                 <p className="mb-3 text-xs font-medium uppercase tracking-[0.16em] text-app-text-subtle">Preview</p>
                 <div className="overflow-x-auto pb-1">
                   <div className="document-header-preview">
@@ -322,7 +326,13 @@ export const ProfilePage = () => {
             ) : null}
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="space-y-3">
+            <div>
+              <h3 className="text-sm font-semibold text-app-heading">Resume sections</h3>
+              <p className="mt-1 text-sm text-app-text-subtle">Control which sections appear on the resume and the order in which they are shown.</p>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
           {[leftColumnResumeSections, rightColumnResumeSections].map((column, columnIndex) => (
             <div key={columnIndex} className="space-y-3">
               {column.map((resumeSection) => {
@@ -383,6 +393,7 @@ export const ProfilePage = () => {
               })}
             </div>
           ))}
+            </div>
           </div>
         </div>
       </CollapsiblePanel>
