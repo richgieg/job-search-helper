@@ -44,9 +44,8 @@ import type {
 
 export interface AppDataService {
   getAppData(): Promise<AppDataState>
-  replaceAppData(data: AppDataState): Promise<AppDataState>
   importAppData(file: AppExportFile): Promise<AppDataState>
-  exportAppData(data: AppDataState): Promise<AppExportFile>
+  exportAppData(): Promise<AppExportFile>
   createBaseProfile(name: string): Promise<ProfileMutationResult>
   updateProfile(input: UpdateProfileInput): Promise<ProfileMutationResult>
   setDocumentHeaderTemplate(input: SetDocumentHeaderTemplateInput): Promise<ProfileMutationResult>

@@ -173,7 +173,7 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
 
  export const useAppStore = create<AppStoreState>((set, get) => {
   const runPersistedProfileMutation = async (
-    mutation: (data: AppDataState) => Promise<ProfileMutationResult>,
+    mutation: () => Promise<ProfileMutationResult>,
     updateUi?: (state: AppStoreState, result: ProfileMutationResult) => AppUiState,
   ): Promise<ProfileMutationResult | null> => {
     set((state) => ({
@@ -186,7 +186,7 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
     }))
 
     try {
-      const result = await mutation(get().data)
+      const result = await mutation()
 
       set((state) => ({
         ...state,
@@ -217,7 +217,7 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
   }
 
   const runPersistedJobMutation = async (
-    mutation: (data: AppDataState) => Promise<JobMutationResult>,
+    mutation: () => Promise<JobMutationResult>,
     updateUi?: (state: AppStoreState, result: JobMutationResult) => AppUiState,
   ): Promise<JobMutationResult | null> => {
     set((state) => ({
@@ -230,7 +230,7 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
     }))
 
     try {
-      const result = await mutation(get().data)
+      const result = await mutation()
 
       set((state) => ({
         ...state,
@@ -306,7 +306,7 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
     },
     createBaseProfile: async (name) => {
       const result = await runPersistedProfileMutation(
-        (data) => getAppApiClient().createBaseProfile(data, name),
+        () => getAppApiClient().createBaseProfile(name),
         (state, mutationResult) => ({
           ...state.ui,
           selectedProfileId: mutationResult.createdId ?? state.ui.selectedProfileId,
@@ -316,23 +316,23 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
       return result?.createdId ?? null
     },
     updateProfile: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateProfile(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateProfile(input))
     },
     setDocumentHeaderTemplate: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().setDocumentHeaderTemplate(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().setDocumentHeaderTemplate(input))
     },
     setResumeSectionEnabled: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().setResumeSectionEnabled(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().setResumeSectionEnabled(input))
     },
     setResumeSectionLabel: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().setResumeSectionLabel(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().setResumeSectionLabel(input))
     },
     reorderResumeSections: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderResumeSections(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderResumeSections(input))
     },
     duplicateProfile: async (input) => {
       const result = await runPersistedProfileMutation(
-        (data) => getAppApiClient().duplicateProfile(data, input),
+        () => getAppApiClient().duplicateProfile(input),
         (state, mutationResult) => {
           const createdProfileId = mutationResult.createdId ?? null
           const createdProfile = createdProfileId ? mutationResult.data.profiles[createdProfileId] : null
@@ -349,7 +349,7 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
     },
     deleteProfile: async (profileId) => {
       await runPersistedProfileMutation(
-        (data) => getAppApiClient().deleteProfile(data, profileId),
+        () => getAppApiClient().deleteProfile(profileId),
         (state) => ({
           ...state.ui,
           selectedProfileId: state.ui.selectedProfileId === profileId ? null : state.ui.selectedProfileId,
@@ -357,190 +357,190 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
       )
     },
     createProfileLink: async (profileId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createProfileLink(data, profileId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createProfileLink(profileId))
       return result?.createdId ?? null
     },
     updateProfileLink: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateProfileLink(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateProfileLink(input))
     },
     deleteProfileLink: async (profileLinkId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteProfileLink(data, profileLinkId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteProfileLink(profileLinkId))
     },
     reorderProfileLinks: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderProfileLinks(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderProfileLinks(input))
     },
     createSkillCategory: async (profileId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createSkillCategory(data, profileId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createSkillCategory(profileId))
       return result?.createdId ?? null
     },
     updateSkillCategory: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateSkillCategory(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateSkillCategory(input))
     },
     deleteSkillCategory: async (skillCategoryId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteSkillCategory(data, skillCategoryId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteSkillCategory(skillCategoryId))
     },
     reorderSkillCategories: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderSkillCategories(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderSkillCategories(input))
     },
     createSkill: async (skillCategoryId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createSkill(data, skillCategoryId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createSkill(skillCategoryId))
       return result?.createdId ?? null
     },
     updateSkill: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateSkill(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateSkill(input))
     },
     deleteSkill: async (skillId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteSkill(data, skillId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteSkill(skillId))
     },
     reorderSkills: async ({ skillCategoryId, orderedIds }) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderSkills(data, skillCategoryId, orderedIds))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderSkills(skillCategoryId, orderedIds))
     },
     createAchievement: async (profileId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createAchievement(data, profileId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createAchievement(profileId))
       return result?.createdId ?? null
     },
     updateAchievement: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateAchievement(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateAchievement(input))
     },
     deleteAchievement: async (achievementId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteAchievement(data, achievementId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteAchievement(achievementId))
     },
     reorderAchievements: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderAchievements(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderAchievements(input))
     },
     createExperienceEntry: async (profileId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createExperienceEntry(data, profileId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createExperienceEntry(profileId))
       return result?.createdId ?? null
     },
     updateExperienceEntry: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateExperienceEntry(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateExperienceEntry(input))
     },
     deleteExperienceEntry: async (experienceEntryId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteExperienceEntry(data, experienceEntryId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteExperienceEntry(experienceEntryId))
     },
     reorderExperienceEntries: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderExperienceEntries(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderExperienceEntries(input))
     },
     createExperienceBullet: async (experienceEntryId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createExperienceBullet(data, experienceEntryId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createExperienceBullet(experienceEntryId))
       return result?.createdId ?? null
     },
     updateExperienceBullet: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateExperienceBullet(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateExperienceBullet(input))
     },
     deleteExperienceBullet: async (experienceBulletId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteExperienceBullet(data, experienceBulletId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteExperienceBullet(experienceBulletId))
     },
     reorderExperienceBullets: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderExperienceBullets(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderExperienceBullets(input))
     },
     createEducationEntry: async (profileId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createEducationEntry(data, profileId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createEducationEntry(profileId))
       return result?.createdId ?? null
     },
     updateEducationEntry: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateEducationEntry(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateEducationEntry(input))
     },
     deleteEducationEntry: async (educationEntryId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteEducationEntry(data, educationEntryId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteEducationEntry(educationEntryId))
     },
     reorderEducationEntries: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderEducationEntries(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderEducationEntries(input))
     },
     createEducationBullet: async (educationEntryId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createEducationBullet(data, educationEntryId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createEducationBullet(educationEntryId))
       return result?.createdId ?? null
     },
     updateEducationBullet: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateEducationBullet(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateEducationBullet(input))
     },
     deleteEducationBullet: async (educationBulletId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteEducationBullet(data, educationBulletId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteEducationBullet(educationBulletId))
     },
     reorderEducationBullets: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderEducationBullets(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderEducationBullets(input))
     },
     createProject: async (profileId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createProject(data, profileId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createProject(profileId))
       return result?.createdId ?? null
     },
     updateProject: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateProject(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateProject(input))
     },
     deleteProject: async (projectId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteProject(data, projectId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteProject(projectId))
     },
     reorderProjects: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderProjects(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderProjects(input))
     },
     createProjectBullet: async (projectId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createProjectBullet(data, projectId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createProjectBullet(projectId))
       return result?.createdId ?? null
     },
     updateProjectBullet: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateProjectBullet(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateProjectBullet(input))
     },
     deleteProjectBullet: async (projectBulletId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteProjectBullet(data, projectBulletId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteProjectBullet(projectBulletId))
     },
     reorderProjectBullets: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderProjectBullets(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderProjectBullets(input))
     },
     createAdditionalExperienceEntry: async (profileId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createAdditionalExperienceEntry(data, profileId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createAdditionalExperienceEntry(profileId))
       return result?.createdId ?? null
     },
     updateAdditionalExperienceEntry: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateAdditionalExperienceEntry(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateAdditionalExperienceEntry(input))
     },
     deleteAdditionalExperienceEntry: async (additionalExperienceEntryId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteAdditionalExperienceEntry(data, additionalExperienceEntryId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteAdditionalExperienceEntry(additionalExperienceEntryId))
     },
     reorderAdditionalExperienceEntries: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderAdditionalExperienceEntries(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderAdditionalExperienceEntries(input))
     },
     createAdditionalExperienceBullet: async (additionalExperienceEntryId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createAdditionalExperienceBullet(data, additionalExperienceEntryId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createAdditionalExperienceBullet(additionalExperienceEntryId))
       return result?.createdId ?? null
     },
     updateAdditionalExperienceBullet: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateAdditionalExperienceBullet(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateAdditionalExperienceBullet(input))
     },
     deleteAdditionalExperienceBullet: async (additionalExperienceBulletId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteAdditionalExperienceBullet(data, additionalExperienceBulletId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteAdditionalExperienceBullet(additionalExperienceBulletId))
     },
     reorderAdditionalExperienceBullets: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderAdditionalExperienceBullets(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderAdditionalExperienceBullets(input))
     },
     createCertification: async (profileId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createCertification(data, profileId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createCertification(profileId))
       return result?.createdId ?? null
     },
     updateCertification: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateCertification(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateCertification(input))
     },
     deleteCertification: async (certificationId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteCertification(data, certificationId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteCertification(certificationId))
     },
     reorderCertifications: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderCertifications(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderCertifications(input))
     },
     createReference: async (profileId) => {
-      const result = await runPersistedProfileMutation((data) => getAppApiClient().createReference(data, profileId))
+      const result = await runPersistedProfileMutation(() => getAppApiClient().createReference(profileId))
       return result?.createdId ?? null
     },
     updateReference: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().updateReference(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().updateReference(input))
     },
     deleteReference: async (referenceId) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().deleteReference(data, referenceId))
+      await runPersistedProfileMutation(() => getAppApiClient().deleteReference(referenceId))
     },
     reorderReferences: async (input) => {
-      await runPersistedProfileMutation((data) => getAppApiClient().reorderReferences(data, input))
+      await runPersistedProfileMutation(() => getAppApiClient().reorderReferences(input))
     },
     createJob: async (input) => {
       const result = await runPersistedJobMutation(
-        (data) => getAppApiClient().createJob(data, input),
+        () => getAppApiClient().createJob(input),
         (state, mutationResult) => ({
           ...state.ui,
           selectedJobId: mutationResult.createdId ?? state.ui.selectedJobId,
@@ -550,11 +550,11 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
       return result?.createdId ?? null
     },
     updateJob: async (input) => {
-      await runPersistedJobMutation((data) => getAppApiClient().updateJob(data, input))
+      await runPersistedJobMutation(() => getAppApiClient().updateJob(input))
     },
     deleteJob: async (jobId) => {
       await runPersistedJobMutation(
-        (data) => getAppApiClient().deleteJob(data, jobId),
+        () => getAppApiClient().deleteJob(jobId),
         (state, mutationResult) => ({
           ...state.ui,
           selectedJobId: state.ui.selectedJobId === jobId ? null : state.ui.selectedJobId,
@@ -566,74 +566,74 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
       )
     },
     createJobLink: async (jobId) => {
-      const result = await runPersistedJobMutation((data) => getAppApiClient().createJobLink(data, jobId))
+      const result = await runPersistedJobMutation(() => getAppApiClient().createJobLink(jobId))
       return result?.createdId ?? null
     },
     updateJobLink: async (input) => {
-      await runPersistedJobMutation((data) => getAppApiClient().updateJobLink(data, input))
+      await runPersistedJobMutation(() => getAppApiClient().updateJobLink(input))
     },
     deleteJobLink: async (jobLinkId) => {
-      await runPersistedJobMutation((data) => getAppApiClient().deleteJobLink(data, jobLinkId))
+      await runPersistedJobMutation(() => getAppApiClient().deleteJobLink(jobLinkId))
     },
     reorderJobLinks: async (input) => {
-      await runPersistedJobMutation((data) => getAppApiClient().reorderJobLinks(data, input))
+      await runPersistedJobMutation(() => getAppApiClient().reorderJobLinks(input))
     },
     createJobContact: async (jobId) => {
-      const result = await runPersistedJobMutation((data) => getAppApiClient().createJobContact(data, jobId))
+      const result = await runPersistedJobMutation(() => getAppApiClient().createJobContact(jobId))
       return result?.createdId ?? null
     },
     updateJobContact: async (input) => {
-      await runPersistedJobMutation((data) => getAppApiClient().updateJobContact(data, input))
+      await runPersistedJobMutation(() => getAppApiClient().updateJobContact(input))
     },
     deleteJobContact: async (jobContactId) => {
-      await runPersistedJobMutation((data) => getAppApiClient().deleteJobContact(data, jobContactId))
+      await runPersistedJobMutation(() => getAppApiClient().deleteJobContact(jobContactId))
     },
     reorderJobContacts: async (input) => {
-      await runPersistedJobMutation((data) => getAppApiClient().reorderJobContacts(data, input))
+      await runPersistedJobMutation(() => getAppApiClient().reorderJobContacts(input))
     },
     createApplicationQuestion: async (jobId) => {
-      const result = await runPersistedJobMutation((data) => getAppApiClient().createApplicationQuestion(data, jobId))
+      const result = await runPersistedJobMutation(() => getAppApiClient().createApplicationQuestion(jobId))
       return result?.createdId ?? null
     },
     updateApplicationQuestion: async (input) => {
-      await runPersistedJobMutation((data) => getAppApiClient().updateApplicationQuestion(data, input))
+      await runPersistedJobMutation(() => getAppApiClient().updateApplicationQuestion(input))
     },
     deleteApplicationQuestion: async (applicationQuestionId) => {
-      await runPersistedJobMutation((data) => getAppApiClient().deleteApplicationQuestion(data, applicationQuestionId))
+      await runPersistedJobMutation(() => getAppApiClient().deleteApplicationQuestion(applicationQuestionId))
     },
     reorderApplicationQuestions: async (input) => {
-      await runPersistedJobMutation((data) => getAppApiClient().reorderApplicationQuestions(data, input))
+      await runPersistedJobMutation(() => getAppApiClient().reorderApplicationQuestions(input))
     },
     setJobAppliedAt: async (input) => {
-      await runPersistedJobMutation((data) => getAppApiClient().setJobAppliedAt(data, input))
+      await runPersistedJobMutation(() => getAppApiClient().setJobAppliedAt(input))
     },
     clearJobAppliedAt: async (jobId) => {
-      await runPersistedJobMutation((data) => getAppApiClient().clearJobAppliedAt(data, jobId))
+      await runPersistedJobMutation(() => getAppApiClient().clearJobAppliedAt(jobId))
     },
     setJobFinalOutcome: async (input) => {
-      await runPersistedJobMutation((data) => getAppApiClient().setJobFinalOutcome(data, input))
+      await runPersistedJobMutation(() => getAppApiClient().setJobFinalOutcome(input))
     },
     clearJobFinalOutcome: async (jobId) => {
-      await runPersistedJobMutation((data) => getAppApiClient().clearJobFinalOutcome(data, jobId))
+      await runPersistedJobMutation(() => getAppApiClient().clearJobFinalOutcome(jobId))
     },
     createInterview: async (jobId) => {
-      const result = await runPersistedJobMutation((data) => getAppApiClient().createInterview(data, jobId))
+      const result = await runPersistedJobMutation(() => getAppApiClient().createInterview(jobId))
       return result?.createdId ?? null
     },
     updateInterview: async (input) => {
-      await runPersistedJobMutation((data) => getAppApiClient().updateInterview(data, input))
+      await runPersistedJobMutation(() => getAppApiClient().updateInterview(input))
     },
     deleteInterview: async (interviewId) => {
-      await runPersistedJobMutation((data) => getAppApiClient().deleteInterview(data, interviewId))
+      await runPersistedJobMutation(() => getAppApiClient().deleteInterview(interviewId))
     },
     addInterviewContact: async (input) => {
-      await runPersistedJobMutation((data) => getAppApiClient().addInterviewContact(data, input))
+      await runPersistedJobMutation(() => getAppApiClient().addInterviewContact(input))
     },
     removeInterviewContact: async (interviewContactId) => {
-      await runPersistedJobMutation((data) => getAppApiClient().removeInterviewContact(data, interviewContactId))
+      await runPersistedJobMutation(() => getAppApiClient().removeInterviewContact(interviewContactId))
     },
     reorderInterviewContacts: async (input) => {
-      await runPersistedJobMutation((data) => getAppApiClient().reorderInterviewContacts(data, input))
+      await runPersistedJobMutation(() => getAppApiClient().reorderInterviewContacts(input))
     },
     importAppData: async (file) => {
       const currentThemePreference = get().ui.themePreference
@@ -686,7 +686,7 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
       }))
 
       try {
-        const file = await getAppApiClient().exportAppData(get().data)
+        const file = await getAppApiClient().exportAppData()
 
         set((state) => ({
           ...state,

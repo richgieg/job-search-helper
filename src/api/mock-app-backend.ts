@@ -156,11 +156,6 @@ export class MockAppBackend implements AppDataService {
     return cloneAppData(this.data)
   }
 
-  async replaceAppData(data: AppDataState): Promise<AppDataState> {
-    this.data = cloneAppData(data)
-    return cloneAppData(this.data)
-  }
-
   async importAppData(file: AppExportFile): Promise<AppDataState> {
     this.data = {
       version: 1,
@@ -171,9 +166,7 @@ export class MockAppBackend implements AppDataService {
     return cloneAppData(this.data)
   }
 
-  async exportAppData(data: AppDataState): Promise<AppExportFile> {
-    this.data = cloneAppData(data)
-
+  async exportAppData(): Promise<AppExportFile> {
     return {
       version: 1,
       exportedAt: this.now(),

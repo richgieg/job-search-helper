@@ -45,565 +45,467 @@ import type { AppDataService } from './app-data-service'
 
 export interface AppApiClient {
   getAppData(): Promise<AppDataState>
-  replaceAppData(data: AppDataState): Promise<AppDataState>
   importAppData(file: AppExportFile): Promise<AppDataState>
-  exportAppData(data: AppDataState): Promise<AppExportFile>
-  createBaseProfile(data: AppDataState, name: string): Promise<ProfileMutationResult>
-  updateProfile(data: AppDataState, input: UpdateProfileInput): Promise<ProfileMutationResult>
-  setDocumentHeaderTemplate(data: AppDataState, input: SetDocumentHeaderTemplateInput): Promise<ProfileMutationResult>
-  setResumeSectionEnabled(data: AppDataState, input: SetResumeSectionEnabledInput): Promise<ProfileMutationResult>
-  setResumeSectionLabel(data: AppDataState, input: SetResumeSectionLabelInput): Promise<ProfileMutationResult>
-  reorderResumeSections(data: AppDataState, input: ReorderResumeSectionsInput): Promise<ProfileMutationResult>
-  duplicateProfile(data: AppDataState, input: DuplicateProfileInput): Promise<ProfileMutationResult>
-  deleteProfile(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
-  createProfileLink(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
-  updateProfileLink(data: AppDataState, input: UpdateProfileLinkInput): Promise<ProfileMutationResult>
-  deleteProfileLink(data: AppDataState, profileLinkId: string): Promise<ProfileMutationResult>
-  reorderProfileLinks(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
-  createSkillCategory(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
-  updateSkillCategory(data: AppDataState, input: UpdateSkillCategoryInput): Promise<ProfileMutationResult>
-  deleteSkillCategory(data: AppDataState, skillCategoryId: string): Promise<ProfileMutationResult>
-  reorderSkillCategories(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
-  createSkill(data: AppDataState, skillCategoryId: string): Promise<ProfileMutationResult>
-  updateSkill(data: AppDataState, input: UpdateSkillInput): Promise<ProfileMutationResult>
-  deleteSkill(data: AppDataState, skillId: string): Promise<ProfileMutationResult>
-  reorderSkills(data: AppDataState, skillCategoryId: string, orderedIds: string[]): Promise<ProfileMutationResult>
-  createAchievement(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
-  updateAchievement(data: AppDataState, input: UpdateAchievementInput): Promise<ProfileMutationResult>
-  deleteAchievement(data: AppDataState, achievementId: string): Promise<ProfileMutationResult>
-  reorderAchievements(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
-  createExperienceEntry(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
-  updateExperienceEntry(data: AppDataState, input: UpdateExperienceEntryInput): Promise<ProfileMutationResult>
-  deleteExperienceEntry(data: AppDataState, experienceEntryId: string): Promise<ProfileMutationResult>
-  reorderExperienceEntries(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
-  createExperienceBullet(data: AppDataState, experienceEntryId: string): Promise<ProfileMutationResult>
-  updateExperienceBullet(data: AppDataState, input: UpdateExperienceBulletInput): Promise<ProfileMutationResult>
-  deleteExperienceBullet(data: AppDataState, experienceBulletId: string): Promise<ProfileMutationResult>
-  reorderExperienceBullets(data: AppDataState, input: ReorderExperienceBulletsInput): Promise<ProfileMutationResult>
-  createEducationEntry(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
-  updateEducationEntry(data: AppDataState, input: UpdateEducationEntryInput): Promise<ProfileMutationResult>
-  deleteEducationEntry(data: AppDataState, educationEntryId: string): Promise<ProfileMutationResult>
-  reorderEducationEntries(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
-  createEducationBullet(data: AppDataState, educationEntryId: string): Promise<ProfileMutationResult>
-  updateEducationBullet(data: AppDataState, input: UpdateEducationBulletInput): Promise<ProfileMutationResult>
-  deleteEducationBullet(data: AppDataState, educationBulletId: string): Promise<ProfileMutationResult>
-  reorderEducationBullets(data: AppDataState, input: ReorderEducationBulletsInput): Promise<ProfileMutationResult>
-  createProject(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
-  updateProject(data: AppDataState, input: UpdateProjectInput): Promise<ProfileMutationResult>
-  deleteProject(data: AppDataState, projectId: string): Promise<ProfileMutationResult>
-  reorderProjects(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
-  createProjectBullet(data: AppDataState, projectId: string): Promise<ProfileMutationResult>
-  updateProjectBullet(data: AppDataState, input: UpdateProjectBulletInput): Promise<ProfileMutationResult>
-  deleteProjectBullet(data: AppDataState, projectBulletId: string): Promise<ProfileMutationResult>
-  reorderProjectBullets(data: AppDataState, input: ReorderProjectBulletsInput): Promise<ProfileMutationResult>
-  createAdditionalExperienceEntry(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
-  updateAdditionalExperienceEntry(data: AppDataState, input: UpdateAdditionalExperienceEntryInput): Promise<ProfileMutationResult>
-  deleteAdditionalExperienceEntry(data: AppDataState, additionalExperienceEntryId: string): Promise<ProfileMutationResult>
-  reorderAdditionalExperienceEntries(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
-  createAdditionalExperienceBullet(data: AppDataState, additionalExperienceEntryId: string): Promise<ProfileMutationResult>
-  updateAdditionalExperienceBullet(data: AppDataState, input: UpdateAdditionalExperienceBulletInput): Promise<ProfileMutationResult>
-  deleteAdditionalExperienceBullet(data: AppDataState, additionalExperienceBulletId: string): Promise<ProfileMutationResult>
-  reorderAdditionalExperienceBullets(data: AppDataState, input: ReorderAdditionalExperienceBulletsInput): Promise<ProfileMutationResult>
-  createCertification(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
-  updateCertification(data: AppDataState, input: UpdateCertificationInput): Promise<ProfileMutationResult>
-  deleteCertification(data: AppDataState, certificationId: string): Promise<ProfileMutationResult>
-  reorderCertifications(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
-  createReference(data: AppDataState, profileId: string): Promise<ProfileMutationResult>
-  updateReference(data: AppDataState, input: UpdateReferenceInput): Promise<ProfileMutationResult>
-  deleteReference(data: AppDataState, referenceId: string): Promise<ProfileMutationResult>
-  reorderReferences(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
-  createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult>
-  updateJob(data: AppDataState, input: UpdateJobInput): Promise<JobMutationResult>
-  deleteJob(data: AppDataState, jobId: string): Promise<JobMutationResult>
-  createJobLink(data: AppDataState, jobId: string): Promise<JobMutationResult>
-  updateJobLink(data: AppDataState, input: UpdateJobLinkInput): Promise<JobMutationResult>
-  deleteJobLink(data: AppDataState, jobLinkId: string): Promise<JobMutationResult>
-  reorderJobLinks(data: AppDataState, input: ReorderJobEntitiesInput): Promise<JobMutationResult>
-  createJobContact(data: AppDataState, jobId: string): Promise<JobMutationResult>
-  updateJobContact(data: AppDataState, input: UpdateJobContactInput): Promise<JobMutationResult>
-  deleteJobContact(data: AppDataState, jobContactId: string): Promise<JobMutationResult>
-  reorderJobContacts(data: AppDataState, input: ReorderJobEntitiesInput): Promise<JobMutationResult>
-  createApplicationQuestion(data: AppDataState, jobId: string): Promise<JobMutationResult>
-  updateApplicationQuestion(data: AppDataState, input: UpdateApplicationQuestionInput): Promise<JobMutationResult>
-  deleteApplicationQuestion(data: AppDataState, applicationQuestionId: string): Promise<JobMutationResult>
-  reorderApplicationQuestions(data: AppDataState, input: ReorderJobEntitiesInput): Promise<JobMutationResult>
-  setJobAppliedAt(data: AppDataState, input: SetJobAppliedAtInput): Promise<JobMutationResult>
-  clearJobAppliedAt(data: AppDataState, jobId: string): Promise<JobMutationResult>
-  setJobFinalOutcome(data: AppDataState, input: SetJobFinalOutcomeInput): Promise<JobMutationResult>
-  clearJobFinalOutcome(data: AppDataState, jobId: string): Promise<JobMutationResult>
-  createInterview(data: AppDataState, jobId: string): Promise<JobMutationResult>
-  updateInterview(data: AppDataState, input: UpdateInterviewInput): Promise<JobMutationResult>
-  deleteInterview(data: AppDataState, interviewId: string): Promise<JobMutationResult>
-  addInterviewContact(data: AppDataState, input: AddInterviewContactInput): Promise<JobMutationResult>
-  removeInterviewContact(data: AppDataState, interviewContactId: string): Promise<JobMutationResult>
-  reorderInterviewContacts(data: AppDataState, input: ReorderInterviewContactsInput): Promise<JobMutationResult>
+  exportAppData(): Promise<AppExportFile>
+  createBaseProfile(name: string): Promise<ProfileMutationResult>
+  updateProfile(input: UpdateProfileInput): Promise<ProfileMutationResult>
+  setDocumentHeaderTemplate(input: SetDocumentHeaderTemplateInput): Promise<ProfileMutationResult>
+  setResumeSectionEnabled(input: SetResumeSectionEnabledInput): Promise<ProfileMutationResult>
+  setResumeSectionLabel(input: SetResumeSectionLabelInput): Promise<ProfileMutationResult>
+  reorderResumeSections(input: ReorderResumeSectionsInput): Promise<ProfileMutationResult>
+  duplicateProfile(input: DuplicateProfileInput): Promise<ProfileMutationResult>
+  deleteProfile(profileId: string): Promise<ProfileMutationResult>
+  createProfileLink(profileId: string): Promise<ProfileMutationResult>
+  updateProfileLink(input: UpdateProfileLinkInput): Promise<ProfileMutationResult>
+  deleteProfileLink(profileLinkId: string): Promise<ProfileMutationResult>
+  reorderProfileLinks(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createSkillCategory(profileId: string): Promise<ProfileMutationResult>
+  updateSkillCategory(input: UpdateSkillCategoryInput): Promise<ProfileMutationResult>
+  deleteSkillCategory(skillCategoryId: string): Promise<ProfileMutationResult>
+  reorderSkillCategories(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createSkill(skillCategoryId: string): Promise<ProfileMutationResult>
+  updateSkill(input: UpdateSkillInput): Promise<ProfileMutationResult>
+  deleteSkill(skillId: string): Promise<ProfileMutationResult>
+  reorderSkills(skillCategoryId: string, orderedIds: string[]): Promise<ProfileMutationResult>
+  createAchievement(profileId: string): Promise<ProfileMutationResult>
+  updateAchievement(input: UpdateAchievementInput): Promise<ProfileMutationResult>
+  deleteAchievement(achievementId: string): Promise<ProfileMutationResult>
+  reorderAchievements(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createExperienceEntry(profileId: string): Promise<ProfileMutationResult>
+  updateExperienceEntry(input: UpdateExperienceEntryInput): Promise<ProfileMutationResult>
+  deleteExperienceEntry(experienceEntryId: string): Promise<ProfileMutationResult>
+  reorderExperienceEntries(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createExperienceBullet(experienceEntryId: string): Promise<ProfileMutationResult>
+  updateExperienceBullet(input: UpdateExperienceBulletInput): Promise<ProfileMutationResult>
+  deleteExperienceBullet(experienceBulletId: string): Promise<ProfileMutationResult>
+  reorderExperienceBullets(input: ReorderExperienceBulletsInput): Promise<ProfileMutationResult>
+  createEducationEntry(profileId: string): Promise<ProfileMutationResult>
+  updateEducationEntry(input: UpdateEducationEntryInput): Promise<ProfileMutationResult>
+  deleteEducationEntry(educationEntryId: string): Promise<ProfileMutationResult>
+  reorderEducationEntries(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createEducationBullet(educationEntryId: string): Promise<ProfileMutationResult>
+  updateEducationBullet(input: UpdateEducationBulletInput): Promise<ProfileMutationResult>
+  deleteEducationBullet(educationBulletId: string): Promise<ProfileMutationResult>
+  reorderEducationBullets(input: ReorderEducationBulletsInput): Promise<ProfileMutationResult>
+  createProject(profileId: string): Promise<ProfileMutationResult>
+  updateProject(input: UpdateProjectInput): Promise<ProfileMutationResult>
+  deleteProject(projectId: string): Promise<ProfileMutationResult>
+  reorderProjects(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createProjectBullet(projectId: string): Promise<ProfileMutationResult>
+  updateProjectBullet(input: UpdateProjectBulletInput): Promise<ProfileMutationResult>
+  deleteProjectBullet(projectBulletId: string): Promise<ProfileMutationResult>
+  reorderProjectBullets(input: ReorderProjectBulletsInput): Promise<ProfileMutationResult>
+  createAdditionalExperienceEntry(profileId: string): Promise<ProfileMutationResult>
+  updateAdditionalExperienceEntry(input: UpdateAdditionalExperienceEntryInput): Promise<ProfileMutationResult>
+  deleteAdditionalExperienceEntry(additionalExperienceEntryId: string): Promise<ProfileMutationResult>
+  reorderAdditionalExperienceEntries(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createAdditionalExperienceBullet(additionalExperienceEntryId: string): Promise<ProfileMutationResult>
+  updateAdditionalExperienceBullet(input: UpdateAdditionalExperienceBulletInput): Promise<ProfileMutationResult>
+  deleteAdditionalExperienceBullet(additionalExperienceBulletId: string): Promise<ProfileMutationResult>
+  reorderAdditionalExperienceBullets(input: ReorderAdditionalExperienceBulletsInput): Promise<ProfileMutationResult>
+  createCertification(profileId: string): Promise<ProfileMutationResult>
+  updateCertification(input: UpdateCertificationInput): Promise<ProfileMutationResult>
+  deleteCertification(certificationId: string): Promise<ProfileMutationResult>
+  reorderCertifications(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createReference(profileId: string): Promise<ProfileMutationResult>
+  updateReference(input: UpdateReferenceInput): Promise<ProfileMutationResult>
+  deleteReference(referenceId: string): Promise<ProfileMutationResult>
+  reorderReferences(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult>
+  createJob(input: CreateJobInput): Promise<JobMutationResult>
+  updateJob(input: UpdateJobInput): Promise<JobMutationResult>
+  deleteJob(jobId: string): Promise<JobMutationResult>
+  createJobLink(jobId: string): Promise<JobMutationResult>
+  updateJobLink(input: UpdateJobLinkInput): Promise<JobMutationResult>
+  deleteJobLink(jobLinkId: string): Promise<JobMutationResult>
+  reorderJobLinks(input: ReorderJobEntitiesInput): Promise<JobMutationResult>
+  createJobContact(jobId: string): Promise<JobMutationResult>
+  updateJobContact(input: UpdateJobContactInput): Promise<JobMutationResult>
+  deleteJobContact(jobContactId: string): Promise<JobMutationResult>
+  reorderJobContacts(input: ReorderJobEntitiesInput): Promise<JobMutationResult>
+  createApplicationQuestion(jobId: string): Promise<JobMutationResult>
+  updateApplicationQuestion(input: UpdateApplicationQuestionInput): Promise<JobMutationResult>
+  deleteApplicationQuestion(applicationQuestionId: string): Promise<JobMutationResult>
+  reorderApplicationQuestions(input: ReorderJobEntitiesInput): Promise<JobMutationResult>
+  setJobAppliedAt(input: SetJobAppliedAtInput): Promise<JobMutationResult>
+  clearJobAppliedAt(jobId: string): Promise<JobMutationResult>
+  setJobFinalOutcome(input: SetJobFinalOutcomeInput): Promise<JobMutationResult>
+  clearJobFinalOutcome(jobId: string): Promise<JobMutationResult>
+  createInterview(jobId: string): Promise<JobMutationResult>
+  updateInterview(input: UpdateInterviewInput): Promise<JobMutationResult>
+  deleteInterview(interviewId: string): Promise<JobMutationResult>
+  addInterviewContact(input: AddInterviewContactInput): Promise<JobMutationResult>
+  removeInterviewContact(interviewContactId: string): Promise<JobMutationResult>
+  reorderInterviewContacts(input: ReorderInterviewContactsInput): Promise<JobMutationResult>
 }
 
 export class LocalAppApiClient implements AppApiClient {
   constructor(private readonly service: AppDataService) {}
 
-  private async sync(data: AppDataState) {
-    await this.service.replaceAppData(data)
-  }
-
   getAppData(): Promise<AppDataState> {
     return this.service.getAppData()
-  }
-
-  replaceAppData(data: AppDataState): Promise<AppDataState> {
-    return this.service.replaceAppData(data)
   }
 
   importAppData(file: AppExportFile): Promise<AppDataState> {
     return this.service.importAppData(file)
   }
 
-  exportAppData(data: AppDataState): Promise<AppExportFile> {
-    return this.service.exportAppData(data)
+  exportAppData(): Promise<AppExportFile> {
+    return this.service.exportAppData()
   }
 
-  async createBaseProfile(data: AppDataState, name: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createBaseProfile(name: string): Promise<ProfileMutationResult> {
     return this.service.createBaseProfile(name)
   }
 
-  async updateProfile(data: AppDataState, input: UpdateProfileInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateProfile(input: UpdateProfileInput): Promise<ProfileMutationResult> {
     return this.service.updateProfile(input)
   }
 
-  async setDocumentHeaderTemplate(data: AppDataState, input: SetDocumentHeaderTemplateInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  setDocumentHeaderTemplate(input: SetDocumentHeaderTemplateInput): Promise<ProfileMutationResult> {
     return this.service.setDocumentHeaderTemplate(input)
   }
 
-  async setResumeSectionEnabled(data: AppDataState, input: SetResumeSectionEnabledInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  setResumeSectionEnabled(input: SetResumeSectionEnabledInput): Promise<ProfileMutationResult> {
     return this.service.setResumeSectionEnabled(input)
   }
 
-  async setResumeSectionLabel(data: AppDataState, input: SetResumeSectionLabelInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  setResumeSectionLabel(input: SetResumeSectionLabelInput): Promise<ProfileMutationResult> {
     return this.service.setResumeSectionLabel(input)
   }
 
-  async reorderResumeSections(data: AppDataState, input: ReorderResumeSectionsInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderResumeSections(input: ReorderResumeSectionsInput): Promise<ProfileMutationResult> {
     return this.service.reorderResumeSections(input)
   }
 
-  async duplicateProfile(data: AppDataState, input: DuplicateProfileInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  duplicateProfile(input: DuplicateProfileInput): Promise<ProfileMutationResult> {
     return this.service.duplicateProfile(input)
   }
 
-  async deleteProfile(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteProfile(profileId: string): Promise<ProfileMutationResult> {
     return this.service.deleteProfile(profileId)
   }
 
-  async createProfileLink(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createProfileLink(profileId: string): Promise<ProfileMutationResult> {
     return this.service.createProfileLink(profileId)
   }
 
-  async updateProfileLink(data: AppDataState, input: UpdateProfileLinkInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateProfileLink(input: UpdateProfileLinkInput): Promise<ProfileMutationResult> {
     return this.service.updateProfileLink(input)
   }
 
-  async deleteProfileLink(data: AppDataState, profileLinkId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteProfileLink(profileLinkId: string): Promise<ProfileMutationResult> {
     return this.service.deleteProfileLink(profileLinkId)
   }
 
-  async reorderProfileLinks(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderProfileLinks(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
     return this.service.reorderProfileLinks(input)
   }
 
-  async createSkillCategory(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createSkillCategory(profileId: string): Promise<ProfileMutationResult> {
     return this.service.createSkillCategory(profileId)
   }
 
-  async updateSkillCategory(data: AppDataState, input: UpdateSkillCategoryInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateSkillCategory(input: UpdateSkillCategoryInput): Promise<ProfileMutationResult> {
     return this.service.updateSkillCategory(input)
   }
 
-  async deleteSkillCategory(data: AppDataState, skillCategoryId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteSkillCategory(skillCategoryId: string): Promise<ProfileMutationResult> {
     return this.service.deleteSkillCategory(skillCategoryId)
   }
 
-  async reorderSkillCategories(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderSkillCategories(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
     return this.service.reorderSkillCategories(input)
   }
 
-  async createSkill(data: AppDataState, skillCategoryId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createSkill(skillCategoryId: string): Promise<ProfileMutationResult> {
     return this.service.createSkill(skillCategoryId)
   }
 
-  async updateSkill(data: AppDataState, input: UpdateSkillInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateSkill(input: UpdateSkillInput): Promise<ProfileMutationResult> {
     return this.service.updateSkill(input)
   }
 
-  async deleteSkill(data: AppDataState, skillId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteSkill(skillId: string): Promise<ProfileMutationResult> {
     return this.service.deleteSkill(skillId)
   }
 
-  async reorderSkills(data: AppDataState, skillCategoryId: string, orderedIds: string[]): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderSkills(skillCategoryId: string, orderedIds: string[]): Promise<ProfileMutationResult> {
     return this.service.reorderSkills(skillCategoryId, orderedIds)
   }
 
-  async createAchievement(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createAchievement(profileId: string): Promise<ProfileMutationResult> {
     return this.service.createAchievement(profileId)
   }
 
-  async updateAchievement(data: AppDataState, input: UpdateAchievementInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateAchievement(input: UpdateAchievementInput): Promise<ProfileMutationResult> {
     return this.service.updateAchievement(input)
   }
 
-  async deleteAchievement(data: AppDataState, achievementId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteAchievement(achievementId: string): Promise<ProfileMutationResult> {
     return this.service.deleteAchievement(achievementId)
   }
 
-  async reorderAchievements(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderAchievements(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
     return this.service.reorderAchievements(input)
   }
 
-  async createExperienceEntry(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createExperienceEntry(profileId: string): Promise<ProfileMutationResult> {
     return this.service.createExperienceEntry(profileId)
   }
 
-  async updateExperienceEntry(data: AppDataState, input: UpdateExperienceEntryInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateExperienceEntry(input: UpdateExperienceEntryInput): Promise<ProfileMutationResult> {
     return this.service.updateExperienceEntry(input)
   }
 
-  async deleteExperienceEntry(data: AppDataState, experienceEntryId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteExperienceEntry(experienceEntryId: string): Promise<ProfileMutationResult> {
     return this.service.deleteExperienceEntry(experienceEntryId)
   }
 
-  async reorderExperienceEntries(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderExperienceEntries(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
     return this.service.reorderExperienceEntries(input)
   }
 
-  async createExperienceBullet(data: AppDataState, experienceEntryId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createExperienceBullet(experienceEntryId: string): Promise<ProfileMutationResult> {
     return this.service.createExperienceBullet(experienceEntryId)
   }
 
-  async updateExperienceBullet(data: AppDataState, input: UpdateExperienceBulletInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateExperienceBullet(input: UpdateExperienceBulletInput): Promise<ProfileMutationResult> {
     return this.service.updateExperienceBullet(input)
   }
 
-  async deleteExperienceBullet(data: AppDataState, experienceBulletId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteExperienceBullet(experienceBulletId: string): Promise<ProfileMutationResult> {
     return this.service.deleteExperienceBullet(experienceBulletId)
   }
 
-  async reorderExperienceBullets(data: AppDataState, input: ReorderExperienceBulletsInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderExperienceBullets(input: ReorderExperienceBulletsInput): Promise<ProfileMutationResult> {
     return this.service.reorderExperienceBullets(input)
   }
 
-  async createEducationEntry(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createEducationEntry(profileId: string): Promise<ProfileMutationResult> {
     return this.service.createEducationEntry(profileId)
   }
 
-  async updateEducationEntry(data: AppDataState, input: UpdateEducationEntryInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateEducationEntry(input: UpdateEducationEntryInput): Promise<ProfileMutationResult> {
     return this.service.updateEducationEntry(input)
   }
 
-  async deleteEducationEntry(data: AppDataState, educationEntryId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteEducationEntry(educationEntryId: string): Promise<ProfileMutationResult> {
     return this.service.deleteEducationEntry(educationEntryId)
   }
 
-  async reorderEducationEntries(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderEducationEntries(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
     return this.service.reorderEducationEntries(input)
   }
 
-  async createEducationBullet(data: AppDataState, educationEntryId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createEducationBullet(educationEntryId: string): Promise<ProfileMutationResult> {
     return this.service.createEducationBullet(educationEntryId)
   }
 
-  async updateEducationBullet(data: AppDataState, input: UpdateEducationBulletInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateEducationBullet(input: UpdateEducationBulletInput): Promise<ProfileMutationResult> {
     return this.service.updateEducationBullet(input)
   }
 
-  async deleteEducationBullet(data: AppDataState, educationBulletId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteEducationBullet(educationBulletId: string): Promise<ProfileMutationResult> {
     return this.service.deleteEducationBullet(educationBulletId)
   }
 
-  async reorderEducationBullets(data: AppDataState, input: ReorderEducationBulletsInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderEducationBullets(input: ReorderEducationBulletsInput): Promise<ProfileMutationResult> {
     return this.service.reorderEducationBullets(input)
   }
 
-  async createProject(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createProject(profileId: string): Promise<ProfileMutationResult> {
     return this.service.createProject(profileId)
   }
 
-  async updateProject(data: AppDataState, input: UpdateProjectInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateProject(input: UpdateProjectInput): Promise<ProfileMutationResult> {
     return this.service.updateProject(input)
   }
 
-  async deleteProject(data: AppDataState, projectId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteProject(projectId: string): Promise<ProfileMutationResult> {
     return this.service.deleteProject(projectId)
   }
 
-  async reorderProjects(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderProjects(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
     return this.service.reorderProjects(input)
   }
 
-  async createProjectBullet(data: AppDataState, projectId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createProjectBullet(projectId: string): Promise<ProfileMutationResult> {
     return this.service.createProjectBullet(projectId)
   }
 
-  async updateProjectBullet(data: AppDataState, input: UpdateProjectBulletInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateProjectBullet(input: UpdateProjectBulletInput): Promise<ProfileMutationResult> {
     return this.service.updateProjectBullet(input)
   }
 
-  async deleteProjectBullet(data: AppDataState, projectBulletId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteProjectBullet(projectBulletId: string): Promise<ProfileMutationResult> {
     return this.service.deleteProjectBullet(projectBulletId)
   }
 
-  async reorderProjectBullets(data: AppDataState, input: ReorderProjectBulletsInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderProjectBullets(input: ReorderProjectBulletsInput): Promise<ProfileMutationResult> {
     return this.service.reorderProjectBullets(input)
   }
 
-  async createAdditionalExperienceEntry(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createAdditionalExperienceEntry(profileId: string): Promise<ProfileMutationResult> {
     return this.service.createAdditionalExperienceEntry(profileId)
   }
 
-  async updateAdditionalExperienceEntry(data: AppDataState, input: UpdateAdditionalExperienceEntryInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateAdditionalExperienceEntry(input: UpdateAdditionalExperienceEntryInput): Promise<ProfileMutationResult> {
     return this.service.updateAdditionalExperienceEntry(input)
   }
 
-  async deleteAdditionalExperienceEntry(data: AppDataState, additionalExperienceEntryId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteAdditionalExperienceEntry(additionalExperienceEntryId: string): Promise<ProfileMutationResult> {
     return this.service.deleteAdditionalExperienceEntry(additionalExperienceEntryId)
   }
 
-  async reorderAdditionalExperienceEntries(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderAdditionalExperienceEntries(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
     return this.service.reorderAdditionalExperienceEntries(input)
   }
 
-  async createAdditionalExperienceBullet(data: AppDataState, additionalExperienceEntryId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createAdditionalExperienceBullet(additionalExperienceEntryId: string): Promise<ProfileMutationResult> {
     return this.service.createAdditionalExperienceBullet(additionalExperienceEntryId)
   }
 
-  async updateAdditionalExperienceBullet(data: AppDataState, input: UpdateAdditionalExperienceBulletInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateAdditionalExperienceBullet(input: UpdateAdditionalExperienceBulletInput): Promise<ProfileMutationResult> {
     return this.service.updateAdditionalExperienceBullet(input)
   }
 
-  async deleteAdditionalExperienceBullet(data: AppDataState, additionalExperienceBulletId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteAdditionalExperienceBullet(additionalExperienceBulletId: string): Promise<ProfileMutationResult> {
     return this.service.deleteAdditionalExperienceBullet(additionalExperienceBulletId)
   }
 
-  async reorderAdditionalExperienceBullets(data: AppDataState, input: ReorderAdditionalExperienceBulletsInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderAdditionalExperienceBullets(input: ReorderAdditionalExperienceBulletsInput): Promise<ProfileMutationResult> {
     return this.service.reorderAdditionalExperienceBullets(input)
   }
 
-  async createCertification(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createCertification(profileId: string): Promise<ProfileMutationResult> {
     return this.service.createCertification(profileId)
   }
 
-  async updateCertification(data: AppDataState, input: UpdateCertificationInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateCertification(input: UpdateCertificationInput): Promise<ProfileMutationResult> {
     return this.service.updateCertification(input)
   }
 
-  async deleteCertification(data: AppDataState, certificationId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteCertification(certificationId: string): Promise<ProfileMutationResult> {
     return this.service.deleteCertification(certificationId)
   }
 
-  async reorderCertifications(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderCertifications(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
     return this.service.reorderCertifications(input)
   }
 
-  async createReference(data: AppDataState, profileId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  createReference(profileId: string): Promise<ProfileMutationResult> {
     return this.service.createReference(profileId)
   }
 
-  async updateReference(data: AppDataState, input: UpdateReferenceInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  updateReference(input: UpdateReferenceInput): Promise<ProfileMutationResult> {
     return this.service.updateReference(input)
   }
 
-  async deleteReference(data: AppDataState, referenceId: string): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  deleteReference(referenceId: string): Promise<ProfileMutationResult> {
     return this.service.deleteReference(referenceId)
   }
 
-  async reorderReferences(data: AppDataState, input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
-    await this.sync(data)
+  reorderReferences(input: ReorderProfileEntitiesInput): Promise<ProfileMutationResult> {
     return this.service.reorderReferences(input)
   }
 
-  async createJob(data: AppDataState, input: CreateJobInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  createJob(input: CreateJobInput): Promise<JobMutationResult> {
     return this.service.createJob(input)
   }
 
-  async updateJob(data: AppDataState, input: UpdateJobInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  updateJob(input: UpdateJobInput): Promise<JobMutationResult> {
     return this.service.updateJob(input)
   }
 
-  async deleteJob(data: AppDataState, jobId: string): Promise<JobMutationResult> {
-    await this.sync(data)
+  deleteJob(jobId: string): Promise<JobMutationResult> {
     return this.service.deleteJob(jobId)
   }
 
-  async createJobLink(data: AppDataState, jobId: string): Promise<JobMutationResult> {
-    await this.sync(data)
+  createJobLink(jobId: string): Promise<JobMutationResult> {
     return this.service.createJobLink(jobId)
   }
 
-  async updateJobLink(data: AppDataState, input: UpdateJobLinkInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  updateJobLink(input: UpdateJobLinkInput): Promise<JobMutationResult> {
     return this.service.updateJobLink(input)
   }
 
-  async deleteJobLink(data: AppDataState, jobLinkId: string): Promise<JobMutationResult> {
-    await this.sync(data)
+  deleteJobLink(jobLinkId: string): Promise<JobMutationResult> {
     return this.service.deleteJobLink(jobLinkId)
   }
 
-  async reorderJobLinks(data: AppDataState, input: ReorderJobEntitiesInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  reorderJobLinks(input: ReorderJobEntitiesInput): Promise<JobMutationResult> {
     return this.service.reorderJobLinks(input)
   }
 
-  async createJobContact(data: AppDataState, jobId: string): Promise<JobMutationResult> {
-    await this.sync(data)
+  createJobContact(jobId: string): Promise<JobMutationResult> {
     return this.service.createJobContact(jobId)
   }
 
-  async updateJobContact(data: AppDataState, input: UpdateJobContactInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  updateJobContact(input: UpdateJobContactInput): Promise<JobMutationResult> {
     return this.service.updateJobContact(input)
   }
 
-  async deleteJobContact(data: AppDataState, jobContactId: string): Promise<JobMutationResult> {
-    await this.sync(data)
+  deleteJobContact(jobContactId: string): Promise<JobMutationResult> {
     return this.service.deleteJobContact(jobContactId)
   }
 
-  async reorderJobContacts(data: AppDataState, input: ReorderJobEntitiesInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  reorderJobContacts(input: ReorderJobEntitiesInput): Promise<JobMutationResult> {
     return this.service.reorderJobContacts(input)
   }
 
-  async createApplicationQuestion(data: AppDataState, jobId: string): Promise<JobMutationResult> {
-    await this.sync(data)
+  createApplicationQuestion(jobId: string): Promise<JobMutationResult> {
     return this.service.createApplicationQuestion(jobId)
   }
 
-  async updateApplicationQuestion(data: AppDataState, input: UpdateApplicationQuestionInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  updateApplicationQuestion(input: UpdateApplicationQuestionInput): Promise<JobMutationResult> {
     return this.service.updateApplicationQuestion(input)
   }
 
-  async deleteApplicationQuestion(data: AppDataState, applicationQuestionId: string): Promise<JobMutationResult> {
-    await this.sync(data)
+  deleteApplicationQuestion(applicationQuestionId: string): Promise<JobMutationResult> {
     return this.service.deleteApplicationQuestion(applicationQuestionId)
   }
 
-  async reorderApplicationQuestions(data: AppDataState, input: ReorderJobEntitiesInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  reorderApplicationQuestions(input: ReorderJobEntitiesInput): Promise<JobMutationResult> {
     return this.service.reorderApplicationQuestions(input)
   }
 
-  async setJobAppliedAt(data: AppDataState, input: SetJobAppliedAtInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  setJobAppliedAt(input: SetJobAppliedAtInput): Promise<JobMutationResult> {
     return this.service.setJobAppliedAt(input)
   }
 
-  async clearJobAppliedAt(data: AppDataState, jobId: string): Promise<JobMutationResult> {
-    await this.sync(data)
+  clearJobAppliedAt(jobId: string): Promise<JobMutationResult> {
     return this.service.clearJobAppliedAt(jobId)
   }
 
-  async setJobFinalOutcome(data: AppDataState, input: SetJobFinalOutcomeInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  setJobFinalOutcome(input: SetJobFinalOutcomeInput): Promise<JobMutationResult> {
     return this.service.setJobFinalOutcome(input)
   }
 
-  async clearJobFinalOutcome(data: AppDataState, jobId: string): Promise<JobMutationResult> {
-    await this.sync(data)
+  clearJobFinalOutcome(jobId: string): Promise<JobMutationResult> {
     return this.service.clearJobFinalOutcome(jobId)
   }
 
-  async createInterview(data: AppDataState, jobId: string): Promise<JobMutationResult> {
-    await this.sync(data)
+  createInterview(jobId: string): Promise<JobMutationResult> {
     return this.service.createInterview(jobId)
   }
 
-  async updateInterview(data: AppDataState, input: UpdateInterviewInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  updateInterview(input: UpdateInterviewInput): Promise<JobMutationResult> {
     return this.service.updateInterview(input)
   }
 
-  async deleteInterview(data: AppDataState, interviewId: string): Promise<JobMutationResult> {
-    await this.sync(data)
+  deleteInterview(interviewId: string): Promise<JobMutationResult> {
     return this.service.deleteInterview(interviewId)
   }
 
-  async addInterviewContact(data: AppDataState, input: AddInterviewContactInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  addInterviewContact(input: AddInterviewContactInput): Promise<JobMutationResult> {
     return this.service.addInterviewContact(input)
   }
 
-  async removeInterviewContact(data: AppDataState, interviewContactId: string): Promise<JobMutationResult> {
-    await this.sync(data)
+  removeInterviewContact(interviewContactId: string): Promise<JobMutationResult> {
     return this.service.removeInterviewContact(interviewContactId)
   }
 
-  async reorderInterviewContacts(data: AppDataState, input: ReorderInterviewContactsInput): Promise<JobMutationResult> {
-    await this.sync(data)
+  reorderInterviewContacts(input: ReorderInterviewContactsInput): Promise<JobMutationResult> {
     return this.service.reorderInterviewContacts(input)
   }
 }

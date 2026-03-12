@@ -111,6 +111,40 @@ describe('app store hydration and persistence boundary', () => {
     expect(useAppStore.getState().data.jobs.job_1?.companyName).toBe('Example Co')
     expect(exported.data.jobs.job_1?.jobTitle).toBe('Engineer')
   })
+
+  it('does not overwrite backend-seeded data before the first mutation', async () => {
+    const seededData = createEmptyDataState()
+    seededData.profiles.profile_seeded = {
+      id: 'profile_seeded',
+      name: 'Seeded Profile',
+      summary: '',
+      coverLetter: '',
+      resumeSettings: createDefaultResumeSettings(),
+      personalDetails: {
+        fullName: '',
+        email: '',
+        phone: '',
+        addressLine1: '',
+        addressLine2: '',
+        addressLine3: '',
+        city: '',
+        state: '',
+        postalCode: '',
+      },
+      jobId: null,
+      clonedFromProfileId: null,
+      createdAt: '2026-03-12T12:00:00.000Z',
+      updatedAt: '2026-03-12T12:00:00.000Z',
+    }
+
+    setAppApiClient(createAppApiClient({ initialData: seededData }))
+
+    const createdProfileId = await useAppStore.getState().actions.createBaseProfile('New Profile')
+
+    expect(createdProfileId).toBeDefined()
+    expect(useAppStore.getState().data.profiles.profile_seeded?.name).toBe('Seeded Profile')
+    expect(Object.keys(useAppStore.getState().data.profiles)).toHaveLength(2)
+  })
 })
 
 describe('app store reorder actions', () => {
