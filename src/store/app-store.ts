@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 
+import { getAppApiClient } from '../api'
 import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState, emptyProfileDefaults } from './create-initial-state'
 import { normalizeDocumentHeaderTemplate } from '../utils/document-header-templates'
 import { defaultBulletLevel, isBulletLevel } from '../utils/bullet-levels'
@@ -43,10 +44,21 @@ import type {
   ThemePreference,
 } from '../types/state'
 
+type AppStoreHydrationStatus = 'idle' | 'loading' | 'ready' | 'error'
+type AppStoreSavingStatus = 'idle' | 'saving' | 'error'
+
+interface AppStoreStatus {
+  hydration: AppStoreHydrationStatus
+  saving: AppStoreSavingStatus
+  errorMessage: string | null
+}
+
 interface AppStoreState {
   data: AppDataState
   ui: AppUiState
+  status: AppStoreStatus
   actions: {
+    hydrate: () => Promise<void>
     createBaseProfile: (name: string) => void
     updateProfile: (input: {
       profileId: Id
@@ -185,8 +197,8 @@ interface AppStoreState {
     addInterviewContact: (input: { interviewId: Id; jobContactId: Id }) => void
     removeInterviewContact: (interviewContactId: Id) => void
     reorderInterviewContacts: (input: { interviewId: Id; orderedIds: Id[] }) => void
-    importAppData: (file: AppExportFile) => void
-    exportAppData: () => AppExportFile
+    importAppData: (file: AppExportFile) => Promise<void>
+    exportAppData: () => Promise<AppExportFile>
     resetUiState: () => void
     setThemePreference: (themePreference: ThemePreference) => void
     selectJob: (jobId: Id | null) => void
@@ -196,6 +208,11 @@ interface AppStoreState {
 
 const now = () => new Date().toISOString()
 const createId = () => crypto.randomUUID()
+const createInitialStoreStatus = (): AppStoreStatus => ({
+  hydration: 'idle',
+  saving: 'idle',
+  errorMessage: null,
+})
 
 const getNextSortOrder = (sortOrders: number[]) => {
   if (sortOrders.length === 0) {
@@ -836,7 +853,47 @@ const createProfileRecord = (name: string): Profile => {
 export const useAppStore = create<AppStoreState>((set, get) => ({
   data: createEmptyDataState(),
   ui: createDefaultUiState(),
+  status: createInitialStoreStatus(),
   actions: {
+    hydrate: async () => {
+      if (get().status.hydration === 'loading') {
+        return
+      }
+
+      set((state) => ({
+        ...state,
+        status: {
+          ...state.status,
+          hydration: 'loading',
+          errorMessage: null,
+        },
+      }))
+
+      try {
+        const data = await getAppApiClient().getAppData()
+
+        set((state) => ({
+          ...state,
+          data,
+          status: {
+            ...state.status,
+            hydration: 'ready',
+            errorMessage: null,
+          },
+        }))
+      } catch (caughtError) {
+        const errorMessage = caughtError instanceof Error ? caughtError.message : 'Unknown hydration error.'
+
+        set((state) => ({
+          ...state,
+          status: {
+            ...state.status,
+            hydration: 'error',
+            errorMessage,
+          },
+        }))
+      }
+    },
     createBaseProfile: (name) => {
       const profile = createProfileRecord(name)
 
@@ -3313,28 +3370,82 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
         ),
       }))
     },
-    importAppData: (file) => {
+    importAppData: async (file) => {
       const currentThemePreference = get().ui.themePreference
 
-      set({
-        data: {
-          version: 1,
-          exportedAt: file.exportedAt,
-          ...file.data,
+      set((state) => ({
+        ...state,
+        status: {
+          ...state.status,
+          saving: 'saving',
+          errorMessage: null,
         },
-        ui: createDefaultUiState(currentThemePreference),
-      })
-    },
-    exportAppData: () => {
-      const state = get()
-      const exportedAt = now()
+      }))
 
-      return {
-        version: 1,
-        exportedAt,
-        data: {
-          ...state.data,
+      try {
+        const data = await getAppApiClient().importAppData(file)
+
+        set((state) => ({
+          ...state,
+          data,
+          ui: createDefaultUiState(currentThemePreference),
+          status: {
+            ...state.status,
+            saving: 'idle',
+            errorMessage: null,
+          },
+        }))
+      } catch (caughtError) {
+        const errorMessage = caughtError instanceof Error ? caughtError.message : 'Unknown import error.'
+
+        set((state) => ({
+          ...state,
+          status: {
+            ...state.status,
+            saving: 'error',
+            errorMessage,
+          },
+        }))
+
+        throw caughtError
+      }
+    },
+    exportAppData: async () => {
+      set((state) => ({
+        ...state,
+        status: {
+          ...state.status,
+          saving: 'saving',
+          errorMessage: null,
         },
+      }))
+
+      try {
+        const file = await getAppApiClient().exportAppData(get().data)
+
+        set((state) => ({
+          ...state,
+          status: {
+            ...state.status,
+            saving: 'idle',
+            errorMessage: null,
+          },
+        }))
+
+        return file
+      } catch (caughtError) {
+        const errorMessage = caughtError instanceof Error ? caughtError.message : 'Unknown export error.'
+
+        set((state) => ({
+          ...state,
+          status: {
+            ...state.status,
+            saving: 'error',
+            errorMessage,
+          },
+        }))
+
+        throw caughtError
       }
     },
     resetUiState: () => set((state) => ({ ...state, ui: createDefaultUiState(state.ui.themePreference) })),

@@ -1,17 +1,25 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
+import { createAppApiClient, resetAppApiClient, setAppApiClient } from '../api'
 import { getOrderedResumeSections, selectProfileDocumentData } from '../features/documents/document-data'
 import { getJobComputedStatus } from '../features/jobs/job-status'
-import { createDefaultUiState, createEmptyDataState } from './create-initial-state'
+import type { AppExportFile } from '../types/state'
+import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState } from './create-initial-state'
 import { defaultBulletLevel } from '../utils/bullet-levels'
 import { defaultDocumentHeaderTemplate } from '../utils/document-header-templates'
 import { useAppStore } from './app-store'
 
 const resetStore = () => {
+  resetAppApiClient()
   useAppStore.setState((state) => ({
     ...state,
     data: createEmptyDataState(),
     ui: createDefaultUiState('system'),
+    status: {
+      hydration: 'idle',
+      saving: 'idle',
+      errorMessage: null,
+    },
   }))
 }
 
@@ -27,6 +35,83 @@ const expectDefined = <T>(value: T | null | undefined, message: string): T => {
 }
 
 const waitForNextTick = () => new Promise((resolve) => setTimeout(resolve, 2))
+
+describe('app store hydration and persistence boundary', () => {
+  beforeEach(() => {
+    resetStore()
+  })
+
+  it('hydrates store data from the app api client', async () => {
+    const seededData = createEmptyDataState()
+    seededData.profiles.profile_1 = {
+      id: 'profile_1',
+      name: 'Hydrated Profile',
+      summary: '',
+      coverLetter: '',
+      resumeSettings: createDefaultResumeSettings(),
+      personalDetails: {
+        fullName: '',
+        email: '',
+        phone: '',
+        addressLine1: '',
+        addressLine2: '',
+        addressLine3: '',
+        city: '',
+        state: '',
+        postalCode: '',
+      },
+      jobId: null,
+      clonedFromProfileId: null,
+      createdAt: '2026-03-12T12:00:00.000Z',
+      updatedAt: '2026-03-12T12:00:00.000Z',
+    }
+
+    setAppApiClient(createAppApiClient({ initialData: seededData }))
+
+    await useAppStore.getState().actions.hydrate()
+
+    expect(useAppStore.getState().status.hydration).toBe('ready')
+    expect(useAppStore.getState().data.profiles.profile_1?.name).toBe('Hydrated Profile')
+  })
+
+  it('imports and exports through the app api client asynchronously', async () => {
+    const imported: AppExportFile = {
+      version: 1 as const,
+      exportedAt: '2026-03-12T09:00:00.000Z',
+      data: {
+        ...createEmptyDataState(),
+        jobs: {
+          job_1: {
+            id: 'job_1',
+            companyName: 'Example Co',
+            jobTitle: 'Engineer',
+            description: '',
+            location: '',
+            postedCompensation: '',
+            desiredCompensation: '',
+            compensationNotes: '',
+            workArrangement: 'unknown',
+            employmentType: 'other',
+            datePosted: null,
+            notes: '',
+            createdAt: '2026-03-12T09:00:00.000Z',
+            updatedAt: '2026-03-12T09:00:00.000Z',
+            appliedAt: null,
+            finalOutcome: null,
+          },
+        },
+      },
+    }
+
+    await useAppStore.getState().actions.importAppData(imported)
+
+    const exported = await useAppStore.getState().actions.exportAppData()
+
+    expect(useAppStore.getState().status.saving).toBe('idle')
+    expect(useAppStore.getState().data.jobs.job_1?.companyName).toBe('Example Co')
+    expect(exported.data.jobs.job_1?.jobTitle).toBe('Engineer')
+  })
+})
 
 describe('app store reorder actions', () => {
   beforeEach(() => {
@@ -857,7 +942,7 @@ describe('app store reorder actions', () => {
     })
   })
 
-  it('creates interviews, manages associated contacts, and preserves interview contact order through export/import', () => {
+  it('creates interviews, manages associated contacts, and preserves interview contact order through export/import', async () => {
     const { actions } = useAppStore.getState()
 
     const jobId = actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
@@ -910,10 +995,10 @@ describe('app store reorder actions', () => {
       orderedIds: [secondInterviewContactId, firstInterviewContactId],
     })
 
-    const exported = actions.exportAppData()
+    const exported = await actions.exportAppData()
 
     resetStore()
-    useAppStore.getState().actions.importAppData(exported)
+    await useAppStore.getState().actions.importAppData(exported)
 
     const importedInterviewContacts = Object.values(useAppStore.getState().data.interviewContacts)
       .filter((item) => item.interviewId === interviewId)
@@ -1004,7 +1089,7 @@ describe('app store reorder actions', () => {
     ).toBe('rejected')
   })
 
-  it('preserves job link order through export and import', () => {
+  it('preserves job link order through export and import', async () => {
     const { actions } = useAppStore.getState()
 
     actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
@@ -1037,10 +1122,10 @@ describe('app store reorder actions', () => {
       orderedIds: [secondJobLinkId, firstJobLinkId],
     })
 
-    const exported = actions.exportAppData()
+    const exported = await actions.exportAppData()
 
     resetStore()
-    useAppStore.getState().actions.importAppData(exported)
+    await useAppStore.getState().actions.importAppData(exported)
 
     const importedJobLinks = Object.values(useAppStore.getState().data.jobLinks)
       .filter((item) => item.jobId === jobId)
@@ -1052,7 +1137,7 @@ describe('app store reorder actions', () => {
     ])
   })
 
-  it('preserves application question order through export and import', () => {
+  it('preserves application question order through export and import', async () => {
     const { actions } = useAppStore.getState()
 
     actions.createJob({ companyName: 'Example Co', jobTitle: 'Engineer' })
@@ -1085,10 +1170,10 @@ describe('app store reorder actions', () => {
       orderedIds: [secondQuestionId, firstQuestionId],
     })
 
-    const exported = actions.exportAppData()
+    const exported = await actions.exportAppData()
 
     resetStore()
-    useAppStore.getState().actions.importAppData(exported)
+    await useAppStore.getState().actions.importAppData(exported)
 
     const importedQuestions = Object.values(useAppStore.getState().data.applicationQuestions)
       .filter((item) => item.jobId === jobId)
@@ -1097,7 +1182,7 @@ describe('app store reorder actions', () => {
     expect(importedQuestions.map((item) => item.question)).toEqual(['Question Two', 'Question One'])
   })
 
-  it('preserves resume settings through profile duplication and export/import', () => {
+  it('preserves resume settings through profile duplication and export/import', async () => {
     const { actions } = useAppStore.getState()
 
     actions.createBaseProfile('General Profile')
@@ -1206,10 +1291,10 @@ describe('app store reorder actions', () => {
       sortOrder: 1,
     })
 
-    const exported = actions.exportAppData()
+    const exported = await actions.exportAppData()
 
     resetStore()
-    useAppStore.getState().actions.importAppData(exported)
+    await useAppStore.getState().actions.importAppData(exported)
 
     const importedProfile = useAppStore.getState().data.profiles[duplicatedProfileId]
   expect(importedProfile?.resumeSettings.headerTemplate).toBe('stacked')
@@ -1416,7 +1501,7 @@ describe('app store reorder actions', () => {
     expect(Object.keys(useAppStore.getState().data.achievements)).toHaveLength(0)
   })
 
-  it('preserves achievement data through export and import', () => {
+  it('preserves achievement data through export and import', async () => {
     const { actions } = useAppStore.getState()
 
     actions.createBaseProfile('General Profile')
@@ -1428,10 +1513,10 @@ describe('app store reorder actions', () => {
       changes: { name: 'Conference speaker', description: 'Presented a talk on service reliability', enabled: false },
     })
 
-    const exported = actions.exportAppData()
+    const exported = await actions.exportAppData()
 
     resetStore()
-    useAppStore.getState().actions.importAppData(exported)
+    await useAppStore.getState().actions.importAppData(exported)
 
     expect(useAppStore.getState().data.achievements[achievementId]).toMatchObject({
       profileId,
@@ -1551,7 +1636,7 @@ describe('app store reorder actions', () => {
     expect(Object.values(useAppStore.getState().data.educationBullets).filter((item) => item.educationEntryId === duplicatedEducationEntry.id)).toHaveLength(0)
   })
 
-  it('preserves education bullet data through export and import', () => {
+  it('preserves education bullet data through export and import', async () => {
     const { actions } = useAppStore.getState()
 
     actions.createBaseProfile('General Profile')
@@ -1585,10 +1670,10 @@ describe('app store reorder actions', () => {
       changes: { content: 'Honors program', enabled: false, level: 2 },
     })
 
-    const exported = actions.exportAppData()
+    const exported = await actions.exportAppData()
 
     resetStore()
-    useAppStore.getState().actions.importAppData(exported)
+    await useAppStore.getState().actions.importAppData(exported)
 
     expect(useAppStore.getState().data.educationEntries[educationEntryId]).toMatchObject({
       school: 'Example University',
@@ -1606,7 +1691,7 @@ describe('app store reorder actions', () => {
     })
   })
 
-  it('preserves profile link order through export and import', () => {
+  it('preserves profile link order through export and import', async () => {
     const { actions } = useAppStore.getState()
 
     actions.createBaseProfile('General Profile')
@@ -1639,10 +1724,10 @@ describe('app store reorder actions', () => {
       orderedIds: [secondProfileLinkId, firstProfileLinkId],
     })
 
-    const exported = actions.exportAppData()
+    const exported = await actions.exportAppData()
 
     resetStore()
-    useAppStore.getState().actions.importAppData(exported)
+    await useAppStore.getState().actions.importAppData(exported)
 
     const importedLinks = Object.values(useAppStore.getState().data.profileLinks)
       .filter((item) => item.profileId === profileId)

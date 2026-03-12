@@ -24,8 +24,8 @@ export const ImportExportPage = () => {
 
   const summary = useMemo(() => `${profileCount} profiles · ${jobCount} jobs`, [jobCount, profileCount])
 
-  const handleExport = () => {
-    const file = exportAppData()
+  const handleExport = async () => {
+    const file = await exportAppData()
     downloadJson(file)
   }
 
@@ -43,7 +43,7 @@ export const ImportExportPage = () => {
         throw new Error('Unsupported export file format.')
       }
 
-      importAppData(parsed)
+      await importAppData(parsed)
       setError(null)
     } catch (caughtError) {
       const message = caughtError instanceof Error ? caughtError.message : 'Unknown import error.'
