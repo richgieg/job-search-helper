@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createAppApiClient, resetAppApiClient, setAppApiClient } from '../api'
+import { ImportExportPage } from './ImportExportPage'
 import { JobPage } from './JobPage'
 import { JobsPage } from './JobsPage'
 import { ProfilePage } from './ProfilePage'
@@ -409,5 +410,31 @@ describe('query-backed routes', () => {
     expect(await screen.findByText('Ada Example')).toBeInTheDocument()
     expect(await screen.findByText(/Unable to refresh this document right now/i)).toBeInTheDocument()
     expect(screen.getByText('TypeScript')).toBeInTheDocument()
+  })
+
+  it('refreshes import page counts after importing json', async () => {
+    const user = userEvent.setup()
+
+    setAppApiClient(createAppApiClient({ initialData: createEmptyDataState() }))
+
+    renderRoute({
+      element: <ImportExportPage />,
+      path: '/import-export',
+      route: '/import-export',
+    })
+
+    expect(await screen.findByText('0 profiles · 0 jobs')).toBeInTheDocument()
+
+    const imported = {
+      version: 1 as const,
+      exportedAt: '2026-03-12T12:00:00.000Z',
+      data: createSeedData(),
+    }
+
+    const file = new File([JSON.stringify(imported)], 'import.json', { type: 'application/json' })
+
+    await user.upload(screen.getByLabelText('Import JSON'), file)
+
+    expect(await screen.findByText('1 profiles · 1 jobs')).toBeInTheDocument()
   })
 })

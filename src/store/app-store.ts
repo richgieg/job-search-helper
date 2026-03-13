@@ -626,8 +626,6 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
       try {
         const data = await getAppApiClient().importAppData(file)
 
-        queryClient.clear()
-
         set((state) => ({
           ...state,
           data,
@@ -638,6 +636,15 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
             errorMessage: null,
           },
         }))
+
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.jobsList() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.jobsDetailRoot() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.profilesListRoot() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.profilesDetailRoot() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.profilesDocumentRoot() }),
+        ])
       } catch (caughtError) {
         const errorMessage = caughtError instanceof Error ? caughtError.message : 'Unknown import error.'
 
