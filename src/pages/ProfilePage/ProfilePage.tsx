@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { ActionToggle } from '../../components/CompactActionControls'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { DocumentProfileHeader } from '../../features/documents/DocumentProfileHeader'
-import { selectProfileDocumentData } from '../../features/documents/document-data'
+import { useProfileEditorModel } from '../../features/profiles/use-profile-editor-model'
 import { useProfileDetailQuery } from '../../queries/use-profile-detail-query'
+import { useProfileDocumentQuery } from '../../queries/use-profile-document-query'
 import { ProfileChildEditors } from './ProfileChildEditors'
 import { useAppStore } from '../../store/app-store'
 import type { DocumentHeaderTemplate, PersonalDetails, ResumeSectionKey } from '../../types/state'
@@ -74,29 +75,20 @@ const OrderBadge = ({ value }: { value: number }) => (
 
 export const ProfilePage = () => {
   const { profileId = '' } = useParams()
-  const data = useAppStore((state) => state.data)
-  const cachedProfile = useAppStore((state) => state.data.profiles[profileId])
-  const documentData = useMemo(() => selectProfileDocumentData(data, profileId), [data, profileId])
-  const jobsById = useAppStore((state) => state.data.jobs)
-  const mergeDataSnapshot = useAppStore((state) => state.actions.mergeDataSnapshot)
   const updateProfile = useAppStore((state) => state.actions.updateProfile)
   const setDocumentHeaderTemplate = useAppStore((state) => state.actions.setDocumentHeaderTemplate)
   const setResumeSectionEnabled = useAppStore((state) => state.actions.setResumeSectionEnabled)
   const setResumeSectionLabel = useAppStore((state) => state.actions.setResumeSectionLabel)
   const reorderResumeSections = useAppStore((state) => state.actions.reorderResumeSections)
   const { data: profileDetail, error, isLoading } = useProfileDetailQuery(profileId)
-  const profile = profileDetail?.profile ?? cachedProfile
+  const { data: documentData } = useProfileDocumentQuery(profileId)
+  const editorModel = useProfileEditorModel(profileDetail)
+  const profile = profileDetail?.profile
   const [name, setName] = useState(profile?.name ?? '')
   const [summary, setSummary] = useState(profile?.summary ?? '')
   const [coverLetter, setCoverLetter] = useState(profile?.coverLetter ?? '')
   const [resumeSectionLabels, setResumeSectionLabels] = useState<Record<ResumeSectionKey, string>>(buildResumeSectionLabels(profile))
   const [personalDetails, setPersonalDetails] = useState(profile ? createPersonalDetailsDraft(profile.personalDetails) : emptyPersonalDetails)
-
-  useEffect(() => {
-    if (profileDetail?.cacheData) {
-      mergeDataSnapshot(profileDetail.cacheData)
-    }
-  }, [profileDetail?.cacheData, mergeDataSnapshot])
 
   useEffect(() => {
     if (!profile) {
@@ -138,7 +130,7 @@ export const ProfilePage = () => {
     )
   }
 
-  const attachedJob = profileDetail?.attachedJob ?? (profile.jobId ? jobsById[profile.jobId] : null)
+  const attachedJob = profileDetail?.attachedJob ?? null
   const orderedResumeSections = Object.entries(profile.resumeSettings.sections)
     .map(([section, settings]) => ({
       section: section as ResumeSectionKey,
@@ -316,7 +308,18 @@ export const ProfilePage = () => {
         </div>
       </CollapsiblePanel>
 
-      <ProfileChildEditors profileId={profile.id} />
+      <ProfileChildEditors
+        additionalExperienceModel={editorModel.additionalExperience}
+        achievementsModel={editorModel.achievements}
+        certificationsModel={editorModel.certifications}
+        educationModel={editorModel.education}
+        experienceModel={editorModel.experience}
+        linksModel={editorModel.links}
+        profileId={profile.id}
+        projectsModel={editorModel.projects}
+        referencesModel={editorModel.references}
+        skillsModel={editorModel.skills}
+      />
 
       <CollapsiblePanel description="Control document header styling plus which sections appear on the resume and the order in which they are shown." title="Document settings">
         <div className="space-y-6">

@@ -3,9 +3,43 @@ import { useEffect, useMemo, useState } from 'react'
 import { ActionToggle, DeleteIconButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
+import type {
+  ProfileDetailAdditionalExperienceEntryDto,
+  ProfileDetailEducationEntryDto,
+  ProfileDetailExperienceEntryDto,
+  ProfileDetailProjectEntryDto,
+  ProfileDetailSkillCategoryDto,
+} from '../../api/read-models'
+import type {
+  ProfileEditorAdditionalExperienceModel,
+  ProfileEditorAchievementsModel,
+  ProfileEditorCertificationsModel,
+  ProfileEditorEducationModel,
+  ProfileEditorExperienceModel,
+  ProfileEditorLinksModel,
+  ProfileEditorProjectsModel,
+  ProfileEditorReferencesModel,
+  ProfileEditorSkillsModel,
+} from '../../features/profiles/use-profile-editor-model'
 import { useAppStore } from '../../store/app-store'
-import type { AdditionalExperienceEntry, BulletLevel, EducationEntry, EducationStatus, ExperienceEntry, Project, ReferenceType } from '../../types/state'
-import { defaultBulletLevel } from '../../utils/bullet-levels'
+import type {
+  Achievement,
+  AdditionalExperienceBullet,
+  AdditionalExperienceEntry,
+  BulletLevel,
+  Certification,
+  EducationBullet,
+  EducationEntry,
+  EducationStatus,
+  ExperienceBullet,
+  ExperienceEntry,
+  ProfileLink,
+  Project,
+  ProjectBullet,
+  Reference,
+  ReferenceType,
+  Skill,
+} from '../../types/state'
 import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 import { moveOrderedItem } from '../../utils/reorder'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
@@ -263,52 +297,34 @@ const formatAdditionalExperienceSummaryDate = (entry: Pick<AdditionalExperienceE
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter((part): part is string => Boolean(part && part.trim())).join(' • ')
 
 const ProfileLinkRow = ({
-  profileLinkId,
+  profileLink,
+  orderedProfileLinkIds,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  profileLinkId: string
+  profileLink: ProfileLink
+  orderedProfileLinkIds: string[]
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const profileLink = useAppStore((state) => state.data.profileLinks[profileLinkId])
-  const profileLinksById = useAppStore((state) => state.data.profileLinks)
   const updateProfileLink = useAppStore((state) => state.actions.updateProfileLink)
   const deleteProfileLink = useAppStore((state) => state.actions.deleteProfileLink)
   const reorderProfileLinks = useAppStore((state) => state.actions.reorderProfileLinks)
-  const [name, setName] = useState(profileLink?.name ?? '')
-  const [url, setUrl] = useState(profileLink?.url ?? '')
-  const [enabled, setEnabled] = useState(profileLink?.enabled ?? true)
+  const [name, setName] = useState(profileLink.name)
+  const [url, setUrl] = useState(profileLink.url)
+  const [enabled, setEnabled] = useState(profileLink.enabled)
   const { scrollTargetRef: rowRef, scrollTargetStyle: rowScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
   })
 
-  const profileLinkIds = useMemo(
-    () =>
-      profileLink
-        ? Object.values(profileLinksById)
-            .filter((item) => item.profileId === profileLink.profileId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [profileLink, profileLinksById],
-  )
-  const profileLinkIndex = profileLinkIds.indexOf(profileLinkId)
+  const profileLinkIndex = orderedProfileLinkIds.indexOf(profileLink.id)
 
   useEffect(() => {
-    if (!profileLink) {
-      return
-    }
-
     setName(profileLink.name)
     setUrl(profileLink.url)
     setEnabled(profileLink.enabled)
   }, [profileLink])
-
-  if (!profileLink) {
-    return null
-  }
 
   const commitName = () => {
     if (name === profileLink.name) {
@@ -367,18 +383,18 @@ const ProfileLinkRow = ({
             </button>
           )}
           <ReorderButtons
-            canMoveDown={profileLinkIds.length > 1}
-            canMoveUp={profileLinkIds.length > 1}
+            canMoveDown={orderedProfileLinkIds.length > 1}
+            canMoveUp={orderedProfileLinkIds.length > 1}
             onMoveDown={() =>
               void reorderProfileLinks({
                 profileId: profileLink.profileId,
-                orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, 1),
+                orderedIds: moveOrderedItem(orderedProfileLinkIds, profileLinkIndex, 1),
               })
             }
             onMoveUp={() =>
               void reorderProfileLinks({
                 profileId: profileLink.profileId,
-                orderedIds: moveOrderedItem(profileLinkIds, profileLinkIndex, -1),
+                orderedIds: moveOrderedItem(orderedProfileLinkIds, profileLinkIndex, -1),
               })
             }
           />
@@ -389,41 +405,27 @@ const ProfileLinkRow = ({
   )
 }
 
-const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
-  const bullet = useAppStore((state) => state.data.experienceBullets[bulletId])
-  const bulletsById = useAppStore((state) => state.data.experienceBullets)
+const ExperienceBulletRow = ({
+  bullet,
+  orderedBulletIds,
+}: {
+  bullet: ExperienceBullet
+  orderedBulletIds: string[]
+}) => {
   const updateExperienceBullet = useAppStore((state) => state.actions.updateExperienceBullet)
   const deleteExperienceBullet = useAppStore((state) => state.actions.deleteExperienceBullet)
   const reorderExperienceBullets = useAppStore((state) => state.actions.reorderExperienceBullets)
-  const [content, setContent] = useState(bullet?.content ?? '')
-  const [level, setLevel] = useState(bullet?.level ?? defaultBulletLevel)
-  const [enabled, setEnabled] = useState(bullet?.enabled ?? true)
+  const [content, setContent] = useState(bullet.content)
+  const [level, setLevel] = useState(bullet.level)
+  const [enabled, setEnabled] = useState(bullet.enabled)
 
-  const bulletIds = useMemo(
-    () =>
-      bullet
-        ? Object.values(bulletsById)
-            .filter((item) => item.experienceEntryId === bullet.experienceEntryId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [bullet, bulletsById],
-  )
-  const bulletIndex = bulletIds.indexOf(bulletId)
+  const bulletIndex = orderedBulletIds.indexOf(bullet.id)
 
   useEffect(() => {
-    if (!bullet) {
-      return
-    }
-
     setContent(bullet.content)
     setLevel(bullet.level)
     setEnabled(bullet.enabled)
   }, [bullet])
-
-  if (!bullet) {
-    return null
-  }
 
   const commitContent = () => {
     if (content === bullet.content) {
@@ -446,18 +448,18 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
           void updateExperienceBullet({ experienceBulletId: bullet.id, changes: { level: value } })
         }} />
         <ReorderButtons
-          canMoveDown={bulletIds.length > 1}
-          canMoveUp={bulletIds.length > 1}
+          canMoveDown={orderedBulletIds.length > 1}
+          canMoveUp={orderedBulletIds.length > 1}
           onMoveDown={() =>
             void reorderExperienceBullets({
               experienceEntryId: bullet.experienceEntryId,
-              orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
+              orderedIds: moveOrderedItem(orderedBulletIds, bulletIndex, 1),
             })
           }
           onMoveUp={() =>
             void reorderExperienceBullets({
               experienceEntryId: bullet.experienceEntryId,
-              orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
+              orderedIds: moveOrderedItem(orderedBulletIds, bulletIndex, -1),
             })
           }
         />
@@ -467,41 +469,27 @@ const ExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
   )
 }
 
-const EducationBulletRow = ({ bulletId }: { bulletId: string }) => {
-  const bullet = useAppStore((state) => state.data.educationBullets[bulletId])
-  const bulletsById = useAppStore((state) => state.data.educationBullets)
+const EducationBulletRow = ({
+  bullet,
+  orderedBulletIds,
+}: {
+  bullet: EducationBullet
+  orderedBulletIds: string[]
+}) => {
   const updateEducationBullet = useAppStore((state) => state.actions.updateEducationBullet)
   const deleteEducationBullet = useAppStore((state) => state.actions.deleteEducationBullet)
   const reorderEducationBullets = useAppStore((state) => state.actions.reorderEducationBullets)
-  const [content, setContent] = useState(bullet?.content ?? '')
-  const [level, setLevel] = useState(bullet?.level ?? defaultBulletLevel)
-  const [enabled, setEnabled] = useState(bullet?.enabled ?? true)
+  const [content, setContent] = useState(bullet.content)
+  const [level, setLevel] = useState(bullet.level)
+  const [enabled, setEnabled] = useState(bullet.enabled)
 
-  const bulletIds = useMemo(
-    () =>
-      bullet
-        ? Object.values(bulletsById)
-            .filter((item) => item.educationEntryId === bullet.educationEntryId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [bullet, bulletsById],
-  )
-  const bulletIndex = bulletIds.indexOf(bulletId)
+  const bulletIndex = orderedBulletIds.indexOf(bullet.id)
 
   useEffect(() => {
-    if (!bullet) {
-      return
-    }
-
     setContent(bullet.content)
     setLevel(bullet.level)
     setEnabled(bullet.enabled)
   }, [bullet])
-
-  if (!bullet) {
-    return null
-  }
 
   const commitContent = () => {
     if (content === bullet.content) {
@@ -524,18 +512,18 @@ const EducationBulletRow = ({ bulletId }: { bulletId: string }) => {
           void updateEducationBullet({ educationBulletId: bullet.id, changes: { level: value } })
         }} />
         <ReorderButtons
-          canMoveDown={bulletIds.length > 1}
-          canMoveUp={bulletIds.length > 1}
+          canMoveDown={orderedBulletIds.length > 1}
+          canMoveUp={orderedBulletIds.length > 1}
           onMoveDown={() =>
             void reorderEducationBullets({
               educationEntryId: bullet.educationEntryId,
-              orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
+              orderedIds: moveOrderedItem(orderedBulletIds, bulletIndex, 1),
             })
           }
           onMoveUp={() =>
             void reorderEducationBullets({
               educationEntryId: bullet.educationEntryId,
-              orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
+              orderedIds: moveOrderedItem(orderedBulletIds, bulletIndex, -1),
             })
           }
         />
@@ -545,41 +533,27 @@ const EducationBulletRow = ({ bulletId }: { bulletId: string }) => {
   )
 }
 
-const ProjectBulletRow = ({ bulletId }: { bulletId: string }) => {
-  const bullet = useAppStore((state) => state.data.projectBullets[bulletId])
-  const bulletsById = useAppStore((state) => state.data.projectBullets)
+const ProjectBulletRow = ({
+  bullet,
+  orderedBulletIds,
+}: {
+  bullet: ProjectBullet
+  orderedBulletIds: string[]
+}) => {
   const updateProjectBullet = useAppStore((state) => state.actions.updateProjectBullet)
   const deleteProjectBullet = useAppStore((state) => state.actions.deleteProjectBullet)
   const reorderProjectBullets = useAppStore((state) => state.actions.reorderProjectBullets)
-  const [content, setContent] = useState(bullet?.content ?? '')
-  const [level, setLevel] = useState(bullet?.level ?? defaultBulletLevel)
-  const [enabled, setEnabled] = useState(bullet?.enabled ?? true)
+  const [content, setContent] = useState(bullet.content)
+  const [level, setLevel] = useState(bullet.level)
+  const [enabled, setEnabled] = useState(bullet.enabled)
 
-  const bulletIds = useMemo(
-    () =>
-      bullet
-        ? Object.values(bulletsById)
-            .filter((item) => item.projectId === bullet.projectId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [bullet, bulletsById],
-  )
-  const bulletIndex = bulletIds.indexOf(bulletId)
+  const bulletIndex = orderedBulletIds.indexOf(bullet.id)
 
   useEffect(() => {
-    if (!bullet) {
-      return
-    }
-
     setContent(bullet.content)
     setLevel(bullet.level)
     setEnabled(bullet.enabled)
   }, [bullet])
-
-  if (!bullet) {
-    return null
-  }
 
   const commitContent = () => {
     if (content === bullet.content) {
@@ -602,18 +576,18 @@ const ProjectBulletRow = ({ bulletId }: { bulletId: string }) => {
           void updateProjectBullet({ projectBulletId: bullet.id, changes: { level: value } })
         }} />
         <ReorderButtons
-          canMoveDown={bulletIds.length > 1}
-          canMoveUp={bulletIds.length > 1}
+          canMoveDown={orderedBulletIds.length > 1}
+          canMoveUp={orderedBulletIds.length > 1}
           onMoveDown={() =>
             void reorderProjectBullets({
               projectId: bullet.projectId,
-              orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
+              orderedIds: moveOrderedItem(orderedBulletIds, bulletIndex, 1),
             })
           }
           onMoveUp={() =>
             void reorderProjectBullets({
               projectId: bullet.projectId,
-              orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
+              orderedIds: moveOrderedItem(orderedBulletIds, bulletIndex, -1),
             })
           }
         />
@@ -623,41 +597,27 @@ const ProjectBulletRow = ({ bulletId }: { bulletId: string }) => {
   )
 }
 
-const AdditionalExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
-  const bullet = useAppStore((state) => state.data.additionalExperienceBullets[bulletId])
-  const bulletsById = useAppStore((state) => state.data.additionalExperienceBullets)
+const AdditionalExperienceBulletRow = ({
+  bullet,
+  orderedBulletIds,
+}: {
+  bullet: AdditionalExperienceBullet
+  orderedBulletIds: string[]
+}) => {
   const updateAdditionalExperienceBullet = useAppStore((state) => state.actions.updateAdditionalExperienceBullet)
   const deleteAdditionalExperienceBullet = useAppStore((state) => state.actions.deleteAdditionalExperienceBullet)
   const reorderAdditionalExperienceBullets = useAppStore((state) => state.actions.reorderAdditionalExperienceBullets)
-  const [content, setContent] = useState(bullet?.content ?? '')
-  const [level, setLevel] = useState(bullet?.level ?? defaultBulletLevel)
-  const [enabled, setEnabled] = useState(bullet?.enabled ?? true)
+  const [content, setContent] = useState(bullet.content)
+  const [level, setLevel] = useState(bullet.level)
+  const [enabled, setEnabled] = useState(bullet.enabled)
 
-  const bulletIds = useMemo(
-    () =>
-      bullet
-        ? Object.values(bulletsById)
-            .filter((item) => item.additionalExperienceEntryId === bullet.additionalExperienceEntryId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [bullet, bulletsById],
-  )
-  const bulletIndex = bulletIds.indexOf(bulletId)
+  const bulletIndex = orderedBulletIds.indexOf(bullet.id)
 
   useEffect(() => {
-    if (!bullet) {
-      return
-    }
-
     setContent(bullet.content)
     setLevel(bullet.level)
     setEnabled(bullet.enabled)
   }, [bullet])
-
-  if (!bullet) {
-    return null
-  }
 
   const commitContent = () => {
     if (content === bullet.content) {
@@ -680,18 +640,18 @@ const AdditionalExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
           void updateAdditionalExperienceBullet({ additionalExperienceBulletId: bullet.id, changes: { level: value } })
         }} />
         <ReorderButtons
-          canMoveDown={bulletIds.length > 1}
-          canMoveUp={bulletIds.length > 1}
+          canMoveDown={orderedBulletIds.length > 1}
+          canMoveUp={orderedBulletIds.length > 1}
           onMoveDown={() =>
             void reorderAdditionalExperienceBullets({
               additionalExperienceEntryId: bullet.additionalExperienceEntryId,
-              orderedIds: moveOrderedItem(bulletIds, bulletIndex, 1),
+              orderedIds: moveOrderedItem(orderedBulletIds, bulletIndex, 1),
             })
           }
           onMoveUp={() =>
             void reorderAdditionalExperienceBullets({
               additionalExperienceEntryId: bullet.additionalExperienceEntryId,
-              orderedIds: moveOrderedItem(bulletIds, bulletIndex, -1),
+              orderedIds: moveOrderedItem(orderedBulletIds, bulletIndex, -1),
             })
           }
         />
@@ -701,39 +661,25 @@ const AdditionalExperienceBulletRow = ({ bulletId }: { bulletId: string }) => {
   )
 }
 
-const SkillRow = ({ skillId }: { skillId: string }) => {
-  const skill = useAppStore((state) => state.data.skills[skillId])
-  const skillsById = useAppStore((state) => state.data.skills)
+const SkillRow = ({
+  orderedSkillIds,
+  skill,
+}: {
+  orderedSkillIds: string[]
+  skill: Skill
+}) => {
   const updateSkill = useAppStore((state) => state.actions.updateSkill)
   const deleteSkill = useAppStore((state) => state.actions.deleteSkill)
   const reorderSkills = useAppStore((state) => state.actions.reorderSkills)
-  const [name, setName] = useState(skill?.name ?? '')
-  const [enabled, setEnabled] = useState(skill?.enabled ?? true)
+  const [name, setName] = useState(skill.name)
+  const [enabled, setEnabled] = useState(skill.enabled)
 
-  const skillIds = useMemo(
-    () =>
-      skill
-        ? Object.values(skillsById)
-            .filter((item) => item.skillCategoryId === skill.skillCategoryId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [skill, skillsById],
-  )
-  const skillIndex = skillIds.indexOf(skillId)
+  const skillIndex = orderedSkillIds.indexOf(skill.id)
 
   useEffect(() => {
-    if (!skill) {
-      return
-    }
-
     setName(skill.name)
     setEnabled(skill.enabled)
   }, [skill])
-
-  if (!skill) {
-    return null
-  }
 
   const commitName = () => {
     if (name === skill.name) {
@@ -758,18 +704,18 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
             void updateSkill({ skillId: skill.id, changes: { enabled: value } })
           }} />
           <ReorderButtons
-            canMoveDown={skillIds.length > 1}
-            canMoveUp={skillIds.length > 1}
+            canMoveDown={orderedSkillIds.length > 1}
+            canMoveUp={orderedSkillIds.length > 1}
             onMoveDown={() =>
               void reorderSkills({
                 skillCategoryId: skill.skillCategoryId,
-                orderedIds: moveOrderedItem(skillIds, skillIndex, 1),
+                orderedIds: moveOrderedItem(orderedSkillIds, skillIndex, 1),
               })
             }
             onMoveUp={() =>
               void reorderSkills({
                 skillCategoryId: skill.skillCategoryId,
-                orderedIds: moveOrderedItem(skillIds, skillIndex, -1),
+                orderedIds: moveOrderedItem(orderedSkillIds, skillIndex, -1),
               })
             }
           />
@@ -781,68 +727,44 @@ const SkillRow = ({ skillId }: { skillId: string }) => {
 }
 
 const SkillCategoryCard = ({
-  skillCategoryId,
+  skillCategoryEntry,
+  orderedSkillCategoryIds,
   defaultExpanded = false,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  skillCategoryId: string
+  skillCategoryEntry: ProfileDetailSkillCategoryDto
+  orderedSkillCategoryIds: string[]
   defaultExpanded?: boolean
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const category = useAppStore((state) => state.data.skillCategories[skillCategoryId])
-  const skillCategoriesById = useAppStore((state) => state.data.skillCategories)
-  const skillsById = useAppStore((state) => state.data.skills)
   const updateSkillCategory = useAppStore((state) => state.actions.updateSkillCategory)
   const deleteSkillCategory = useAppStore((state) => state.actions.deleteSkillCategory)
   const reorderSkillCategories = useAppStore((state) => state.actions.reorderSkillCategories)
   const createSkill = useAppStore((state) => state.actions.createSkill)
-  const [name, setName] = useState(category?.name ?? '')
-  const [enabled, setEnabled] = useState(category?.enabled ?? true)
+  const category = skillCategoryEntry.category
+  const skills = skillCategoryEntry.skills
+  const [name, setName] = useState(category.name)
+  const [enabled, setEnabled] = useState(category.enabled)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
   })
 
-  const skillCategoryIds = useMemo(
-    () =>
-      category
-        ? Object.values(skillCategoriesById)
-            .filter((item) => item.profileId === category.profileId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [category, skillCategoriesById],
-  )
-  const skillCategoryIndex = skillCategoryIds.indexOf(skillCategoryId)
+  const skillCategoryIndex = orderedSkillCategoryIds.indexOf(category.id)
 
-  const skillIds = useMemo(
-    () =>
-      Object.values(skillsById)
-        .filter((item) => item.skillCategoryId === skillCategoryId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [skillCategoryId, skillsById],
-  )
+  const skillIds = useMemo(() => skills.map((item) => item.id), [skills])
   const splitSkillIndex = Math.ceil(skillIds.length / 2)
-  const leftColumnSkillIds = skillIds.slice(0, splitSkillIndex)
-  const rightColumnSkillIds = skillIds.slice(splitSkillIndex)
+  const leftColumnSkills = skills.slice(0, splitSkillIndex)
+  const rightColumnSkills = skills.slice(splitSkillIndex)
 
   useEffect(() => {
-    if (!category) {
-      return
-    }
-
     setName(category.name)
     setEnabled(category.enabled)
   }, [category])
 
   const summary = summarizeParts([countLabel(skillIds.length, 'skill')])
-
-  if (!category) {
-    return null
-  }
 
   const commitName = () => {
     if (name === category.name) {
@@ -863,18 +785,18 @@ const SkillCategoryCard = ({
               void updateSkillCategory({ skillCategoryId: category.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
-              canMoveDown={skillCategoryIds.length > 1}
-              canMoveUp={skillCategoryIds.length > 1}
+              canMoveDown={orderedSkillCategoryIds.length > 1}
+              canMoveUp={orderedSkillCategoryIds.length > 1}
               onMoveDown={() =>
                 void reorderSkillCategories({
                   profileId: category.profileId,
-                  orderedIds: moveOrderedItem(skillCategoryIds, skillCategoryIndex, 1),
+                  orderedIds: moveOrderedItem(orderedSkillCategoryIds, skillCategoryIndex, 1),
                 })
               }
               onMoveUp={() =>
                 void reorderSkillCategories({
                   profileId: category.profileId,
-                  orderedIds: moveOrderedItem(skillCategoryIds, skillCategoryIndex, -1),
+                  orderedIds: moveOrderedItem(orderedSkillCategoryIds, skillCategoryIndex, -1),
                 })
               }
             />
@@ -906,10 +828,10 @@ const SkillCategoryCard = ({
             ) : (
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="space-y-3">
-                  {leftColumnSkillIds.map((skillId) => <SkillRow key={skillId} skillId={skillId} />)}
+                  {leftColumnSkills.map((skill) => <SkillRow key={skill.id} orderedSkillIds={skillIds} skill={skill} />)}
                 </div>
                 <div className="space-y-3">
-                  {rightColumnSkillIds.map((skillId) => <SkillRow key={skillId} skillId={skillId} />)}
+                  {rightColumnSkills.map((skill) => <SkillRow key={skill.id} orderedSkillIds={skillIds} skill={skill} />)}
                 </div>
               </div>
             )}
@@ -921,18 +843,18 @@ const SkillCategoryCard = ({
 }
 
 const AchievementCard = ({
-  achievementId,
+  achievement,
+  orderedAchievementIds,
   defaultExpanded = false,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  achievementId: string
+  achievement: Achievement
+  orderedAchievementIds: string[]
   defaultExpanded?: boolean
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const achievement = useAppStore((state) => state.data.achievements[achievementId])
-  const achievementsById = useAppStore((state) => state.data.achievements)
   const updateAchievement = useAppStore((state) => state.actions.updateAchievement)
   const deleteAchievement = useAppStore((state) => state.actions.deleteAchievement)
   const reorderAchievements = useAppStore((state) => state.actions.reorderAchievements)
@@ -942,25 +864,11 @@ const AchievementCard = ({
     onComplete: onScrollIntoViewComplete,
   })
 
-  const achievementIds = useMemo(
-    () =>
-      achievement
-        ? Object.values(achievementsById)
-            .filter((item) => item.profileId === achievement.profileId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [achievement, achievementsById],
-  )
-  const achievementIndex = achievementIds.indexOf(achievementId)
+  const achievementIndex = orderedAchievementIds.indexOf(achievement.id)
 
   useEffect(() => {
     setDraft(achievement)
   }, [achievement])
-
-  if (!achievement || !draft) {
-    return null
-  }
 
   const summary = summarizeParts([
     draft.description.trim() ? draft.description.trim() : 'No description',
@@ -977,18 +885,18 @@ const AchievementCard = ({
               void updateAchievement({ achievementId: achievement.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
-              canMoveDown={achievementIds.length > 1}
-              canMoveUp={achievementIds.length > 1}
+              canMoveDown={orderedAchievementIds.length > 1}
+              canMoveUp={orderedAchievementIds.length > 1}
               onMoveDown={() =>
                 void reorderAchievements({
                   profileId: achievement.profileId,
-                  orderedIds: moveOrderedItem(achievementIds, achievementIndex, 1),
+                  orderedIds: moveOrderedItem(orderedAchievementIds, achievementIndex, 1),
                 })
               }
               onMoveUp={() =>
                 void reorderAchievements({
                   profileId: achievement.profileId,
-                  orderedIds: moveOrderedItem(achievementIds, achievementIndex, -1),
+                  orderedIds: moveOrderedItem(orderedAchievementIds, achievementIndex, -1),
                 })
               }
             />
@@ -1019,49 +927,32 @@ const AchievementCard = ({
 }
 
 const ExperienceCard = ({
-  entryId,
+  experienceEntry,
+  orderedExperienceEntryIds,
   defaultExpanded = false,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  entryId: string
+  experienceEntry: ProfileDetailExperienceEntryDto
+  orderedExperienceEntryIds: string[]
   defaultExpanded?: boolean
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const entry = useAppStore((state) => state.data.experienceEntries[entryId])
-  const experienceEntriesById = useAppStore((state) => state.data.experienceEntries)
-  const bulletsById = useAppStore((state) => state.data.experienceBullets)
   const updateExperienceEntry = useAppStore((state) => state.actions.updateExperienceEntry)
   const deleteExperienceEntry = useAppStore((state) => state.actions.deleteExperienceEntry)
   const reorderExperienceEntries = useAppStore((state) => state.actions.reorderExperienceEntries)
   const createExperienceBullet = useAppStore((state) => state.actions.createExperienceBullet)
+  const entry = experienceEntry.entry
+  const bullets = experienceEntry.bullets
   const [draft, setDraft] = useState(entry)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
   })
 
-  const experienceEntryIds = useMemo(
-    () =>
-      entry
-        ? Object.values(experienceEntriesById)
-            .filter((item) => item.profileId === entry.profileId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [entry, experienceEntriesById],
-  )
-  const experienceEntryIndex = experienceEntryIds.indexOf(entryId)
-
-  const bulletIds = useMemo(
-    () =>
-      Object.values(bulletsById)
-        .filter((item) => item.experienceEntryId === entryId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [bulletsById, entryId],
-  )
+  const experienceEntryIndex = orderedExperienceEntryIds.indexOf(entry.id)
+  const bulletIds = useMemo(() => bullets.map((item) => item.id), [bullets])
 
   useEffect(() => {
     setDraft(entry)
@@ -1073,7 +964,7 @@ const ExperienceCard = ({
     countLabel(bulletIds.length, 'bullet'),
   ])
 
-  if (!entry || !draft) {
+  if (!draft) {
     return null
   }
 
@@ -1092,18 +983,18 @@ const ExperienceCard = ({
               void updateExperienceEntry({ experienceEntryId: entry.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
-              canMoveDown={experienceEntryIds.length > 1}
-              canMoveUp={experienceEntryIds.length > 1}
+              canMoveDown={orderedExperienceEntryIds.length > 1}
+              canMoveUp={orderedExperienceEntryIds.length > 1}
               onMoveDown={() =>
                 void reorderExperienceEntries({
                   profileId: entry.profileId,
-                  orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, 1),
+                  orderedIds: moveOrderedItem(orderedExperienceEntryIds, experienceEntryIndex, 1),
                 })
               }
               onMoveUp={() =>
                 void reorderExperienceEntries({
                   profileId: entry.profileId,
-                  orderedIds: moveOrderedItem(experienceEntryIds, experienceEntryIndex, -1),
+                  orderedIds: moveOrderedItem(orderedExperienceEntryIds, experienceEntryIndex, -1),
                 })
               }
             />
@@ -1223,7 +1114,7 @@ const ExperienceCard = ({
             {bulletIds.length === 0 ? (
               <p className="text-sm text-app-text-subtle">No bullets yet.</p>
             ) : (
-              bulletIds.map((bulletId) => <ExperienceBulletRow key={bulletId} bulletId={bulletId} />)
+                bullets.map((bullet) => <ExperienceBulletRow key={bullet.id} bullet={bullet} orderedBulletIds={bulletIds} />)
             )}
           </div>
         </div>
@@ -1234,49 +1125,32 @@ const ExperienceCard = ({
 }
 
 const EducationCard = ({
-  entryId,
+  educationEntry,
+  orderedEducationEntryIds,
   defaultExpanded = false,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  entryId: string
+  educationEntry: ProfileDetailEducationEntryDto
+  orderedEducationEntryIds: string[]
   defaultExpanded?: boolean
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const entry = useAppStore((state) => state.data.educationEntries[entryId])
-  const educationEntriesById = useAppStore((state) => state.data.educationEntries)
-  const bulletsById = useAppStore((state) => state.data.educationBullets)
   const updateEducationEntry = useAppStore((state) => state.actions.updateEducationEntry)
   const deleteEducationEntry = useAppStore((state) => state.actions.deleteEducationEntry)
   const reorderEducationEntries = useAppStore((state) => state.actions.reorderEducationEntries)
   const createEducationBullet = useAppStore((state) => state.actions.createEducationBullet)
+  const entry = educationEntry.entry
+  const bullets = educationEntry.bullets
   const [draft, setDraft] = useState(entry)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
   })
 
-  const educationEntryIds = useMemo(
-    () =>
-      entry
-        ? Object.values(educationEntriesById)
-            .filter((item) => item.profileId === entry.profileId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [educationEntriesById, entry],
-  )
-  const educationEntryIndex = educationEntryIds.indexOf(entryId)
-
-  const bulletIds = useMemo(
-    () =>
-      Object.values(bulletsById)
-        .filter((item) => item.educationEntryId === entryId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [bulletsById, entryId],
-  )
+  const educationEntryIndex = orderedEducationEntryIds.indexOf(entry.id)
+  const bulletIds = useMemo(() => bullets.map((item) => item.id), [bullets])
 
   useEffect(() => {
     setDraft(entry)
@@ -1288,7 +1162,7 @@ const EducationCard = ({
     countLabel(bulletIds.length, 'bullet'),
   ])
 
-  if (!entry || !draft) {
+  if (!draft) {
     return null
   }
 
@@ -1307,18 +1181,18 @@ const EducationCard = ({
               void updateEducationEntry({ educationEntryId: entry.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
-              canMoveDown={educationEntryIds.length > 1}
-              canMoveUp={educationEntryIds.length > 1}
+              canMoveDown={orderedEducationEntryIds.length > 1}
+              canMoveUp={orderedEducationEntryIds.length > 1}
               onMoveDown={() =>
                 void reorderEducationEntries({
                   profileId: entry.profileId,
-                  orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, 1),
+                  orderedIds: moveOrderedItem(orderedEducationEntryIds, educationEntryIndex, 1),
                 })
               }
               onMoveUp={() =>
                 void reorderEducationEntries({
                   profileId: entry.profileId,
-                  orderedIds: moveOrderedItem(educationEntryIds, educationEntryIndex, -1),
+                  orderedIds: moveOrderedItem(orderedEducationEntryIds, educationEntryIndex, -1),
                 })
               }
             />
@@ -1361,7 +1235,7 @@ const EducationCard = ({
               {bulletIds.length === 0 ? (
                 <p className="text-sm text-app-text-subtle">No bullets yet.</p>
               ) : (
-                bulletIds.map((bulletId) => <EducationBulletRow key={bulletId} bulletId={bulletId} />)
+                bullets.map((bullet) => <EducationBulletRow key={bullet.id} bullet={bullet} orderedBulletIds={bulletIds} />)
               )}
             </div>
           </div>
@@ -1372,49 +1246,32 @@ const EducationCard = ({
 }
 
 const ProjectCard = ({
-  projectId,
+  projectEntry,
+  orderedProjectIds,
   defaultExpanded = false,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  projectId: string
+  projectEntry: ProfileDetailProjectEntryDto
+  orderedProjectIds: string[]
   defaultExpanded?: boolean
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const project = useAppStore((state) => state.data.projects[projectId])
-  const projectsById = useAppStore((state) => state.data.projects)
-  const bulletsById = useAppStore((state) => state.data.projectBullets)
   const updateProject = useAppStore((state) => state.actions.updateProject)
   const deleteProject = useAppStore((state) => state.actions.deleteProject)
   const reorderProjects = useAppStore((state) => state.actions.reorderProjects)
   const createProjectBullet = useAppStore((state) => state.actions.createProjectBullet)
+  const project = projectEntry.entry
+  const bullets = projectEntry.bullets
   const [draft, setDraft] = useState(project)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
   })
 
-  const projectIds = useMemo(
-    () =>
-      project
-        ? Object.values(projectsById)
-            .filter((item) => item.profileId === project.profileId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [project, projectsById],
-  )
-  const projectIndex = projectIds.indexOf(projectId)
-
-  const bulletIds = useMemo(
-    () =>
-      Object.values(bulletsById)
-        .filter((item) => item.projectId === projectId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [bulletsById, projectId],
-  )
+  const projectIndex = orderedProjectIds.indexOf(project.id)
+  const bulletIds = useMemo(() => bullets.map((item) => item.id), [bullets])
 
   useEffect(() => {
     setDraft(project)
@@ -1426,7 +1283,7 @@ const ProjectCard = ({
     countLabel(bulletIds.length, 'bullet'),
   ])
 
-  if (!project || !draft) {
+  if (!draft) {
     return null
   }
 
@@ -1445,18 +1302,18 @@ const ProjectCard = ({
               void updateProject({ projectId: project.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
-              canMoveDown={projectIds.length > 1}
-              canMoveUp={projectIds.length > 1}
+              canMoveDown={orderedProjectIds.length > 1}
+              canMoveUp={orderedProjectIds.length > 1}
               onMoveDown={() =>
                 void reorderProjects({
                   profileId: project.profileId,
-                  orderedIds: moveOrderedItem(projectIds, projectIndex, 1),
+                  orderedIds: moveOrderedItem(orderedProjectIds, projectIndex, 1),
                 })
               }
               onMoveUp={() =>
                 void reorderProjects({
                   profileId: project.profileId,
-                  orderedIds: moveOrderedItem(projectIds, projectIndex, -1),
+                  orderedIds: moveOrderedItem(orderedProjectIds, projectIndex, -1),
                 })
               }
             />
@@ -1487,7 +1344,7 @@ const ProjectCard = ({
               {bulletIds.length === 0 ? (
                 <p className="text-sm text-app-text-subtle">No bullets yet.</p>
               ) : (
-                bulletIds.map((bulletId) => <ProjectBulletRow key={bulletId} bulletId={bulletId} />)
+                bullets.map((bullet) => <ProjectBulletRow key={bullet.id} bullet={bullet} orderedBulletIds={bulletIds} />)
               )}
             </div>
           </div>
@@ -1498,49 +1355,32 @@ const ProjectCard = ({
 }
 
 const AdditionalExperienceCard = ({
-  additionalExperienceEntryId,
+  additionalExperienceEntry,
+  orderedAdditionalExperienceEntryIds,
   defaultExpanded = false,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  additionalExperienceEntryId: string
+  additionalExperienceEntry: ProfileDetailAdditionalExperienceEntryDto
+  orderedAdditionalExperienceEntryIds: string[]
   defaultExpanded?: boolean
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const entry = useAppStore((state) => state.data.additionalExperienceEntries[additionalExperienceEntryId])
-  const entriesById = useAppStore((state) => state.data.additionalExperienceEntries)
-  const bulletsById = useAppStore((state) => state.data.additionalExperienceBullets)
   const updateAdditionalExperienceEntry = useAppStore((state) => state.actions.updateAdditionalExperienceEntry)
   const deleteAdditionalExperienceEntry = useAppStore((state) => state.actions.deleteAdditionalExperienceEntry)
   const reorderAdditionalExperienceEntries = useAppStore((state) => state.actions.reorderAdditionalExperienceEntries)
   const createAdditionalExperienceBullet = useAppStore((state) => state.actions.createAdditionalExperienceBullet)
+  const entry = additionalExperienceEntry.entry
+  const bullets = additionalExperienceEntry.bullets
   const [draft, setDraft] = useState(entry)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
   })
 
-  const entryIds = useMemo(
-    () =>
-      entry
-        ? Object.values(entriesById)
-            .filter((item) => item.profileId === entry.profileId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [entriesById, entry],
-  )
-  const entryIndex = entryIds.indexOf(additionalExperienceEntryId)
-
-  const bulletIds = useMemo(
-    () =>
-      Object.values(bulletsById)
-        .filter((item) => item.additionalExperienceEntryId === additionalExperienceEntryId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [additionalExperienceEntryId, bulletsById],
-  )
+  const entryIndex = orderedAdditionalExperienceEntryIds.indexOf(entry.id)
+  const bulletIds = useMemo(() => bullets.map((item) => item.id), [bullets])
 
   useEffect(() => {
     setDraft(entry)
@@ -1553,7 +1393,7 @@ const AdditionalExperienceCard = ({
     countLabel(bulletIds.length, 'bullet'),
   ])
 
-  if (!entry || !draft) {
+  if (!draft) {
     return null
   }
 
@@ -1572,18 +1412,18 @@ const AdditionalExperienceCard = ({
               void updateAdditionalExperienceEntry({ additionalExperienceEntryId: entry.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
-              canMoveDown={entryIds.length > 1}
-              canMoveUp={entryIds.length > 1}
+              canMoveDown={orderedAdditionalExperienceEntryIds.length > 1}
+              canMoveUp={orderedAdditionalExperienceEntryIds.length > 1}
               onMoveDown={() =>
                 void reorderAdditionalExperienceEntries({
                   profileId: entry.profileId,
-                  orderedIds: moveOrderedItem(entryIds, entryIndex, 1),
+                  orderedIds: moveOrderedItem(orderedAdditionalExperienceEntryIds, entryIndex, 1),
                 })
               }
               onMoveUp={() =>
                 void reorderAdditionalExperienceEntries({
                   profileId: entry.profileId,
-                  orderedIds: moveOrderedItem(entryIds, entryIndex, -1),
+                  orderedIds: moveOrderedItem(orderedAdditionalExperienceEntryIds, entryIndex, -1),
                 })
               }
             />
@@ -1615,7 +1455,7 @@ const AdditionalExperienceCard = ({
               {bulletIds.length === 0 ? (
                 <p className="text-sm text-app-text-subtle">No bullets yet.</p>
               ) : (
-                bulletIds.map((bulletId) => <AdditionalExperienceBulletRow key={bulletId} bulletId={bulletId} />)
+                bullets.map((bullet) => <AdditionalExperienceBulletRow key={bullet.id} bullet={bullet} orderedBulletIds={bulletIds} />)
               )}
             </div>
           </div>
@@ -1626,18 +1466,18 @@ const AdditionalExperienceCard = ({
 }
 
 const CertificationCard = ({
-  certificationId,
+  certification,
+  orderedCertificationIds,
   defaultExpanded = false,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  certificationId: string
+  certification: Certification
+  orderedCertificationIds: string[]
   defaultExpanded?: boolean
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const certification = useAppStore((state) => state.data.certifications[certificationId])
-  const certificationsById = useAppStore((state) => state.data.certifications)
   const updateCertification = useAppStore((state) => state.actions.updateCertification)
   const deleteCertification = useAppStore((state) => state.actions.deleteCertification)
   const reorderCertifications = useAppStore((state) => state.actions.reorderCertifications)
@@ -1647,17 +1487,7 @@ const CertificationCard = ({
     onComplete: onScrollIntoViewComplete,
   })
 
-  const certificationIds = useMemo(
-    () =>
-      certification
-        ? Object.values(certificationsById)
-            .filter((item) => item.profileId === certification.profileId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [certification, certificationsById],
-  )
-  const certificationIndex = certificationIds.indexOf(certificationId)
+  const certificationIndex = orderedCertificationIds.indexOf(certification.id)
 
   useEffect(() => {
     setDraft(certification)
@@ -1669,7 +1499,7 @@ const CertificationCard = ({
     draft?.expiryDate ? `Expires ${formatMonthYear(draft.expiryDate)}` : null,
   ])
 
-  if (!certification || !draft) {
+  if (!draft) {
     return null
   }
 
@@ -1684,18 +1514,18 @@ const CertificationCard = ({
               void updateCertification({ certificationId: certification.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
-              canMoveDown={certificationIds.length > 1}
-              canMoveUp={certificationIds.length > 1}
+              canMoveDown={orderedCertificationIds.length > 1}
+              canMoveUp={orderedCertificationIds.length > 1}
               onMoveDown={() =>
                 void reorderCertifications({
                   profileId: certification.profileId,
-                  orderedIds: moveOrderedItem(certificationIds, certificationIndex, 1),
+                  orderedIds: moveOrderedItem(orderedCertificationIds, certificationIndex, 1),
                 })
               }
               onMoveUp={() =>
                 void reorderCertifications({
                   profileId: certification.profileId,
-                  orderedIds: moveOrderedItem(certificationIds, certificationIndex, -1),
+                  orderedIds: moveOrderedItem(orderedCertificationIds, certificationIndex, -1),
                 })
               }
             />
@@ -1719,18 +1549,18 @@ const CertificationCard = ({
 }
 
 const ReferenceCard = ({
-  referenceId,
+  orderedReferenceIds,
+  reference,
   defaultExpanded = false,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  referenceId: string
+  orderedReferenceIds: string[]
+  reference: Reference
   defaultExpanded?: boolean
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const reference = useAppStore((state) => state.data.references[referenceId])
-  const referencesById = useAppStore((state) => state.data.references)
   const updateReference = useAppStore((state) => state.actions.updateReference)
   const deleteReference = useAppStore((state) => state.actions.deleteReference)
   const reorderReferences = useAppStore((state) => state.actions.reorderReferences)
@@ -1740,17 +1570,7 @@ const ReferenceCard = ({
     onComplete: onScrollIntoViewComplete,
   })
 
-  const referenceIds = useMemo(
-    () =>
-      reference
-        ? Object.values(referencesById)
-            .filter((item) => item.profileId === reference.profileId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [reference, referencesById],
-  )
-  const referenceIndex = referenceIds.indexOf(referenceId)
+  const referenceIndex = orderedReferenceIds.indexOf(reference.id)
 
   useEffect(() => {
     setDraft(reference)
@@ -1761,7 +1581,7 @@ const ReferenceCard = ({
     draft?.company || draft?.relationship || null,
   ])
 
-  if (!reference || !draft) {
+  if (!draft) {
     return null
   }
 
@@ -1776,18 +1596,18 @@ const ReferenceCard = ({
               void updateReference({ referenceId: reference.id, changes: { enabled: value } })
             }} />
             <ReorderButtons
-              canMoveDown={referenceIds.length > 1}
-              canMoveUp={referenceIds.length > 1}
+              canMoveDown={orderedReferenceIds.length > 1}
+              canMoveUp={orderedReferenceIds.length > 1}
               onMoveDown={() =>
                 void reorderReferences({
                   profileId: reference.profileId,
-                  orderedIds: moveOrderedItem(referenceIds, referenceIndex, 1),
+                  orderedIds: moveOrderedItem(orderedReferenceIds, referenceIndex, 1),
                 })
               }
               onMoveUp={() =>
                 void reorderReferences({
                   profileId: reference.profileId,
-                  orderedIds: moveOrderedItem(referenceIds, referenceIndex, -1),
+                  orderedIds: moveOrderedItem(orderedReferenceIds, referenceIndex, -1),
                 })
               }
             />
@@ -1825,16 +1645,29 @@ const ReferenceCard = ({
   )
 }
 
-export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
-  const profileLinksById = useAppStore((state) => state.data.profileLinks)
-  const skillCategoriesById = useAppStore((state) => state.data.skillCategories)
-  const achievementsById = useAppStore((state) => state.data.achievements)
-  const experienceEntriesById = useAppStore((state) => state.data.experienceEntries)
-  const educationEntriesById = useAppStore((state) => state.data.educationEntries)
-  const projectsById = useAppStore((state) => state.data.projects)
-  const additionalExperienceEntriesById = useAppStore((state) => state.data.additionalExperienceEntries)
-  const certificationsById = useAppStore((state) => state.data.certifications)
-  const referencesById = useAppStore((state) => state.data.references)
+export const ProfileChildEditors = ({
+  additionalExperienceModel,
+  achievementsModel,
+  certificationsModel,
+  educationModel,
+  experienceModel,
+  linksModel,
+  profileId,
+  projectsModel,
+  referencesModel,
+  skillsModel,
+}: {
+  additionalExperienceModel: ProfileEditorAdditionalExperienceModel
+  achievementsModel: ProfileEditorAchievementsModel
+  certificationsModel: ProfileEditorCertificationsModel
+  educationModel: ProfileEditorEducationModel
+  experienceModel: ProfileEditorExperienceModel
+  linksModel: ProfileEditorLinksModel
+  profileId: string
+  projectsModel: ProfileEditorProjectsModel
+  referencesModel: ProfileEditorReferencesModel
+  skillsModel: ProfileEditorSkillsModel
+}) => {
   const createProfileLink = useAppStore((state) => state.actions.createProfileLink)
   const createSkillCategory = useAppStore((state) => state.actions.createSkillCategory)
   const createAchievement = useAppStore((state) => state.actions.createAchievement)
@@ -1854,86 +1687,32 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
   const [newCertificationId, setNewCertificationId] = useState<string | null>(null)
   const [newReferenceId, setNewReferenceId] = useState<string | null>(null)
 
-  const profileLinkIds = useMemo(
-    () =>
-      Object.values(profileLinksById)
-        .filter((item) => item.profileId === profileId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [profileId, profileLinksById],
-  )
+  const { profileLinks } = linksModel
+  const { achievements } = achievementsModel
+  const { skillCategories } = skillsModel
+  const { experienceEntries } = experienceModel
+  const { educationEntries } = educationModel
+  const { projectEntries } = projectsModel
+  const { additionalExperienceEntries } = additionalExperienceModel
+  const { certifications } = certificationsModel
+  const { references } = referencesModel
 
-  const skillCategoryIds = useMemo(
-    () =>
-      Object.values(skillCategoriesById)
-        .filter((item) => item.profileId === profileId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [profileId, skillCategoriesById],
-  )
+  const profileLinkIds = useMemo(() => profileLinks.map((item) => item.id), [profileLinks])
+  const skillCategoryIds = useMemo(() => skillCategories.map((item) => item.category.id), [skillCategories])
 
-  const experienceEntryIds = useMemo(
-    () =>
-      Object.values(experienceEntriesById)
-        .filter((item) => item.profileId === profileId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [experienceEntriesById, profileId],
-  )
+  const experienceEntryIds = useMemo(() => experienceEntries.map((item) => item.entry.id), [experienceEntries])
 
-  const achievementIds = useMemo(
-    () =>
-      Object.values(achievementsById)
-        .filter((item) => item.profileId === profileId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [achievementsById, profileId],
-  )
+  const achievementIds = useMemo(() => achievements.map((item) => item.id), [achievements])
 
-  const educationEntryIds = useMemo(
-    () =>
-      Object.values(educationEntriesById)
-        .filter((item) => item.profileId === profileId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [educationEntriesById, profileId],
-  )
+  const educationEntryIds = useMemo(() => educationEntries.map((item) => item.entry.id), [educationEntries])
 
-  const projectIds = useMemo(
-    () =>
-      Object.values(projectsById)
-        .filter((item) => item.profileId === profileId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [profileId, projectsById],
-  )
+  const projectIds = useMemo(() => projectEntries.map((item) => item.entry.id), [projectEntries])
 
-  const additionalExperienceEntryIds = useMemo(
-    () =>
-      Object.values(additionalExperienceEntriesById)
-        .filter((item) => item.profileId === profileId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [additionalExperienceEntriesById, profileId],
-  )
+  const additionalExperienceEntryIds = useMemo(() => additionalExperienceEntries.map((item) => item.entry.id), [additionalExperienceEntries])
 
-  const certificationIds = useMemo(
-    () =>
-      Object.values(certificationsById)
-        .filter((item) => item.profileId === profileId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [certificationsById, profileId],
-  )
+  const certificationIds = useMemo(() => certifications.map((item) => item.id), [certifications])
 
-  const referenceIds = useMemo(
-    () =>
-      Object.values(referencesById)
-        .filter((item) => item.profileId === profileId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [profileId, referencesById],
-  )
+  const referenceIds = useMemo(() => references.map((item) => item.id), [references])
 
   const hasProfileLinks = profileLinkIds.length > 0
   const hasSkillCategories = skillCategoryIds.length > 0
@@ -1964,12 +1743,13 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       >
         {hasProfileLinks ? (
           <div className="space-y-4">
-            {profileLinkIds.map((id) => (
+            {profileLinks.map((profileLink) => (
               <ProfileLinkRow
-                key={id}
-                profileLinkId={id}
-                scrollIntoViewOnMount={id === newProfileLinkId}
-                {...(id === newProfileLinkId
+                key={profileLink.id}
+                orderedProfileLinkIds={profileLinkIds}
+                profileLink={profileLink}
+                scrollIntoViewOnMount={profileLink.id === newProfileLinkId}
+                {...(profileLink.id === newProfileLinkId
                   ? { onScrollIntoViewComplete: () => setNewProfileLinkId(null) }
                   : {})}
               />
@@ -1995,13 +1775,14 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       >
         {hasSkillCategories ? (
           <div className="space-y-4">
-            {skillCategoryIds.map((id) => (
+            {skillCategories.map((skillCategoryEntry) => (
               <SkillCategoryCard
-                defaultExpanded={id === newSkillCategoryId}
-                key={id}
-                scrollIntoViewOnMount={id === newSkillCategoryId}
-                skillCategoryId={id}
-                {...(id === newSkillCategoryId
+                defaultExpanded={skillCategoryEntry.category.id === newSkillCategoryId}
+                key={skillCategoryEntry.category.id}
+                orderedSkillCategoryIds={skillCategoryIds}
+                scrollIntoViewOnMount={skillCategoryEntry.category.id === newSkillCategoryId}
+                skillCategoryEntry={skillCategoryEntry}
+                {...(skillCategoryEntry.category.id === newSkillCategoryId
                   ? { onScrollIntoViewComplete: () => setNewSkillCategoryId(null) }
                   : {})}
               />
@@ -2027,13 +1808,14 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       >
         {hasAchievements ? (
           <div className="space-y-4">
-            {achievementIds.map((id) => (
+            {achievements.map((achievement) => (
               <AchievementCard
-                achievementId={id}
-                defaultExpanded={id === newAchievementId}
-                key={id}
-                scrollIntoViewOnMount={id === newAchievementId}
-                {...(id === newAchievementId
+                achievement={achievement}
+                defaultExpanded={achievement.id === newAchievementId}
+                key={achievement.id}
+                orderedAchievementIds={achievementIds}
+                scrollIntoViewOnMount={achievement.id === newAchievementId}
+                {...(achievement.id === newAchievementId
                   ? { onScrollIntoViewComplete: () => setNewAchievementId(null) }
                   : {})}
               />
@@ -2059,13 +1841,14 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       >
         {hasExperienceEntries ? (
           <div className="space-y-4">
-            {experienceEntryIds.map((id) => (
+            {experienceEntries.map((experienceEntry) => (
               <ExperienceCard
-                defaultExpanded={id === newExperienceEntryId}
-                entryId={id}
-                key={id}
-                scrollIntoViewOnMount={id === newExperienceEntryId}
-                {...(id === newExperienceEntryId
+                defaultExpanded={experienceEntry.entry.id === newExperienceEntryId}
+                experienceEntry={experienceEntry}
+                key={experienceEntry.entry.id}
+                orderedExperienceEntryIds={experienceEntryIds}
+                scrollIntoViewOnMount={experienceEntry.entry.id === newExperienceEntryId}
+                {...(experienceEntry.entry.id === newExperienceEntryId
                   ? { onScrollIntoViewComplete: () => setNewExperienceEntryId(null) }
                   : {})}
               />
@@ -2091,13 +1874,14 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       >
         {hasEducationEntries ? (
           <div className="space-y-4">
-            {educationEntryIds.map((id) => (
+            {educationEntries.map((educationEntry) => (
               <EducationCard
-                defaultExpanded={id === newEducationEntryId}
-                entryId={id}
-                key={id}
-                scrollIntoViewOnMount={id === newEducationEntryId}
-                {...(id === newEducationEntryId
+                defaultExpanded={educationEntry.entry.id === newEducationEntryId}
+                educationEntry={educationEntry}
+                key={educationEntry.entry.id}
+                orderedEducationEntryIds={educationEntryIds}
+                scrollIntoViewOnMount={educationEntry.entry.id === newEducationEntryId}
+                {...(educationEntry.entry.id === newEducationEntryId
                   ? { onScrollIntoViewComplete: () => setNewEducationEntryId(null) }
                   : {})}
               />
@@ -2123,13 +1907,14 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       >
         {hasProjects ? (
           <div className="space-y-4">
-            {projectIds.map((id) => (
+            {projectEntries.map((projectEntry) => (
               <ProjectCard
-                defaultExpanded={id === newProjectId}
-                key={id}
-                projectId={id}
-                scrollIntoViewOnMount={id === newProjectId}
-                {...(id === newProjectId
+                defaultExpanded={projectEntry.entry.id === newProjectId}
+                key={projectEntry.entry.id}
+                orderedProjectIds={projectIds}
+                projectEntry={projectEntry}
+                scrollIntoViewOnMount={projectEntry.entry.id === newProjectId}
+                {...(projectEntry.entry.id === newProjectId
                   ? { onScrollIntoViewComplete: () => setNewProjectId(null) }
                   : {})}
               />
@@ -2155,13 +1940,14 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       >
         {hasAdditionalExperienceEntries ? (
           <div className="space-y-4">
-            {additionalExperienceEntryIds.map((id) => (
+            {additionalExperienceEntries.map((additionalExperienceEntry) => (
               <AdditionalExperienceCard
-                additionalExperienceEntryId={id}
-                defaultExpanded={id === newAdditionalExperienceEntryId}
-                key={id}
-                scrollIntoViewOnMount={id === newAdditionalExperienceEntryId}
-                {...(id === newAdditionalExperienceEntryId
+                additionalExperienceEntry={additionalExperienceEntry}
+                defaultExpanded={additionalExperienceEntry.entry.id === newAdditionalExperienceEntryId}
+                key={additionalExperienceEntry.entry.id}
+                orderedAdditionalExperienceEntryIds={additionalExperienceEntryIds}
+                scrollIntoViewOnMount={additionalExperienceEntry.entry.id === newAdditionalExperienceEntryId}
+                {...(additionalExperienceEntry.entry.id === newAdditionalExperienceEntryId
                   ? { onScrollIntoViewComplete: () => setNewAdditionalExperienceEntryId(null) }
                   : {})}
               />
@@ -2187,13 +1973,14 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       >
         {hasCertifications ? (
           <div className="space-y-4">
-            {certificationIds.map((id) => (
+            {certifications.map((certification) => (
               <CertificationCard
-                certificationId={id}
-                defaultExpanded={id === newCertificationId}
-                key={id}
-                scrollIntoViewOnMount={id === newCertificationId}
-                {...(id === newCertificationId
+                certification={certification}
+                defaultExpanded={certification.id === newCertificationId}
+                key={certification.id}
+                orderedCertificationIds={certificationIds}
+                scrollIntoViewOnMount={certification.id === newCertificationId}
+                {...(certification.id === newCertificationId
                   ? { onScrollIntoViewComplete: () => setNewCertificationId(null) }
                   : {})}
               />
@@ -2219,13 +2006,14 @@ export const ProfileChildEditors = ({ profileId }: { profileId: string }) => {
       >
         {hasReferences ? (
           <div className="space-y-4">
-            {referenceIds.map((id) => (
+            {references.map((reference) => (
               <ReferenceCard
-                defaultExpanded={id === newReferenceId}
-                key={id}
-                referenceId={id}
-                scrollIntoViewOnMount={id === newReferenceId}
-                {...(id === newReferenceId
+                defaultExpanded={reference.id === newReferenceId}
+                key={reference.id}
+                orderedReferenceIds={referenceIds}
+                reference={reference}
+                scrollIntoViewOnMount={reference.id === newReferenceId}
+                {...(reference.id === newReferenceId
                   ? { onScrollIntoViewComplete: () => setNewReferenceId(null) }
                   : {})}
               />

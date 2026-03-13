@@ -4,9 +4,16 @@ import { Link } from 'react-router-dom'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { AddIconButton, DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
 import { ReorderButtons } from '../../components/ReorderButtons'
-import type { JobEditorLinksModel, JobEditorProfilesModel } from '../../features/jobs/use-job-editor-model'
+import type { JobDetailInterviewDto } from '../../api/read-models'
+import type {
+  JobEditorApplicationQuestionsModel,
+  JobEditorContactsModel,
+  JobEditorInterviewsModel,
+  JobEditorLinksModel,
+  JobEditorProfilesModel,
+} from '../../features/jobs/use-job-editor-model'
 import { useAppStore } from '../../store/app-store'
-import type { ContactRelationshipType, JobLink, Profile } from '../../types/state'
+import type { ApplicationQuestion, ContactRelationshipType, JobContact, JobLink, Profile } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
 
@@ -334,50 +341,36 @@ const JobLinkCard = ({
 }
 
 const JobContactCard = ({
-  jobContactId,
+  jobContact,
+  orderedJobContactIds,
   defaultExpanded = false,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  jobContactId: string
+  jobContact: JobContact
+  orderedJobContactIds: string[]
   defaultExpanded?: boolean
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const contact = useAppStore((state) => state.data.jobContacts[jobContactId])
-  const jobContactsById = useAppStore((state) => state.data.jobContacts)
   const updateJobContact = useAppStore((state) => state.actions.updateJobContact)
   const deleteJobContact = useAppStore((state) => state.actions.deleteJobContact)
   const reorderJobContacts = useAppStore((state) => state.actions.reorderJobContacts)
-  const [draft, setDraft] = useState(contact)
+  const [draft, setDraft] = useState(jobContact)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
   })
 
-  const jobContactIds = useMemo(
-    () =>
-      contact
-        ? Object.values(jobContactsById)
-            .filter((item) => item.jobId === contact.jobId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [contact, jobContactsById],
-  )
-  const jobContactIndex = jobContactIds.indexOf(jobContactId)
+  const jobContactIndex = orderedJobContactIds.indexOf(jobContact.id)
 
   useEffect(() => {
-    setDraft(contact)
-  }, [contact])
+    setDraft(jobContact)
+  }, [jobContact])
 
-  if (!contact || !draft) {
-    return null
-  }
-
-  const commitContactChanges = (changes: Partial<typeof contact>) => {
+  const commitContactChanges = (changes: Partial<JobContact>) => {
     void updateJobContact({
-      jobContactId: contact.id,
+      jobContactId: jobContact.id,
       changes,
     })
   }
@@ -395,31 +388,31 @@ const JobContactCard = ({
         headerActions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
-              canMoveDown={jobContactIds.length > 1}
-              canMoveUp={jobContactIds.length > 1}
+              canMoveDown={orderedJobContactIds.length > 1}
+              canMoveUp={orderedJobContactIds.length > 1}
               onMoveDown={() =>
                 reorderJobContacts({
-                  jobId: contact.jobId,
-                  orderedIds: moveOrderedItem(jobContactIds, jobContactIndex, 1),
+                  jobId: jobContact.jobId,
+                  orderedIds: moveOrderedItem(orderedJobContactIds, jobContactIndex, 1),
                 })
               }
               onMoveUp={() =>
                 reorderJobContacts({
-                  jobId: contact.jobId,
-                  orderedIds: moveOrderedItem(jobContactIds, jobContactIndex, -1),
+                  jobId: jobContact.jobId,
+                  orderedIds: moveOrderedItem(orderedJobContactIds, jobContactIndex, -1),
                 })
               }
             />
-            <DeleteIconButton label="Delete contact" onDelete={() => void deleteJobContact(contact.id)} />
+            <DeleteIconButton label="Delete contact" onDelete={() => void deleteJobContact(jobContact.id)} />
           </div>
         }
         summary={summary}
-        title={draft.name || contact.name || 'Contact'}
+        title={draft.name || jobContact.name || 'Contact'}
       >
         <div className="grid gap-4 xl:grid-cols-3">
-        <TextField label="Name" value={draft.name} onBlur={() => draft.name !== contact.name && commitContactChanges({ name: draft.name })} onChange={(value) => setDraft({ ...draft, name: value })} />
-        <TextField label="Title" value={draft.title} onBlur={() => draft.title !== contact.title && commitContactChanges({ title: draft.title })} onChange={(value) => setDraft({ ...draft, title: value })} />
-        <TextField label="Company" value={draft.company} onBlur={() => draft.company !== contact.company && commitContactChanges({ company: draft.company })} onChange={(value) => setDraft({ ...draft, company: value })} />
+        <TextField label="Name" value={draft.name} onBlur={() => draft.name !== jobContact.name && commitContactChanges({ name: draft.name })} onChange={(value) => setDraft({ ...draft, name: value })} />
+        <TextField label="Title" value={draft.title} onBlur={() => draft.title !== jobContact.title && commitContactChanges({ title: draft.title })} onChange={(value) => setDraft({ ...draft, title: value })} />
+        <TextField label="Company" value={draft.company} onBlur={() => draft.company !== jobContact.company && commitContactChanges({ company: draft.company })} onChange={(value) => setDraft({ ...draft, company: value })} />
         <SelectField
           label="Relationship type"
           options={[
@@ -430,18 +423,18 @@ const JobContactCard = ({
             { value: 'other', label: 'Other' },
           ]}
           value={draft.relationshipType}
-          onBlur={() => draft.relationshipType !== contact.relationshipType && commitContactChanges({ relationshipType: draft.relationshipType })}
+          onBlur={() => draft.relationshipType !== jobContact.relationshipType && commitContactChanges({ relationshipType: draft.relationshipType })}
           onChange={(value) => setDraft({ ...draft, relationshipType: value as ContactRelationshipType })}
         />
-        <TextField label="Email" type="email" value={draft.email} onBlur={() => draft.email !== contact.email && commitContactChanges({ email: draft.email })} onChange={(value) => setDraft({ ...draft, email: value })} />
-        <TextField label="Phone" type="tel" value={draft.phone} onBlur={() => draft.phone !== contact.phone && commitContactChanges({ phone: draft.phone })} onChange={(value) => setDraft({ ...draft, phone: value })} />
-        <TextField label="LinkedIn URL" type="url" value={draft.linkedinUrl} onBlur={() => draft.linkedinUrl !== contact.linkedinUrl && commitContactChanges({ linkedinUrl: draft.linkedinUrl })} onChange={(value) => setDraft({ ...draft, linkedinUrl: value })} />
-        <TextField label="Address line 1" value={draft.addressLine1} onBlur={() => draft.addressLine1 !== contact.addressLine1 && commitContactChanges({ addressLine1: draft.addressLine1 })} onChange={(value) => setDraft({ ...draft, addressLine1: value })} />
-        <TextField label="Address line 2" value={draft.addressLine2} onBlur={() => draft.addressLine2 !== contact.addressLine2 && commitContactChanges({ addressLine2: draft.addressLine2 })} onChange={(value) => setDraft({ ...draft, addressLine2: value })} />
-        <TextField label="Address line 3" value={draft.addressLine3} onBlur={() => draft.addressLine3 !== contact.addressLine3 && commitContactChanges({ addressLine3: draft.addressLine3 })} onChange={(value) => setDraft({ ...draft, addressLine3: value })} />
-        <TextField label="Address line 4" value={draft.addressLine4} onBlur={() => draft.addressLine4 !== contact.addressLine4 && commitContactChanges({ addressLine4: draft.addressLine4 })} onChange={(value) => setDraft({ ...draft, addressLine4: value })} />
+        <TextField label="Email" type="email" value={draft.email} onBlur={() => draft.email !== jobContact.email && commitContactChanges({ email: draft.email })} onChange={(value) => setDraft({ ...draft, email: value })} />
+        <TextField label="Phone" type="tel" value={draft.phone} onBlur={() => draft.phone !== jobContact.phone && commitContactChanges({ phone: draft.phone })} onChange={(value) => setDraft({ ...draft, phone: value })} />
+        <TextField label="LinkedIn URL" type="url" value={draft.linkedinUrl} onBlur={() => draft.linkedinUrl !== jobContact.linkedinUrl && commitContactChanges({ linkedinUrl: draft.linkedinUrl })} onChange={(value) => setDraft({ ...draft, linkedinUrl: value })} />
+        <TextField label="Address line 1" value={draft.addressLine1} onBlur={() => draft.addressLine1 !== jobContact.addressLine1 && commitContactChanges({ addressLine1: draft.addressLine1 })} onChange={(value) => setDraft({ ...draft, addressLine1: value })} />
+        <TextField label="Address line 2" value={draft.addressLine2} onBlur={() => draft.addressLine2 !== jobContact.addressLine2 && commitContactChanges({ addressLine2: draft.addressLine2 })} onChange={(value) => setDraft({ ...draft, addressLine2: value })} />
+        <TextField label="Address line 3" value={draft.addressLine3} onBlur={() => draft.addressLine3 !== jobContact.addressLine3 && commitContactChanges({ addressLine3: draft.addressLine3 })} onChange={(value) => setDraft({ ...draft, addressLine3: value })} />
+        <TextField label="Address line 4" value={draft.addressLine4} onBlur={() => draft.addressLine4 !== jobContact.addressLine4 && commitContactChanges({ addressLine4: draft.addressLine4 })} onChange={(value) => setDraft({ ...draft, addressLine4: value })} />
         <div className="xl:col-span-3">
-          <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== contact.notes && commitContactChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
+          <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== jobContact.notes && commitContactChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
         </div>
         </div>
       </CollapsiblePanel>
@@ -450,25 +443,24 @@ const JobContactCard = ({
 }
 
 const InterviewCard = ({
-  interviewId,
+  interviewEntry,
+  allJobContacts,
   defaultExpanded = false,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  interviewId: string
+  interviewEntry: JobDetailInterviewDto
+  allJobContacts: JobContact[]
   defaultExpanded?: boolean
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const interview = useAppStore((state) => state.data.interviews[interviewId])
-  const interviewContactsById = useAppStore((state) => state.data.interviewContacts)
-  const jobContactsById = useAppStore((state) => state.data.jobContacts)
   const updateInterview = useAppStore((state) => state.actions.updateInterview)
   const deleteInterview = useAppStore((state) => state.actions.deleteInterview)
   const addInterviewContact = useAppStore((state) => state.actions.addInterviewContact)
   const removeInterviewContact = useAppStore((state) => state.actions.removeInterviewContact)
   const reorderInterviewContacts = useAppStore((state) => state.actions.reorderInterviewContacts)
-  const [draft, setDraft] = useState(interview)
+  const [draft, setDraft] = useState(interviewEntry.interview)
   const [selectedContactId, setSelectedContactId] = useState('')
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
@@ -476,35 +468,27 @@ const InterviewCard = ({
   })
 
   useEffect(() => {
-    setDraft(interview)
-  }, [interview])
+    setDraft(interviewEntry.interview)
+  }, [interviewEntry])
 
-  const interviewContactIds = useMemo(
+  const interview = interviewEntry.interview
+  const associatedContacts = useMemo(
     () =>
-      interview
-        ? Object.values(interviewContactsById)
-            .filter((item) => item.interviewId === interview.id)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [interview, interviewContactsById],
+      interviewEntry.contacts
+        .filter((item) => item.jobContact !== null)
+        .map((item) => ({
+          association: item.interviewContact,
+          contact: item.jobContact as JobContact,
+        })),
+    [interviewEntry.contacts],
   )
+  const interviewContactIds = useMemo(() => associatedContacts.map((item) => item.association.id), [associatedContacts])
 
   const availableContacts = useMemo(() => {
-    if (!interview) {
-      return []
-    }
+    const associatedContactIds = new Set(associatedContacts.map((item) => item.contact.id))
 
-    const associatedContactIds = new Set(
-      Object.values(interviewContactsById)
-        .filter((item) => item.interviewId === interview.id)
-        .map((item) => item.jobContactId),
-    )
-
-    return Object.values(jobContactsById)
-      .filter((contact) => contact.jobId === interview.jobId && !associatedContactIds.has(contact.id))
-      .sort((left, right) => left.sortOrder - right.sortOrder)
-  }, [interview, interviewContactsById, jobContactsById])
+    return allJobContacts.filter((contact) => !associatedContactIds.has(contact.id))
+  }, [allJobContacts, associatedContacts])
 
   useEffect(() => {
     setSelectedContactId((current) => {
@@ -516,28 +500,12 @@ const InterviewCard = ({
     })
   }, [availableContacts])
 
-  if (!interview || !draft) {
-    return null
-  }
-
   const commitInterviewChanges = (changes: Partial<typeof interview>) => {
     void updateInterview({
       interviewId: interview.id,
       changes,
     })
   }
-
-  const associatedContacts = interviewContactIds
-    .map((associationId) => {
-      const association = interviewContactsById[associationId]
-      const contact = association ? jobContactsById[association.jobContactId] : null
-
-      return association && contact ? { association, contact } : null
-    })
-    .filter(Boolean) as Array<{
-    association: NonNullable<(typeof interviewContactsById)[string]>
-    contact: NonNullable<(typeof jobContactsById)[string]>
-  }>
 
   return (
     <div ref={cardRef} style={cardScrollStyle}>
@@ -631,18 +599,18 @@ const InterviewCard = ({
 }
 
 const ApplicationQuestionCard = ({
-  applicationQuestionId,
+  applicationQuestion,
+  orderedApplicationQuestionIds,
   defaultExpanded = false,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  applicationQuestionId: string
+  applicationQuestion: ApplicationQuestion
+  orderedApplicationQuestionIds: string[]
   defaultExpanded?: boolean
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const applicationQuestion = useAppStore((state) => state.data.applicationQuestions[applicationQuestionId])
-  const applicationQuestionsById = useAppStore((state) => state.data.applicationQuestions)
   const updateApplicationQuestion = useAppStore((state) => state.actions.updateApplicationQuestion)
   const deleteApplicationQuestion = useAppStore((state) => state.actions.deleteApplicationQuestion)
   const reorderApplicationQuestions = useAppStore((state) => state.actions.reorderApplicationQuestions)
@@ -652,27 +620,13 @@ const ApplicationQuestionCard = ({
     onComplete: onScrollIntoViewComplete,
   })
 
-  const applicationQuestionIds = useMemo(
-    () =>
-      applicationQuestion
-        ? Object.values(applicationQuestionsById)
-            .filter((item) => item.jobId === applicationQuestion.jobId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [applicationQuestion, applicationQuestionsById],
-  )
-  const applicationQuestionIndex = applicationQuestionIds.indexOf(applicationQuestionId)
+  const applicationQuestionIndex = orderedApplicationQuestionIds.indexOf(applicationQuestion.id)
 
   useEffect(() => {
     setDraft(applicationQuestion)
   }, [applicationQuestion])
 
-  if (!applicationQuestion || !draft) {
-    return null
-  }
-
-  const commitQuestionChanges = (changes: Partial<typeof applicationQuestion>) => {
+  const commitQuestionChanges = (changes: Partial<ApplicationQuestion>) => {
     void updateApplicationQuestion({
       applicationQuestionId: applicationQuestion.id,
       changes,
@@ -689,18 +643,18 @@ const ApplicationQuestionCard = ({
         headerActions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
-              canMoveDown={applicationQuestionIds.length > 1}
-              canMoveUp={applicationQuestionIds.length > 1}
+              canMoveDown={orderedApplicationQuestionIds.length > 1}
+              canMoveUp={orderedApplicationQuestionIds.length > 1}
               onMoveDown={() =>
                 reorderApplicationQuestions({
                   jobId: applicationQuestion.jobId,
-                  orderedIds: moveOrderedItem(applicationQuestionIds, applicationQuestionIndex, 1),
+                  orderedIds: moveOrderedItem(orderedApplicationQuestionIds, applicationQuestionIndex, 1),
                 })
               }
               onMoveUp={() =>
                 reorderApplicationQuestions({
                   jobId: applicationQuestion.jobId,
-                  orderedIds: moveOrderedItem(applicationQuestionIds, applicationQuestionIndex, -1),
+                  orderedIds: moveOrderedItem(orderedApplicationQuestionIds, applicationQuestionIndex, -1),
                 })
               }
             />
@@ -720,17 +674,20 @@ const ApplicationQuestionCard = ({
 }
 
 export const JobChildEditors = ({
+  applicationQuestionsModel,
+  contactsModel,
+  interviewsModel,
   jobId,
   linksModel,
   profilesModel,
 }: {
+  applicationQuestionsModel: JobEditorApplicationQuestionsModel
+  contactsModel: JobEditorContactsModel
+  interviewsModel: JobEditorInterviewsModel
   jobId: string
   linksModel: JobEditorLinksModel
   profilesModel: JobEditorProfilesModel
 }) => {
-  const jobContactsById = useAppStore((state) => state.data.jobContacts)
-  const interviewsById = useAppStore((state) => state.data.interviews)
-  const applicationQuestionsById = useAppStore((state) => state.data.applicationQuestions)
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
   const createJobLink = useAppStore((state) => state.actions.createJobLink)
   const createJobContact = useAppStore((state) => state.actions.createJobContact)
@@ -745,49 +702,14 @@ export const JobChildEditors = ({
 
   const { attachedProfiles, baseProfiles } = profilesModel
   const { jobLinks } = linksModel
+  const { jobContacts } = contactsModel
+  const { interviews } = interviewsModel
+  const { applicationQuestions } = applicationQuestionsModel
 
   const jobLinkIds = useMemo(() => jobLinks.map((item) => item.id), [jobLinks])
-
-  const jobContactIds = useMemo(
-    () =>
-      Object.values(jobContactsById)
-        .filter((item) => item.jobId === jobId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [jobContactsById, jobId],
-  )
-
-  const interviewIds = useMemo(
-    () =>
-      Object.values(interviewsById)
-        .filter((item) => item.jobId === jobId)
-        .sort((left, right) => {
-          if (!left.startAt && !right.startAt) {
-            return 0
-          }
-
-          if (!left.startAt) {
-            return 1
-          }
-
-          if (!right.startAt) {
-            return -1
-          }
-
-          return left.startAt.localeCompare(right.startAt)
-        })
-        .map((item) => item.id),
-    [interviewsById, jobId],
-  )
-
-  const applicationQuestionIds = useMemo(
-    () =>
-      Object.values(applicationQuestionsById)
-        .filter((item) => item.jobId === jobId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [applicationQuestionsById, jobId],
-  )
+  const jobContactIds = useMemo(() => jobContacts.map((item) => item.id), [jobContacts])
+  const interviewIds = useMemo(() => interviews.map((item) => item.interview.id), [interviews])
+  const applicationQuestionIds = useMemo(() => applicationQuestions.map((item) => item.id), [applicationQuestions])
 
   const hasJobLinks = jobLinkIds.length > 0
   const hasJobContacts = jobContactIds.length > 0
@@ -914,13 +836,14 @@ export const JobChildEditors = ({
       >
         {hasApplicationQuestions ? (
           <div className="space-y-4">
-            {applicationQuestionIds.map((id) => (
+            {applicationQuestions.map((applicationQuestion) => (
               <ApplicationQuestionCard
-                applicationQuestionId={id}
-                defaultExpanded={id === newApplicationQuestionId}
-                key={id}
-                scrollIntoViewOnMount={id === newApplicationQuestionId}
-                {...(id === newApplicationQuestionId
+                applicationQuestion={applicationQuestion}
+                defaultExpanded={applicationQuestion.id === newApplicationQuestionId}
+                key={applicationQuestion.id}
+                orderedApplicationQuestionIds={applicationQuestionIds}
+                scrollIntoViewOnMount={applicationQuestion.id === newApplicationQuestionId}
+                {...(applicationQuestion.id === newApplicationQuestionId
                   ? { onScrollIntoViewComplete: () => setNewApplicationQuestionId(null) }
                   : {})}
               />
@@ -946,13 +869,14 @@ export const JobChildEditors = ({
       >
         {hasJobContacts ? (
           <div className="space-y-4">
-            {jobContactIds.map((id) => (
+            {jobContacts.map((jobContact) => (
               <JobContactCard
-                defaultExpanded={id === newJobContactId}
-                jobContactId={id}
-                key={id}
-                scrollIntoViewOnMount={id === newJobContactId}
-                {...(id === newJobContactId
+                defaultExpanded={jobContact.id === newJobContactId}
+                jobContact={jobContact}
+                key={jobContact.id}
+                orderedJobContactIds={jobContactIds}
+                scrollIntoViewOnMount={jobContact.id === newJobContactId}
+                {...(jobContact.id === newJobContactId
                   ? { onScrollIntoViewComplete: () => setNewJobContactId(null) }
                   : {})}
               />
@@ -978,13 +902,14 @@ export const JobChildEditors = ({
       >
         {hasInterviews ? (
           <div className="space-y-4">
-            {interviewIds.map((id) => (
+            {interviews.map((interviewEntry) => (
               <InterviewCard
-                defaultExpanded={id === newInterviewId}
-                interviewId={id}
-                key={id}
-                scrollIntoViewOnMount={id === newInterviewId}
-                {...(id === newInterviewId
+                allJobContacts={jobContacts}
+                defaultExpanded={interviewEntry.interview.id === newInterviewId}
+                interviewEntry={interviewEntry}
+                key={interviewEntry.interview.id}
+                scrollIntoViewOnMount={interviewEntry.interview.id === newInterviewId}
+                {...(interviewEntry.interview.id === newInterviewId
                   ? { onScrollIntoViewComplete: () => setNewInterviewId(null) }
                   : {})}
               />

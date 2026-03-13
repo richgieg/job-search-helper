@@ -2,7 +2,6 @@ import type {
   Achievement,
   AdditionalExperienceBullet,
   AdditionalExperienceEntry,
-  AppDataState,
   ApplicationQuestion,
   Certification,
   EducationBullet,
@@ -74,7 +73,6 @@ export interface JobDetailDto {
   jobContacts: JobContact[]
   interviews: JobDetailInterviewDto[]
   applicationQuestions: ApplicationQuestion[]
-  cacheData: Partial<AppDataState>
 }
 
 export interface ProfilesListItemDto {
@@ -133,7 +131,6 @@ export interface ProfileDetailDto {
   additionalExperienceEntries: ProfileDetailAdditionalExperienceEntryDto[]
   certifications: Certification[]
   references: Reference[]
-  cacheData: Partial<AppDataState>
 }
 
 export type ProfileDocumentDto = ProfileDocumentData

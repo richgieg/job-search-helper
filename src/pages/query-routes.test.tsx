@@ -247,7 +247,7 @@ describe('query-backed routes', () => {
     expect(screen.getByText('Northwind Labs')).toBeInTheDocument()
   })
 
-  it('renders the job detail route and bridges child editor data into the store', async () => {
+  it('renders the job detail route from query-backed detail data', async () => {
     renderRoute({
       element: <JobPage />,
       path: '/jobs/:jobId',
@@ -255,11 +255,7 @@ describe('query-backed routes', () => {
     })
 
     expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
-
-    await waitFor(() => {
-      expect(useAppStore.getState().data.profiles.profile_1?.name).toBe('Tailored Profile')
-    })
-
+    expect(useAppStore.getState().data.profiles.profile_1).toBeUndefined()
     expect(screen.getByText('Applied')).toBeInTheDocument()
   })
 
@@ -327,7 +323,7 @@ describe('query-backed routes', () => {
     })
   })
 
-  it('renders the profile detail route and bridges profile editor data into the store', async () => {
+  it('renders the profile detail route from query-backed detail data', async () => {
     renderRoute({
       element: <ProfilePage />,
       path: '/profiles/:profileId',
@@ -336,10 +332,7 @@ describe('query-backed routes', () => {
 
     expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
     expect(screen.getByText('Job profile for Senior Engineer at Example Co')).toBeInTheDocument()
-
-    await waitFor(() => {
-      expect(useAppStore.getState().data.experienceEntries.experience_1?.company).toBe('Example Co')
-    })
+    expect(useAppStore.getState().data.experienceEntries.experience_1).toBeUndefined()
   })
 
   it('renders the profile not-found state when the requested profile does not exist', async () => {

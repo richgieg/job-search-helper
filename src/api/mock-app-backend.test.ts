@@ -166,7 +166,7 @@ const createSeedData = () => {
 }
 
 describe('mock app backend read models', () => {
-  it('builds a job detail bundle with cache data', async () => {
+  it('builds a job detail bundle', async () => {
     const backend = new MockAppBackend({ initialData: createSeedData() })
 
     const result = await backend.getJobDetail('job_1')
@@ -178,11 +178,9 @@ describe('mock app backend read models', () => {
     expect(result?.jobContacts.map((contact) => contact.id)).toEqual(['job_contact_1'])
     expect(result?.interviews[0]?.contacts[0]?.jobContact?.id).toBe('job_contact_1')
     expect(result?.applicationQuestions.map((question) => question.id)).toEqual(['application_question_1'])
-    expect(result?.cacheData.jobs?.job_1?.id).toBe('job_1')
-    expect(result?.cacheData.interviews?.interview_1?.id).toBe('interview_1')
   })
 
-  it('builds a profile detail bundle with cache data', async () => {
+  it('builds a profile detail bundle', async () => {
     const backend = new MockAppBackend({ initialData: createSeedData() })
 
     const result = await backend.getProfileDetail('profile_1')
@@ -193,8 +191,6 @@ describe('mock app backend read models', () => {
     expect(result?.skillCategories[0]?.skills.map((skill) => skill.id)).toEqual(['skill_1'])
     expect(result?.achievements.map((achievement) => achievement.id)).toEqual(['achievement_1'])
     expect(result?.experienceEntries[0]?.bullets.map((bullet) => bullet.id)).toEqual(['experience_bullet_1'])
-    expect(result?.cacheData.profiles?.profile_1?.id).toBe('profile_1')
-    expect(result?.cacheData.skills?.skill_1?.id).toBe('skill_1')
   })
 
   it('builds profile document data from the focused document read', async () => {

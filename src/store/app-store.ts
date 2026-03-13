@@ -66,7 +66,6 @@ interface AppStoreState {
   ui: AppUiState
   status: AppStoreStatus
   actions: {
-    mergeDataSnapshot: (snapshot: Partial<AppDataState>) => void
     createBaseProfile: (name: string) => Promise<Id | null>
     updateProfile: (input: UpdateProfileInput) => Promise<void>
     setDocumentHeaderTemplate: (input: SetDocumentHeaderTemplateInput) => Promise<void>
@@ -168,32 +167,6 @@ interface AppStoreState {
 const createInitialStoreStatus = (): AppStoreStatus => ({
   saving: 'idle',
   errorMessage: null,
-})
-
-const mergeDataSnapshot = (current: AppDataState, snapshot: Partial<AppDataState>): AppDataState => ({
-  ...current,
-  ...snapshot,
-  profiles: { ...current.profiles, ...snapshot.profiles },
-  profileLinks: { ...current.profileLinks, ...snapshot.profileLinks },
-  skillCategories: { ...current.skillCategories, ...snapshot.skillCategories },
-  skills: { ...current.skills, ...snapshot.skills },
-  achievements: { ...current.achievements, ...snapshot.achievements },
-  experienceEntries: { ...current.experienceEntries, ...snapshot.experienceEntries },
-  experienceBullets: { ...current.experienceBullets, ...snapshot.experienceBullets },
-  educationEntries: { ...current.educationEntries, ...snapshot.educationEntries },
-  educationBullets: { ...current.educationBullets, ...snapshot.educationBullets },
-  projects: { ...current.projects, ...snapshot.projects },
-  projectBullets: { ...current.projectBullets, ...snapshot.projectBullets },
-  additionalExperienceEntries: { ...current.additionalExperienceEntries, ...snapshot.additionalExperienceEntries },
-  additionalExperienceBullets: { ...current.additionalExperienceBullets, ...snapshot.additionalExperienceBullets },
-  certifications: { ...current.certifications, ...snapshot.certifications },
-  references: { ...current.references, ...snapshot.references },
-  jobs: { ...current.jobs, ...snapshot.jobs },
-  jobLinks: { ...current.jobLinks, ...snapshot.jobLinks },
-  jobContacts: { ...current.jobContacts, ...snapshot.jobContacts },
-  interviews: { ...current.interviews, ...snapshot.interviews },
-  interviewContacts: { ...current.interviewContacts, ...snapshot.interviewContacts },
-  applicationQuestions: { ...current.applicationQuestions, ...snapshot.applicationQuestions },
 })
 
  export const useAppStore = create<AppStoreState>((set, get) => {
@@ -307,11 +280,6 @@ const mergeDataSnapshot = (current: AppDataState, snapshot: Partial<AppDataState
   ui: createDefaultUiState(),
   status: createInitialStoreStatus(),
   actions: {
-    mergeDataSnapshot: (snapshot) =>
-      set((state) => ({
-        ...state,
-        data: mergeDataSnapshot(state.data, snapshot),
-      })),
     createBaseProfile: async (name) => {
       const result = await runPersistedProfileMutation(
         () => getAppApiClient().createBaseProfile(name),

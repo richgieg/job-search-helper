@@ -122,9 +122,6 @@ const createJobDraft = (job: Job): JobDraftState => ({
 
 export const JobPage = () => {
   const { jobId = '' } = useParams()
-  const cachedJob = useAppStore((state) => state.data.jobs[jobId])
-  const interviewsById = useAppStore((state) => state.data.interviews)
-  const mergeDataSnapshot = useAppStore((state) => state.actions.mergeDataSnapshot)
   const setJobAppliedAt = useAppStore((state) => state.actions.setJobAppliedAt)
   const clearJobAppliedAt = useAppStore((state) => state.actions.clearJobAppliedAt)
   const setJobFinalOutcome = useAppStore((state) => state.actions.setJobFinalOutcome)
@@ -133,11 +130,8 @@ export const JobPage = () => {
   const { data: jobDetail, error, isLoading } = useJobDetailQuery(jobId)
   const editorModel = useJobEditorModel(jobDetail)
   const [draft, setDraft] = useState<JobDraftState | null>(null)
-  const job = jobDetail?.job ?? cachedJob
-  const interviewCount = useMemo(
-    () => jobDetail?.interviews.length ?? Object.values(interviewsById).filter((interview) => interview.jobId === jobId).length,
-    [interviewsById, jobDetail?.interviews.length, jobId],
-  )
+  const job = jobDetail?.job
+  const interviewCount = useMemo(() => jobDetail?.interviews.length ?? 0, [jobDetail?.interviews.length])
   const computedStatus = useMemo(
     () =>
       jobDetail?.computedStatus ??
@@ -148,12 +142,6 @@ export const JobPage = () => {
       }),
     [interviewCount, job?.appliedAt, job?.finalOutcome, jobDetail?.computedStatus],
   )
-
-  useEffect(() => {
-    if (jobDetail?.cacheData) {
-      mergeDataSnapshot(jobDetail.cacheData)
-    }
-  }, [jobDetail?.cacheData, mergeDataSnapshot])
 
   useEffect(() => {
     if (!job) {
@@ -168,7 +156,7 @@ export const JobPage = () => {
     return <p className="text-sm text-app-text-subtle">Loading job...</p>
   }
 
-  if (error && !jobDetail && !job) {
+  if (error && !job) {
     return (
       <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft p-8 shadow-sm">
         <h1 className="text-2xl font-semibold text-app-heading">Unable to load job</h1>
@@ -345,7 +333,14 @@ export const JobPage = () => {
         </div>
       </CollapsiblePanel>
 
-      <JobChildEditors jobId={job.id} linksModel={editorModel.links} profilesModel={editorModel.profiles} />
+      <JobChildEditors
+        applicationQuestionsModel={editorModel.applicationQuestions}
+        contactsModel={editorModel.contacts}
+        interviewsModel={editorModel.interviews}
+        jobId={job.id}
+        linksModel={editorModel.links}
+        profilesModel={editorModel.profiles}
+      />
     </div>
   )
 }

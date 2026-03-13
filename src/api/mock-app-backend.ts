@@ -278,20 +278,6 @@ export class MockAppBackend implements AppDataService {
       .filter((question) => question.jobId === jobId)
       .sort((left, right) => left.sortOrder - right.sortOrder)
 
-    const cacheData: Partial<AppDataState> = {
-      jobs: {
-        [job.id]: job,
-      },
-      profiles: Object.fromEntries(relatedProfiles.map((profile) => [profile.id, profile])),
-      jobLinks: Object.fromEntries(jobLinks.map((link) => [link.id, link])),
-      jobContacts: Object.fromEntries(jobContacts.map((contact) => [contact.id, contact])),
-      interviews: Object.fromEntries(interviews.map(({ interview }) => [interview.id, interview])),
-      interviewContacts: Object.fromEntries(
-        interviews.flatMap(({ contacts }) => contacts.map(({ interviewContact }) => [interviewContact.id, interviewContact] as const)),
-      ),
-      applicationQuestions: Object.fromEntries(applicationQuestions.map((question) => [question.id, question])),
-    }
-
     return {
       job,
       computedStatus: getJobComputedStatus({
@@ -304,7 +290,6 @@ export class MockAppBackend implements AppDataService {
       jobContacts,
       interviews,
       applicationQuestions,
-      cacheData,
     }
   }
 
@@ -383,35 +368,6 @@ export class MockAppBackend implements AppDataService {
       .filter((reference) => reference.profileId === profileId)
       .sort((left, right) => left.sortOrder - right.sortOrder)
 
-    const cacheData: Partial<AppDataState> = {
-      profiles: {
-        [profile.id]: profile,
-      },
-      ...(attachedJob
-        ? {
-            jobs: {
-              [attachedJob.id]: attachedJob,
-            },
-          }
-        : {}),
-      profileLinks: Object.fromEntries(profileLinks.map((link) => [link.id, link])),
-      skillCategories: Object.fromEntries(skillCategories.map(({ category }) => [category.id, category])),
-      skills: Object.fromEntries(skillCategories.flatMap(({ skills }) => skills.map((skill) => [skill.id, skill] as const))),
-      achievements: Object.fromEntries(achievements.map((achievement) => [achievement.id, achievement])),
-      experienceEntries: Object.fromEntries(experienceEntries.map(({ entry }) => [entry.id, entry])),
-      experienceBullets: Object.fromEntries(experienceEntries.flatMap(({ bullets }) => bullets.map((bullet) => [bullet.id, bullet] as const))),
-      educationEntries: Object.fromEntries(educationEntries.map(({ entry }) => [entry.id, entry])),
-      educationBullets: Object.fromEntries(educationEntries.flatMap(({ bullets }) => bullets.map((bullet) => [bullet.id, bullet] as const))),
-      projects: Object.fromEntries(projectEntries.map(({ entry }) => [entry.id, entry])),
-      projectBullets: Object.fromEntries(projectEntries.flatMap(({ bullets }) => bullets.map((bullet) => [bullet.id, bullet] as const))),
-      additionalExperienceEntries: Object.fromEntries(additionalExperienceEntries.map(({ entry }) => [entry.id, entry])),
-      additionalExperienceBullets: Object.fromEntries(
-        additionalExperienceEntries.flatMap(({ bullets }) => bullets.map((bullet) => [bullet.id, bullet] as const)),
-      ),
-      certifications: Object.fromEntries(certifications.map((certification) => [certification.id, certification])),
-      references: Object.fromEntries(references.map((reference) => [reference.id, reference])),
-    }
-
     return {
       profile,
       attachedJob,
@@ -424,7 +380,6 @@ export class MockAppBackend implements AppDataService {
       additionalExperienceEntries,
       certifications,
       references,
-      cacheData,
     }
   }
 
