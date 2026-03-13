@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { AddIconButton, DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
 import { ReorderButtons } from '../../components/ReorderButtons'
-import type { JobEditorProfilesModel } from '../../features/jobs/use-job-editor-model'
+import type { JobEditorLinksModel, JobEditorProfilesModel } from '../../features/jobs/use-job-editor-model'
 import { useAppStore } from '../../store/app-store'
-import type { ContactRelationshipType, Profile } from '../../types/state'
+import type { ContactRelationshipType, JobLink, Profile } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
 
@@ -247,48 +247,34 @@ const AttachedProfileCard = ({
 }
 
 const JobLinkCard = ({
-  jobLinkId,
+  jobLink,
+  orderedJobLinkIds,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  jobLinkId: string
+  jobLink: JobLink
+  orderedJobLinkIds: string[]
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const link = useAppStore((state) => state.data.jobLinks[jobLinkId])
-  const jobLinksById = useAppStore((state) => state.data.jobLinks)
   const updateJobLink = useAppStore((state) => state.actions.updateJobLink)
   const deleteJobLink = useAppStore((state) => state.actions.deleteJobLink)
   const reorderJobLinks = useAppStore((state) => state.actions.reorderJobLinks)
-  const [draft, setDraft] = useState(link)
+  const [draft, setDraft] = useState(jobLink)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
   })
 
-  const jobLinkIds = useMemo(
-    () =>
-      link
-        ? Object.values(jobLinksById)
-            .filter((item) => item.jobId === link.jobId)
-            .sort((left, right) => left.sortOrder - right.sortOrder)
-            .map((item) => item.id)
-        : [],
-    [jobLinksById, link],
-  )
-  const jobLinkIndex = jobLinkIds.indexOf(jobLinkId)
+  const jobLinkIndex = orderedJobLinkIds.indexOf(jobLink.id)
 
   useEffect(() => {
-    setDraft(link)
-  }, [link])
+    setDraft(jobLink)
+  }, [jobLink])
 
-  if (!link || !draft) {
-    return null
-  }
-
-  const commitLinkChanges = (changes: Partial<typeof link>) => {
+  const commitLinkChanges = (changes: Partial<JobLink>) => {
     void updateJobLink({
-      jobLinkId: link.id,
+      jobLinkId: jobLink.id,
       changes,
     })
   }
@@ -300,7 +286,7 @@ const JobLinkCard = ({
     <div className="rounded-xl border border-app-border-muted p-4" ref={cardRef} style={cardScrollStyle}>
       <div className="flex items-end gap-4">
         <div className="min-w-0 flex-1">
-          <TextField placeholder="https://example.com/job" type="url" value={draft.url} onBlur={() => draft.url !== link.url && commitLinkChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
+          <TextField placeholder="https://example.com/job" type="url" value={draft.url} onBlur={() => draft.url !== jobLink.url && commitLinkChanges({ url: draft.url })} onChange={(value) => setDraft({ ...draft, url: value })} />
         </div>
         <div className="flex shrink-0 items-center justify-end gap-2 self-end">
           {hasUrl ? (
@@ -325,22 +311,22 @@ const JobLinkCard = ({
             </button>
           )}
           <ReorderButtons
-            canMoveDown={jobLinkIds.length > 1}
-            canMoveUp={jobLinkIds.length > 1}
+            canMoveDown={orderedJobLinkIds.length > 1}
+            canMoveUp={orderedJobLinkIds.length > 1}
             onMoveDown={() =>
               reorderJobLinks({
-                jobId: link.jobId,
-                orderedIds: moveOrderedItem(jobLinkIds, jobLinkIndex, 1),
+                jobId: jobLink.jobId,
+                orderedIds: moveOrderedItem(orderedJobLinkIds, jobLinkIndex, 1),
               })
             }
             onMoveUp={() =>
               reorderJobLinks({
-                jobId: link.jobId,
-                orderedIds: moveOrderedItem(jobLinkIds, jobLinkIndex, -1),
+                jobId: jobLink.jobId,
+                orderedIds: moveOrderedItem(orderedJobLinkIds, jobLinkIndex, -1),
               })
             }
           />
-          <DeleteIconButton label="Delete link" onDelete={() => void deleteJobLink(link.id)} />
+          <DeleteIconButton label="Delete link" onDelete={() => void deleteJobLink(jobLink.id)} />
         </div>
       </div>
     </div>
@@ -735,12 +721,13 @@ const ApplicationQuestionCard = ({
 
 export const JobChildEditors = ({
   jobId,
+  linksModel,
   profilesModel,
 }: {
   jobId: string
+  linksModel: JobEditorLinksModel
   profilesModel: JobEditorProfilesModel
 }) => {
-  const jobLinksById = useAppStore((state) => state.data.jobLinks)
   const jobContactsById = useAppStore((state) => state.data.jobContacts)
   const interviewsById = useAppStore((state) => state.data.interviews)
   const applicationQuestionsById = useAppStore((state) => state.data.applicationQuestions)
@@ -757,15 +744,9 @@ export const JobChildEditors = ({
   const [newApplicationQuestionId, setNewApplicationQuestionId] = useState<string | null>(null)
 
   const { attachedProfiles, baseProfiles } = profilesModel
+  const { jobLinks } = linksModel
 
-  const jobLinkIds = useMemo(
-    () =>
-      Object.values(jobLinksById)
-        .filter((item) => item.jobId === jobId)
-        .sort((left, right) => left.sortOrder - right.sortOrder)
-        .map((item) => item.id),
-    [jobId, jobLinksById],
-  )
+  const jobLinkIds = useMemo(() => jobLinks.map((item) => item.id), [jobLinks])
 
   const jobContactIds = useMemo(
     () =>
@@ -901,12 +882,13 @@ export const JobChildEditors = ({
       >
         {hasJobLinks ? (
           <div className="space-y-4">
-            {jobLinkIds.map((id) => (
+            {jobLinks.map((jobLink) => (
               <JobLinkCard
-                jobLinkId={id}
-                key={id}
-                scrollIntoViewOnMount={id === newJobLinkId}
-                {...(id === newJobLinkId
+                jobLink={jobLink}
+                key={jobLink.id}
+                orderedJobLinkIds={jobLinkIds}
+                scrollIntoViewOnMount={jobLink.id === newJobLinkId}
+                {...(jobLink.id === newJobLinkId
                   ? { onScrollIntoViewComplete: () => setNewJobLinkId(null) }
                   : {})}
               />

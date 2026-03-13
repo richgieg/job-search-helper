@@ -345,7 +345,7 @@ export const JobPage = () => {
         </div>
       </CollapsiblePanel>
 
-      <JobChildEditors jobId={job.id} profilesModel={editorModel.profiles} />
+      <JobChildEditors jobId={job.id} linksModel={editorModel.links} profilesModel={editorModel.profiles} />
     </div>
   )
 }
