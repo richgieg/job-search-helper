@@ -18,6 +18,19 @@ export const CoverLetterResumePage = () => {
   const cachedDocumentData = useMemo(() => selectProfileDocumentData(data, profileId), [data, profileId])
   const documentData = fetchedDocumentData ?? cachedDocumentData
 
+  useEffect(() => {
+    if (!documentData) {
+      return
+    }
+
+    const previousTitle = document.title
+    document.title = createCoverLetterResumeDocumentTitle(documentData.profile.personalDetails.fullName, documentData.profile.name)
+
+    return () => {
+      document.title = previousTitle
+    }
+  }, [documentData])
+
   if (isLoading && !documentData) {
     return <p className="text-sm text-app-text-subtle">Loading document...</p>
   }
@@ -37,15 +50,6 @@ export const CoverLetterResumePage = () => {
       </AppShell>
     )
   }
-
-  useEffect(() => {
-    const previousTitle = document.title
-    document.title = createCoverLetterResumeDocumentTitle(documentData.profile.personalDetails.fullName, documentData.profile.name)
-
-    return () => {
-      document.title = previousTitle
-    }
-  }, [documentData.profile.name, documentData.profile.personalDetails.fullName])
 
   return (
     <>

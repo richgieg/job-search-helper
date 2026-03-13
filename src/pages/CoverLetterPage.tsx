@@ -17,6 +17,19 @@ export const CoverLetterPage = () => {
   const cachedDocumentData = useMemo(() => selectProfileDocumentData(data, profileId), [data, profileId])
   const documentData = fetchedDocumentData ?? cachedDocumentData
 
+  useEffect(() => {
+    if (!documentData) {
+      return
+    }
+
+    const previousTitle = document.title
+    document.title = createCoverLetterDocumentTitle(documentData.profile.personalDetails.fullName, documentData.profile.name)
+
+    return () => {
+      document.title = previousTitle
+    }
+  }, [documentData])
+
   if (isLoading && !documentData) {
     return <p className="text-sm text-app-text-subtle">Loading document...</p>
   }
@@ -36,17 +49,6 @@ export const CoverLetterPage = () => {
       </AppShell>
     )
   }
-
-  const personalDetails = documentData.profile.personalDetails
-
-  useEffect(() => {
-    const previousTitle = document.title
-    document.title = createCoverLetterDocumentTitle(personalDetails.fullName, documentData.profile.name)
-
-    return () => {
-      document.title = previousTitle
-    }
-  }, [documentData.profile.name, personalDetails.fullName])
 
   return (
     <>
