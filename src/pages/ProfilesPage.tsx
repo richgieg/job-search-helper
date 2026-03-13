@@ -1,17 +1,14 @@
-import { SubmitEvent, useMemo, useState } from 'react'
+import { SubmitEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import type { ProfilesListItemDto } from '../api/read-models'
 import { DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../components/CompactActionControls'
+import { useProfilesListQuery } from '../queries/use-profiles-list-query'
 import { useAppStore } from '../store/app-store'
 
-const ProfileListItem = ({ profileId }: { profileId: string }) => {
-  const profile = useAppStore((state) => state.data.profiles[profileId])
+const ProfileListItem = ({ profile }: { profile: ProfilesListItemDto }) => {
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
   const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
-
-  if (!profile) {
-    return null
-  }
 
   const handleDuplicate = () => {
     void duplicateProfile({ sourceProfileId: profile.id })
@@ -58,13 +55,9 @@ const ProfileListItem = ({ profileId }: { profileId: string }) => {
 }
 
 export const ProfilesPage = () => {
-  const profilesById = useAppStore((state) => state.data.profiles)
   const createBaseProfile = useAppStore((state) => state.actions.createBaseProfile)
+  const { data, error, isLoading } = useProfilesListQuery('base')
   const [name, setName] = useState('')
-
-  const profiles = useMemo(() => Object.values(profilesById).filter((profile) => profile.jobId === null), [profilesById])
-
-  const sortedProfileIds = useMemo(() => [...profiles].sort((left, right) => right.createdAt.localeCompare(left.createdAt)).map((profile) => profile.id), [profiles])
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -104,8 +97,16 @@ export const ProfilesPage = () => {
         </form>
       </section>
 
+      {error ? (
+        <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft px-4 py-3 text-sm text-app-status-rejected">
+          Unable to refresh profiles right now. Showing the most recently cached result if available.
+        </div>
+      ) : null}
+
       <section className="overflow-hidden rounded-2xl border border-app-border bg-app-surface shadow-sm">
-        {sortedProfileIds.length === 0 ? (
+        {isLoading && !data ? (
+          <p className="p-6 text-sm text-app-text-subtle">Loading profiles...</p>
+        ) : data && data.items.length === 0 ? (
           <p className="p-6 text-sm text-app-text-subtle">No profiles yet.</p>
         ) : (
           <div className="overflow-x-auto">
@@ -123,8 +124,8 @@ export const ProfilesPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {sortedProfileIds.map((profileId) => (
-                  <ProfileListItem key={profileId} profileId={profileId} />
+                {(data?.items ?? []).map((profile) => (
+                  <ProfileListItem key={profile.id} profile={profile} />
                 ))}
               </tbody>
             </table>

@@ -42,11 +42,13 @@ import type {
   UpdateSkillInput,
 } from '../domain/profile-data'
 import type { AppDataService } from './app-data-service'
-import type { JobsListDto } from './read-models'
+import type { DashboardSummaryDto, JobsListDto, ProfilesListDto } from './read-models'
 
 export interface AppApiClient {
   getAppData(): Promise<AppDataState>
+  getDashboardSummary(): Promise<DashboardSummaryDto>
   getJobsList(): Promise<JobsListDto>
+  getProfilesList(kind?: 'base' | 'job' | 'all'): Promise<ProfilesListDto>
   importAppData(file: AppExportFile): Promise<AppDataState>
   exportAppData(): Promise<AppExportFile>
   createBaseProfile(name: string): Promise<ProfileMutationResult>
@@ -147,8 +149,16 @@ export class LocalAppApiClient implements AppApiClient {
     return this.service.getAppData()
   }
 
+  getDashboardSummary(): Promise<DashboardSummaryDto> {
+    return this.service.getDashboardSummary()
+  }
+
   getJobsList(): Promise<JobsListDto> {
     return this.service.getJobsList()
+  }
+
+  getProfilesList(kind: 'base' | 'job' | 'all' = 'all'): Promise<ProfilesListDto> {
+    return this.service.getProfilesList(kind)
   }
 
   importAppData(file: AppExportFile): Promise<AppDataState> {

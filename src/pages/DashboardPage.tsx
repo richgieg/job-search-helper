@@ -1,6 +1,4 @@
-import { useMemo } from 'react'
-
-import { useAppStore } from '../store/app-store'
+import { useDashboardSummaryQuery } from '../queries/use-dashboard-summary-query'
 
 const StatCard = ({ label, value }: { label: string; value: number }) => (
   <div className="rounded-2xl border border-app-border-muted bg-app-surface p-5 shadow-sm">
@@ -10,20 +8,14 @@ const StatCard = ({ label, value }: { label: string; value: number }) => (
 )
 
 export const DashboardPage = () => {
-  const profiles = useAppStore((state) => state.data.profiles)
-  const jobs = useAppStore((state) => state.data.jobs)
-  const contacts = useAppStore((state) => state.data.jobContacts)
-  const interviews = useAppStore((state) => state.data.interviews)
+  const { data, error, isLoading } = useDashboardSummaryQuery()
 
-  const stats = useMemo(
-    () => ({
-      profileCount: Object.keys(profiles).length,
-      jobCount: Object.keys(jobs).length,
-      contactCount: Object.keys(contacts).length,
-      interviewCount: Object.keys(interviews).length,
-    }),
-    [contacts, interviews, jobs, profiles],
-  )
+  const stats = {
+    profileCount: data?.profileCount ?? 0,
+    jobCount: data?.jobCount ?? 0,
+    contactCount: data?.contactCount ?? 0,
+    interviewCount: data?.activeInterviewCount ?? 0,
+  }
 
   return (
     <div className="space-y-8">
@@ -38,6 +30,13 @@ export const DashboardPage = () => {
         <StatCard label="Contacts" value={stats.contactCount} />
         <StatCard label="Interviews" value={stats.interviewCount} />
       </section>
+
+      {isLoading && !data ? <p className="text-sm text-app-text-subtle">Loading dashboard...</p> : null}
+      {error ? (
+        <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft px-4 py-3 text-sm text-app-status-rejected">
+          Unable to refresh dashboard metrics right now. Showing the most recently cached result if available.
+        </div>
+      ) : null}
 
       <section className="rounded-2xl border border-dashed border-app-border bg-app-surface-overlay p-6">
         <h2 className="text-lg font-semibold text-app-text">How to use this dashboard</h2>

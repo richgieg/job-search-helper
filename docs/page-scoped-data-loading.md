@@ -85,7 +85,6 @@ interface DashboardSummaryDto {
   baseProfileCount: number
   jobProfileCount: number
   jobCount: number
-  appliedJobCount: number
   activeInterviewCount: number
   contactCount: number
   updatedAt: string

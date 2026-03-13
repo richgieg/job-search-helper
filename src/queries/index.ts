@@ -1,3 +1,5 @@
 export { queryClient, DEFAULT_GC_TIME_MS, DEFAULT_STALE_TIME_MS } from './query-client'
 export { queryKeys } from './query-keys'
+export { useDashboardSummaryQuery } from './use-dashboard-summary-query'
 export { useJobsListQuery } from './use-jobs-list-query'
+export { useProfilesListQuery } from './use-profiles-list-query'

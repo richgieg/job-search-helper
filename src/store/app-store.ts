@@ -201,6 +201,11 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
         },
       }))
 
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.profilesListRoot() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() }),
+      ])
+
       return result
     } catch (caughtError) {
       const errorMessage = caughtError instanceof Error ? caughtError.message : 'Unknown profile mutation error.'
@@ -247,6 +252,7 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.jobsList() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.profilesListRoot() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() }),
       ])
 

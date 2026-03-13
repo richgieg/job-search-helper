@@ -135,7 +135,7 @@ import {
   type UpdateSkillInput,
 } from '../domain/profile-data'
 import type { AppDataService } from './app-data-service'
-import type { JobsListDto, JobsListItemDto } from './read-models'
+import type { DashboardSummaryDto, JobsListDto, JobsListItemDto, ProfilesListDto, ProfilesListItemDto } from './read-models'
 
 interface MockAppBackendOptions {
   initialData?: AppDataState
@@ -145,6 +145,8 @@ interface MockAppBackendOptions {
 const cloneAppData = (data: AppDataState): AppDataState => structuredClone(data)
 const cloneExportData = (data: AppExportFile['data']): AppExportFile['data'] => structuredClone(data)
 const emptyCollectionUpdatedAt = '1970-01-01T00:00:00.000Z'
+
+const getLatestUpdatedAt = (timestamps: string[]) => timestamps.sort((left, right) => right.localeCompare(left))[0] ?? emptyCollectionUpdatedAt
 
 export class MockAppBackend implements AppDataService {
   private data: AppDataState
@@ -157,6 +159,26 @@ export class MockAppBackend implements AppDataService {
 
   async getAppData(): Promise<AppDataState> {
     return cloneAppData(this.data)
+  }
+
+  async getDashboardSummary(): Promise<DashboardSummaryDto> {
+    const profiles = Object.values(this.data.profiles)
+    const jobs = Object.values(this.data.jobs)
+    const jobContacts = Object.values(this.data.jobContacts)
+    const interviews = Object.values(this.data.interviews)
+
+    return {
+      profileCount: profiles.length,
+      baseProfileCount: profiles.filter((profile) => profile.jobId === null).length,
+      jobProfileCount: profiles.filter((profile) => profile.jobId !== null).length,
+      jobCount: jobs.length,
+      activeInterviewCount: interviews.length,
+      contactCount: jobContacts.length,
+      updatedAt: getLatestUpdatedAt([
+        ...profiles.map((profile) => profile.updatedAt),
+        ...jobs.map((job) => job.updatedAt),
+      ]),
+    }
   }
 
   async getJobsList(): Promise<JobsListDto> {
@@ -184,6 +206,46 @@ export class MockAppBackend implements AppDataService {
           jobLinks,
           createdAt: job.createdAt,
           updatedAt: job.updatedAt,
+        }
+      })
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+
+    return {
+      items,
+      updatedAt: items[0]?.updatedAt ?? emptyCollectionUpdatedAt,
+    }
+  }
+
+  async getProfilesList(kind: 'base' | 'job' | 'all' = 'all'): Promise<ProfilesListDto> {
+    const items = Object.values(this.data.profiles)
+      .filter((profile) => {
+        if (kind === 'base') {
+          return profile.jobId === null
+        }
+
+        if (kind === 'job') {
+          return profile.jobId !== null
+        }
+
+        return true
+      })
+      .map<ProfilesListItemDto>((profile) => {
+        const attachedJob = profile.jobId ? this.data.jobs[profile.jobId] ?? null : null
+
+        return {
+          id: profile.id,
+          name: profile.name,
+          kind: profile.jobId === null ? 'base' : 'job',
+          jobId: profile.jobId,
+          jobSummary: attachedJob
+            ? {
+                id: attachedJob.id,
+                companyName: attachedJob.companyName,
+                jobTitle: attachedJob.jobTitle,
+              }
+            : null,
+          createdAt: profile.createdAt,
+          updatedAt: profile.updatedAt,
         }
       })
       .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
