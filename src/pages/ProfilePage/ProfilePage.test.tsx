@@ -100,6 +100,24 @@ describe('ProfilePage', () => {
     expect(await screen.findByDisplayValue('https://portfolio.example.dev')).toBeInTheDocument()
   })
 
+  it('auto-expands newly added skill categories', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Skills\b/i }))
+    await user.click(screen.getByRole('button', { name: 'Add skill category' }))
+
+    expect(await screen.findByLabelText('Category name')).toBeInTheDocument()
+    expect(screen.getByText('No skills yet.')).toBeInTheDocument()
+  })
+
   it('renders the profile not-found state when the requested profile does not exist', async () => {
     renderRoute({
       element: <ProfilePage />,

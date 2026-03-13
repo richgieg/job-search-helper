@@ -104,6 +104,36 @@ describe('JobPage', () => {
     expect(await screen.findByDisplayValue('https://jobs.example.com/principal-role')).toBeInTheDocument()
   })
 
+  it('auto-expands newly added application questions, contacts, and interviews', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Application questions\b/i }))
+    await user.click(screen.getByRole('button', { name: 'Add application question' }))
+
+    expect(await screen.findByLabelText('Question')).toBeInTheDocument()
+    expect(screen.getByLabelText('Answer')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Contacts\b/i }))
+    await user.click(screen.getByRole('button', { name: 'Add contact' }))
+
+    expect(await screen.findByLabelText('Relationship type')).toBeInTheDocument()
+    expect(screen.getByLabelText('LinkedIn URL')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Interviews\b/i }))
+    await user.click(screen.getByRole('button', { name: 'Add interview' }))
+
+    expect(await screen.findByLabelText('Start at')).toBeInTheDocument()
+    expect(screen.getByText('No contacts associated with this interview yet.')).toBeInTheDocument()
+  })
+
   it('duplicates attached profiles through job child editor actions', async () => {
     const user = userEvent.setup()
 

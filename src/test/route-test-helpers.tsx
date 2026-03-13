@@ -1,3 +1,5 @@
+import 'fake-indexeddb/auto'
+
 import { QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render, type RenderResult } from '@testing-library/react'
 import type { ReactElement } from 'react'
