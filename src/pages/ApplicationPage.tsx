@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { selectProfileDocumentData } from '../features/documents/document-data'
+import { useProfileDocumentQuery } from '../queries/use-profile-document-query'
 import { useAppStore } from '../store/app-store'
 import { formatBulletCopyLine } from '../utils/bullet-levels'
 import { defaultResumeSectionLabels, defaultResumeSectionOrder } from '../utils/resume-section-labels'
@@ -206,9 +207,27 @@ const DataTable = ({
 export const ApplicationPage = () => {
   const { profileId = '' } = useParams()
   const data = useAppStore((state) => state.data)
+  const { data: fetchedDocumentData, error, isLoading } = useProfileDocumentQuery(profileId)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
 
-  const documentData = useMemo(() => selectProfileDocumentData(data, profileId), [data, profileId])
+  const cachedDocumentData = useMemo(() => selectProfileDocumentData(data, profileId), [data, profileId])
+  const documentData = fetchedDocumentData ?? cachedDocumentData
+
+  if (isLoading && !documentData) {
+    return <p className="text-sm text-app-text-subtle">Loading application data...</p>
+  }
+
+  if (error && !documentData) {
+    return (
+      <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft p-8 shadow-sm">
+        <h1 className="text-2xl font-semibold text-app-heading">Application unavailable</h1>
+        <p className="mt-3 text-sm text-app-status-rejected">The selected profile could not be refreshed right now.</p>
+        <Link className="mt-5 inline-flex rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to="/profiles">
+          Return to profiles
+        </Link>
+      </div>
+    )
+  }
 
   if (!documentData) {
     return (
@@ -253,6 +272,11 @@ export const ApplicationPage = () => {
 
   return (
     <div className="space-y-8">
+      {error ? (
+        <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft px-4 py-3 text-sm text-app-status-rejected">
+          Unable to refresh this application data right now. Showing the most recently cached result if available.
+        </div>
+      ) : null}
       <div>
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-app-primary">Application Content</p>

@@ -387,6 +387,8 @@ The current implementation uses two variants of this:
 
 Once the last route no longer depends on global preload, delete the bootstrap hydrate from [src/app/App.tsx](../src/app/App.tsx) and remove `status.hydration` from the store.
 
+The bootstrap hydrate has now been removed from the app shell. `status.hydration` and the legacy `hydrate()` action still exist in the store as compatibility scaffolding, but runtime navigation no longer depends on a startup whole-app fetch.
+
 ## What Not To Do
 
 Avoid these paths during the migration:

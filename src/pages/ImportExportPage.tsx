@@ -1,5 +1,6 @@
 import { ChangeEvent, useMemo, useState } from 'react'
 
+import { useDashboardSummaryQuery } from '../queries/use-dashboard-summary-query'
 import { useAppStore } from '../store/app-store'
 import type { AppExportFile } from '../types/state'
 
@@ -18,9 +19,10 @@ const downloadJson = (payload: AppExportFile) => {
 export const ImportExportPage = () => {
   const exportAppData = useAppStore((state) => state.actions.exportAppData)
   const importAppData = useAppStore((state) => state.actions.importAppData)
+  const { data } = useDashboardSummaryQuery()
   const [error, setError] = useState<string | null>(null)
-  const profileCount = useAppStore((state) => Object.keys(state.data.profiles).length)
-  const jobCount = useAppStore((state) => Object.keys(state.data.jobs).length)
+  const profileCount = data?.profileCount ?? 0
+  const jobCount = data?.jobCount ?? 0
 
   const summary = useMemo(() => `${profileCount} profiles · ${jobCount} jobs`, [jobCount, profileCount])
 
