@@ -17,3 +17,15 @@ A browser-based web app for organizing job opportunities and generating tailored
 - JSON import/export for persistence
 - React + Vite + TypeScript
 
+## Development flags
+
+- `VITE_SIMULATE_API_DELAY=true` enables simulated backend latency in the Vite dev server.
+- `VITE_SIMULATE_API_DELAY_MIN_MS=150` optionally overrides the default minimum delay in milliseconds.
+- `VITE_SIMULATE_API_DELAY_MAX_MS=900` optionally overrides the default maximum delay in milliseconds.
+
+Example:
+
+```bash
+VITE_SIMULATE_API_DELAY=true VITE_SIMULATE_API_DELAY_MIN_MS=150 VITE_SIMULATE_API_DELAY_MAX_MS=900 npm run dev
+```
+
