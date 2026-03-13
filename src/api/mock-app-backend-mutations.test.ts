@@ -984,7 +984,10 @@ describe('mock app backend mutation behaviors', () => {
 
     const interviewId = expectCreatedId(await backend.createInterview(jobId), 'Expected interview id')
 
-    expect((await getData()).interviews[interviewId]).toMatchObject({ startAt: null })
+    expect((await getData()).interviews[interviewId]).toMatchObject({
+      createdAt: expect.any(String),
+      startAt: null,
+    })
 
     await backend.updateInterview({
       interviewId,
@@ -1038,6 +1041,7 @@ describe('mock app backend mutation behaviors', () => {
     })
 
     expect((await getData()).interviews[interviewId]).toMatchObject({
+      createdAt: expect.any(String),
       startAt: null,
       notes: 'Awaiting scheduling confirmation',
     })

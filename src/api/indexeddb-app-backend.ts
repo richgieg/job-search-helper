@@ -25,6 +25,7 @@ import type {
   SkillCategory,
 } from '../types/state'
 import { getJobComputedStatus } from '../features/jobs/job-status'
+import { compareInterviewsBySchedule } from '../utils/interview-sort'
 import {
   AddInterviewContactInput,
   CreateJobInput,
@@ -1794,21 +1795,7 @@ export class IndexedDbAppBackend implements AppDataService {
 
       const sortedInterviews = interviews
         .filter((interview) => interview.jobId === jobId)
-        .sort((left, right) => {
-          if (!left.startAt && !right.startAt) {
-            return 0
-          }
-
-          if (!left.startAt) {
-            return 1
-          }
-
-          if (!right.startAt) {
-            return -1
-          }
-
-          return left.startAt.localeCompare(right.startAt)
-        })
+        .sort(compareInterviewsBySchedule)
         .map((interview) => ({
           interview,
           contacts: interviewContacts

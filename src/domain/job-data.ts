@@ -837,6 +837,7 @@ export const createInterviewMutation = (data: AppDataState, jobId: Id, context: 
   const interview: Interview = {
     id: context.createId(),
     jobId,
+    createdAt: context.now(),
     startAt: null,
     notes: '',
   }

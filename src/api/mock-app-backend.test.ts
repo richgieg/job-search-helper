@@ -144,6 +144,7 @@ const createSeedData = () => {
   data.interviews.interview_1 = {
     id: 'interview_1',
     jobId: 'job_1',
+    createdAt: '2026-03-08T09:00:00.000Z',
     startAt: '2026-03-10T15:00:00.000Z',
     notes: 'Panel interview',
   }

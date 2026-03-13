@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import type { JobDetailDto, JobDetailInterviewDto, ProfilesListItemDto } from '../../api/read-models'
 import type { ApplicationQuestion, JobContact, JobLink, Profile } from '../../types/state'
 import { useProfilesListQuery } from '../../queries/use-profiles-list-query'
+import { compareInterviewsBySchedule } from '../../utils/interview-sort'
 
 export interface JobEditorProfilesModel {
   attachedProfiles: Profile[]
@@ -54,21 +55,7 @@ export const useJobEditorModel = (jobDetail: JobDetailDto | null | undefined): J
             ...item,
             contacts: [...item.contacts].sort((left, right) => left.interviewContact.sortOrder - right.interviewContact.sortOrder),
           }))
-          .sort((left, right) => {
-            if (!left.interview.startAt && !right.interview.startAt) {
-              return 0
-            }
-
-            if (!left.interview.startAt) {
-              return 1
-            }
-
-            if (!right.interview.startAt) {
-              return -1
-            }
-
-            return left.interview.startAt.localeCompare(right.interview.startAt)
-          }),
+          .sort((left, right) => compareInterviewsBySchedule(left.interview, right.interview)),
       },
       applicationQuestions: {
         applicationQuestions: [...(jobDetail?.applicationQuestions ?? [])].sort((left, right) => left.sortOrder - right.sortOrder),

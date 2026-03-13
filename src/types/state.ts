@@ -310,6 +310,7 @@ export interface ApplicationQuestion {
 export interface Interview {
   id: Id
   jobId: Id
+  createdAt: IsoTimestamp
   startAt: IsoTimestamp | null
   notes: string
 }

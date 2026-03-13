@@ -129,6 +129,7 @@ const createSeedData = () => {
   data.interviews.interview_1 = {
     id: 'interview_1',
     jobId: 'job_1',
+    createdAt: '2026-03-02T09:00:00.000Z',
     startAt: '2026-03-05T12:00:00.000Z',
     notes: '',
   }
@@ -136,6 +137,7 @@ const createSeedData = () => {
   data.interviews.interview_2 = {
     id: 'interview_2',
     jobId: 'job_1',
+    createdAt: '2026-03-04T09:00:00.000Z',
     startAt: null,
     notes: 'Scheduling in progress',
   }
@@ -1746,6 +1748,7 @@ describe('IndexedDbAppBackend', () => {
           expect.objectContaining({
             id: createdInterview.createdId,
             jobId: 'job_1',
+            createdAt: '2026-03-13T17:10:00.000Z',
             startAt: null,
             notes: '',
           }),

@@ -2,6 +2,7 @@ import { createEmptyAppDataState } from '../domain/app-data-state'
 import { getJobComputedStatus } from '../features/jobs/job-status'
 import { selectProfileDocumentData } from '../features/documents/document-data'
 import type { AppDataState, AppExportFile, IsoTimestamp } from '../types/state'
+import { compareInterviewsBySchedule } from '../utils/interview-sort'
 import {
   addInterviewContactMutation,
   clearJobAppliedAtMutation,
@@ -248,21 +249,7 @@ export class MockAppBackend implements AppDataService {
     const interviewContacts = Object.values(this.data.interviewContacts)
     const interviews = Object.values(this.data.interviews)
       .filter((interview) => interview.jobId === jobId)
-      .sort((left, right) => {
-        if (!left.startAt && !right.startAt) {
-          return 0
-        }
-
-        if (!left.startAt) {
-          return 1
-        }
-
-        if (!right.startAt) {
-          return -1
-        }
-
-        return left.startAt.localeCompare(right.startAt)
-      })
+      .sort(compareInterviewsBySchedule)
       .map((interview) => ({
         interview,
         contacts: interviewContacts
