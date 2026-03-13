@@ -6,9 +6,9 @@ import { FinalOutcomeStrip, type FinalOutcomeDraftStatus } from './FinalOutcomeS
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { JobChildEditors } from './JobChildEditors'
 import { useJobEditorModel } from '../../features/jobs/use-job-editor-model'
+import { useJobMutations } from '../../features/jobs/use-job-mutations'
 import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadgeClassName } from '../../features/jobs/job-status'
 import { useJobDetailQuery } from '../../queries/use-job-detail-query'
-import { useAppStore } from '../../store/app-store'
 import type { EmploymentType, Job, WorkArrangement } from '../../types/state'
 import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 
@@ -122,11 +122,7 @@ const createJobDraft = (job: Job): JobDraftState => ({
 
 export const JobPage = () => {
   const { jobId = '' } = useParams()
-  const setJobAppliedAt = useAppStore((state) => state.actions.setJobAppliedAt)
-  const clearJobAppliedAt = useAppStore((state) => state.actions.clearJobAppliedAt)
-  const setJobFinalOutcome = useAppStore((state) => state.actions.setJobFinalOutcome)
-  const clearJobFinalOutcome = useAppStore((state) => state.actions.clearJobFinalOutcome)
-  const updateJob = useAppStore((state) => state.actions.updateJob)
+  const { clearJobAppliedAt, clearJobFinalOutcome, setJobAppliedAt, setJobFinalOutcome, updateJob } = useJobMutations()
   const { data: jobDetail, error, isLoading } = useJobDetailQuery(jobId)
   const editorModel = useJobEditorModel(jobDetail)
   const [draft, setDraft] = useState<JobDraftState | null>(null)

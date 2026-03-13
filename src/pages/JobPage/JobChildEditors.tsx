@@ -12,7 +12,8 @@ import type {
   JobEditorLinksModel,
   JobEditorProfilesModel,
 } from '../../features/jobs/use-job-editor-model'
-import { useAppStore } from '../../store/app-store'
+import { useJobMutations } from '../../features/jobs/use-job-mutations'
+import { useProfileMutations } from '../../features/profiles/use-profile-mutations'
 import type { ApplicationQuestion, ContactRelationshipType, JobContact, JobLink, Profile } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
@@ -200,8 +201,7 @@ const AttachedProfileCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
-  const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
+  const { deleteProfile, duplicateProfile } = useProfileMutations()
   const { scrollTargetRef: rowRef, scrollTargetStyle: rowScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
@@ -264,9 +264,7 @@ const JobLinkCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateJobLink = useAppStore((state) => state.actions.updateJobLink)
-  const deleteJobLink = useAppStore((state) => state.actions.deleteJobLink)
-  const reorderJobLinks = useAppStore((state) => state.actions.reorderJobLinks)
+  const { deleteJobLink, reorderJobLinks, updateJobLink } = useJobMutations()
   const [draft, setDraft] = useState(jobLink)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
@@ -353,9 +351,7 @@ const JobContactCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateJobContact = useAppStore((state) => state.actions.updateJobContact)
-  const deleteJobContact = useAppStore((state) => state.actions.deleteJobContact)
-  const reorderJobContacts = useAppStore((state) => state.actions.reorderJobContacts)
+  const { deleteJobContact, reorderJobContacts, updateJobContact } = useJobMutations()
   const [draft, setDraft] = useState(jobContact)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
@@ -455,11 +451,7 @@ const InterviewCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateInterview = useAppStore((state) => state.actions.updateInterview)
-  const deleteInterview = useAppStore((state) => state.actions.deleteInterview)
-  const addInterviewContact = useAppStore((state) => state.actions.addInterviewContact)
-  const removeInterviewContact = useAppStore((state) => state.actions.removeInterviewContact)
-  const reorderInterviewContacts = useAppStore((state) => state.actions.reorderInterviewContacts)
+  const { addInterviewContact, deleteInterview, removeInterviewContact, reorderInterviewContacts, updateInterview } = useJobMutations()
   const [draft, setDraft] = useState(interviewEntry.interview)
   const [selectedContactId, setSelectedContactId] = useState('')
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
@@ -611,9 +603,7 @@ const ApplicationQuestionCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateApplicationQuestion = useAppStore((state) => state.actions.updateApplicationQuestion)
-  const deleteApplicationQuestion = useAppStore((state) => state.actions.deleteApplicationQuestion)
-  const reorderApplicationQuestions = useAppStore((state) => state.actions.reorderApplicationQuestions)
+  const { deleteApplicationQuestion, reorderApplicationQuestions, updateApplicationQuestion } = useJobMutations()
   const [draft, setDraft] = useState(applicationQuestion)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
@@ -688,11 +678,8 @@ export const JobChildEditors = ({
   linksModel: JobEditorLinksModel
   profilesModel: JobEditorProfilesModel
 }) => {
-  const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
-  const createJobLink = useAppStore((state) => state.actions.createJobLink)
-  const createJobContact = useAppStore((state) => state.actions.createJobContact)
-  const createInterview = useAppStore((state) => state.actions.createInterview)
-  const createApplicationQuestion = useAppStore((state) => state.actions.createApplicationQuestion)
+  const { duplicateProfile } = useProfileMutations()
+  const { createApplicationQuestion, createInterview, createJobContact, createJobLink } = useJobMutations()
   const [selectedBaseProfileId, setSelectedBaseProfileId] = useState('')
   const [newAttachedProfileId, setNewAttachedProfileId] = useState<string | null>(null)
   const [newJobLinkId, setNewJobLinkId] = useState<string | null>(null)

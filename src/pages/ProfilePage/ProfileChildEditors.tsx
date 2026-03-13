@@ -21,7 +21,7 @@ import type {
   ProfileEditorReferencesModel,
   ProfileEditorSkillsModel,
 } from '../../features/profiles/use-profile-editor-model'
-import { useAppStore } from '../../store/app-store'
+import { useProfileMutations } from '../../features/profiles/use-profile-mutations'
 import type {
   Achievement,
   AdditionalExperienceBullet,
@@ -307,9 +307,7 @@ const ProfileLinkRow = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateProfileLink = useAppStore((state) => state.actions.updateProfileLink)
-  const deleteProfileLink = useAppStore((state) => state.actions.deleteProfileLink)
-  const reorderProfileLinks = useAppStore((state) => state.actions.reorderProfileLinks)
+  const { deleteProfileLink, reorderProfileLinks, updateProfileLink } = useProfileMutations()
   const [name, setName] = useState(profileLink.name)
   const [url, setUrl] = useState(profileLink.url)
   const [enabled, setEnabled] = useState(profileLink.enabled)
@@ -412,9 +410,7 @@ const ExperienceBulletRow = ({
   bullet: ExperienceBullet
   orderedBulletIds: string[]
 }) => {
-  const updateExperienceBullet = useAppStore((state) => state.actions.updateExperienceBullet)
-  const deleteExperienceBullet = useAppStore((state) => state.actions.deleteExperienceBullet)
-  const reorderExperienceBullets = useAppStore((state) => state.actions.reorderExperienceBullets)
+  const { deleteExperienceBullet, reorderExperienceBullets, updateExperienceBullet } = useProfileMutations()
   const [content, setContent] = useState(bullet.content)
   const [level, setLevel] = useState(bullet.level)
   const [enabled, setEnabled] = useState(bullet.enabled)
@@ -476,9 +472,7 @@ const EducationBulletRow = ({
   bullet: EducationBullet
   orderedBulletIds: string[]
 }) => {
-  const updateEducationBullet = useAppStore((state) => state.actions.updateEducationBullet)
-  const deleteEducationBullet = useAppStore((state) => state.actions.deleteEducationBullet)
-  const reorderEducationBullets = useAppStore((state) => state.actions.reorderEducationBullets)
+  const { deleteEducationBullet, reorderEducationBullets, updateEducationBullet } = useProfileMutations()
   const [content, setContent] = useState(bullet.content)
   const [level, setLevel] = useState(bullet.level)
   const [enabled, setEnabled] = useState(bullet.enabled)
@@ -540,9 +534,7 @@ const ProjectBulletRow = ({
   bullet: ProjectBullet
   orderedBulletIds: string[]
 }) => {
-  const updateProjectBullet = useAppStore((state) => state.actions.updateProjectBullet)
-  const deleteProjectBullet = useAppStore((state) => state.actions.deleteProjectBullet)
-  const reorderProjectBullets = useAppStore((state) => state.actions.reorderProjectBullets)
+  const { deleteProjectBullet, reorderProjectBullets, updateProjectBullet } = useProfileMutations()
   const [content, setContent] = useState(bullet.content)
   const [level, setLevel] = useState(bullet.level)
   const [enabled, setEnabled] = useState(bullet.enabled)
@@ -604,9 +596,7 @@ const AdditionalExperienceBulletRow = ({
   bullet: AdditionalExperienceBullet
   orderedBulletIds: string[]
 }) => {
-  const updateAdditionalExperienceBullet = useAppStore((state) => state.actions.updateAdditionalExperienceBullet)
-  const deleteAdditionalExperienceBullet = useAppStore((state) => state.actions.deleteAdditionalExperienceBullet)
-  const reorderAdditionalExperienceBullets = useAppStore((state) => state.actions.reorderAdditionalExperienceBullets)
+  const { deleteAdditionalExperienceBullet, reorderAdditionalExperienceBullets, updateAdditionalExperienceBullet } = useProfileMutations()
   const [content, setContent] = useState(bullet.content)
   const [level, setLevel] = useState(bullet.level)
   const [enabled, setEnabled] = useState(bullet.enabled)
@@ -668,9 +658,7 @@ const SkillRow = ({
   orderedSkillIds: string[]
   skill: Skill
 }) => {
-  const updateSkill = useAppStore((state) => state.actions.updateSkill)
-  const deleteSkill = useAppStore((state) => state.actions.deleteSkill)
-  const reorderSkills = useAppStore((state) => state.actions.reorderSkills)
+  const { deleteSkill, reorderSkills, updateSkill } = useProfileMutations()
   const [name, setName] = useState(skill.name)
   const [enabled, setEnabled] = useState(skill.enabled)
 
@@ -739,10 +727,7 @@ const SkillCategoryCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateSkillCategory = useAppStore((state) => state.actions.updateSkillCategory)
-  const deleteSkillCategory = useAppStore((state) => state.actions.deleteSkillCategory)
-  const reorderSkillCategories = useAppStore((state) => state.actions.reorderSkillCategories)
-  const createSkill = useAppStore((state) => state.actions.createSkill)
+  const { createSkill, deleteSkillCategory, reorderSkillCategories, updateSkillCategory } = useProfileMutations()
   const category = skillCategoryEntry.category
   const skills = skillCategoryEntry.skills
   const [name, setName] = useState(category.name)
@@ -855,9 +840,7 @@ const AchievementCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateAchievement = useAppStore((state) => state.actions.updateAchievement)
-  const deleteAchievement = useAppStore((state) => state.actions.deleteAchievement)
-  const reorderAchievements = useAppStore((state) => state.actions.reorderAchievements)
+  const { deleteAchievement, reorderAchievements, updateAchievement } = useProfileMutations()
   const [draft, setDraft] = useState(achievement)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
@@ -939,10 +922,7 @@ const ExperienceCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateExperienceEntry = useAppStore((state) => state.actions.updateExperienceEntry)
-  const deleteExperienceEntry = useAppStore((state) => state.actions.deleteExperienceEntry)
-  const reorderExperienceEntries = useAppStore((state) => state.actions.reorderExperienceEntries)
-  const createExperienceBullet = useAppStore((state) => state.actions.createExperienceBullet)
+  const { createExperienceBullet, deleteExperienceEntry, reorderExperienceEntries, updateExperienceEntry } = useProfileMutations()
   const entry = experienceEntry.entry
   const bullets = experienceEntry.bullets
   const [draft, setDraft] = useState(entry)
@@ -1137,10 +1117,7 @@ const EducationCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateEducationEntry = useAppStore((state) => state.actions.updateEducationEntry)
-  const deleteEducationEntry = useAppStore((state) => state.actions.deleteEducationEntry)
-  const reorderEducationEntries = useAppStore((state) => state.actions.reorderEducationEntries)
-  const createEducationBullet = useAppStore((state) => state.actions.createEducationBullet)
+  const { createEducationBullet, deleteEducationEntry, reorderEducationEntries, updateEducationEntry } = useProfileMutations()
   const entry = educationEntry.entry
   const bullets = educationEntry.bullets
   const [draft, setDraft] = useState(entry)
@@ -1258,10 +1235,7 @@ const ProjectCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateProject = useAppStore((state) => state.actions.updateProject)
-  const deleteProject = useAppStore((state) => state.actions.deleteProject)
-  const reorderProjects = useAppStore((state) => state.actions.reorderProjects)
-  const createProjectBullet = useAppStore((state) => state.actions.createProjectBullet)
+  const { createProjectBullet, deleteProject, reorderProjects, updateProject } = useProfileMutations()
   const project = projectEntry.entry
   const bullets = projectEntry.bullets
   const [draft, setDraft] = useState(project)
@@ -1367,10 +1341,7 @@ const AdditionalExperienceCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateAdditionalExperienceEntry = useAppStore((state) => state.actions.updateAdditionalExperienceEntry)
-  const deleteAdditionalExperienceEntry = useAppStore((state) => state.actions.deleteAdditionalExperienceEntry)
-  const reorderAdditionalExperienceEntries = useAppStore((state) => state.actions.reorderAdditionalExperienceEntries)
-  const createAdditionalExperienceBullet = useAppStore((state) => state.actions.createAdditionalExperienceBullet)
+  const { createAdditionalExperienceBullet, deleteAdditionalExperienceEntry, reorderAdditionalExperienceEntries, updateAdditionalExperienceEntry } = useProfileMutations()
   const entry = additionalExperienceEntry.entry
   const bullets = additionalExperienceEntry.bullets
   const [draft, setDraft] = useState(entry)
@@ -1478,9 +1449,7 @@ const CertificationCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateCertification = useAppStore((state) => state.actions.updateCertification)
-  const deleteCertification = useAppStore((state) => state.actions.deleteCertification)
-  const reorderCertifications = useAppStore((state) => state.actions.reorderCertifications)
+  const { deleteCertification, reorderCertifications, updateCertification } = useProfileMutations()
   const [draft, setDraft] = useState(certification)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
@@ -1561,9 +1530,7 @@ const ReferenceCard = ({
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const updateReference = useAppStore((state) => state.actions.updateReference)
-  const deleteReference = useAppStore((state) => state.actions.deleteReference)
-  const reorderReferences = useAppStore((state) => state.actions.reorderReferences)
+  const { deleteReference, reorderReferences, updateReference } = useProfileMutations()
   const [draft, setDraft] = useState(reference)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
@@ -1668,15 +1635,17 @@ export const ProfileChildEditors = ({
   referencesModel: ProfileEditorReferencesModel
   skillsModel: ProfileEditorSkillsModel
 }) => {
-  const createProfileLink = useAppStore((state) => state.actions.createProfileLink)
-  const createSkillCategory = useAppStore((state) => state.actions.createSkillCategory)
-  const createAchievement = useAppStore((state) => state.actions.createAchievement)
-  const createExperienceEntry = useAppStore((state) => state.actions.createExperienceEntry)
-  const createEducationEntry = useAppStore((state) => state.actions.createEducationEntry)
-  const createProject = useAppStore((state) => state.actions.createProject)
-  const createAdditionalExperienceEntry = useAppStore((state) => state.actions.createAdditionalExperienceEntry)
-  const createCertification = useAppStore((state) => state.actions.createCertification)
-  const createReference = useAppStore((state) => state.actions.createReference)
+  const {
+    createAchievement,
+    createAdditionalExperienceEntry,
+    createCertification,
+    createEducationEntry,
+    createExperienceEntry,
+    createProfileLink,
+    createProject,
+    createReference,
+    createSkillCategory,
+  } = useProfileMutations()
   const [newProfileLinkId, setNewProfileLinkId] = useState<string | null>(null)
   const [newSkillCategoryId, setNewSkillCategoryId] = useState<string | null>(null)
   const [newAchievementId, setNewAchievementId] = useState<string | null>(null)

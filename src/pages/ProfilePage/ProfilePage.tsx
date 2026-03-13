@@ -5,11 +5,11 @@ import { ActionToggle } from '../../components/CompactActionControls'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { DocumentProfileHeader } from '../../features/documents/DocumentProfileHeader'
+import { useProfileMutations } from '../../features/profiles/use-profile-mutations'
 import { useProfileEditorModel } from '../../features/profiles/use-profile-editor-model'
 import { useProfileDetailQuery } from '../../queries/use-profile-detail-query'
 import { useProfileDocumentQuery } from '../../queries/use-profile-document-query'
 import { ProfileChildEditors } from './ProfileChildEditors'
-import { useAppStore } from '../../store/app-store'
 import type { DocumentHeaderTemplate, PersonalDetails, ResumeSectionKey } from '../../types/state'
 import { documentHeaderTemplateLabels, documentHeaderTemplates } from '../../utils/document-header-templates'
 import { defaultResumeSectionOrder } from '../../utils/resume-section-labels'
@@ -75,11 +75,7 @@ const OrderBadge = ({ value }: { value: number }) => (
 
 export const ProfilePage = () => {
   const { profileId = '' } = useParams()
-  const updateProfile = useAppStore((state) => state.actions.updateProfile)
-  const setDocumentHeaderTemplate = useAppStore((state) => state.actions.setDocumentHeaderTemplate)
-  const setResumeSectionEnabled = useAppStore((state) => state.actions.setResumeSectionEnabled)
-  const setResumeSectionLabel = useAppStore((state) => state.actions.setResumeSectionLabel)
-  const reorderResumeSections = useAppStore((state) => state.actions.reorderResumeSections)
+  const { reorderResumeSections, setDocumentHeaderTemplate, setResumeSectionEnabled, setResumeSectionLabel, updateProfile } = useProfileMutations()
   const { data: profileDetail, error, isLoading } = useProfileDetailQuery(profileId)
   const { data: documentData } = useProfileDocumentQuery(profileId)
   const editorModel = useProfileEditorModel(profileDetail)

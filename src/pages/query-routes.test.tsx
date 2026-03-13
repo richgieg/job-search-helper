@@ -260,6 +260,61 @@ describe('query-backed routes', () => {
     expect(screen.getByText('Applied')).toBeInTheDocument()
   })
 
+  it('updates the job detail route through page-level mutations', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Job details/i }))
+    await user.clear(screen.getByLabelText('Job title'))
+    await user.type(screen.getByLabelText('Job title'), 'Principal Engineer')
+    await user.tab()
+
+    expect(await screen.findByText('Principal Engineer')).toBeInTheDocument()
+  })
+
+  it('updates job child editor links through mutation hooks', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Links/i }))
+    await user.clear(screen.getByDisplayValue('https://jobs.example.com/1'))
+    await user.type(screen.getByRole('textbox'), 'https://jobs.example.com/principal-role')
+    await user.tab()
+
+    expect(await screen.findByDisplayValue('https://jobs.example.com/principal-role')).toBeInTheDocument()
+  })
+
+  it('duplicates attached profiles through job child editor actions', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Profiles/i }))
+    await user.click(screen.getByRole('button', { name: 'Duplicate profile Tailored Profile' }))
+
+    expect(await screen.findByText('Tailored Profile Copy')).toBeInTheDocument()
+  })
+
   it('renders the job not-found state when the requested job does not exist', async () => {
     renderRoute({
       element: <JobPage />,
@@ -334,6 +389,44 @@ describe('query-backed routes', () => {
     expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
     expect(screen.getByText('Job profile for Senior Engineer at Example Co')).toBeInTheDocument()
     expect(useAppStore.getState().data.experienceEntries.experience_1).toBeUndefined()
+  })
+
+  it('updates the profile detail route through page-level mutations', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Profile details/i }))
+    await user.clear(screen.getByLabelText('Profile name'))
+    await user.type(screen.getByLabelText('Profile name'), 'Portfolio Profile')
+    await user.tab()
+
+    expect(await screen.findByText('Portfolio Profile')).toBeInTheDocument()
+  })
+
+  it('updates profile child editor links through mutation hooks', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Links/i }))
+    await user.clear(screen.getByDisplayValue('https://example.com'))
+    await user.type(screen.getByLabelText('URL'), 'https://portfolio.example.dev')
+    await user.tab()
+
+    expect(await screen.findByDisplayValue('https://portfolio.example.dev')).toBeInTheDocument()
   })
 
   it('renders the profile not-found state when the requested profile does not exist', async () => {
