@@ -1,4 +1,4 @@
-import { Children, type ReactNode, useEffect, useRef, useState } from 'react'
+import { Children, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { AddIconButton } from './CompactActionControls'
 
@@ -47,13 +47,13 @@ export const CollapsiblePanel = ({
   const shouldRenderTopAction = (!collapsible || isExpanded) && Boolean(actionLabel && onAction)
   const shouldShowBottomAction = showBottomActionWhenHeaderHidden && shouldRenderTopAction && hasContent && !isHeaderActionVisible
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (defaultExpanded) {
       setExpanded(true)
     }
   }, [defaultExpanded])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!previousCollapsibleRef.current && collapsible) {
       setExpanded(true)
     }
