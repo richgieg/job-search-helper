@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest'
+import 'fake-indexeddb/auto'
 
 import { QueryClientProvider } from '@tanstack/react-query'
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import type { PropsWithChildren } from 'react'
 import { beforeEach, describe, expect, it } from 'vitest'
 
@@ -72,7 +73,9 @@ describe('useAppDataTransfer', () => {
     await result.current.importAppData(imported)
     const exported = await result.current.exportAppData()
 
-    expect(result.current.isSaving).toBe(false)
+    await waitFor(() => {
+      expect(result.current.isSaving).toBe(false)
+    })
     expect(useAppUiStore.getState().ui.themePreference).toBe('dark')
     expect(useAppUiStore.getState().ui.selectedJobId).toBeNull()
     expect(useAppUiStore.getState().ui.selectedProfileId).toBeNull()

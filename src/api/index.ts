@@ -4,7 +4,6 @@ import { LocalAppApiClient } from './app-api-client'
 import type { AppDataService } from './app-data-service'
 import { createDelayedAppDataService } from './delayed-app-data-service'
 import { IndexedDbAppBackend } from './indexeddb-app-backend'
-import { MockAppBackend } from './mock-app-backend'
 
 interface CreateAppApiClientOptions {
   initialData?: AppDataState
@@ -25,14 +24,8 @@ const parseDelayMs = (value: string | undefined, fallback: number): number => {
   return Math.round(parsed)
 }
 
-const getBackendMode = (): 'memory' | 'indexeddb' =>
-  import.meta.env.VITE_APP_DATA_BACKEND === 'memory' ? 'memory' : 'indexeddb'
-
 const createAppDataService = (options: CreateAppApiClientOptions): AppDataService => {
-  const backend: AppDataService =
-    getBackendMode() === 'indexeddb'
-      ? new IndexedDbAppBackend(options.initialData ? { initialData: options.initialData } : {})
-      : new MockAppBackend(options.initialData ? { initialData: options.initialData } : {})
+  const backend: AppDataService = new IndexedDbAppBackend(options.initialData ? { initialData: options.initialData } : {})
   const shouldSimulateDelay = import.meta.env.MODE === 'development' && import.meta.env.VITE_SIMULATE_API_DELAY === 'true'
 
   if (!shouldSimulateDelay) {

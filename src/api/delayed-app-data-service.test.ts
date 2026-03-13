@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { createEmptyAppDataState } from '../domain/app-data-state'
+import type { AppDataService } from './app-data-service'
 import { createDelayedAppDataService, getSimulatedDelayMs } from './delayed-app-data-service'
-import { MockAppBackend } from './mock-app-backend'
 
 describe('delayed app data service', () => {
   it('computes a delay within the configured range', () => {
@@ -26,7 +26,9 @@ describe('delayed app data service', () => {
   })
 
   it('delays backend calls before delegating to the wrapped service', async () => {
-    const backend = new MockAppBackend({ initialData: createEmptyAppDataState() })
+    const backend = {
+      getAppData: vi.fn(async () => createEmptyAppDataState()),
+    } as unknown as AppDataService
     const sleep = vi.fn(async (_ms: number) => {})
     const delayed = createDelayedAppDataService(backend, {
       minDelayMs: 120,

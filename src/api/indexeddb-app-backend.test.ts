@@ -2,7 +2,7 @@
 
 import 'fake-indexeddb/auto'
 
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import { createEmptyAppDataState } from '../domain/app-data-state'
 import { createDefaultResumeSettings } from '../domain/profile-defaults'
@@ -10,7 +10,6 @@ import type { AppExportFile } from '../types/state'
 import type { PersistedAppData } from './indexeddb'
 import { deleteAppDatabase } from './indexeddb'
 import { IndexedDbAppBackend } from './indexeddb-app-backend'
-import { MockAppBackend } from './mock-app-backend'
 
 const databaseName = 'job-search-helper-indexeddb-backend-test'
 
@@ -463,39 +462,32 @@ describe('IndexedDbAppBackend', () => {
     })
   })
 
-  it('persists compatibility-path mutations across backend instances', async () => {
+  it('persists mutations across backend instances', async () => {
     const firstBackend = new IndexedDbAppBackend({
       databaseName,
       now: () => '2026-03-13T16:00:00.000Z',
     })
 
-    const createJobSpy = vi.spyOn(MockAppBackend.prototype, 'createJob').mockRejectedValue(new Error('should not be used'))
+    const creationResult = await firstBackend.createJob({
+      companyName: 'Persisted Co',
+      jobTitle: 'Platform Engineer',
+      location: 'Remote',
+    })
 
-    try {
-      const creationResult = await firstBackend.createJob({
-        companyName: 'Persisted Co',
-        jobTitle: 'Platform Engineer',
-        location: 'Remote',
-      })
+    expect(creationResult.createdId).toBeTruthy()
 
-      expect(creationResult.createdId).toBeTruthy()
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const jobsList = await secondBackend.getJobsList()
 
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const jobsList = await secondBackend.getJobsList()
+    expect(jobsList.items).toHaveLength(1)
+    expect(jobsList.items[0]).toMatchObject({
+      companyName: 'Persisted Co',
+      jobTitle: 'Platform Engineer',
+    })
 
-      expect(jobsList.items).toHaveLength(1)
-      expect(jobsList.items[0]).toMatchObject({
-        companyName: 'Persisted Co',
-        jobTitle: 'Platform Engineer',
-      })
+    const persistedData = await secondBackend.getAppData()
 
-      const persistedData = await secondBackend.getAppData()
-
-      expect(Object.keys(persistedData.jobs)).toHaveLength(1)
-      expect(createJobSpy).not.toHaveBeenCalled()
-    } finally {
-      createJobSpy.mockRestore()
-    }
+    expect(Object.keys(persistedData.jobs)).toHaveLength(1)
   })
 
   it('creates base profiles with a direct IndexedDB write', async () => {
@@ -503,93 +495,75 @@ describe('IndexedDbAppBackend', () => {
       databaseName,
       now: () => '2026-03-13T16:05:00.000Z',
     })
-    const createBaseProfileSpy = vi.spyOn(MockAppBackend.prototype, 'createBaseProfile').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      const result = await backend.createBaseProfile('Direct Profile')
-      expect(result.createdId).toBeTruthy()
+    const result = await backend.createBaseProfile('Direct Profile')
+    expect(result.createdId).toBeTruthy()
 
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const createdProfile = result.createdId ? (await secondBackend.getAppData()).profiles[result.createdId] : null
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const createdProfile = result.createdId ? (await secondBackend.getAppData()).profiles[result.createdId] : null
 
-      expect(createdProfile).toMatchObject({
-        name: 'Direct Profile',
-        jobId: null,
-      })
-      expect(createBaseProfileSpy).not.toHaveBeenCalled()
-    } finally {
-      createBaseProfileSpy.mockRestore()
-    }
+    expect(createdProfile).toMatchObject({
+      name: 'Direct Profile',
+      jobId: null,
+    })
   })
 
   it('updates profiles with a direct IndexedDB write', async () => {
     const backend = new IndexedDbAppBackend({ databaseName })
     const seedData = createSeedData()
-    const updateProfileSpy = vi.spyOn(MockAppBackend.prototype, 'updateProfile').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      await backend.updateProfile({
-        profileId: 'profile_3',
-        changes: {
-          name: 'Updated Job 1 Profile',
-          summary: 'Updated summary',
-        },
-        personalDetails: {
-          city: 'Updated City',
-        },
-      })
-
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const updatedProfile = (await secondBackend.getAppData()).profiles.profile_3
-
-      expect(updatedProfile).toMatchObject({
+    await backend.updateProfile({
+      profileId: 'profile_3',
+      changes: {
         name: 'Updated Job 1 Profile',
         summary: 'Updated summary',
-      })
-      expect(updatedProfile?.personalDetails.city).toBe('Updated City')
-      expect(updateProfileSpy).not.toHaveBeenCalled()
-    } finally {
-      updateProfileSpy.mockRestore()
-    }
+      },
+      personalDetails: {
+        city: 'Updated City',
+      },
+    })
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const updatedProfile = (await secondBackend.getAppData()).profiles.profile_3
+
+    expect(updatedProfile).toMatchObject({
+      name: 'Updated Job 1 Profile',
+      summary: 'Updated summary',
+    })
+    expect(updatedProfile?.personalDetails.city).toBe('Updated City')
   })
 
   it('updates jobs with a direct IndexedDB write', async () => {
     const backend = new IndexedDbAppBackend({ databaseName })
     const seedData = createSeedData()
-    const updateJobSpy = vi.spyOn(MockAppBackend.prototype, 'updateJob').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      await backend.updateJob({
-        jobId: 'job_1',
-        changes: {
-          location: 'Updated Remote',
-          notes: 'Updated notes',
-        },
-      })
-
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const updatedJob = (await secondBackend.getAppData()).jobs.job_1
-
-      expect(updatedJob).toMatchObject({
+    await backend.updateJob({
+      jobId: 'job_1',
+      changes: {
         location: 'Updated Remote',
         notes: 'Updated notes',
-      })
-      expect(updateJobSpy).not.toHaveBeenCalled()
-    } finally {
-      updateJobSpy.mockRestore()
-    }
+      },
+    })
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const updatedJob = (await secondBackend.getAppData()).jobs.job_1
+
+    expect(updatedJob).toMatchObject({
+      location: 'Updated Remote',
+      notes: 'Updated notes',
+    })
   })
 
   it('updates profile resume settings with direct IndexedDB writes', async () => {
@@ -598,55 +572,40 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T16:10:00.000Z',
     })
     const seedData = createSeedData()
-    const setDocumentHeaderTemplateSpy = vi.spyOn(MockAppBackend.prototype, 'setDocumentHeaderTemplate').mockRejectedValue(new Error('should not be used'))
-    const setResumeSectionEnabledSpy = vi.spyOn(MockAppBackend.prototype, 'setResumeSectionEnabled').mockRejectedValue(new Error('should not be used'))
-    const setResumeSectionLabelSpy = vi.spyOn(MockAppBackend.prototype, 'setResumeSectionLabel').mockRejectedValue(new Error('should not be used'))
-    const reorderResumeSectionsSpy = vi.spyOn(MockAppBackend.prototype, 'reorderResumeSections').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      await backend.setDocumentHeaderTemplate({
-        profileId: 'profile_3',
-        headerTemplate: 'stacked',
-      })
-      await backend.setResumeSectionEnabled({
-        profileId: 'profile_3',
-        section: 'projects',
-        enabled: false,
-      })
-      await backend.setResumeSectionLabel({
-        profileId: 'profile_3',
-        section: 'additional_experience',
-        label: 'Volunteer Work',
-      })
-      await backend.reorderResumeSections({
-        profileId: 'profile_3',
-        orderedSections: ['projects', 'summary', 'skills', 'achievements', 'experience', 'education', 'additional_experience', 'certifications', 'references'],
-      })
+    await backend.setDocumentHeaderTemplate({
+      profileId: 'profile_3',
+      headerTemplate: 'stacked',
+    })
+    await backend.setResumeSectionEnabled({
+      profileId: 'profile_3',
+      section: 'projects',
+      enabled: false,
+    })
+    await backend.setResumeSectionLabel({
+      profileId: 'profile_3',
+      section: 'additional_experience',
+      label: 'Volunteer Work',
+    })
+    await backend.reorderResumeSections({
+      profileId: 'profile_3',
+      orderedSections: ['projects', 'summary', 'skills', 'achievements', 'experience', 'education', 'additional_experience', 'certifications', 'references'],
+    })
 
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const updatedProfile = (await secondBackend.getAppData()).profiles.profile_3
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const updatedProfile = (await secondBackend.getAppData()).profiles.profile_3
 
-      expect(updatedProfile?.resumeSettings.headerTemplate).toBe('stacked')
-      expect(updatedProfile?.resumeSettings.sections.projects.enabled).toBe(false)
-      expect(updatedProfile?.resumeSettings.sections.additional_experience.label).toBe('Volunteer Work')
-      expect(updatedProfile?.resumeSettings.sections.projects.sortOrder).toBe(1)
-      expect(updatedProfile?.resumeSettings.sections.summary.sortOrder).toBe(2)
-      expect(setDocumentHeaderTemplateSpy).not.toHaveBeenCalled()
-      expect(setResumeSectionEnabledSpy).not.toHaveBeenCalled()
-      expect(setResumeSectionLabelSpy).not.toHaveBeenCalled()
-      expect(reorderResumeSectionsSpy).not.toHaveBeenCalled()
-    } finally {
-      setDocumentHeaderTemplateSpy.mockRestore()
-      setResumeSectionEnabledSpy.mockRestore()
-      setResumeSectionLabelSpy.mockRestore()
-      reorderResumeSectionsSpy.mockRestore()
-    }
+    expect(updatedProfile?.resumeSettings.headerTemplate).toBe('stacked')
+    expect(updatedProfile?.resumeSettings.sections.projects.enabled).toBe(false)
+    expect(updatedProfile?.resumeSettings.sections.additional_experience.label).toBe('Volunteer Work')
+    expect(updatedProfile?.resumeSettings.sections.projects.sortOrder).toBe(1)
+    expect(updatedProfile?.resumeSettings.sections.summary.sortOrder).toBe(2)
   })
 
   it('updates job progress fields with direct IndexedDB writes', async () => {
@@ -655,52 +614,37 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T16:15:00.000Z',
     })
     const seedData = createSeedData()
-    const setJobAppliedAtSpy = vi.spyOn(MockAppBackend.prototype, 'setJobAppliedAt').mockRejectedValue(new Error('should not be used'))
-    const clearJobAppliedAtSpy = vi.spyOn(MockAppBackend.prototype, 'clearJobAppliedAt').mockRejectedValue(new Error('should not be used'))
-    const setJobFinalOutcomeSpy = vi.spyOn(MockAppBackend.prototype, 'setJobFinalOutcome').mockRejectedValue(new Error('should not be used'))
-    const clearJobFinalOutcomeSpy = vi.spyOn(MockAppBackend.prototype, 'clearJobFinalOutcome').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      await backend.setJobAppliedAt({
-        jobId: 'job_1',
-        appliedAt: '2026-03-13T09:00:00.000Z',
-      })
-      await backend.setJobFinalOutcome({
-        jobId: 'job_1',
-        status: 'offer_received',
-        setAt: '2026-03-13T11:00:00.000Z',
-      })
+    await backend.setJobAppliedAt({
+      jobId: 'job_1',
+      appliedAt: '2026-03-13T09:00:00.000Z',
+    })
+    await backend.setJobFinalOutcome({
+      jobId: 'job_1',
+      status: 'offer_received',
+      setAt: '2026-03-13T11:00:00.000Z',
+    })
 
-      let secondBackend = new IndexedDbAppBackend({ databaseName })
-      let updatedJob = (await secondBackend.getAppData()).jobs.job_1
+    let secondBackend = new IndexedDbAppBackend({ databaseName })
+    let updatedJob = (await secondBackend.getAppData()).jobs.job_1
 
-      expect(updatedJob?.appliedAt).toBe('2026-03-13T09:00:00.000Z')
-      expect(updatedJob?.finalOutcome).toEqual({ status: 'offer_received', setAt: '2026-03-13T11:00:00.000Z' })
+    expect(updatedJob?.appliedAt).toBe('2026-03-13T09:00:00.000Z')
+    expect(updatedJob?.finalOutcome).toEqual({ status: 'offer_received', setAt: '2026-03-13T11:00:00.000Z' })
 
-      await backend.clearJobFinalOutcome('job_1')
-      await backend.clearJobAppliedAt('job_1')
+    await backend.clearJobFinalOutcome('job_1')
+    await backend.clearJobAppliedAt('job_1')
 
-      secondBackend = new IndexedDbAppBackend({ databaseName })
-      updatedJob = (await secondBackend.getAppData()).jobs.job_1
+    secondBackend = new IndexedDbAppBackend({ databaseName })
+    updatedJob = (await secondBackend.getAppData()).jobs.job_1
 
-      expect(updatedJob?.appliedAt).toBeNull()
-      expect(updatedJob?.finalOutcome).toBeNull()
-      expect(setJobAppliedAtSpy).not.toHaveBeenCalled()
-      expect(clearJobAppliedAtSpy).not.toHaveBeenCalled()
-      expect(setJobFinalOutcomeSpy).not.toHaveBeenCalled()
-      expect(clearJobFinalOutcomeSpy).not.toHaveBeenCalled()
-    } finally {
-      setJobAppliedAtSpy.mockRestore()
-      clearJobAppliedAtSpy.mockRestore()
-      setJobFinalOutcomeSpy.mockRestore()
-      clearJobFinalOutcomeSpy.mockRestore()
-    }
+    expect(updatedJob?.appliedAt).toBeNull()
+    expect(updatedJob?.finalOutcome).toBeNull()
   })
 
   it('updates profile links with direct IndexedDB writes', async () => {
@@ -709,73 +653,58 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T16:20:00.000Z',
     })
     const seedData = createSeedData()
-    const createProfileLinkSpy = vi.spyOn(MockAppBackend.prototype, 'createProfileLink').mockRejectedValue(new Error('should not be used'))
-    const updateProfileLinkSpy = vi.spyOn(MockAppBackend.prototype, 'updateProfileLink').mockRejectedValue(new Error('should not be used'))
-    const deleteProfileLinkSpy = vi.spyOn(MockAppBackend.prototype, 'deleteProfileLink').mockRejectedValue(new Error('should not be used'))
-    const reorderProfileLinksSpy = vi.spyOn(MockAppBackend.prototype, 'reorderProfileLinks').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      const creationResult = await backend.createProfileLink('profile_3')
-      expect(creationResult.createdId).toBeTruthy()
+    const creationResult = await backend.createProfileLink('profile_3')
+    expect(creationResult.createdId).toBeTruthy()
 
-      await backend.updateProfileLink({
-        profileLinkId: 'profile_link_2',
-        changes: {
+    await backend.updateProfileLink({
+      profileLinkId: 'profile_link_2',
+      changes: {
+        name: 'GitHub Updated',
+        url: 'https://github.com/example-updated',
+        enabled: false,
+      },
+    })
+
+    await backend.reorderProfileLinks({
+      profileId: 'profile_3',
+      orderedIds: [creationResult.createdId!, 'profile_link_2', 'profile_link_1'],
+    })
+
+    await backend.deleteProfileLink('profile_link_1')
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
+    const profileLinks = Object.values(persistedData.profileLinks).filter((profileLink) => profileLink.profileId === 'profile_3')
+
+    expect(profileLinks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: creationResult.createdId,
+          profileId: 'profile_3',
+          sortOrder: 1,
+          name: '',
+          url: '',
+          enabled: true,
+        }),
+        expect.objectContaining({
+          id: 'profile_link_2',
+          profileId: 'profile_3',
+          sortOrder: 2,
           name: 'GitHub Updated',
           url: 'https://github.com/example-updated',
           enabled: false,
-        },
-      })
-
-      await backend.reorderProfileLinks({
-        profileId: 'profile_3',
-        orderedIds: [creationResult.createdId!, 'profile_link_2', 'profile_link_1'],
-      })
-
-      await backend.deleteProfileLink('profile_link_1')
-
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
-      const profileLinks = Object.values(persistedData.profileLinks).filter((profileLink) => profileLink.profileId === 'profile_3')
-
-      expect(profileLinks).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: creationResult.createdId,
-            profileId: 'profile_3',
-            sortOrder: 1,
-            name: '',
-            url: '',
-            enabled: true,
-          }),
-          expect.objectContaining({
-            id: 'profile_link_2',
-            profileId: 'profile_3',
-            sortOrder: 2,
-            name: 'GitHub Updated',
-            url: 'https://github.com/example-updated',
-            enabled: false,
-          }),
-        ]),
-      )
-      expect(profileLinks.find((profileLink) => profileLink.id === 'profile_link_1')).toBeUndefined()
-      expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T16:20:00.000Z')
-      expect(createProfileLinkSpy).not.toHaveBeenCalled()
-      expect(updateProfileLinkSpy).not.toHaveBeenCalled()
-      expect(deleteProfileLinkSpy).not.toHaveBeenCalled()
-      expect(reorderProfileLinksSpy).not.toHaveBeenCalled()
-    } finally {
-      createProfileLinkSpy.mockRestore()
-      updateProfileLinkSpy.mockRestore()
-      deleteProfileLinkSpy.mockRestore()
-      reorderProfileLinksSpy.mockRestore()
-    }
+        }),
+      ]),
+    )
+    expect(profileLinks.find((profileLink) => profileLink.id === 'profile_link_1')).toBeUndefined()
+    expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T16:20:00.000Z')
   })
 
   it('updates job links with direct IndexedDB writes', async () => {
@@ -784,68 +713,53 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T16:25:00.000Z',
     })
     const seedData = createSeedData()
-    const createJobLinkSpy = vi.spyOn(MockAppBackend.prototype, 'createJobLink').mockRejectedValue(new Error('should not be used'))
-    const updateJobLinkSpy = vi.spyOn(MockAppBackend.prototype, 'updateJobLink').mockRejectedValue(new Error('should not be used'))
-    const deleteJobLinkSpy = vi.spyOn(MockAppBackend.prototype, 'deleteJobLink').mockRejectedValue(new Error('should not be used'))
-    const reorderJobLinksSpy = vi.spyOn(MockAppBackend.prototype, 'reorderJobLinks').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      const creationResult = await backend.createJobLink('job_1')
-      expect(creationResult.createdId).toBeTruthy()
+    const creationResult = await backend.createJobLink('job_1')
+    expect(creationResult.createdId).toBeTruthy()
 
-      await backend.updateJobLink({
-        jobLinkId: 'job_link_2',
-        changes: {
+    await backend.updateJobLink({
+      jobLinkId: 'job_link_2',
+      changes: {
+        url: 'https://example.com/job-1-updated',
+      },
+    })
+
+    await backend.reorderJobLinks({
+      jobId: 'job_1',
+      orderedIds: [creationResult.createdId!, 'job_link_2', 'job_link_1'],
+    })
+
+    await backend.deleteJobLink('job_link_1')
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
+    const jobLinks = Object.values(persistedData.jobLinks).filter((jobLink) => jobLink.jobId === 'job_1')
+
+    expect(jobLinks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: creationResult.createdId,
+          jobId: 'job_1',
+          sortOrder: 1,
+          url: '',
+          createdAt: '2026-03-13T16:25:00.000Z',
+        }),
+        expect.objectContaining({
+          id: 'job_link_2',
+          jobId: 'job_1',
+          sortOrder: 2,
           url: 'https://example.com/job-1-updated',
-        },
-      })
-
-      await backend.reorderJobLinks({
-        jobId: 'job_1',
-        orderedIds: [creationResult.createdId!, 'job_link_2', 'job_link_1'],
-      })
-
-      await backend.deleteJobLink('job_link_1')
-
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
-      const jobLinks = Object.values(persistedData.jobLinks).filter((jobLink) => jobLink.jobId === 'job_1')
-
-      expect(jobLinks).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: creationResult.createdId,
-            jobId: 'job_1',
-            sortOrder: 1,
-            url: '',
-            createdAt: '2026-03-13T16:25:00.000Z',
-          }),
-          expect.objectContaining({
-            id: 'job_link_2',
-            jobId: 'job_1',
-            sortOrder: 2,
-            url: 'https://example.com/job-1-updated',
-          }),
-        ]),
-      )
-      expect(jobLinks.find((jobLink) => jobLink.id === 'job_link_1')).toBeUndefined()
-      expect(persistedData.jobs.job_1?.updatedAt).toBe('2026-03-13T16:25:00.000Z')
-      expect(createJobLinkSpy).not.toHaveBeenCalled()
-      expect(updateJobLinkSpy).not.toHaveBeenCalled()
-      expect(deleteJobLinkSpy).not.toHaveBeenCalled()
-      expect(reorderJobLinksSpy).not.toHaveBeenCalled()
-    } finally {
-      createJobLinkSpy.mockRestore()
-      updateJobLinkSpy.mockRestore()
-      deleteJobLinkSpy.mockRestore()
-      reorderJobLinksSpy.mockRestore()
-    }
+        }),
+      ]),
+    )
+    expect(jobLinks.find((jobLink) => jobLink.id === 'job_link_1')).toBeUndefined()
+    expect(persistedData.jobs.job_1?.updatedAt).toBe('2026-03-13T16:25:00.000Z')
   })
 
   it('updates job contacts with direct IndexedDB writes', async () => {
@@ -854,75 +768,60 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T16:30:00.000Z',
     })
     const seedData = createSeedData()
-    const createJobContactSpy = vi.spyOn(MockAppBackend.prototype, 'createJobContact').mockRejectedValue(new Error('should not be used'))
-    const updateJobContactSpy = vi.spyOn(MockAppBackend.prototype, 'updateJobContact').mockRejectedValue(new Error('should not be used'))
-    const deleteJobContactSpy = vi.spyOn(MockAppBackend.prototype, 'deleteJobContact').mockRejectedValue(new Error('should not be used'))
-    const reorderJobContactsSpy = vi.spyOn(MockAppBackend.prototype, 'reorderJobContacts').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      const creationResult = await backend.createJobContact('job_1')
-      expect(creationResult.createdId).toBeTruthy()
+    const creationResult = await backend.createJobContact('job_1')
+    expect(creationResult.createdId).toBeTruthy()
 
-      await backend.updateJobContact({
-        jobContactId: 'job_contact_1',
-        changes: {
+    await backend.updateJobContact({
+      jobContactId: 'job_contact_1',
+      changes: {
+        name: 'Hiring Manager Updated',
+        email: 'updated-manager@example.com',
+      },
+    })
+
+    await backend.reorderJobContacts({
+      jobId: 'job_1',
+      orderedIds: [creationResult.createdId!, 'job_contact_1', 'job_contact_2'],
+    })
+
+    await backend.deleteJobContact('job_contact_2')
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
+    const jobContacts = Object.values(persistedData.jobContacts).filter((jobContact) => jobContact.jobId === 'job_1')
+
+    expect(jobContacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: creationResult.createdId,
+          jobId: 'job_1',
+          sortOrder: 1,
+          name: '',
+          email: '',
+        }),
+        expect.objectContaining({
+          id: 'job_contact_1',
+          jobId: 'job_1',
+          sortOrder: 2,
           name: 'Hiring Manager Updated',
           email: 'updated-manager@example.com',
-        },
-      })
-
-      await backend.reorderJobContacts({
-        jobId: 'job_1',
-        orderedIds: [creationResult.createdId!, 'job_contact_1', 'job_contact_2'],
-      })
-
-      await backend.deleteJobContact('job_contact_2')
-
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
-      const jobContacts = Object.values(persistedData.jobContacts).filter((jobContact) => jobContact.jobId === 'job_1')
-
-      expect(jobContacts).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: creationResult.createdId,
-            jobId: 'job_1',
-            sortOrder: 1,
-            name: '',
-            email: '',
-          }),
-          expect.objectContaining({
-            id: 'job_contact_1',
-            jobId: 'job_1',
-            sortOrder: 2,
-            name: 'Hiring Manager Updated',
-            email: 'updated-manager@example.com',
-          }),
-        ]),
-      )
-      expect(jobContacts.find((jobContact) => jobContact.id === 'job_contact_2')).toBeUndefined()
-      expect(persistedData.interviewContacts.interview_contact_1).toBeUndefined()
-      expect(persistedData.interviewContacts.interview_contact_2).toMatchObject({
-        id: 'interview_contact_2',
-        jobContactId: 'job_contact_1',
-      })
-      expect(persistedData.jobs.job_1?.updatedAt).toBe('2026-03-13T16:30:00.000Z')
-      expect(createJobContactSpy).not.toHaveBeenCalled()
-      expect(updateJobContactSpy).not.toHaveBeenCalled()
-      expect(deleteJobContactSpy).not.toHaveBeenCalled()
-      expect(reorderJobContactsSpy).not.toHaveBeenCalled()
-    } finally {
-      createJobContactSpy.mockRestore()
-      updateJobContactSpy.mockRestore()
-      deleteJobContactSpy.mockRestore()
-      reorderJobContactsSpy.mockRestore()
-    }
+        }),
+      ]),
+    )
+    expect(jobContacts.find((jobContact) => jobContact.id === 'job_contact_2')).toBeUndefined()
+    expect(persistedData.interviewContacts.interview_contact_1).toBeUndefined()
+    expect(persistedData.interviewContacts.interview_contact_2).toMatchObject({
+      id: 'interview_contact_2',
+      jobContactId: 'job_contact_1',
+    })
+    expect(persistedData.jobs.job_1?.updatedAt).toBe('2026-03-13T16:30:00.000Z')
   })
 
   it('updates application questions with direct IndexedDB writes', async () => {
@@ -931,72 +830,57 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T16:35:00.000Z',
     })
     const seedData = createSeedData()
-    const createApplicationQuestionSpy = vi.spyOn(MockAppBackend.prototype, 'createApplicationQuestion').mockRejectedValue(new Error('should not be used'))
-    const updateApplicationQuestionSpy = vi.spyOn(MockAppBackend.prototype, 'updateApplicationQuestion').mockRejectedValue(new Error('should not be used'))
-    const deleteApplicationQuestionSpy = vi.spyOn(MockAppBackend.prototype, 'deleteApplicationQuestion').mockRejectedValue(new Error('should not be used'))
-    const reorderApplicationQuestionsSpy = vi.spyOn(MockAppBackend.prototype, 'reorderApplicationQuestions').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      const creationResult = await backend.createApplicationQuestion('job_1')
-      expect(creationResult.createdId).toBeTruthy()
+    const creationResult = await backend.createApplicationQuestion('job_1')
+    expect(creationResult.createdId).toBeTruthy()
 
-      await backend.updateApplicationQuestion({
-        applicationQuestionId: 'application_question_2',
-        changes: {
+    await backend.updateApplicationQuestion({
+      applicationQuestionId: 'application_question_2',
+      changes: {
+        question: 'Why this company updated?',
+        answer: 'Even stronger mission alignment',
+      },
+    })
+
+    await backend.reorderApplicationQuestions({
+      jobId: 'job_1',
+      orderedIds: [creationResult.createdId!, 'application_question_2', 'application_question_1'],
+    })
+
+    await backend.deleteApplicationQuestion('application_question_1')
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
+    const applicationQuestions = Object.values(persistedData.applicationQuestions).filter(
+      (applicationQuestion) => applicationQuestion.jobId === 'job_1',
+    )
+
+    expect(applicationQuestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: creationResult.createdId,
+          jobId: 'job_1',
+          sortOrder: 1,
+          question: '',
+          answer: '',
+        }),
+        expect.objectContaining({
+          id: 'application_question_2',
+          jobId: 'job_1',
+          sortOrder: 2,
           question: 'Why this company updated?',
           answer: 'Even stronger mission alignment',
-        },
-      })
-
-      await backend.reorderApplicationQuestions({
-        jobId: 'job_1',
-        orderedIds: [creationResult.createdId!, 'application_question_2', 'application_question_1'],
-      })
-
-      await backend.deleteApplicationQuestion('application_question_1')
-
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
-      const applicationQuestions = Object.values(persistedData.applicationQuestions).filter(
-        (applicationQuestion) => applicationQuestion.jobId === 'job_1',
-      )
-
-      expect(applicationQuestions).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: creationResult.createdId,
-            jobId: 'job_1',
-            sortOrder: 1,
-            question: '',
-            answer: '',
-          }),
-          expect.objectContaining({
-            id: 'application_question_2',
-            jobId: 'job_1',
-            sortOrder: 2,
-            question: 'Why this company updated?',
-            answer: 'Even stronger mission alignment',
-          }),
-        ]),
-      )
-      expect(applicationQuestions.find((applicationQuestion) => applicationQuestion.id === 'application_question_1')).toBeUndefined()
-      expect(persistedData.jobs.job_1?.updatedAt).toBe('2026-03-13T16:35:00.000Z')
-      expect(createApplicationQuestionSpy).not.toHaveBeenCalled()
-      expect(updateApplicationQuestionSpy).not.toHaveBeenCalled()
-      expect(deleteApplicationQuestionSpy).not.toHaveBeenCalled()
-      expect(reorderApplicationQuestionsSpy).not.toHaveBeenCalled()
-    } finally {
-      createApplicationQuestionSpy.mockRestore()
-      updateApplicationQuestionSpy.mockRestore()
-      deleteApplicationQuestionSpy.mockRestore()
-      reorderApplicationQuestionsSpy.mockRestore()
-    }
+        }),
+      ]),
+    )
+    expect(applicationQuestions.find((applicationQuestion) => applicationQuestion.id === 'application_question_1')).toBeUndefined()
+    expect(persistedData.jobs.job_1?.updatedAt).toBe('2026-03-13T16:35:00.000Z')
   })
 
   it('updates simple profile child collections with direct IndexedDB writes', async () => {
@@ -1005,139 +889,100 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T16:40:00.000Z',
     })
     const seedData = createSeedData()
-    const createAchievementSpy = vi.spyOn(MockAppBackend.prototype, 'createAchievement').mockRejectedValue(new Error('should not be used'))
-    const updateAchievementSpy = vi.spyOn(MockAppBackend.prototype, 'updateAchievement').mockRejectedValue(new Error('should not be used'))
-    const deleteAchievementSpy = vi.spyOn(MockAppBackend.prototype, 'deleteAchievement').mockRejectedValue(new Error('should not be used'))
-    const reorderAchievementsSpy = vi.spyOn(MockAppBackend.prototype, 'reorderAchievements').mockRejectedValue(new Error('should not be used'))
-    const createCertificationSpy = vi.spyOn(MockAppBackend.prototype, 'createCertification').mockRejectedValue(new Error('should not be used'))
-    const updateCertificationSpy = vi.spyOn(MockAppBackend.prototype, 'updateCertification').mockRejectedValue(new Error('should not be used'))
-    const deleteCertificationSpy = vi.spyOn(MockAppBackend.prototype, 'deleteCertification').mockRejectedValue(new Error('should not be used'))
-    const reorderCertificationsSpy = vi.spyOn(MockAppBackend.prototype, 'reorderCertifications').mockRejectedValue(new Error('should not be used'))
-    const createReferenceSpy = vi.spyOn(MockAppBackend.prototype, 'createReference').mockRejectedValue(new Error('should not be used'))
-    const updateReferenceSpy = vi.spyOn(MockAppBackend.prototype, 'updateReference').mockRejectedValue(new Error('should not be used'))
-    const deleteReferenceSpy = vi.spyOn(MockAppBackend.prototype, 'deleteReference').mockRejectedValue(new Error('should not be used'))
-    const reorderReferencesSpy = vi.spyOn(MockAppBackend.prototype, 'reorderReferences').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      const createdAchievement = await backend.createAchievement('profile_3')
-      const createdCertification = await backend.createCertification('profile_3')
-      const createdReference = await backend.createReference('profile_3')
+    const createdAchievement = await backend.createAchievement('profile_3')
+    const createdCertification = await backend.createCertification('profile_3')
+    const createdReference = await backend.createReference('profile_3')
 
-      expect(createdAchievement.createdId).toBeTruthy()
-      expect(createdCertification.createdId).toBeTruthy()
-      expect(createdReference.createdId).toBeTruthy()
+    expect(createdAchievement.createdId).toBeTruthy()
+    expect(createdCertification.createdId).toBeTruthy()
+    expect(createdReference.createdId).toBeTruthy()
 
-      await backend.updateAchievement({
-        achievementId: createdAchievement.createdId!,
-        changes: {
-          name: 'New Achievement',
-          description: 'Created directly in IndexedDB',
-          enabled: false,
-        },
-      })
-      await backend.reorderAchievements({
+    await backend.updateAchievement({
+      achievementId: createdAchievement.createdId!,
+      changes: {
+        name: 'New Achievement',
+        description: 'Created directly in IndexedDB',
+        enabled: false,
+      },
+    })
+    await backend.reorderAchievements({
+      profileId: 'profile_3',
+      orderedIds: [createdAchievement.createdId!, 'achievement_1'],
+    })
+    await backend.deleteAchievement('achievement_1')
+
+    await backend.updateCertification({
+      certificationId: createdCertification.createdId!,
+      changes: {
+        name: 'IndexedDB Cert',
+        issuer: 'Testing Board',
+        credentialId: 'idx-001',
+      },
+    })
+    await backend.reorderCertifications({
+      profileId: 'profile_3',
+      orderedIds: [createdCertification.createdId!, 'certification_1'],
+    })
+    await backend.deleteCertification('certification_1')
+
+    await backend.updateReference({
+      referenceId: createdReference.createdId!,
+      changes: {
+        name: 'Direct Reference',
+        relationship: 'Colleague',
+        email: 'reference@example.com',
+      },
+    })
+    await backend.reorderReferences({
+      profileId: 'profile_3',
+      orderedIds: [createdReference.createdId!, 'reference_1'],
+    })
+    await backend.deleteReference('reference_1')
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
+
+    expect(Object.values(persistedData.achievements).filter((item) => item.profileId === 'profile_3')).toEqual([
+      expect.objectContaining({
+        id: createdAchievement.createdId,
         profileId: 'profile_3',
-        orderedIds: [createdAchievement.createdId!, 'achievement_1'],
-      })
-      await backend.deleteAchievement('achievement_1')
+        sortOrder: 1,
+        name: 'New Achievement',
+        description: 'Created directly in IndexedDB',
+        enabled: false,
+      }),
+    ])
 
-      await backend.updateCertification({
-        certificationId: createdCertification.createdId!,
-        changes: {
-          name: 'IndexedDB Cert',
-          issuer: 'Testing Board',
-          credentialId: 'idx-001',
-        },
-      })
-      await backend.reorderCertifications({
+    expect(Object.values(persistedData.certifications).filter((item) => item.profileId === 'profile_3')).toEqual([
+      expect.objectContaining({
+        id: createdCertification.createdId,
         profileId: 'profile_3',
-        orderedIds: [createdCertification.createdId!, 'certification_1'],
-      })
-      await backend.deleteCertification('certification_1')
+        sortOrder: 1,
+        name: 'IndexedDB Cert',
+        issuer: 'Testing Board',
+        credentialId: 'idx-001',
+      }),
+    ])
 
-      await backend.updateReference({
-        referenceId: createdReference.createdId!,
-        changes: {
-          name: 'Direct Reference',
-          relationship: 'Colleague',
-          email: 'reference@example.com',
-        },
-      })
-      await backend.reorderReferences({
+    expect(Object.values(persistedData.references).filter((item) => item.profileId === 'profile_3')).toEqual([
+      expect.objectContaining({
+        id: createdReference.createdId,
         profileId: 'profile_3',
-        orderedIds: [createdReference.createdId!, 'reference_1'],
-      })
-      await backend.deleteReference('reference_1')
+        sortOrder: 1,
+        name: 'Direct Reference',
+        relationship: 'Colleague',
+        email: 'reference@example.com',
+      }),
+    ])
 
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
-
-      expect(Object.values(persistedData.achievements).filter((item) => item.profileId === 'profile_3')).toEqual([
-        expect.objectContaining({
-          id: createdAchievement.createdId,
-          profileId: 'profile_3',
-          sortOrder: 1,
-          name: 'New Achievement',
-          description: 'Created directly in IndexedDB',
-          enabled: false,
-        }),
-      ])
-
-      expect(Object.values(persistedData.certifications).filter((item) => item.profileId === 'profile_3')).toEqual([
-        expect.objectContaining({
-          id: createdCertification.createdId,
-          profileId: 'profile_3',
-          sortOrder: 1,
-          name: 'IndexedDB Cert',
-          issuer: 'Testing Board',
-          credentialId: 'idx-001',
-        }),
-      ])
-
-      expect(Object.values(persistedData.references).filter((item) => item.profileId === 'profile_3')).toEqual([
-        expect.objectContaining({
-          id: createdReference.createdId,
-          profileId: 'profile_3',
-          sortOrder: 1,
-          name: 'Direct Reference',
-          relationship: 'Colleague',
-          email: 'reference@example.com',
-        }),
-      ])
-
-      expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T16:40:00.000Z')
-      expect(createAchievementSpy).not.toHaveBeenCalled()
-      expect(updateAchievementSpy).not.toHaveBeenCalled()
-      expect(deleteAchievementSpy).not.toHaveBeenCalled()
-      expect(reorderAchievementsSpy).not.toHaveBeenCalled()
-      expect(createCertificationSpy).not.toHaveBeenCalled()
-      expect(updateCertificationSpy).not.toHaveBeenCalled()
-      expect(deleteCertificationSpy).not.toHaveBeenCalled()
-      expect(reorderCertificationsSpy).not.toHaveBeenCalled()
-      expect(createReferenceSpy).not.toHaveBeenCalled()
-      expect(updateReferenceSpy).not.toHaveBeenCalled()
-      expect(deleteReferenceSpy).not.toHaveBeenCalled()
-      expect(reorderReferencesSpy).not.toHaveBeenCalled()
-    } finally {
-      createAchievementSpy.mockRestore()
-      updateAchievementSpy.mockRestore()
-      deleteAchievementSpy.mockRestore()
-      reorderAchievementsSpy.mockRestore()
-      createCertificationSpy.mockRestore()
-      updateCertificationSpy.mockRestore()
-      deleteCertificationSpy.mockRestore()
-      reorderCertificationsSpy.mockRestore()
-      createReferenceSpy.mockRestore()
-      updateReferenceSpy.mockRestore()
-      deleteReferenceSpy.mockRestore()
-      reorderReferencesSpy.mockRestore()
-    }
+    expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T16:40:00.000Z')
   })
 
   it('updates skill categories and skills with direct IndexedDB writes', async () => {
@@ -1146,117 +991,90 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T16:45:00.000Z',
     })
     const seedData = createSeedData()
-    const createSkillCategorySpy = vi.spyOn(MockAppBackend.prototype, 'createSkillCategory').mockRejectedValue(new Error('should not be used'))
-    const updateSkillCategorySpy = vi.spyOn(MockAppBackend.prototype, 'updateSkillCategory').mockRejectedValue(new Error('should not be used'))
-    const deleteSkillCategorySpy = vi.spyOn(MockAppBackend.prototype, 'deleteSkillCategory').mockRejectedValue(new Error('should not be used'))
-    const reorderSkillCategoriesSpy = vi.spyOn(MockAppBackend.prototype, 'reorderSkillCategories').mockRejectedValue(new Error('should not be used'))
-    const createSkillSpy = vi.spyOn(MockAppBackend.prototype, 'createSkill').mockRejectedValue(new Error('should not be used'))
-    const updateSkillSpy = vi.spyOn(MockAppBackend.prototype, 'updateSkill').mockRejectedValue(new Error('should not be used'))
-    const deleteSkillSpy = vi.spyOn(MockAppBackend.prototype, 'deleteSkill').mockRejectedValue(new Error('should not be used'))
-    const reorderSkillsSpy = vi.spyOn(MockAppBackend.prototype, 'reorderSkills').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      const createdCategory = await backend.createSkillCategory('profile_3')
-      expect(createdCategory.createdId).toBeTruthy()
+    const createdCategory = await backend.createSkillCategory('profile_3')
+    expect(createdCategory.createdId).toBeTruthy()
 
-      await backend.updateSkillCategory({
-        skillCategoryId: 'skill_category_2',
-        changes: {
-          name: 'Frameworks Updated',
-          enabled: false,
-        },
-      })
+    await backend.updateSkillCategory({
+      skillCategoryId: 'skill_category_2',
+      changes: {
+        name: 'Frameworks Updated',
+        enabled: false,
+      },
+    })
 
-      await backend.reorderSkillCategories({
-        profileId: 'profile_3',
-        orderedIds: [createdCategory.createdId!, 'skill_category_2', 'skill_category_1'],
-      })
+    await backend.reorderSkillCategories({
+      profileId: 'profile_3',
+      orderedIds: [createdCategory.createdId!, 'skill_category_2', 'skill_category_1'],
+    })
 
-      const createdSkill = await backend.createSkill(createdCategory.createdId!)
-      expect(createdSkill.createdId).toBeTruthy()
+    const createdSkill = await backend.createSkill(createdCategory.createdId!)
+    expect(createdSkill.createdId).toBeTruthy()
 
-      await backend.updateSkill({
-        skillId: 'skill_1',
-        changes: {
+    await backend.updateSkill({
+      skillId: 'skill_1',
+      changes: {
+        name: 'TypeScript Updated',
+        enabled: false,
+      },
+    })
+
+    await backend.reorderSkills('skill_category_1', ['skill_1', 'skill_2'])
+    await backend.deleteSkill('skill_2')
+    await backend.deleteSkillCategory('skill_category_2')
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
+    const skillCategories = Object.values(persistedData.skillCategories).filter((item) => item.profileId === 'profile_3')
+    const skills = Object.values(persistedData.skills)
+
+    expect(skillCategories).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: createdCategory.createdId,
+          profileId: 'profile_3',
+          sortOrder: 1,
+          name: '',
+          enabled: true,
+        }),
+        expect.objectContaining({
+          id: 'skill_category_1',
+          profileId: 'profile_3',
+          sortOrder: 3,
+          name: 'Languages',
+          enabled: true,
+        }),
+      ]),
+    )
+    expect(skillCategories.find((item) => item.id === 'skill_category_2')).toBeUndefined()
+
+    expect(skills).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: createdSkill.createdId,
+          skillCategoryId: createdCategory.createdId,
+          sortOrder: 1,
+          name: '',
+          enabled: true,
+        }),
+        expect.objectContaining({
+          id: 'skill_1',
+          skillCategoryId: 'skill_category_1',
+          sortOrder: 1,
           name: 'TypeScript Updated',
           enabled: false,
-        },
-      })
-
-      await backend.reorderSkills('skill_category_1', ['skill_1', 'skill_2'])
-      await backend.deleteSkill('skill_2')
-      await backend.deleteSkillCategory('skill_category_2')
-
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
-      const skillCategories = Object.values(persistedData.skillCategories).filter((item) => item.profileId === 'profile_3')
-      const skills = Object.values(persistedData.skills)
-
-      expect(skillCategories).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: createdCategory.createdId,
-            profileId: 'profile_3',
-            sortOrder: 1,
-            name: '',
-            enabled: true,
-          }),
-          expect.objectContaining({
-            id: 'skill_category_1',
-            profileId: 'profile_3',
-            sortOrder: 3,
-            name: 'Languages',
-            enabled: true,
-          }),
-        ]),
-      )
-      expect(skillCategories.find((item) => item.id === 'skill_category_2')).toBeUndefined()
-
-      expect(skills).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: createdSkill.createdId,
-            skillCategoryId: createdCategory.createdId,
-            sortOrder: 1,
-            name: '',
-            enabled: true,
-          }),
-          expect.objectContaining({
-            id: 'skill_1',
-            skillCategoryId: 'skill_category_1',
-            sortOrder: 1,
-            name: 'TypeScript Updated',
-            enabled: false,
-          }),
-        ]),
-      )
-      expect(skills.find((item) => item.id === 'skill_2')).toBeUndefined()
-      expect(skills.find((item) => item.id === 'skill_3')).toBeUndefined()
-      expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T16:45:00.000Z')
-      expect(createSkillCategorySpy).not.toHaveBeenCalled()
-      expect(updateSkillCategorySpy).not.toHaveBeenCalled()
-      expect(deleteSkillCategorySpy).not.toHaveBeenCalled()
-      expect(reorderSkillCategoriesSpy).not.toHaveBeenCalled()
-      expect(createSkillSpy).not.toHaveBeenCalled()
-      expect(updateSkillSpy).not.toHaveBeenCalled()
-      expect(deleteSkillSpy).not.toHaveBeenCalled()
-      expect(reorderSkillsSpy).not.toHaveBeenCalled()
-    } finally {
-      createSkillCategorySpy.mockRestore()
-      updateSkillCategorySpy.mockRestore()
-      deleteSkillCategorySpy.mockRestore()
-      reorderSkillCategoriesSpy.mockRestore()
-      createSkillSpy.mockRestore()
-      updateSkillSpy.mockRestore()
-      deleteSkillSpy.mockRestore()
-      reorderSkillsSpy.mockRestore()
-    }
+        }),
+      ]),
+    )
+    expect(skills.find((item) => item.id === 'skill_2')).toBeUndefined()
+    expect(skills.find((item) => item.id === 'skill_3')).toBeUndefined()
+    expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T16:45:00.000Z')
   })
 
   it('updates experience entries and bullets with direct IndexedDB writes', async () => {
@@ -1265,109 +1083,82 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T16:50:00.000Z',
     })
     const seedData = createSeedData()
-    const createExperienceEntrySpy = vi.spyOn(MockAppBackend.prototype, 'createExperienceEntry').mockRejectedValue(new Error('should not be used'))
-    const updateExperienceEntrySpy = vi.spyOn(MockAppBackend.prototype, 'updateExperienceEntry').mockRejectedValue(new Error('should not be used'))
-    const deleteExperienceEntrySpy = vi.spyOn(MockAppBackend.prototype, 'deleteExperienceEntry').mockRejectedValue(new Error('should not be used'))
-    const reorderExperienceEntriesSpy = vi.spyOn(MockAppBackend.prototype, 'reorderExperienceEntries').mockRejectedValue(new Error('should not be used'))
-    const createExperienceBulletSpy = vi.spyOn(MockAppBackend.prototype, 'createExperienceBullet').mockRejectedValue(new Error('should not be used'))
-    const updateExperienceBulletSpy = vi.spyOn(MockAppBackend.prototype, 'updateExperienceBullet').mockRejectedValue(new Error('should not be used'))
-    const deleteExperienceBulletSpy = vi.spyOn(MockAppBackend.prototype, 'deleteExperienceBullet').mockRejectedValue(new Error('should not be used'))
-    const reorderExperienceBulletsSpy = vi.spyOn(MockAppBackend.prototype, 'reorderExperienceBullets').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      const createdEntry = await backend.createExperienceEntry('profile_3')
-      expect(createdEntry.createdId).toBeTruthy()
+    const createdEntry = await backend.createExperienceEntry('profile_3')
+    expect(createdEntry.createdId).toBeTruthy()
 
-      await backend.updateExperienceEntry({
-        experienceEntryId: 'experience_entry_1',
-        changes: {
-          company: 'Example Co Updated',
-          title: 'Senior Engineer',
-          isCurrent: true,
-          endDate: '2025-01-01',
-        },
-      })
+    await backend.updateExperienceEntry({
+      experienceEntryId: 'experience_entry_1',
+      changes: {
+        company: 'Example Co Updated',
+        title: 'Senior Engineer',
+        isCurrent: true,
+        endDate: '2025-01-01',
+      },
+    })
 
-      await backend.reorderExperienceEntries({
+    await backend.reorderExperienceEntries({
+      profileId: 'profile_3',
+      orderedIds: [createdEntry.createdId!, 'experience_entry_1'],
+    })
+
+    const createdBullet = await backend.createExperienceBullet(createdEntry.createdId!)
+    expect(createdBullet.createdId).toBeTruthy()
+
+    await backend.updateExperienceBullet({
+      experienceBulletId: 'experience_bullet_1',
+      changes: {
+        content: 'Built feature flags updated',
+        level: 2,
+        enabled: false,
+      },
+    })
+
+    await backend.reorderExperienceBullets({
+      experienceEntryId: 'experience_entry_1',
+      orderedIds: ['experience_bullet_1', 'experience_bullet_2'],
+    })
+
+    await backend.deleteExperienceBullet('experience_bullet_2')
+    await backend.deleteExperienceEntry('experience_entry_1')
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
+    const experienceEntries = Object.values(persistedData.experienceEntries).filter((item) => item.profileId === 'profile_3')
+    const experienceBullets = Object.values(persistedData.experienceBullets)
+
+    expect(experienceEntries).toEqual([
+      expect.objectContaining({
+        id: createdEntry.createdId,
         profileId: 'profile_3',
-        orderedIds: [createdEntry.createdId!, 'experience_entry_1'],
-      })
+        sortOrder: 1,
+        company: '',
+        title: '',
+        isCurrent: false,
+      }),
+    ])
 
-      const createdBullet = await backend.createExperienceBullet(createdEntry.createdId!)
-      expect(createdBullet.createdId).toBeTruthy()
+    expect(experienceBullets).toEqual([
+      expect.objectContaining({
+        id: createdBullet.createdId,
+        experienceEntryId: createdEntry.createdId,
+        sortOrder: 1,
+        content: '',
+        level: 1,
+        enabled: true,
+      }),
+    ])
 
-      await backend.updateExperienceBullet({
-        experienceBulletId: 'experience_bullet_1',
-        changes: {
-          content: 'Built feature flags updated',
-          level: 2,
-          enabled: false,
-        },
-      })
-
-      await backend.reorderExperienceBullets({
-        experienceEntryId: 'experience_entry_1',
-        orderedIds: ['experience_bullet_1', 'experience_bullet_2'],
-      })
-
-      await backend.deleteExperienceBullet('experience_bullet_2')
-      await backend.deleteExperienceEntry('experience_entry_1')
-
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
-      const experienceEntries = Object.values(persistedData.experienceEntries).filter((item) => item.profileId === 'profile_3')
-      const experienceBullets = Object.values(persistedData.experienceBullets)
-
-      expect(experienceEntries).toEqual([
-        expect.objectContaining({
-          id: createdEntry.createdId,
-          profileId: 'profile_3',
-          sortOrder: 1,
-          company: '',
-          title: '',
-          isCurrent: false,
-        }),
-      ])
-
-      expect(experienceBullets).toEqual([
-        expect.objectContaining({
-          id: createdBullet.createdId,
-          experienceEntryId: createdEntry.createdId,
-          sortOrder: 1,
-          content: '',
-          level: 1,
-          enabled: true,
-        }),
-      ])
-
-      expect(persistedData.experienceEntries.experience_entry_1).toBeUndefined()
-      expect(persistedData.experienceBullets.experience_bullet_1).toBeUndefined()
-      expect(persistedData.experienceBullets.experience_bullet_2).toBeUndefined()
-      expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T16:50:00.000Z')
-      expect(createExperienceEntrySpy).not.toHaveBeenCalled()
-      expect(updateExperienceEntrySpy).not.toHaveBeenCalled()
-      expect(deleteExperienceEntrySpy).not.toHaveBeenCalled()
-      expect(reorderExperienceEntriesSpy).not.toHaveBeenCalled()
-      expect(createExperienceBulletSpy).not.toHaveBeenCalled()
-      expect(updateExperienceBulletSpy).not.toHaveBeenCalled()
-      expect(deleteExperienceBulletSpy).not.toHaveBeenCalled()
-      expect(reorderExperienceBulletsSpy).not.toHaveBeenCalled()
-    } finally {
-      createExperienceEntrySpy.mockRestore()
-      updateExperienceEntrySpy.mockRestore()
-      deleteExperienceEntrySpy.mockRestore()
-      reorderExperienceEntriesSpy.mockRestore()
-      createExperienceBulletSpy.mockRestore()
-      updateExperienceBulletSpy.mockRestore()
-      deleteExperienceBulletSpy.mockRestore()
-      reorderExperienceBulletsSpy.mockRestore()
-    }
+    expect(persistedData.experienceEntries.experience_entry_1).toBeUndefined()
+    expect(persistedData.experienceBullets.experience_bullet_1).toBeUndefined()
+    expect(persistedData.experienceBullets.experience_bullet_2).toBeUndefined()
+    expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T16:50:00.000Z')
   })
 
   it('updates education entries and bullets with direct IndexedDB writes', async () => {
@@ -1376,107 +1167,80 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T16:55:00.000Z',
     })
     const seedData = createSeedData()
-    const createEducationEntrySpy = vi.spyOn(MockAppBackend.prototype, 'createEducationEntry').mockRejectedValue(new Error('should not be used'))
-    const updateEducationEntrySpy = vi.spyOn(MockAppBackend.prototype, 'updateEducationEntry').mockRejectedValue(new Error('should not be used'))
-    const deleteEducationEntrySpy = vi.spyOn(MockAppBackend.prototype, 'deleteEducationEntry').mockRejectedValue(new Error('should not be used'))
-    const reorderEducationEntriesSpy = vi.spyOn(MockAppBackend.prototype, 'reorderEducationEntries').mockRejectedValue(new Error('should not be used'))
-    const createEducationBulletSpy = vi.spyOn(MockAppBackend.prototype, 'createEducationBullet').mockRejectedValue(new Error('should not be used'))
-    const updateEducationBulletSpy = vi.spyOn(MockAppBackend.prototype, 'updateEducationBullet').mockRejectedValue(new Error('should not be used'))
-    const deleteEducationBulletSpy = vi.spyOn(MockAppBackend.prototype, 'deleteEducationBullet').mockRejectedValue(new Error('should not be used'))
-    const reorderEducationBulletsSpy = vi.spyOn(MockAppBackend.prototype, 'reorderEducationBullets').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      const createdEntry = await backend.createEducationEntry('profile_3')
-      expect(createdEntry.createdId).toBeTruthy()
+    const createdEntry = await backend.createEducationEntry('profile_3')
+    expect(createdEntry.createdId).toBeTruthy()
 
-      await backend.updateEducationEntry({
-        educationEntryId: 'education_entry_1',
-        changes: {
-          school: 'State University Updated',
-          degree: 'MS Computer Science',
-          status: 'in_progress',
-        },
-      })
+    await backend.updateEducationEntry({
+      educationEntryId: 'education_entry_1',
+      changes: {
+        school: 'State University Updated',
+        degree: 'MS Computer Science',
+        status: 'in_progress',
+      },
+    })
 
-      await backend.reorderEducationEntries({
+    await backend.reorderEducationEntries({
+      profileId: 'profile_3',
+      orderedIds: [createdEntry.createdId!, 'education_entry_1'],
+    })
+
+    const createdBullet = await backend.createEducationBullet(createdEntry.createdId!)
+    expect(createdBullet.createdId).toBeTruthy()
+
+    await backend.updateEducationBullet({
+      educationBulletId: 'education_bullet_1',
+      changes: {
+        content: 'Dean\'s list updated',
+        level: 2,
+        enabled: false,
+      },
+    })
+
+    await backend.reorderEducationBullets({
+      educationEntryId: 'education_entry_1',
+      orderedIds: ['education_bullet_1'],
+    })
+
+    await backend.deleteEducationBullet('education_bullet_1')
+    await backend.deleteEducationEntry('education_entry_1')
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
+    const educationEntries = Object.values(persistedData.educationEntries).filter((item) => item.profileId === 'profile_3')
+    const educationBullets = Object.values(persistedData.educationBullets)
+
+    expect(educationEntries).toEqual([
+      expect.objectContaining({
+        id: createdEntry.createdId,
         profileId: 'profile_3',
-        orderedIds: [createdEntry.createdId!, 'education_entry_1'],
-      })
+        sortOrder: 1,
+        school: '',
+        degree: '',
+        status: 'graduated',
+      }),
+    ])
 
-      const createdBullet = await backend.createEducationBullet(createdEntry.createdId!)
-      expect(createdBullet.createdId).toBeTruthy()
+    expect(educationBullets).toEqual([
+      expect.objectContaining({
+        id: createdBullet.createdId,
+        educationEntryId: createdEntry.createdId,
+        sortOrder: 1,
+        content: '',
+        level: 1,
+        enabled: true,
+      }),
+    ])
 
-      await backend.updateEducationBullet({
-        educationBulletId: 'education_bullet_1',
-        changes: {
-          content: 'Dean\'s list updated',
-          level: 2,
-          enabled: false,
-        },
-      })
-
-      await backend.reorderEducationBullets({
-        educationEntryId: 'education_entry_1',
-        orderedIds: ['education_bullet_1'],
-      })
-
-      await backend.deleteEducationBullet('education_bullet_1')
-      await backend.deleteEducationEntry('education_entry_1')
-
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
-      const educationEntries = Object.values(persistedData.educationEntries).filter((item) => item.profileId === 'profile_3')
-      const educationBullets = Object.values(persistedData.educationBullets)
-
-      expect(educationEntries).toEqual([
-        expect.objectContaining({
-          id: createdEntry.createdId,
-          profileId: 'profile_3',
-          sortOrder: 1,
-          school: '',
-          degree: '',
-          status: 'graduated',
-        }),
-      ])
-
-      expect(educationBullets).toEqual([
-        expect.objectContaining({
-          id: createdBullet.createdId,
-          educationEntryId: createdEntry.createdId,
-          sortOrder: 1,
-          content: '',
-          level: 1,
-          enabled: true,
-        }),
-      ])
-
-      expect(persistedData.educationEntries.education_entry_1).toBeUndefined()
-      expect(persistedData.educationBullets.education_bullet_1).toBeUndefined()
-      expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T16:55:00.000Z')
-      expect(createEducationEntrySpy).not.toHaveBeenCalled()
-      expect(updateEducationEntrySpy).not.toHaveBeenCalled()
-      expect(deleteEducationEntrySpy).not.toHaveBeenCalled()
-      expect(reorderEducationEntriesSpy).not.toHaveBeenCalled()
-      expect(createEducationBulletSpy).not.toHaveBeenCalled()
-      expect(updateEducationBulletSpy).not.toHaveBeenCalled()
-      expect(deleteEducationBulletSpy).not.toHaveBeenCalled()
-      expect(reorderEducationBulletsSpy).not.toHaveBeenCalled()
-    } finally {
-      createEducationEntrySpy.mockRestore()
-      updateEducationEntrySpy.mockRestore()
-      deleteEducationEntrySpy.mockRestore()
-      reorderEducationEntriesSpy.mockRestore()
-      createEducationBulletSpy.mockRestore()
-      updateEducationBulletSpy.mockRestore()
-      deleteEducationBulletSpy.mockRestore()
-      reorderEducationBulletsSpy.mockRestore()
-    }
+    expect(persistedData.educationEntries.education_entry_1).toBeUndefined()
+    expect(persistedData.educationBullets.education_bullet_1).toBeUndefined()
+    expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T16:55:00.000Z')
   })
 
   it('updates project entries and bullets with direct IndexedDB writes', async () => {
@@ -1485,105 +1249,78 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T17:00:00.000Z',
     })
     const seedData = createSeedData()
-    const createProjectSpy = vi.spyOn(MockAppBackend.prototype, 'createProject').mockRejectedValue(new Error('should not be used'))
-    const updateProjectSpy = vi.spyOn(MockAppBackend.prototype, 'updateProject').mockRejectedValue(new Error('should not be used'))
-    const deleteProjectSpy = vi.spyOn(MockAppBackend.prototype, 'deleteProject').mockRejectedValue(new Error('should not be used'))
-    const reorderProjectsSpy = vi.spyOn(MockAppBackend.prototype, 'reorderProjects').mockRejectedValue(new Error('should not be used'))
-    const createProjectBulletSpy = vi.spyOn(MockAppBackend.prototype, 'createProjectBullet').mockRejectedValue(new Error('should not be used'))
-    const updateProjectBulletSpy = vi.spyOn(MockAppBackend.prototype, 'updateProjectBullet').mockRejectedValue(new Error('should not be used'))
-    const deleteProjectBulletSpy = vi.spyOn(MockAppBackend.prototype, 'deleteProjectBullet').mockRejectedValue(new Error('should not be used'))
-    const reorderProjectBulletsSpy = vi.spyOn(MockAppBackend.prototype, 'reorderProjectBullets').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      const createdProject = await backend.createProject('profile_3')
-      expect(createdProject.createdId).toBeTruthy()
+    const createdProject = await backend.createProject('profile_3')
+    expect(createdProject.createdId).toBeTruthy()
 
-      await backend.updateProject({
-        projectId: 'project_1',
-        changes: {
-          name: 'Internal Tooling Updated',
-          organization: 'Example Co Updated',
-        },
-      })
+    await backend.updateProject({
+      projectId: 'project_1',
+      changes: {
+        name: 'Internal Tooling Updated',
+        organization: 'Example Co Updated',
+      },
+    })
 
-      await backend.reorderProjects({
+    await backend.reorderProjects({
+      profileId: 'profile_3',
+      orderedIds: [createdProject.createdId!, 'project_1'],
+    })
+
+    const createdBullet = await backend.createProjectBullet(createdProject.createdId!)
+    expect(createdBullet.createdId).toBeTruthy()
+
+    await backend.updateProjectBullet({
+      projectBulletId: 'project_bullet_1',
+      changes: {
+        content: 'Built a release automation dashboard updated',
+        level: 2,
+        enabled: false,
+      },
+    })
+
+    await backend.reorderProjectBullets({
+      projectId: 'project_1',
+      orderedIds: ['project_bullet_1'],
+    })
+
+    await backend.deleteProjectBullet('project_bullet_1')
+    await backend.deleteProject('project_1')
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
+    const projects = Object.values(persistedData.projects).filter((item) => item.profileId === 'profile_3')
+    const projectBullets = Object.values(persistedData.projectBullets)
+
+    expect(projects).toEqual([
+      expect.objectContaining({
+        id: createdProject.createdId,
         profileId: 'profile_3',
-        orderedIds: [createdProject.createdId!, 'project_1'],
-      })
+        sortOrder: 1,
+        name: '',
+        organization: '',
+      }),
+    ])
 
-      const createdBullet = await backend.createProjectBullet(createdProject.createdId!)
-      expect(createdBullet.createdId).toBeTruthy()
+    expect(projectBullets).toEqual([
+      expect.objectContaining({
+        id: createdBullet.createdId,
+        projectId: createdProject.createdId,
+        sortOrder: 1,
+        content: '',
+        level: 1,
+        enabled: true,
+      }),
+    ])
 
-      await backend.updateProjectBullet({
-        projectBulletId: 'project_bullet_1',
-        changes: {
-          content: 'Built a release automation dashboard updated',
-          level: 2,
-          enabled: false,
-        },
-      })
-
-      await backend.reorderProjectBullets({
-        projectId: 'project_1',
-        orderedIds: ['project_bullet_1'],
-      })
-
-      await backend.deleteProjectBullet('project_bullet_1')
-      await backend.deleteProject('project_1')
-
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
-      const projects = Object.values(persistedData.projects).filter((item) => item.profileId === 'profile_3')
-      const projectBullets = Object.values(persistedData.projectBullets)
-
-      expect(projects).toEqual([
-        expect.objectContaining({
-          id: createdProject.createdId,
-          profileId: 'profile_3',
-          sortOrder: 1,
-          name: '',
-          organization: '',
-        }),
-      ])
-
-      expect(projectBullets).toEqual([
-        expect.objectContaining({
-          id: createdBullet.createdId,
-          projectId: createdProject.createdId,
-          sortOrder: 1,
-          content: '',
-          level: 1,
-          enabled: true,
-        }),
-      ])
-
-      expect(persistedData.projects.project_1).toBeUndefined()
-      expect(persistedData.projectBullets.project_bullet_1).toBeUndefined()
-      expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T17:00:00.000Z')
-      expect(createProjectSpy).not.toHaveBeenCalled()
-      expect(updateProjectSpy).not.toHaveBeenCalled()
-      expect(deleteProjectSpy).not.toHaveBeenCalled()
-      expect(reorderProjectsSpy).not.toHaveBeenCalled()
-      expect(createProjectBulletSpy).not.toHaveBeenCalled()
-      expect(updateProjectBulletSpy).not.toHaveBeenCalled()
-      expect(deleteProjectBulletSpy).not.toHaveBeenCalled()
-      expect(reorderProjectBulletsSpy).not.toHaveBeenCalled()
-    } finally {
-      createProjectSpy.mockRestore()
-      updateProjectSpy.mockRestore()
-      deleteProjectSpy.mockRestore()
-      reorderProjectsSpy.mockRestore()
-      createProjectBulletSpy.mockRestore()
-      updateProjectBulletSpy.mockRestore()
-      deleteProjectBulletSpy.mockRestore()
-      reorderProjectBulletsSpy.mockRestore()
-    }
+    expect(persistedData.projects.project_1).toBeUndefined()
+    expect(persistedData.projectBullets.project_bullet_1).toBeUndefined()
+    expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T17:00:00.000Z')
   })
 
   it('updates additional experience entries and bullets with direct IndexedDB writes', async () => {
@@ -1592,105 +1329,78 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T17:05:00.000Z',
     })
     const seedData = createSeedData()
-    const createAdditionalExperienceEntrySpy = vi.spyOn(MockAppBackend.prototype, 'createAdditionalExperienceEntry').mockRejectedValue(new Error('should not be used'))
-    const updateAdditionalExperienceEntrySpy = vi.spyOn(MockAppBackend.prototype, 'updateAdditionalExperienceEntry').mockRejectedValue(new Error('should not be used'))
-    const deleteAdditionalExperienceEntrySpy = vi.spyOn(MockAppBackend.prototype, 'deleteAdditionalExperienceEntry').mockRejectedValue(new Error('should not be used'))
-    const reorderAdditionalExperienceEntriesSpy = vi.spyOn(MockAppBackend.prototype, 'reorderAdditionalExperienceEntries').mockRejectedValue(new Error('should not be used'))
-    const createAdditionalExperienceBulletSpy = vi.spyOn(MockAppBackend.prototype, 'createAdditionalExperienceBullet').mockRejectedValue(new Error('should not be used'))
-    const updateAdditionalExperienceBulletSpy = vi.spyOn(MockAppBackend.prototype, 'updateAdditionalExperienceBullet').mockRejectedValue(new Error('should not be used'))
-    const deleteAdditionalExperienceBulletSpy = vi.spyOn(MockAppBackend.prototype, 'deleteAdditionalExperienceBullet').mockRejectedValue(new Error('should not be used'))
-    const reorderAdditionalExperienceBulletsSpy = vi.spyOn(MockAppBackend.prototype, 'reorderAdditionalExperienceBullets').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      const createdEntry = await backend.createAdditionalExperienceEntry('profile_3')
-      expect(createdEntry.createdId).toBeTruthy()
+    const createdEntry = await backend.createAdditionalExperienceEntry('profile_3')
+    expect(createdEntry.createdId).toBeTruthy()
 
-      await backend.updateAdditionalExperienceEntry({
-        additionalExperienceEntryId: 'additional_experience_entry_1',
-        changes: {
-          title: 'Volunteer Mentor Updated',
-          organization: 'Code Club Updated',
-        },
-      })
+    await backend.updateAdditionalExperienceEntry({
+      additionalExperienceEntryId: 'additional_experience_entry_1',
+      changes: {
+        title: 'Volunteer Mentor Updated',
+        organization: 'Code Club Updated',
+      },
+    })
 
-      await backend.reorderAdditionalExperienceEntries({
+    await backend.reorderAdditionalExperienceEntries({
+      profileId: 'profile_3',
+      orderedIds: [createdEntry.createdId!, 'additional_experience_entry_1'],
+    })
+
+    const createdBullet = await backend.createAdditionalExperienceBullet(createdEntry.createdId!)
+    expect(createdBullet.createdId).toBeTruthy()
+
+    await backend.updateAdditionalExperienceBullet({
+      additionalExperienceBulletId: 'additional_experience_bullet_1',
+      changes: {
+        content: 'Mentored junior developers updated',
+        level: 2,
+        enabled: false,
+      },
+    })
+
+    await backend.reorderAdditionalExperienceBullets({
+      additionalExperienceEntryId: 'additional_experience_entry_1',
+      orderedIds: ['additional_experience_bullet_1'],
+    })
+
+    await backend.deleteAdditionalExperienceBullet('additional_experience_bullet_1')
+    await backend.deleteAdditionalExperienceEntry('additional_experience_entry_1')
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
+    const additionalExperienceEntries = Object.values(persistedData.additionalExperienceEntries).filter((item) => item.profileId === 'profile_3')
+    const additionalExperienceBullets = Object.values(persistedData.additionalExperienceBullets)
+
+    expect(additionalExperienceEntries).toEqual([
+      expect.objectContaining({
+        id: createdEntry.createdId,
         profileId: 'profile_3',
-        orderedIds: [createdEntry.createdId!, 'additional_experience_entry_1'],
-      })
+        sortOrder: 1,
+        title: '',
+        organization: '',
+      }),
+    ])
 
-      const createdBullet = await backend.createAdditionalExperienceBullet(createdEntry.createdId!)
-      expect(createdBullet.createdId).toBeTruthy()
+    expect(additionalExperienceBullets).toEqual([
+      expect.objectContaining({
+        id: createdBullet.createdId,
+        additionalExperienceEntryId: createdEntry.createdId,
+        sortOrder: 1,
+        content: '',
+        level: 1,
+        enabled: true,
+      }),
+    ])
 
-      await backend.updateAdditionalExperienceBullet({
-        additionalExperienceBulletId: 'additional_experience_bullet_1',
-        changes: {
-          content: 'Mentored junior developers updated',
-          level: 2,
-          enabled: false,
-        },
-      })
-
-      await backend.reorderAdditionalExperienceBullets({
-        additionalExperienceEntryId: 'additional_experience_entry_1',
-        orderedIds: ['additional_experience_bullet_1'],
-      })
-
-      await backend.deleteAdditionalExperienceBullet('additional_experience_bullet_1')
-      await backend.deleteAdditionalExperienceEntry('additional_experience_entry_1')
-
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
-      const additionalExperienceEntries = Object.values(persistedData.additionalExperienceEntries).filter((item) => item.profileId === 'profile_3')
-      const additionalExperienceBullets = Object.values(persistedData.additionalExperienceBullets)
-
-      expect(additionalExperienceEntries).toEqual([
-        expect.objectContaining({
-          id: createdEntry.createdId,
-          profileId: 'profile_3',
-          sortOrder: 1,
-          title: '',
-          organization: '',
-        }),
-      ])
-
-      expect(additionalExperienceBullets).toEqual([
-        expect.objectContaining({
-          id: createdBullet.createdId,
-          additionalExperienceEntryId: createdEntry.createdId,
-          sortOrder: 1,
-          content: '',
-          level: 1,
-          enabled: true,
-        }),
-      ])
-
-      expect(persistedData.additionalExperienceEntries.additional_experience_entry_1).toBeUndefined()
-      expect(persistedData.additionalExperienceBullets.additional_experience_bullet_1).toBeUndefined()
-      expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T17:05:00.000Z')
-      expect(createAdditionalExperienceEntrySpy).not.toHaveBeenCalled()
-      expect(updateAdditionalExperienceEntrySpy).not.toHaveBeenCalled()
-      expect(deleteAdditionalExperienceEntrySpy).not.toHaveBeenCalled()
-      expect(reorderAdditionalExperienceEntriesSpy).not.toHaveBeenCalled()
-      expect(createAdditionalExperienceBulletSpy).not.toHaveBeenCalled()
-      expect(updateAdditionalExperienceBulletSpy).not.toHaveBeenCalled()
-      expect(deleteAdditionalExperienceBulletSpy).not.toHaveBeenCalled()
-      expect(reorderAdditionalExperienceBulletsSpy).not.toHaveBeenCalled()
-    } finally {
-      createAdditionalExperienceEntrySpy.mockRestore()
-      updateAdditionalExperienceEntrySpy.mockRestore()
-      deleteAdditionalExperienceEntrySpy.mockRestore()
-      reorderAdditionalExperienceEntriesSpy.mockRestore()
-      createAdditionalExperienceBulletSpy.mockRestore()
-      updateAdditionalExperienceBulletSpy.mockRestore()
-      deleteAdditionalExperienceBulletSpy.mockRestore()
-      reorderAdditionalExperienceBulletsSpy.mockRestore()
-    }
+    expect(persistedData.additionalExperienceEntries.additional_experience_entry_1).toBeUndefined()
+    expect(persistedData.additionalExperienceBullets.additional_experience_bullet_1).toBeUndefined()
+    expect(persistedData.profiles.profile_3?.updatedAt).toBe('2026-03-13T17:05:00.000Z')
   })
 
   it('updates interviews and interview contacts with direct IndexedDB writes', async () => {
@@ -1699,198 +1409,165 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T17:10:00.000Z',
     })
     const seedData = createSeedData()
-    const createInterviewSpy = vi.spyOn(MockAppBackend.prototype, 'createInterview').mockRejectedValue(new Error('should not be used'))
-    const updateInterviewSpy = vi.spyOn(MockAppBackend.prototype, 'updateInterview').mockRejectedValue(new Error('should not be used'))
-    const deleteInterviewSpy = vi.spyOn(MockAppBackend.prototype, 'deleteInterview').mockRejectedValue(new Error('should not be used'))
-    const addInterviewContactSpy = vi.spyOn(MockAppBackend.prototype, 'addInterviewContact').mockRejectedValue(new Error('should not be used'))
-    const removeInterviewContactSpy = vi.spyOn(MockAppBackend.prototype, 'removeInterviewContact').mockRejectedValue(new Error('should not be used'))
-    const reorderInterviewContactsSpy = vi.spyOn(MockAppBackend.prototype, 'reorderInterviewContacts').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      const createdInterview = await backend.createInterview('job_1')
-      expect(createdInterview.createdId).toBeTruthy()
+    const createdInterview = await backend.createInterview('job_1')
+    expect(createdInterview.createdId).toBeTruthy()
 
-      await backend.updateInterview({
-        interviewId: 'interview_2',
-        changes: {
+    await backend.updateInterview({
+      interviewId: 'interview_2',
+      changes: {
+        startAt: '2026-03-10T12:00:00.000Z',
+        notes: 'Scheduled',
+      },
+    })
+
+    const addContactResult = await backend.addInterviewContact({
+      interviewId: 'interview_2',
+      jobContactId: 'job_contact_1',
+    })
+    expect(addContactResult.data).toBeTruthy()
+
+    await backend.reorderInterviewContacts({
+      interviewId: 'interview_1',
+      orderedIds: ['interview_contact_1', 'interview_contact_2'],
+    })
+
+    await backend.removeInterviewContact('interview_contact_2')
+    await backend.deleteInterview('interview_1')
+
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
+    const interviews = Object.values(persistedData.interviews).filter((item) => item.jobId === 'job_1')
+    const interviewContacts = Object.values(persistedData.interviewContacts)
+
+    expect(interviews).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: createdInterview.createdId,
+          jobId: 'job_1',
+          createdAt: '2026-03-13T17:10:00.000Z',
+          startAt: null,
+          notes: '',
+        }),
+        expect.objectContaining({
+          id: 'interview_2',
+          jobId: 'job_1',
           startAt: '2026-03-10T12:00:00.000Z',
           notes: 'Scheduled',
-        },
-      })
+        }),
+      ]),
+    )
+    expect(interviews.find((item) => item.id === 'interview_1')).toBeUndefined()
 
-      const addContactResult = await backend.addInterviewContact({
+    expect(interviewContacts).toEqual([
+      expect.objectContaining({
         interviewId: 'interview_2',
         jobContactId: 'job_contact_1',
-      })
-      expect(addContactResult.data).toBeTruthy()
-
-      await backend.reorderInterviewContacts({
-        interviewId: 'interview_1',
-        orderedIds: ['interview_contact_1', 'interview_contact_2'],
-      })
-
-      await backend.removeInterviewContact('interview_contact_2')
-      await backend.deleteInterview('interview_1')
-
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
-      const interviews = Object.values(persistedData.interviews).filter((item) => item.jobId === 'job_1')
-      const interviewContacts = Object.values(persistedData.interviewContacts)
-
-      expect(interviews).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: createdInterview.createdId,
-            jobId: 'job_1',
-            createdAt: '2026-03-13T17:10:00.000Z',
-            startAt: null,
-            notes: '',
-          }),
-          expect.objectContaining({
-            id: 'interview_2',
-            jobId: 'job_1',
-            startAt: '2026-03-10T12:00:00.000Z',
-            notes: 'Scheduled',
-          }),
-        ]),
-      )
-      expect(interviews.find((item) => item.id === 'interview_1')).toBeUndefined()
-
-      expect(interviewContacts).toEqual([
-        expect.objectContaining({
-          interviewId: 'interview_2',
-          jobContactId: 'job_contact_1',
-          sortOrder: 1,
-        }),
-      ])
-      expect(persistedData.interviewContacts.interview_contact_1).toBeUndefined()
-      expect(persistedData.interviewContacts.interview_contact_2).toBeUndefined()
-      expect(persistedData.jobs.job_1?.updatedAt).toBe('2026-03-13T17:10:00.000Z')
-      expect(createInterviewSpy).not.toHaveBeenCalled()
-      expect(updateInterviewSpy).not.toHaveBeenCalled()
-      expect(deleteInterviewSpy).not.toHaveBeenCalled()
-      expect(addInterviewContactSpy).not.toHaveBeenCalled()
-      expect(removeInterviewContactSpy).not.toHaveBeenCalled()
-      expect(reorderInterviewContactsSpy).not.toHaveBeenCalled()
-    } finally {
-      createInterviewSpy.mockRestore()
-      updateInterviewSpy.mockRestore()
-      deleteInterviewSpy.mockRestore()
-      addInterviewContactSpy.mockRestore()
-      removeInterviewContactSpy.mockRestore()
-      reorderInterviewContactsSpy.mockRestore()
-    }
+        sortOrder: 1,
+      }),
+    ])
+    expect(persistedData.interviewContacts.interview_contact_1).toBeUndefined()
+    expect(persistedData.interviewContacts.interview_contact_2).toBeUndefined()
+    expect(persistedData.jobs.job_1?.updatedAt).toBe('2026-03-13T17:10:00.000Z')
   })
 
   it('deletes jobs with a direct IndexedDB cascade', async () => {
     const backend = new IndexedDbAppBackend({ databaseName })
     const seedData = createSeedData()
-    const deleteJobSpy = vi.spyOn(MockAppBackend.prototype, 'deleteJob').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      await backend.deleteJob('job_1')
+    await backend.deleteJob('job_1')
 
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
 
-      expect(persistedData.jobs.job_1).toBeUndefined()
-      expect(persistedData.profiles.profile_3).toBeUndefined()
-      expect(persistedData.jobLinks.job_link_1).toBeUndefined()
-      expect(persistedData.jobLinks.job_link_2).toBeUndefined()
-      expect(persistedData.jobContacts.job_contact_1).toBeUndefined()
-      expect(persistedData.jobContacts.job_contact_2).toBeUndefined()
-      expect(persistedData.interviews.interview_1).toBeUndefined()
-      expect(persistedData.interviews.interview_2).toBeUndefined()
-      expect(persistedData.interviewContacts.interview_contact_1).toBeUndefined()
-      expect(persistedData.interviewContacts.interview_contact_2).toBeUndefined()
-      expect(persistedData.applicationQuestions.application_question_1).toBeUndefined()
-      expect(persistedData.applicationQuestions.application_question_2).toBeUndefined()
-      expect(persistedData.profileLinks.profile_link_1).toBeUndefined()
-      expect(persistedData.profileLinks.profile_link_2).toBeUndefined()
-      expect(persistedData.skillCategories.skill_category_1).toBeUndefined()
-      expect(persistedData.skillCategories.skill_category_2).toBeUndefined()
-      expect(persistedData.skills.skill_1).toBeUndefined()
-      expect(persistedData.skills.skill_2).toBeUndefined()
-      expect(persistedData.skills.skill_3).toBeUndefined()
-      expect(persistedData.achievements.achievement_1).toBeUndefined()
-      expect(persistedData.experienceEntries.experience_entry_1).toBeUndefined()
-      expect(persistedData.experienceBullets.experience_bullet_1).toBeUndefined()
-      expect(persistedData.experienceBullets.experience_bullet_2).toBeUndefined()
-      expect(persistedData.educationEntries.education_entry_1).toBeUndefined()
-      expect(persistedData.educationBullets.education_bullet_1).toBeUndefined()
-      expect(persistedData.projects.project_1).toBeUndefined()
-      expect(persistedData.projectBullets.project_bullet_1).toBeUndefined()
-      expect(persistedData.additionalExperienceEntries.additional_experience_entry_1).toBeUndefined()
-      expect(persistedData.additionalExperienceBullets.additional_experience_bullet_1).toBeUndefined()
-      expect(persistedData.certifications.certification_1).toBeUndefined()
-      expect(persistedData.references.reference_1).toBeUndefined()
+    expect(persistedData.jobs.job_1).toBeUndefined()
+    expect(persistedData.profiles.profile_3).toBeUndefined()
+    expect(persistedData.jobLinks.job_link_1).toBeUndefined()
+    expect(persistedData.jobLinks.job_link_2).toBeUndefined()
+    expect(persistedData.jobContacts.job_contact_1).toBeUndefined()
+    expect(persistedData.jobContacts.job_contact_2).toBeUndefined()
+    expect(persistedData.interviews.interview_1).toBeUndefined()
+    expect(persistedData.interviews.interview_2).toBeUndefined()
+    expect(persistedData.interviewContacts.interview_contact_1).toBeUndefined()
+    expect(persistedData.interviewContacts.interview_contact_2).toBeUndefined()
+    expect(persistedData.applicationQuestions.application_question_1).toBeUndefined()
+    expect(persistedData.applicationQuestions.application_question_2).toBeUndefined()
+    expect(persistedData.profileLinks.profile_link_1).toBeUndefined()
+    expect(persistedData.profileLinks.profile_link_2).toBeUndefined()
+    expect(persistedData.skillCategories.skill_category_1).toBeUndefined()
+    expect(persistedData.skillCategories.skill_category_2).toBeUndefined()
+    expect(persistedData.skills.skill_1).toBeUndefined()
+    expect(persistedData.skills.skill_2).toBeUndefined()
+    expect(persistedData.skills.skill_3).toBeUndefined()
+    expect(persistedData.achievements.achievement_1).toBeUndefined()
+    expect(persistedData.experienceEntries.experience_entry_1).toBeUndefined()
+    expect(persistedData.experienceBullets.experience_bullet_1).toBeUndefined()
+    expect(persistedData.experienceBullets.experience_bullet_2).toBeUndefined()
+    expect(persistedData.educationEntries.education_entry_1).toBeUndefined()
+    expect(persistedData.educationBullets.education_bullet_1).toBeUndefined()
+    expect(persistedData.projects.project_1).toBeUndefined()
+    expect(persistedData.projectBullets.project_bullet_1).toBeUndefined()
+    expect(persistedData.additionalExperienceEntries.additional_experience_entry_1).toBeUndefined()
+    expect(persistedData.additionalExperienceBullets.additional_experience_bullet_1).toBeUndefined()
+    expect(persistedData.certifications.certification_1).toBeUndefined()
+    expect(persistedData.references.reference_1).toBeUndefined()
 
-      expect(persistedData.jobs.job_2).toMatchObject({ id: 'job_2' })
-      expect(persistedData.profiles.profile_1).toMatchObject({ id: 'profile_1' })
-      expect(persistedData.profiles.profile_2).toMatchObject({ id: 'profile_2' })
-      expect(deleteJobSpy).not.toHaveBeenCalled()
-    } finally {
-      deleteJobSpy.mockRestore()
-    }
+    expect(persistedData.jobs.job_2).toMatchObject({ id: 'job_2' })
+    expect(persistedData.profiles.profile_1).toMatchObject({ id: 'profile_1' })
+    expect(persistedData.profiles.profile_2).toMatchObject({ id: 'profile_2' })
   })
 
   it('deletes profiles with a direct IndexedDB cascade', async () => {
     const backend = new IndexedDbAppBackend({ databaseName })
     const seedData = createSeedData()
-    const deleteProfileSpy = vi.spyOn(MockAppBackend.prototype, 'deleteProfile').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      await backend.deleteProfile('profile_3')
+    await backend.deleteProfile('profile_3')
 
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
 
-      expect(persistedData.profiles.profile_3).toBeUndefined()
-      expect(persistedData.profileLinks.profile_link_1).toBeUndefined()
-      expect(persistedData.profileLinks.profile_link_2).toBeUndefined()
-      expect(persistedData.skillCategories.skill_category_1).toBeUndefined()
-      expect(persistedData.skillCategories.skill_category_2).toBeUndefined()
-      expect(persistedData.skills.skill_1).toBeUndefined()
-      expect(persistedData.skills.skill_2).toBeUndefined()
-      expect(persistedData.skills.skill_3).toBeUndefined()
-      expect(persistedData.achievements.achievement_1).toBeUndefined()
-      expect(persistedData.experienceEntries.experience_entry_1).toBeUndefined()
-      expect(persistedData.experienceBullets.experience_bullet_1).toBeUndefined()
-      expect(persistedData.experienceBullets.experience_bullet_2).toBeUndefined()
-      expect(persistedData.educationEntries.education_entry_1).toBeUndefined()
-      expect(persistedData.educationBullets.education_bullet_1).toBeUndefined()
-      expect(persistedData.projects.project_1).toBeUndefined()
-      expect(persistedData.projectBullets.project_bullet_1).toBeUndefined()
-      expect(persistedData.additionalExperienceEntries.additional_experience_entry_1).toBeUndefined()
-      expect(persistedData.additionalExperienceBullets.additional_experience_bullet_1).toBeUndefined()
-      expect(persistedData.certifications.certification_1).toBeUndefined()
-      expect(persistedData.references.reference_1).toBeUndefined()
+    expect(persistedData.profiles.profile_3).toBeUndefined()
+    expect(persistedData.profileLinks.profile_link_1).toBeUndefined()
+    expect(persistedData.profileLinks.profile_link_2).toBeUndefined()
+    expect(persistedData.skillCategories.skill_category_1).toBeUndefined()
+    expect(persistedData.skillCategories.skill_category_2).toBeUndefined()
+    expect(persistedData.skills.skill_1).toBeUndefined()
+    expect(persistedData.skills.skill_2).toBeUndefined()
+    expect(persistedData.skills.skill_3).toBeUndefined()
+    expect(persistedData.achievements.achievement_1).toBeUndefined()
+    expect(persistedData.experienceEntries.experience_entry_1).toBeUndefined()
+    expect(persistedData.experienceBullets.experience_bullet_1).toBeUndefined()
+    expect(persistedData.experienceBullets.experience_bullet_2).toBeUndefined()
+    expect(persistedData.educationEntries.education_entry_1).toBeUndefined()
+    expect(persistedData.educationBullets.education_bullet_1).toBeUndefined()
+    expect(persistedData.projects.project_1).toBeUndefined()
+    expect(persistedData.projectBullets.project_bullet_1).toBeUndefined()
+    expect(persistedData.additionalExperienceEntries.additional_experience_entry_1).toBeUndefined()
+    expect(persistedData.additionalExperienceBullets.additional_experience_bullet_1).toBeUndefined()
+    expect(persistedData.certifications.certification_1).toBeUndefined()
+    expect(persistedData.references.reference_1).toBeUndefined()
 
-      expect(persistedData.jobs.job_1).toMatchObject({ id: 'job_1' })
-      expect(persistedData.profiles.profile_1).toMatchObject({ id: 'profile_1' })
-      expect(persistedData.profiles.profile_2).toMatchObject({ id: 'profile_2' })
-      expect(deleteProfileSpy).not.toHaveBeenCalled()
-    } finally {
-      deleteProfileSpy.mockRestore()
-    }
+    expect(persistedData.jobs.job_1).toMatchObject({ id: 'job_1' })
+    expect(persistedData.profiles.profile_1).toMatchObject({ id: 'profile_1' })
+    expect(persistedData.profiles.profile_2).toMatchObject({ id: 'profile_2' })
   })
 
   it('duplicates profiles with a direct IndexedDB clone', async () => {
@@ -1899,474 +1576,427 @@ describe('IndexedDbAppBackend', () => {
       now: () => '2026-03-13T17:15:00.000Z',
     })
     const seedData = createSeedData()
-    const duplicateProfileSpy = vi.spyOn(MockAppBackend.prototype, 'duplicateProfile').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      const result = await backend.duplicateProfile({
-        sourceProfileId: 'profile_3',
-        name: 'Profile 3 Copy',
-      })
+    const result = await backend.duplicateProfile({
+      sourceProfileId: 'profile_3',
+      name: 'Profile 3 Copy',
+    })
 
-      expect(result.createdId).toBeTruthy()
+    expect(result.createdId).toBeTruthy()
 
-      const secondBackend = new IndexedDbAppBackend({ databaseName })
-      const persistedData = await secondBackend.getAppData()
-      const duplicatedProfile = result.createdId ? persistedData.profiles[result.createdId] : undefined
+    const secondBackend = new IndexedDbAppBackend({ databaseName })
+    const persistedData = await secondBackend.getAppData()
+    const duplicatedProfile = result.createdId ? persistedData.profiles[result.createdId] : undefined
 
-      expect(duplicatedProfile).toMatchObject({
-        name: 'Profile 3 Copy',
-        jobId: 'job_1',
-        clonedFromProfileId: 'profile_3',
-        createdAt: '2026-03-13T17:15:00.000Z',
-        updatedAt: '2026-03-13T17:15:00.000Z',
-      })
+    expect(duplicatedProfile).toMatchObject({
+      name: 'Profile 3 Copy',
+      jobId: 'job_1',
+      clonedFromProfileId: 'profile_3',
+      createdAt: '2026-03-13T17:15:00.000Z',
+      updatedAt: '2026-03-13T17:15:00.000Z',
+    })
 
-      const duplicatedProfileId = result.createdId!
-      expect(Object.values(persistedData.profileLinks).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(2)
-      expect(Object.values(persistedData.skillCategories).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(2)
-      expect(
-        Object.values(persistedData.skills).filter((item) => {
-          const category = persistedData.skillCategories[item.skillCategoryId]
-          return category?.profileId === duplicatedProfileId
-        }),
-      ).toHaveLength(3)
-      expect(Object.values(persistedData.achievements).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
-      expect(Object.values(persistedData.experienceEntries).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
-      expect(
-        Object.values(persistedData.experienceBullets).filter((item) => {
-          const entry = persistedData.experienceEntries[item.experienceEntryId]
-          return entry?.profileId === duplicatedProfileId
-        }),
-      ).toHaveLength(2)
-      expect(Object.values(persistedData.educationEntries).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
-      expect(Object.values(persistedData.projects).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
-      expect(Object.values(persistedData.additionalExperienceEntries).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
-      expect(Object.values(persistedData.certifications).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
-      expect(Object.values(persistedData.references).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
-      expect(duplicateProfileSpy).not.toHaveBeenCalled()
-    } finally {
-      duplicateProfileSpy.mockRestore()
-    }
+    const duplicatedProfileId = result.createdId!
+    expect(Object.values(persistedData.profileLinks).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(2)
+    expect(Object.values(persistedData.skillCategories).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(2)
+    expect(
+      Object.values(persistedData.skills).filter((item) => {
+        const category = persistedData.skillCategories[item.skillCategoryId]
+        return category?.profileId === duplicatedProfileId
+      }),
+    ).toHaveLength(3)
+    expect(Object.values(persistedData.achievements).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
+    expect(Object.values(persistedData.experienceEntries).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
+    expect(
+      Object.values(persistedData.experienceBullets).filter((item) => {
+        const entry = persistedData.experienceEntries[item.experienceEntryId]
+        return entry?.profileId === duplicatedProfileId
+      }),
+    ).toHaveLength(2)
+    expect(Object.values(persistedData.educationEntries).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
+    expect(Object.values(persistedData.projects).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
+    expect(Object.values(persistedData.additionalExperienceEntries).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
+    expect(Object.values(persistedData.certifications).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
+    expect(Object.values(persistedData.references).filter((item) => item.profileId === duplicatedProfileId)).toHaveLength(1)
   })
 
-  it('builds the jobs list directly from IndexedDB without delegating to MockAppBackend', async () => {
+  it('builds the jobs list directly from IndexedDB', async () => {
     const backend = new IndexedDbAppBackend({ databaseName })
     const seedData = createSeedData()
-    const getJobsListSpy = vi.spyOn(MockAppBackend.prototype, 'getJobsList').mockRejectedValue(new Error('should not be used'))
 
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
 
-      await expect(backend.getJobsList()).resolves.toEqual({
-        items: [
-          {
+    await expect(backend.getJobsList()).resolves.toEqual({
+      items: [
+        {
+          id: 'job_2',
+          companyName: 'Another Co',
+          jobTitle: 'Staff Engineer',
+          computedStatus: 'applied',
+          interviewCount: 0,
+          jobLinks: [],
+          createdAt: '2026-03-02T12:00:00.000Z',
+          updatedAt: '2026-03-04T12:00:00.000Z',
+        },
+        {
+          id: 'job_1',
+          companyName: 'Example Co',
+          jobTitle: 'Senior Engineer',
+          computedStatus: 'interview',
+          interviewCount: 2,
+          jobLinks: [
+            {
+              id: 'job_link_2',
+              url: 'https://example.com/job-1-primary',
+            },
+            {
+              id: 'job_link_1',
+              url: 'https://example.com/job-1',
+            },
+          ],
+          createdAt: '2026-03-01T12:00:00.000Z',
+          updatedAt: '2026-03-01T12:00:00.000Z',
+        },
+      ],
+      updatedAt: '2026-03-04T12:00:00.000Z',
+    })
+  })
+
+  it('builds the dashboard summary directly from IndexedDB', async () => {
+    const backend = new IndexedDbAppBackend({ databaseName })
+    const seedData = createSeedData()
+
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
+
+    await expect(backend.getDashboardSummary()).resolves.toEqual({
+      profileCount: 3,
+      baseProfileCount: 1,
+      jobProfileCount: 2,
+      jobCount: 2,
+      activeInterviewCount: 2,
+      contactCount: 2,
+      updatedAt: '2026-03-06T12:00:00.000Z',
+    })
+  })
+
+  it('builds the profiles list directly from IndexedDB', async () => {
+    const backend = new IndexedDbAppBackend({ databaseName })
+    const seedData = createSeedData()
+
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
+
+    await expect(backend.getProfilesList()).resolves.toEqual({
+      items: [
+        {
+          id: 'profile_2',
+          name: 'Job Profile',
+          kind: 'job',
+          jobId: 'job_2',
+          jobSummary: {
             id: 'job_2',
             companyName: 'Another Co',
             jobTitle: 'Staff Engineer',
-            computedStatus: 'applied',
-            interviewCount: 0,
-            jobLinks: [],
-            createdAt: '2026-03-02T12:00:00.000Z',
-            updatedAt: '2026-03-04T12:00:00.000Z',
           },
-          {
+          createdAt: '2026-03-03T12:00:00.000Z',
+          updatedAt: '2026-03-05T12:00:00.000Z',
+        },
+        {
+          id: 'profile_3',
+          name: 'Job 1 Profile',
+          kind: 'job',
+          jobId: 'job_1',
+          jobSummary: {
             id: 'job_1',
             companyName: 'Example Co',
             jobTitle: 'Senior Engineer',
-            computedStatus: 'interview',
-            interviewCount: 2,
-            jobLinks: [
-              {
-                id: 'job_link_2',
-                url: 'https://example.com/job-1-primary',
-              },
-              {
-                id: 'job_link_1',
-                url: 'https://example.com/job-1',
-              },
-            ],
-            createdAt: '2026-03-01T12:00:00.000Z',
-            updatedAt: '2026-03-01T12:00:00.000Z',
           },
-        ],
-        updatedAt: '2026-03-04T12:00:00.000Z',
-      })
-
-      expect(getJobsListSpy).not.toHaveBeenCalled()
-    } finally {
-      getJobsListSpy.mockRestore()
-    }
-  })
-
-  it('builds the dashboard summary directly from IndexedDB without delegating to MockAppBackend', async () => {
-    const backend = new IndexedDbAppBackend({ databaseName })
-    const seedData = createSeedData()
-    const getDashboardSummarySpy = vi
-      .spyOn(MockAppBackend.prototype, 'getDashboardSummary')
-      .mockRejectedValue(new Error('should not be used'))
-
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
-
-      await expect(backend.getDashboardSummary()).resolves.toEqual({
-        profileCount: 3,
-        baseProfileCount: 1,
-        jobProfileCount: 2,
-        jobCount: 2,
-        activeInterviewCount: 2,
-        contactCount: 2,
-        updatedAt: '2026-03-06T12:00:00.000Z',
-      })
-
-      expect(getDashboardSummarySpy).not.toHaveBeenCalled()
-    } finally {
-      getDashboardSummarySpy.mockRestore()
-    }
-  })
-
-  it('builds the profiles list directly from IndexedDB without delegating to MockAppBackend', async () => {
-    const backend = new IndexedDbAppBackend({ databaseName })
-    const seedData = createSeedData()
-    const getProfilesListSpy = vi.spyOn(MockAppBackend.prototype, 'getProfilesList').mockRejectedValue(new Error('should not be used'))
-
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
-
-      await expect(backend.getProfilesList()).resolves.toEqual({
-        items: [
-          {
-            id: 'profile_2',
-            name: 'Job Profile',
-            kind: 'job',
-            jobId: 'job_2',
-            jobSummary: {
-              id: 'job_2',
-              companyName: 'Another Co',
-              jobTitle: 'Staff Engineer',
-            },
-            createdAt: '2026-03-03T12:00:00.000Z',
-            updatedAt: '2026-03-05T12:00:00.000Z',
-          },
-          {
-            id: 'profile_3',
-            name: 'Job 1 Profile',
-            kind: 'job',
-            jobId: 'job_1',
-            jobSummary: {
-              id: 'job_1',
-              companyName: 'Example Co',
-              jobTitle: 'Senior Engineer',
-            },
-            createdAt: '2026-03-02T18:00:00.000Z',
-            updatedAt: '2026-03-06T12:00:00.000Z',
-          },
-          {
-            id: 'profile_1',
-            name: 'Base Profile',
-            kind: 'base',
-            jobId: null,
-            jobSummary: null,
-            createdAt: '2026-03-02T12:00:00.000Z',
-            updatedAt: '2026-03-02T12:00:00.000Z',
-          },
-        ],
-        updatedAt: '2026-03-05T12:00:00.000Z',
-      })
-
-      await expect(backend.getProfilesList('base')).resolves.toEqual({
-        items: [
-          {
-            id: 'profile_1',
-            name: 'Base Profile',
-            kind: 'base',
-            jobId: null,
-            jobSummary: null,
-            createdAt: '2026-03-02T12:00:00.000Z',
-            updatedAt: '2026-03-02T12:00:00.000Z',
-          },
-        ],
-        updatedAt: '2026-03-02T12:00:00.000Z',
-      })
-
-      await expect(backend.getProfilesList('job')).resolves.toEqual({
-        items: [
-          {
-            id: 'profile_2',
-            name: 'Job Profile',
-            kind: 'job',
-            jobId: 'job_2',
-            jobSummary: {
-              id: 'job_2',
-              companyName: 'Another Co',
-              jobTitle: 'Staff Engineer',
-            },
-            createdAt: '2026-03-03T12:00:00.000Z',
-            updatedAt: '2026-03-05T12:00:00.000Z',
-          },
-          {
-            id: 'profile_3',
-            name: 'Job 1 Profile',
-            kind: 'job',
-            jobId: 'job_1',
-            jobSummary: {
-              id: 'job_1',
-              companyName: 'Example Co',
-              jobTitle: 'Senior Engineer',
-            },
-            createdAt: '2026-03-02T18:00:00.000Z',
-            updatedAt: '2026-03-06T12:00:00.000Z',
-          },
-        ],
-        updatedAt: '2026-03-05T12:00:00.000Z',
-      })
-
-      expect(getProfilesListSpy).not.toHaveBeenCalled()
-    } finally {
-      getProfilesListSpy.mockRestore()
-    }
-  })
-
-  it('builds the job detail directly from IndexedDB without delegating to MockAppBackend', async () => {
-    const backend = new IndexedDbAppBackend({ databaseName })
-    const seedData = createSeedData()
-    const getJobDetailSpy = vi.spyOn(MockAppBackend.prototype, 'getJobDetail').mockRejectedValue(new Error('should not be used'))
-
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
-
-      await expect(backend.getJobDetail('job_1')).resolves.toEqual({
-        job: seedData.jobs.job_1,
-        computedStatus: 'interview',
-        relatedProfiles: [seedData.profiles.profile_3],
-        jobLinks: [seedData.jobLinks.job_link_2, seedData.jobLinks.job_link_1],
-        jobContacts: [seedData.jobContacts.job_contact_1, seedData.jobContacts.job_contact_2],
-        interviews: [
-          {
-            interview: seedData.interviews.interview_1,
-            contacts: [
-              {
-                interviewContact: seedData.interviewContacts.interview_contact_2,
-                jobContact: seedData.jobContacts.job_contact_1,
-              },
-              {
-                interviewContact: seedData.interviewContacts.interview_contact_1,
-                jobContact: seedData.jobContacts.job_contact_2,
-              },
-            ],
-          },
-          {
-            interview: seedData.interviews.interview_2,
-            contacts: [],
-          },
-        ],
-        applicationQuestions: [seedData.applicationQuestions.application_question_2, seedData.applicationQuestions.application_question_1],
-      })
-
-      await expect(backend.getJobDetail('missing-job')).resolves.toBeNull()
-      expect(getJobDetailSpy).not.toHaveBeenCalled()
-    } finally {
-      getJobDetailSpy.mockRestore()
-    }
-  })
-
-  it('builds the profile detail directly from IndexedDB without delegating to MockAppBackend', async () => {
-    const backend = new IndexedDbAppBackend({ databaseName })
-    const seedData = createSeedData()
-    const getProfileDetailSpy = vi.spyOn(MockAppBackend.prototype, 'getProfileDetail').mockRejectedValue(new Error('should not be used'))
-
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
-
-      await expect(backend.getProfileDetail('profile_3')).resolves.toEqual({
-        profile: seedData.profiles.profile_3,
-        attachedJob: seedData.jobs.job_1,
-        profileLinks: [seedData.profileLinks.profile_link_2, seedData.profileLinks.profile_link_1],
-        skillCategories: [
-          {
-            category: seedData.skillCategories.skill_category_2,
-            skills: [seedData.skills.skill_3],
-          },
-          {
-            category: seedData.skillCategories.skill_category_1,
-            skills: [seedData.skills.skill_2, seedData.skills.skill_1],
-          },
-        ],
-        achievements: [seedData.achievements.achievement_1],
-        experienceEntries: [
-          {
-            entry: seedData.experienceEntries.experience_entry_1,
-            bullets: [seedData.experienceBullets.experience_bullet_2, seedData.experienceBullets.experience_bullet_1],
-          },
-        ],
-        educationEntries: [
-          {
-            entry: seedData.educationEntries.education_entry_1,
-            bullets: [seedData.educationBullets.education_bullet_1],
-          },
-        ],
-        projectEntries: [
-          {
-            entry: seedData.projects.project_1,
-            bullets: [seedData.projectBullets.project_bullet_1],
-          },
-        ],
-        additionalExperienceEntries: [
-          {
-            entry: seedData.additionalExperienceEntries.additional_experience_entry_1,
-            bullets: [seedData.additionalExperienceBullets.additional_experience_bullet_1],
-          },
-        ],
-        certifications: [seedData.certifications.certification_1],
-        references: [seedData.references.reference_1],
-      })
-
-      await expect(backend.getProfileDetail('missing-profile')).resolves.toBeNull()
-      expect(getProfileDetailSpy).not.toHaveBeenCalled()
-    } finally {
-      getProfileDetailSpy.mockRestore()
-    }
-  })
-
-  it('builds the profile document directly from IndexedDB without delegating to MockAppBackend', async () => {
-    const backend = new IndexedDbAppBackend({ databaseName })
-    const seedData = createSeedData()
-    const getProfileDocumentSpy = vi.spyOn(MockAppBackend.prototype, 'getProfileDocument').mockRejectedValue(new Error('should not be used'))
-
-    try {
-      await backend.importAppData({
-        version: 1,
-        exportedAt: '2026-03-12T10:00:00.000Z',
-        data: toPersistedAppData(seedData),
-      })
-
-      await expect(backend.getProfileDocument('profile_3')).resolves.toEqual({
-        profile: seedData.profiles.profile_3,
-        profileLinks: [seedData.profileLinks.profile_link_2, seedData.profileLinks.profile_link_1],
-        job: seedData.jobs.job_1,
-        primaryContact: seedData.jobContacts.job_contact_1,
-        contacts: [seedData.jobContacts.job_contact_1, seedData.jobContacts.job_contact_2],
-        jobLinks: [seedData.jobLinks.job_link_2, seedData.jobLinks.job_link_1],
-        skillCategories: [
-          {
-            category: seedData.skillCategories.skill_category_2,
-            skills: [seedData.skills.skill_3],
-          },
-          {
-            category: seedData.skillCategories.skill_category_1,
-            skills: [seedData.skills.skill_2, seedData.skills.skill_1],
-          },
-        ],
-        achievements: [seedData.achievements.achievement_1],
-        experienceEntries: [
-          {
-            entry: seedData.experienceEntries.experience_entry_1,
-            bullets: [seedData.experienceBullets.experience_bullet_2, seedData.experienceBullets.experience_bullet_1],
-          },
-        ],
-        educationEntries: [
-          {
-            entry: seedData.educationEntries.education_entry_1,
-            bullets: [seedData.educationBullets.education_bullet_1],
-          },
-        ],
-        projectEntries: [
-          {
-            entry: seedData.projects.project_1,
-            bullets: [seedData.projectBullets.project_bullet_1],
-          },
-        ],
-        additionalExperienceEntries: [
-          {
-            entry: seedData.additionalExperienceEntries.additional_experience_entry_1,
-            bullets: [seedData.additionalExperienceBullets.additional_experience_bullet_1],
-          },
-        ],
-        certifications: [seedData.certifications.certification_1],
-        references: [seedData.references.reference_1],
-        computedStatus: 'interview',
-      })
-
-      await expect(backend.getProfileDocument('profile_1')).resolves.toEqual({
-        profile: seedData.profiles.profile_1,
-        profileLinks: [],
-        job: {
-          id: 'document-job-profile_1',
-          companyName: 'Example Company',
-          jobTitle: 'Example Role',
-          description: '',
-          location: '',
-          postedCompensation: '',
-          desiredCompensation: '',
-          compensationNotes: '',
-          workArrangement: 'unknown',
-          employmentType: 'other',
-          datePosted: null,
-          appliedAt: null,
-          finalOutcome: null,
-          notes: '',
+          createdAt: '2026-03-02T18:00:00.000Z',
+          updatedAt: '2026-03-06T12:00:00.000Z',
+        },
+        {
+          id: 'profile_1',
+          name: 'Base Profile',
+          kind: 'base',
+          jobId: null,
+          jobSummary: null,
           createdAt: '2026-03-02T12:00:00.000Z',
           updatedAt: '2026-03-02T12:00:00.000Z',
         },
-        primaryContact: {
-          id: 'document-contact-document-job-profile_1',
-          jobId: 'document-job-profile_1',
-          name: 'Hiring Manager',
-          title: '',
-          company: 'Example Company',
-          addressLine1: '123 Example Street',
-          addressLine2: '',
-          addressLine3: '',
-          addressLine4: 'Example City, EX 12345',
-          email: '',
-          phone: '',
-          linkedinUrl: '',
-          relationshipType: 'hiring_manager',
-          notes: '',
-          sortOrder: 0,
-        },
-        contacts: [],
-        jobLinks: [],
-        skillCategories: [],
-        achievements: [],
-        experienceEntries: [],
-        educationEntries: [],
-        projectEntries: [],
-        additionalExperienceEntries: [],
-        certifications: [],
-        references: [],
-        computedStatus: 'interested',
-      })
+      ],
+      updatedAt: '2026-03-05T12:00:00.000Z',
+    })
 
-      await expect(backend.getProfileDocument('missing-profile')).resolves.toBeNull()
-      expect(getProfileDocumentSpy).not.toHaveBeenCalled()
-    } finally {
-      getProfileDocumentSpy.mockRestore()
-    }
+    await expect(backend.getProfilesList('base')).resolves.toEqual({
+      items: [
+        {
+          id: 'profile_1',
+          name: 'Base Profile',
+          kind: 'base',
+          jobId: null,
+          jobSummary: null,
+          createdAt: '2026-03-02T12:00:00.000Z',
+          updatedAt: '2026-03-02T12:00:00.000Z',
+        },
+      ],
+      updatedAt: '2026-03-02T12:00:00.000Z',
+    })
+
+    await expect(backend.getProfilesList('job')).resolves.toEqual({
+      items: [
+        {
+          id: 'profile_2',
+          name: 'Job Profile',
+          kind: 'job',
+          jobId: 'job_2',
+          jobSummary: {
+            id: 'job_2',
+            companyName: 'Another Co',
+            jobTitle: 'Staff Engineer',
+          },
+          createdAt: '2026-03-03T12:00:00.000Z',
+          updatedAt: '2026-03-05T12:00:00.000Z',
+        },
+        {
+          id: 'profile_3',
+          name: 'Job 1 Profile',
+          kind: 'job',
+          jobId: 'job_1',
+          jobSummary: {
+            id: 'job_1',
+            companyName: 'Example Co',
+            jobTitle: 'Senior Engineer',
+          },
+          createdAt: '2026-03-02T18:00:00.000Z',
+          updatedAt: '2026-03-06T12:00:00.000Z',
+        },
+      ],
+      updatedAt: '2026-03-05T12:00:00.000Z',
+    })
+  })
+
+  it('builds the job detail directly from IndexedDB', async () => {
+    const backend = new IndexedDbAppBackend({ databaseName })
+    const seedData = createSeedData()
+
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
+
+    await expect(backend.getJobDetail('job_1')).resolves.toEqual({
+      job: seedData.jobs.job_1,
+      computedStatus: 'interview',
+      relatedProfiles: [seedData.profiles.profile_3],
+      jobLinks: [seedData.jobLinks.job_link_2, seedData.jobLinks.job_link_1],
+      jobContacts: [seedData.jobContacts.job_contact_1, seedData.jobContacts.job_contact_2],
+      interviews: [
+        {
+          interview: seedData.interviews.interview_1,
+          contacts: [
+            {
+              interviewContact: seedData.interviewContacts.interview_contact_2,
+              jobContact: seedData.jobContacts.job_contact_1,
+            },
+            {
+              interviewContact: seedData.interviewContacts.interview_contact_1,
+              jobContact: seedData.jobContacts.job_contact_2,
+            },
+          ],
+        },
+        {
+          interview: seedData.interviews.interview_2,
+          contacts: [],
+        },
+      ],
+      applicationQuestions: [seedData.applicationQuestions.application_question_2, seedData.applicationQuestions.application_question_1],
+    })
+
+    await expect(backend.getJobDetail('missing-job')).resolves.toBeNull()
+  })
+
+  it('builds the profile detail directly from IndexedDB', async () => {
+    const backend = new IndexedDbAppBackend({ databaseName })
+    const seedData = createSeedData()
+
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
+
+    await expect(backend.getProfileDetail('profile_3')).resolves.toEqual({
+      profile: seedData.profiles.profile_3,
+      attachedJob: seedData.jobs.job_1,
+      profileLinks: [seedData.profileLinks.profile_link_2, seedData.profileLinks.profile_link_1],
+      skillCategories: [
+        {
+          category: seedData.skillCategories.skill_category_2,
+          skills: [seedData.skills.skill_3],
+        },
+        {
+          category: seedData.skillCategories.skill_category_1,
+          skills: [seedData.skills.skill_2, seedData.skills.skill_1],
+        },
+      ],
+      achievements: [seedData.achievements.achievement_1],
+      experienceEntries: [
+        {
+          entry: seedData.experienceEntries.experience_entry_1,
+          bullets: [seedData.experienceBullets.experience_bullet_2, seedData.experienceBullets.experience_bullet_1],
+        },
+      ],
+      educationEntries: [
+        {
+          entry: seedData.educationEntries.education_entry_1,
+          bullets: [seedData.educationBullets.education_bullet_1],
+        },
+      ],
+      projectEntries: [
+        {
+          entry: seedData.projects.project_1,
+          bullets: [seedData.projectBullets.project_bullet_1],
+        },
+      ],
+      additionalExperienceEntries: [
+        {
+          entry: seedData.additionalExperienceEntries.additional_experience_entry_1,
+          bullets: [seedData.additionalExperienceBullets.additional_experience_bullet_1],
+        },
+      ],
+      certifications: [seedData.certifications.certification_1],
+      references: [seedData.references.reference_1],
+    })
+
+    await expect(backend.getProfileDetail('missing-profile')).resolves.toBeNull()
+  })
+
+  it('builds the profile document directly from IndexedDB', async () => {
+    const backend = new IndexedDbAppBackend({ databaseName })
+    const seedData = createSeedData()
+
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
+
+    await expect(backend.getProfileDocument('profile_3')).resolves.toEqual({
+      profile: seedData.profiles.profile_3,
+      profileLinks: [seedData.profileLinks.profile_link_2, seedData.profileLinks.profile_link_1],
+      job: seedData.jobs.job_1,
+      primaryContact: seedData.jobContacts.job_contact_1,
+      contacts: [seedData.jobContacts.job_contact_1, seedData.jobContacts.job_contact_2],
+      jobLinks: [seedData.jobLinks.job_link_2, seedData.jobLinks.job_link_1],
+      skillCategories: [
+        {
+          category: seedData.skillCategories.skill_category_2,
+          skills: [seedData.skills.skill_3],
+        },
+        {
+          category: seedData.skillCategories.skill_category_1,
+          skills: [seedData.skills.skill_2, seedData.skills.skill_1],
+        },
+      ],
+      achievements: [seedData.achievements.achievement_1],
+      experienceEntries: [
+        {
+          entry: seedData.experienceEntries.experience_entry_1,
+          bullets: [seedData.experienceBullets.experience_bullet_2, seedData.experienceBullets.experience_bullet_1],
+        },
+      ],
+      educationEntries: [
+        {
+          entry: seedData.educationEntries.education_entry_1,
+          bullets: [seedData.educationBullets.education_bullet_1],
+        },
+      ],
+      projectEntries: [
+        {
+          entry: seedData.projects.project_1,
+          bullets: [seedData.projectBullets.project_bullet_1],
+        },
+      ],
+      additionalExperienceEntries: [
+        {
+          entry: seedData.additionalExperienceEntries.additional_experience_entry_1,
+          bullets: [seedData.additionalExperienceBullets.additional_experience_bullet_1],
+        },
+      ],
+      certifications: [seedData.certifications.certification_1],
+      references: [seedData.references.reference_1],
+      computedStatus: 'interview',
+    })
+
+    await expect(backend.getProfileDocument('profile_1')).resolves.toEqual({
+      profile: seedData.profiles.profile_1,
+      profileLinks: [],
+      job: {
+        id: 'document-job-profile_1',
+        companyName: 'Example Company',
+        jobTitle: 'Example Role',
+        description: '',
+        location: '',
+        postedCompensation: '',
+        desiredCompensation: '',
+        compensationNotes: '',
+        workArrangement: 'unknown',
+        employmentType: 'other',
+        datePosted: null,
+        appliedAt: null,
+        finalOutcome: null,
+        notes: '',
+        createdAt: '2026-03-02T12:00:00.000Z',
+        updatedAt: '2026-03-02T12:00:00.000Z',
+      },
+      primaryContact: {
+        id: 'document-contact-document-job-profile_1',
+        jobId: 'document-job-profile_1',
+        name: 'Hiring Manager',
+        title: '',
+        company: 'Example Company',
+        addressLine1: '123 Example Street',
+        addressLine2: '',
+        addressLine3: '',
+        addressLine4: 'Example City, EX 12345',
+        email: '',
+        phone: '',
+        linkedinUrl: '',
+        relationshipType: 'hiring_manager',
+        notes: '',
+        sortOrder: 0,
+      },
+      contacts: [],
+      jobLinks: [],
+      skillCategories: [],
+      achievements: [],
+      experienceEntries: [],
+      educationEntries: [],
+      projectEntries: [],
+      additionalExperienceEntries: [],
+      certifications: [],
+      references: [],
+      computedStatus: 'interested',
+    })
+
+    await expect(backend.getProfileDocument('missing-profile')).resolves.toBeNull()
   })
 })
