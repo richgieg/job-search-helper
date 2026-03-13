@@ -15,7 +15,7 @@ import { queryKeys } from '../queries/query-keys'
 import { queryClient } from '../queries/query-client'
 import { ResumePage } from './ResumePage'
 import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState } from '../store/create-initial-state'
-import { useAppStore } from '../store/app-store'
+import { useAppUiZustandStore } from '../store/app-ui-zustand-store'
 import { renderRoute } from '../test/render-route'
 
 class MockIntersectionObserver implements IntersectionObserver {
@@ -32,7 +32,7 @@ class MockIntersectionObserver implements IntersectionObserver {
 const resetStore = () => {
   queryClient.clear()
   resetAppApiClient()
-  useAppStore.setState((state) => ({
+  useAppUiZustandStore.setState((state) => ({
     ...state,
     ui: createDefaultUiState('system'),
   }))
