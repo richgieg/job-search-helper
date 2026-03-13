@@ -3,12 +3,11 @@ import { Link } from 'react-router-dom'
 
 import type { ProfilesListItemDto } from '../api/read-models'
 import { DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../components/CompactActionControls'
+import { useProfileMutations } from '../features/profiles/use-profile-mutations'
 import { useProfilesListQuery } from '../queries/use-profiles-list-query'
-import { useAppStore } from '../store/app-store'
 
 const ProfileListItem = ({ profile }: { profile: ProfilesListItemDto }) => {
-  const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
-  const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
+  const { deleteProfile, duplicateProfile } = useProfileMutations()
 
   const handleDuplicate = () => {
     void duplicateProfile({ sourceProfileId: profile.id })
@@ -55,7 +54,7 @@ const ProfileListItem = ({ profile }: { profile: ProfilesListItemDto }) => {
 }
 
 export const ProfilesPage = () => {
-  const createBaseProfile = useAppStore((state) => state.actions.createBaseProfile)
+  const { createBaseProfile } = useProfileMutations()
   const { data, error, isLoading } = useProfilesListQuery('base')
   const [name, setName] = useState('')
 

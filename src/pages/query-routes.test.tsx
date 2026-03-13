@@ -11,6 +11,7 @@ import { ImportExportPage } from './ImportExportPage'
 import { JobPage } from './JobPage'
 import { JobsPage } from './JobsPage'
 import { ProfilePage } from './ProfilePage'
+import { queryKeys } from '../queries/query-keys'
 import { queryClient } from '../queries/query-client'
 import { ResumePage } from './ResumePage'
 import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState } from '../store/create-initial-state'
@@ -349,6 +350,7 @@ describe('query-backed routes', () => {
   })
 
   it('refetches the active job detail query after a job mutation while the route is mounted', async () => {
+    const user = userEvent.setup()
     const apiClient = createAppApiClient({ initialData: createSeedData() })
     const getJobDetail = vi.spyOn(apiClient, 'getJobDetail')
 
@@ -366,17 +368,16 @@ describe('query-backed routes', () => {
       expect(getJobDetail).toHaveBeenCalledTimes(1)
     })
 
-    await useAppStore.getState().actions.updateJob({
-      jobId: 'job_1',
-      changes: {
-        jobTitle: 'Principal Engineer',
-      },
-    })
+    await user.click(screen.getByRole('button', { name: /Job details/i }))
+    await user.clear(screen.getByLabelText('Job title'))
+    await user.type(screen.getByLabelText('Job title'), 'Principal Engineer')
+    await user.tab()
 
     await waitFor(() => {
-      expect(useAppStore.getState().data.jobs.job_1?.jobTitle).toBe('Principal Engineer')
       expect(getJobDetail.mock.calls.length).toBeGreaterThanOrEqual(2)
     })
+
+    expect(await screen.findByText('Principal Engineer')).toBeInTheDocument()
   })
 
   it('renders the profile detail route from query-backed detail data', async () => {
@@ -482,10 +483,7 @@ describe('query-backed routes', () => {
     const seededData = createSeedData()
     const apiClient = createAppApiClient({ initialData: seededData })
 
-    useAppStore.setState((state) => ({
-      ...state,
-      data: seededData,
-    }))
+    queryClient.setQueryData(queryKeys.profilesDocument('profile_1'), await apiClient.getProfileDocument('profile_1'))
 
     setAppApiClient({
       ...apiClient,

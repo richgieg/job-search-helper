@@ -4,11 +4,11 @@ import { Link } from 'react-router-dom'
 import type { JobsListItemDto } from '../api/read-models'
 import { DeleteIconButton, getActionIconButtonClassName } from '../components/CompactActionControls'
 import { formatJobComputedStatus, getJobComputedStatusBadgeClassName } from '../features/jobs/job-status'
+import { useJobMutations } from '../features/jobs/use-job-mutations'
 import { useJobsListQuery } from '../queries/use-jobs-list-query'
-import { useAppStore } from '../store/app-store'
 
 const JobListItem = ({ job }: { job: JobsListItemDto }) => {
-  const deleteJob = useAppStore((state) => state.actions.deleteJob)
+  const { deleteJob } = useJobMutations()
 
   const handleDelete = async () => {
     const confirmed = window.confirm(`Delete job "${job.jobTitle}" at "${job.companyName}"? This removes attached job profiles too.`)
@@ -101,7 +101,7 @@ const JobsTable = ({ jobs }: { jobs: JobsListItemDto[] }) => {
 }
 
 export const JobsPage = () => {
-  const createJob = useAppStore((state) => state.actions.createJob)
+  const { createJob } = useJobMutations()
   const { data, error, isLoading } = useJobsListQuery()
   const [companyName, setCompanyName] = useState('')
   const [jobTitle, setJobTitle] = useState('')

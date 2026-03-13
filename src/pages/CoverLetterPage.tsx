@@ -1,21 +1,15 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { AppShell } from '../app/layout/AppLayout'
 import { CoverLetterDocument } from '../features/documents/CoverLetterDocument'
 import { DocumentNotFound } from '../features/documents/DocumentNotFound'
-import { selectProfileDocumentData } from '../features/documents/document-data'
 import { createCoverLetterDocumentTitle } from '../features/documents/document-titles'
 import { useProfileDocumentQuery } from '../queries/use-profile-document-query'
-import { useAppStore } from '../store/app-store'
 
 export const CoverLetterPage = () => {
   const { profileId = '' } = useParams()
-  const data = useAppStore((state) => state.data)
-  const { data: fetchedDocumentData, error, isLoading } = useProfileDocumentQuery(profileId)
-
-  const cachedDocumentData = useMemo(() => selectProfileDocumentData(data, profileId), [data, profileId])
-  const documentData = fetchedDocumentData ?? cachedDocumentData
+  const { data: documentData, error, isLoading } = useProfileDocumentQuery(profileId)
 
   useEffect(() => {
     if (!documentData) {

@@ -1,9 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { selectProfileDocumentData } from '../features/documents/document-data'
 import { useProfileDocumentQuery } from '../queries/use-profile-document-query'
-import { useAppStore } from '../store/app-store'
 import { formatBulletCopyLine } from '../utils/bullet-levels'
 import { defaultResumeSectionLabels, defaultResumeSectionOrder } from '../utils/resume-section-labels'
 import type { BulletLevel, ResumeSectionKey } from '../types/state'
@@ -206,12 +204,8 @@ const DataTable = ({
 
 export const ApplicationPage = () => {
   const { profileId = '' } = useParams()
-  const data = useAppStore((state) => state.data)
-  const { data: fetchedDocumentData, error, isLoading } = useProfileDocumentQuery(profileId)
+  const { data: documentData, error, isLoading } = useProfileDocumentQuery(profileId)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
-
-  const cachedDocumentData = useMemo(() => selectProfileDocumentData(data, profileId), [data, profileId])
-  const documentData = fetchedDocumentData ?? cachedDocumentData
 
   if (isLoading && !documentData) {
     return <p className="text-sm text-app-text-subtle">Loading application data...</p>

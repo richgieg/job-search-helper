@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAppApiClient } from '../../api'
 import type {
   AddInterviewContactInput,
+  CreateJobInput,
   ReorderInterviewContactsInput,
   ReorderJobEntitiesInput,
   SetJobAppliedAtInput,
@@ -14,12 +15,17 @@ import type {
   UpdateJobLinkInput,
 } from '../../domain/job-data'
 import { queryKeys } from '../../queries/query-keys'
+import { useSelectJob, useSelectProfile, useSelectedJobId, useSelectedProfileId } from '../../store/app-ui-store'
 import type { Id } from '../../types/state'
 
 const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : 'Unknown job mutation error.')
 
 export const useJobMutations = () => {
   const queryClient = useQueryClient()
+  const selectedJobId = useSelectedJobId()
+  const selectedProfileId = useSelectedProfileId()
+  const selectJob = useSelectJob()
+  const selectProfile = useSelectProfile()
 
   const invalidateJobQueries = async () => {
     await Promise.all([
@@ -34,6 +40,16 @@ export const useJobMutations = () => {
 
   const updateJobMutation = useMutation({
     mutationFn: (input: UpdateJobInput) => getAppApiClient().updateJob(input),
+    onSuccess: invalidateJobQueries,
+  })
+
+  const createJobMutation = useMutation({
+    mutationFn: (input: CreateJobInput) => getAppApiClient().createJob(input),
+    onSuccess: invalidateJobQueries,
+  })
+
+  const deleteJobMutation = useMutation({
+    mutationFn: (jobId: Id) => getAppApiClient().deleteJob(jobId),
     onSuccess: invalidateJobQueries,
   })
 
@@ -149,6 +165,8 @@ export const useJobMutations = () => {
 
   const mutations = [
     updateJobMutation,
+    createJobMutation,
+    deleteJobMutation,
     setJobAppliedAtMutation,
     clearJobAppliedAtMutation,
     setJobFinalOutcomeMutation,
@@ -181,8 +199,29 @@ export const useJobMutations = () => {
   return {
     errorMessage,
     isSaving: mutations.some((mutation) => mutation.isPending),
+    createJob: async (input: CreateJobInput) => {
+      const result = await createJobMutation.mutateAsync(input)
+      const createdJobId = result.createdId ?? null
+
+      if (createdJobId) {
+        selectJob(createdJobId)
+      }
+
+      return createdJobId
+    },
     updateJob: async (input: UpdateJobInput) => {
       await updateJobMutation.mutateAsync(input)
+    },
+    deleteJob: async (jobId: Id) => {
+      const result = await deleteJobMutation.mutateAsync(jobId)
+
+      if (selectedJobId === jobId) {
+        selectJob(null)
+      }
+
+      if (selectedProfileId && result.data.profiles[selectedProfileId] === undefined) {
+        selectProfile(null)
+      }
     },
     setJobAppliedAt: async (input: SetJobAppliedAtInput) => {
       await setJobAppliedAtMutation.mutateAsync(input)

@@ -78,6 +78,12 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
   const nextThemePreference = getNextThemePreference(themePreference)
 
   useEffect(() => {
+    if (typeof window.matchMedia !== 'function') {
+      applyResolvedTheme(resolveThemePreference(themePreference, false))
+      persistThemePreference(themePreference)
+      return
+    }
+
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
     const applyTheme = (prefersDark: boolean) => {

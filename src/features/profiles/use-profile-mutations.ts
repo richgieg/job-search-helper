@@ -55,6 +55,11 @@ export const useProfileMutations = () => {
     onSuccess: invalidateProfileQueries,
   })
 
+  const createBaseProfileMutation = useMutation({
+    mutationFn: (name: string) => getAppApiClient().createBaseProfile(name),
+    onSuccess: invalidateProfileQueries,
+  })
+
   const setDocumentHeaderTemplateMutation = useMutation({
     mutationFn: (input: SetDocumentHeaderTemplateInput) => getAppApiClient().setDocumentHeaderTemplate(input),
     onSuccess: invalidateProfileQueries,
@@ -367,6 +372,7 @@ export const useProfileMutations = () => {
 
   const mutations = [
     updateProfileMutation,
+    createBaseProfileMutation,
     setDocumentHeaderTemplateMutation,
     setResumeSectionEnabledMutation,
     setResumeSectionLabelMutation,
@@ -439,6 +445,16 @@ export const useProfileMutations = () => {
   return {
     errorMessage,
     isSaving: mutations.some((mutation) => mutation.isPending),
+    createBaseProfile: async (name: string) => {
+      const result = await createBaseProfileMutation.mutateAsync(name)
+      const createdProfileId = result.createdId ?? null
+
+      if (createdProfileId) {
+        selectProfile(createdProfileId)
+      }
+
+      return createdProfileId
+    },
     updateProfile: async (input: UpdateProfileInput) => {
       await updateProfileMutation.mutateAsync(input)
     },
