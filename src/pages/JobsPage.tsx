@@ -1,37 +1,14 @@
-import { SubmitEvent, useMemo, useRef, useState } from 'react'
+import { SubmitEvent, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import type { JobsListItemDto } from '../api/read-models'
 import { DeleteIconButton, getActionIconButtonClassName } from '../components/CompactActionControls'
-import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadgeClassName } from '../features/jobs/job-status'
+import { formatJobComputedStatus, getJobComputedStatusBadgeClassName } from '../features/jobs/job-status'
+import { useJobsListQuery } from '../queries/use-jobs-list-query'
 import { useAppStore } from '../store/app-store'
 
-const JobListItem = ({ jobId }: { jobId: string }) => {
-  const job = useAppStore((state) => state.data.jobs[jobId])
-  const jobLinksById = useAppStore((state) => state.data.jobLinks)
-  const interviewsById = useAppStore((state) => state.data.interviews)
+const JobListItem = ({ job }: { job: JobsListItemDto }) => {
   const deleteJob = useAppStore((state) => state.actions.deleteJob)
-
-  const jobLinks = useMemo(
-    () =>
-      Object.values(jobLinksById)
-        .filter((link) => link.jobId === jobId)
-        .sort((left, right) => left.sortOrder - right.sortOrder),
-    [jobId, jobLinksById],
-  )
-  const interviewCount = useMemo(
-    () => Object.values(interviewsById).filter((interview) => interview.jobId === jobId).length,
-    [interviewsById, jobId],
-  )
-
-  if (!job) {
-    return null
-  }
-
-  const computedStatus = getJobComputedStatus({
-    appliedAt: job.appliedAt,
-    finalOutcome: job.finalOutcome,
-    interviewCount,
-  })
 
   const handleDelete = async () => {
     const confirmed = window.confirm(`Delete job "${job.jobTitle}" at "${job.companyName}"? This removes attached job profiles too.`)
@@ -53,14 +30,14 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
         <span className="text-sm text-app-text-subtle">{job.companyName}</span>
       </td>
       <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
-        <span className={['rounded-full px-3 py-1 text-xs font-medium', getJobComputedStatusBadgeClassName(computedStatus)].join(' ')}>{formatJobComputedStatus(computedStatus)}</span>
+        <span className={['rounded-full px-3 py-1 text-xs font-medium', getJobComputedStatusBadgeClassName(job.computedStatus)].join(' ')}>{formatJobComputedStatus(job.computedStatus)}</span>
       </td>
       <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
-        {jobLinks.length === 0 ? (
+        {job.jobLinks.length === 0 ? (
           <span className="text-sm text-app-text-disabled">—</span>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {jobLinks.map((jobLink, index) => (
+            {job.jobLinks.map((jobLink, index) => (
               <a
                 key={jobLink.id}
                 className="text-sm font-medium text-app-primary-hover underline-offset-2 hover:text-app-primary-hover hover:underline"
@@ -89,8 +66,8 @@ const JobListItem = ({ jobId }: { jobId: string }) => {
   )
 }
 
-const JobsTable = ({ jobIds }: { jobIds: string[] }) => {
-  if (jobIds.length === 0) {
+const JobsTable = ({ jobs }: { jobs: JobsListItemDto[] }) => {
+  if (jobs.length === 0) {
     return <p className="p-6 text-sm text-app-text-subtle">No jobs yet.</p>
   }
 
@@ -114,8 +91,8 @@ const JobsTable = ({ jobIds }: { jobIds: string[] }) => {
           </tr>
         </thead>
         <tbody>
-          {jobIds.map((jobId) => (
-            <JobListItem key={jobId} jobId={jobId} />
+          {jobs.map((job) => (
+            <JobListItem key={job.id} job={job} />
           ))}
         </tbody>
       </table>
@@ -124,15 +101,12 @@ const JobsTable = ({ jobIds }: { jobIds: string[] }) => {
 }
 
 export const JobsPage = () => {
-  const jobsById = useAppStore((state) => state.data.jobs)
   const createJob = useAppStore((state) => state.actions.createJob)
+  const { data, error, isLoading } = useJobsListQuery()
   const [companyName, setCompanyName] = useState('')
   const [jobTitle, setJobTitle] = useState('')
   const [initialLinkUrl, setInitialLinkUrl] = useState('')
   const jobTitleInputRef = useRef<HTMLInputElement | null>(null)
-
-  const jobs = useMemo(() => Object.values(jobsById), [jobsById])
-  const sortedJobIds = useMemo(() => [...jobs].sort((left, right) => right.createdAt.localeCompare(left.createdAt)).map((job) => job.id), [jobs])
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -204,8 +178,14 @@ export const JobsPage = () => {
         </form>
       </section>
 
+      {error ? (
+        <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft px-4 py-3 text-sm text-app-status-rejected">
+          Unable to refresh jobs right now. Showing the most recently cached result if available.
+        </div>
+      ) : null}
+
       <section className="overflow-hidden rounded-2xl border border-app-border bg-app-surface shadow-sm">
-        <JobsTable jobIds={sortedJobIds} />
+        {isLoading && !data ? <p className="p-6 text-sm text-app-text-subtle">Loading jobs...</p> : <JobsTable jobs={data?.items ?? []} />}
       </section>
     </div>
   )

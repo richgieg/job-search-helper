@@ -12,6 +12,7 @@
     "validate:sample-data": "node -e \"JSON.parse(require('fs').readFileSync('sample-data/sample-data.json', 'utf8')); console.log('sample-data.json is valid JSON')\""
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.21",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.0.0",
@@ -19,6 +20,7 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.0.0",
@@ -26,7 +28,6 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.0.0",
     "tailwindcss": "^4.0.0",
-    "@tailwindcss/vite": "^4.0.0",
     "typescript": "~5.8.0",
     "vite": "^7.0.0",
     "vitest": "^3.0.0"

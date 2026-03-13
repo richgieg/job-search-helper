@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 
 import { getAppApiClient } from '../api'
+import { queryKeys } from '../queries/query-keys'
+import { queryClient } from '../queries/query-client'
 import type {
   AddInterviewContactInput,
   CreateJobInput,
@@ -242,6 +244,11 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
           errorMessage: null,
         },
       }))
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.jobsList() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() }),
+      ])
 
       return result
     } catch (caughtError) {
@@ -649,6 +656,8 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
 
       try {
         const data = await getAppApiClient().importAppData(file)
+
+        queryClient.clear()
 
         set((state) => ({
           ...state,

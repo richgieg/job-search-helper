@@ -1,4 +1,5 @@
 import { createEmptyDataState } from '../store/create-initial-state'
+import { getJobComputedStatus } from '../features/jobs/job-status'
 import type { AppDataState, AppExportFile, IsoTimestamp } from '../types/state'
 import {
   addInterviewContactMutation,
@@ -134,6 +135,7 @@ import {
   type UpdateSkillInput,
 } from '../domain/profile-data'
 import type { AppDataService } from './app-data-service'
+import type { JobsListDto, JobsListItemDto } from './read-models'
 
 interface MockAppBackendOptions {
   initialData?: AppDataState
@@ -142,6 +144,7 @@ interface MockAppBackendOptions {
 
 const cloneAppData = (data: AppDataState): AppDataState => structuredClone(data)
 const cloneExportData = (data: AppExportFile['data']): AppExportFile['data'] => structuredClone(data)
+const emptyCollectionUpdatedAt = '1970-01-01T00:00:00.000Z'
 
 export class MockAppBackend implements AppDataService {
   private data: AppDataState
@@ -154,6 +157,41 @@ export class MockAppBackend implements AppDataService {
 
   async getAppData(): Promise<AppDataState> {
     return cloneAppData(this.data)
+  }
+
+  async getJobsList(): Promise<JobsListDto> {
+    const items = Object.values(this.data.jobs)
+      .map<JobsListItemDto>((job) => {
+        const interviewCount = Object.values(this.data.interviews).filter((interview) => interview.jobId === job.id).length
+        const jobLinks = Object.values(this.data.jobLinks)
+          .filter((link) => link.jobId === job.id)
+          .sort((left, right) => left.sortOrder - right.sortOrder)
+          .map((link) => ({
+            id: link.id,
+            url: link.url,
+          }))
+
+        return {
+          id: job.id,
+          companyName: job.companyName,
+          jobTitle: job.jobTitle,
+          computedStatus: getJobComputedStatus({
+            appliedAt: job.appliedAt,
+            finalOutcome: job.finalOutcome,
+            interviewCount,
+          }),
+          interviewCount,
+          jobLinks,
+          createdAt: job.createdAt,
+          updatedAt: job.updatedAt,
+        }
+      })
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+
+    return {
+      items,
+      updatedAt: items[0]?.updatedAt ?? emptyCollectionUpdatedAt,
+    }
   }
 
   async importAppData(file: AppExportFile): Promise<AppDataState> {

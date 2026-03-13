@@ -41,9 +41,11 @@ import type {
   UpdateSkillCategoryInput,
   UpdateSkillInput,
 } from '../domain/profile-data'
+import type { JobsListDto } from './read-models'
 
 export interface AppDataService {
   getAppData(): Promise<AppDataState>
+  getJobsList(): Promise<JobsListDto>
   importAppData(file: AppExportFile): Promise<AppDataState>
   exportAppData(): Promise<AppExportFile>
   createBaseProfile(name: string): Promise<ProfileMutationResult>
