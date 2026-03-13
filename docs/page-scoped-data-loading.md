@@ -135,6 +135,7 @@ interface JobDetailDto {
     }>
   }>
   applicationQuestions: import('../src/types/state').ApplicationQuestion[]
+  cacheData: Partial<import('../src/types/state').AppDataState>
 }
 ```
 
@@ -261,7 +262,6 @@ Add a small set of cache merge actions to the store.
 ```ts
 interface AppStoreActions {
   mergeDataSnapshot(snapshot: Partial<AppDataState>): void
-  replaceDataFromServer(data: AppDataState): void
 }
 ```
 
@@ -273,6 +273,8 @@ Rules:
 4. The old `hydrate()` path should remain only until enough routes are migrated.
 
 This keeps `state.data.jobs[jobId]` and similar selectors working even while the source of truth is gradually moving to query hooks.
+
+The current job-detail implementation uses this bridge directly: the query returns a `cacheData` partial snapshot, and the route merges that snapshot into Zustand so existing child editors can keep reading normalized entities while the page itself is driven by TanStack Query.
 
 ## Query Hook Shape
 

@@ -135,7 +135,7 @@ import {
   type UpdateSkillInput,
 } from '../domain/profile-data'
 import type { AppDataService } from './app-data-service'
-import type { DashboardSummaryDto, JobsListDto, JobsListItemDto, ProfilesListDto, ProfilesListItemDto } from './read-models'
+import type { DashboardSummaryDto, JobDetailDto, JobsListDto, JobsListItemDto, ProfilesListDto, ProfilesListItemDto } from './read-models'
 
 interface MockAppBackendOptions {
   initialData?: AppDataState
@@ -213,6 +213,88 @@ export class MockAppBackend implements AppDataService {
     return {
       items,
       updatedAt: items[0]?.updatedAt ?? emptyCollectionUpdatedAt,
+    }
+  }
+
+  async getJobDetail(jobId: string): Promise<JobDetailDto | null> {
+    const job = this.data.jobs[jobId]
+
+    if (!job) {
+      return null
+    }
+
+    const relatedProfiles = Object.values(this.data.profiles)
+      .filter((profile) => profile.jobId === jobId)
+      .sort((left, right) => left.createdAt.localeCompare(right.createdAt))
+
+    const jobLinks = Object.values(this.data.jobLinks)
+      .filter((link) => link.jobId === jobId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+
+    const jobContacts = Object.values(this.data.jobContacts)
+      .filter((contact) => contact.jobId === jobId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+
+    const interviewContacts = Object.values(this.data.interviewContacts)
+    const interviews = Object.values(this.data.interviews)
+      .filter((interview) => interview.jobId === jobId)
+      .sort((left, right) => {
+        if (!left.startAt && !right.startAt) {
+          return 0
+        }
+
+        if (!left.startAt) {
+          return 1
+        }
+
+        if (!right.startAt) {
+          return -1
+        }
+
+        return left.startAt.localeCompare(right.startAt)
+      })
+      .map((interview) => ({
+        interview,
+        contacts: interviewContacts
+          .filter((association) => association.interviewId === interview.id)
+          .sort((left, right) => left.sortOrder - right.sortOrder)
+          .map((association) => ({
+            interviewContact: association,
+            jobContact: this.data.jobContacts[association.jobContactId] ?? null,
+          })),
+      }))
+
+    const applicationQuestions = Object.values(this.data.applicationQuestions)
+      .filter((question) => question.jobId === jobId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+
+    const cacheData: Partial<AppDataState> = {
+      jobs: {
+        [job.id]: job,
+      },
+      profiles: Object.fromEntries(relatedProfiles.map((profile) => [profile.id, profile])),
+      jobLinks: Object.fromEntries(jobLinks.map((link) => [link.id, link])),
+      jobContacts: Object.fromEntries(jobContacts.map((contact) => [contact.id, contact])),
+      interviews: Object.fromEntries(interviews.map(({ interview }) => [interview.id, interview])),
+      interviewContacts: Object.fromEntries(
+        interviews.flatMap(({ contacts }) => contacts.map(({ interviewContact }) => [interviewContact.id, interviewContact] as const)),
+      ),
+      applicationQuestions: Object.fromEntries(applicationQuestions.map((question) => [question.id, question])),
+    }
+
+    return {
+      job,
+      computedStatus: getJobComputedStatus({
+        appliedAt: job.appliedAt,
+        finalOutcome: job.finalOutcome,
+        interviewCount: interviews.length,
+      }),
+      relatedProfiles,
+      jobLinks,
+      jobContacts,
+      interviews,
+      applicationQuestions,
+      cacheData,
     }
   }
 

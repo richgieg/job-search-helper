@@ -69,6 +69,7 @@ interface AppStoreState {
   status: AppStoreStatus
   actions: {
     hydrate: () => Promise<void>
+    mergeDataSnapshot: (snapshot: Partial<AppDataState>) => void
     createBaseProfile: (name: string) => Promise<Id | null>
     updateProfile: (input: UpdateProfileInput) => Promise<void>
     setDocumentHeaderTemplate: (input: SetDocumentHeaderTemplateInput) => Promise<void>
@@ -173,6 +174,32 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
   errorMessage: null,
 })
 
+const mergeDataSnapshot = (current: AppDataState, snapshot: Partial<AppDataState>): AppDataState => ({
+  ...current,
+  ...snapshot,
+  profiles: { ...current.profiles, ...snapshot.profiles },
+  profileLinks: { ...current.profileLinks, ...snapshot.profileLinks },
+  skillCategories: { ...current.skillCategories, ...snapshot.skillCategories },
+  skills: { ...current.skills, ...snapshot.skills },
+  achievements: { ...current.achievements, ...snapshot.achievements },
+  experienceEntries: { ...current.experienceEntries, ...snapshot.experienceEntries },
+  experienceBullets: { ...current.experienceBullets, ...snapshot.experienceBullets },
+  educationEntries: { ...current.educationEntries, ...snapshot.educationEntries },
+  educationBullets: { ...current.educationBullets, ...snapshot.educationBullets },
+  projects: { ...current.projects, ...snapshot.projects },
+  projectBullets: { ...current.projectBullets, ...snapshot.projectBullets },
+  additionalExperienceEntries: { ...current.additionalExperienceEntries, ...snapshot.additionalExperienceEntries },
+  additionalExperienceBullets: { ...current.additionalExperienceBullets, ...snapshot.additionalExperienceBullets },
+  certifications: { ...current.certifications, ...snapshot.certifications },
+  references: { ...current.references, ...snapshot.references },
+  jobs: { ...current.jobs, ...snapshot.jobs },
+  jobLinks: { ...current.jobLinks, ...snapshot.jobLinks },
+  jobContacts: { ...current.jobContacts, ...snapshot.jobContacts },
+  interviews: { ...current.interviews, ...snapshot.interviews },
+  interviewContacts: { ...current.interviewContacts, ...snapshot.interviewContacts },
+  applicationQuestions: { ...current.applicationQuestions, ...snapshot.applicationQuestions },
+})
+
  export const useAppStore = create<AppStoreState>((set, get) => {
   const runPersistedProfileMutation = async (
     mutation: () => Promise<ProfileMutationResult>,
@@ -203,6 +230,7 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.profilesListRoot() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.jobsDetailRoot() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() }),
       ])
 
@@ -252,6 +280,7 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.jobsList() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.jobsDetailRoot() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.profilesListRoot() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() }),
       ])
@@ -278,6 +307,11 @@ const createInitialStoreStatus = (): AppStoreStatus => ({
   ui: createDefaultUiState(),
   status: createInitialStoreStatus(),
   actions: {
+    mergeDataSnapshot: (snapshot) =>
+      set((state) => ({
+        ...state,
+        data: mergeDataSnapshot(state.data, snapshot),
+      })),
     hydrate: async () => {
       if (get().status.hydration === 'loading') {
         return

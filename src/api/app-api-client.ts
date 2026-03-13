@@ -42,12 +42,13 @@ import type {
   UpdateSkillInput,
 } from '../domain/profile-data'
 import type { AppDataService } from './app-data-service'
-import type { DashboardSummaryDto, JobsListDto, ProfilesListDto } from './read-models'
+import type { DashboardSummaryDto, JobDetailDto, JobsListDto, ProfilesListDto } from './read-models'
 
 export interface AppApiClient {
   getAppData(): Promise<AppDataState>
   getDashboardSummary(): Promise<DashboardSummaryDto>
   getJobsList(): Promise<JobsListDto>
+  getJobDetail(jobId: string): Promise<JobDetailDto | null>
   getProfilesList(kind?: 'base' | 'job' | 'all'): Promise<ProfilesListDto>
   importAppData(file: AppExportFile): Promise<AppDataState>
   exportAppData(): Promise<AppExportFile>
@@ -155,6 +156,10 @@ export class LocalAppApiClient implements AppApiClient {
 
   getJobsList(): Promise<JobsListDto> {
     return this.service.getJobsList()
+  }
+
+  getJobDetail(jobId: string): Promise<JobDetailDto | null> {
+    return this.service.getJobDetail(jobId)
   }
 
   getProfilesList(kind: 'base' | 'job' | 'all' = 'all'): Promise<ProfilesListDto> {

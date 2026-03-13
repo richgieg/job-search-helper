@@ -1,4 +1,14 @@
-import type { JobComputedStatus } from '../types/state'
+import type {
+  AppDataState,
+  ApplicationQuestion,
+  Interview,
+  InterviewContact,
+  Job,
+  JobComputedStatus,
+  JobContact,
+  JobLink,
+  Profile,
+} from '../types/state'
 
 export interface DashboardSummaryDto {
   profileCount: number
@@ -29,6 +39,27 @@ export interface JobsListItemDto {
 export interface JobsListDto {
   items: JobsListItemDto[]
   updatedAt: string
+}
+
+export interface JobDetailInterviewContactDto {
+  interviewContact: InterviewContact
+  jobContact: JobContact | null
+}
+
+export interface JobDetailInterviewDto {
+  interview: Interview
+  contacts: JobDetailInterviewContactDto[]
+}
+
+export interface JobDetailDto {
+  job: Job
+  computedStatus: JobComputedStatus
+  relatedProfiles: Profile[]
+  jobLinks: JobLink[]
+  jobContacts: JobContact[]
+  interviews: JobDetailInterviewDto[]
+  applicationQuestions: ApplicationQuestion[]
+  cacheData: Partial<AppDataState>
 }
 
 export interface ProfilesListItemDto {

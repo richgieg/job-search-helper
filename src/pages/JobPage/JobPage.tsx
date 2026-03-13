@@ -6,6 +6,7 @@ import { FinalOutcomeStrip, type FinalOutcomeDraftStatus } from './FinalOutcomeS
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { JobChildEditors } from './JobChildEditors'
 import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadgeClassName } from '../../features/jobs/job-status'
+import { useJobDetailQuery } from '../../queries/use-job-detail-query'
 import { useAppStore } from '../../store/app-store'
 import type { EmploymentType, Job, WorkArrangement } from '../../types/state'
 import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
@@ -120,27 +121,37 @@ const createJobDraft = (job: Job): JobDraftState => ({
 
 export const JobPage = () => {
   const { jobId = '' } = useParams()
-  const job = useAppStore((state) => state.data.jobs[jobId])
+  const cachedJob = useAppStore((state) => state.data.jobs[jobId])
   const interviewsById = useAppStore((state) => state.data.interviews)
+  const mergeDataSnapshot = useAppStore((state) => state.actions.mergeDataSnapshot)
   const setJobAppliedAt = useAppStore((state) => state.actions.setJobAppliedAt)
   const clearJobAppliedAt = useAppStore((state) => state.actions.clearJobAppliedAt)
   const setJobFinalOutcome = useAppStore((state) => state.actions.setJobFinalOutcome)
   const clearJobFinalOutcome = useAppStore((state) => state.actions.clearJobFinalOutcome)
   const updateJob = useAppStore((state) => state.actions.updateJob)
+  const { data: jobDetail, error, isLoading } = useJobDetailQuery(jobId)
   const [draft, setDraft] = useState<JobDraftState | null>(null)
+  const job = jobDetail?.job ?? cachedJob
   const interviewCount = useMemo(
-    () => Object.values(interviewsById).filter((interview) => interview.jobId === jobId).length,
-    [interviewsById, jobId],
+    () => jobDetail?.interviews.length ?? Object.values(interviewsById).filter((interview) => interview.jobId === jobId).length,
+    [interviewsById, jobDetail?.interviews.length, jobId],
   )
   const computedStatus = useMemo(
     () =>
+      jobDetail?.computedStatus ??
       getJobComputedStatus({
         appliedAt: job?.appliedAt ?? null,
         finalOutcome: job?.finalOutcome ?? null,
         interviewCount,
       }),
-    [interviewCount, job?.appliedAt, job?.finalOutcome],
+    [interviewCount, job?.appliedAt, job?.finalOutcome, jobDetail?.computedStatus],
   )
+
+  useEffect(() => {
+    if (jobDetail?.cacheData) {
+      mergeDataSnapshot(jobDetail.cacheData)
+    }
+  }, [jobDetail?.cacheData, mergeDataSnapshot])
 
   useEffect(() => {
     if (!job) {
@@ -150,6 +161,22 @@ export const JobPage = () => {
 
     setDraft(createJobDraft(job))
   }, [job])
+
+  if (isLoading && !job) {
+    return <p className="text-sm text-app-text-subtle">Loading job...</p>
+  }
+
+  if (error && !jobDetail && !job) {
+    return (
+      <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft p-8 shadow-sm">
+        <h1 className="text-2xl font-semibold text-app-heading">Unable to load job</h1>
+        <p className="mt-3 text-sm text-app-status-rejected">The job details could not be refreshed right now.</p>
+        <Link className="mt-5 inline-flex rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to="/jobs">
+          Back to jobs
+        </Link>
+      </div>
+    )
+  }
 
   if (!job || !draft) {
     return (
@@ -271,6 +298,12 @@ export const JobPage = () => {
           </div>
         </div>
       </div>
+
+      {error ? (
+        <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft px-4 py-3 text-sm text-app-status-rejected">
+          Unable to refresh this job right now. Showing the most recently cached result if available.
+        </div>
+      ) : null}
 
       <section className="rounded-2xl border border-app-border-muted bg-app-surface p-9 shadow-sm">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
