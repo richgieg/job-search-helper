@@ -263,6 +263,70 @@ describe('query-backed routes', () => {
     expect(screen.getByText('Applied')).toBeInTheDocument()
   })
 
+  it('renders the job not-found state when the requested job does not exist', async () => {
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/missing-job',
+    })
+
+    expect(await screen.findByText('Job not found')).toBeInTheDocument()
+    expect(screen.getByText('The selected job could not be found.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Back to jobs' })).toHaveAttribute('href', '/jobs')
+  })
+
+  it('renders the job refresh-error state when the detail query fails without cached data', async () => {
+    const apiClient = createAppApiClient({ initialData: createSeedData() })
+
+    setAppApiClient({
+      ...apiClient,
+      getJobDetail: vi.fn(async () => {
+        throw new Error('job detail failed')
+      }),
+    })
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Unable to load job')).toBeInTheDocument()
+    expect(screen.getByText('The job details could not be refreshed right now.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Back to jobs' })).toHaveAttribute('href', '/jobs')
+  })
+
+  it('refetches the active job detail query after a job mutation while the route is mounted', async () => {
+    const apiClient = createAppApiClient({ initialData: createSeedData() })
+    const getJobDetail = vi.spyOn(apiClient, 'getJobDetail')
+
+    setAppApiClient(apiClient)
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(getJobDetail).toHaveBeenCalledTimes(1)
+    })
+
+    await useAppStore.getState().actions.updateJob({
+      jobId: 'job_1',
+      changes: {
+        jobTitle: 'Principal Engineer',
+      },
+    })
+
+    await waitFor(() => {
+      expect(useAppStore.getState().data.jobs.job_1?.jobTitle).toBe('Principal Engineer')
+      expect(getJobDetail.mock.calls.length).toBeGreaterThanOrEqual(2)
+    })
+  })
+
   it('renders the profile detail route and bridges profile editor data into the store', async () => {
     renderRoute({
       element: <ProfilePage />,
@@ -276,6 +340,39 @@ describe('query-backed routes', () => {
     await waitFor(() => {
       expect(useAppStore.getState().data.experienceEntries.experience_1?.company).toBe('Example Co')
     })
+  })
+
+  it('renders the profile not-found state when the requested profile does not exist', async () => {
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/missing-profile',
+    })
+
+    expect(await screen.findByText('Profile not found')).toBeInTheDocument()
+    expect(screen.getByText('The selected profile could not be found.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Back to profiles' })).toHaveAttribute('href', '/profiles')
+  })
+
+  it('renders the profile refresh-error state when the detail query fails without cached data', async () => {
+    const apiClient = createAppApiClient({ initialData: createSeedData() })
+
+    setAppApiClient({
+      ...apiClient,
+      getProfileDetail: vi.fn(async () => {
+        throw new Error('profile detail failed')
+      }),
+    })
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Unable to load profile')).toBeInTheDocument()
+    expect(screen.getByText('The profile details could not be refreshed right now.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Back to profiles' })).toHaveAttribute('href', '/profiles')
   })
 
   it('renders the resume route from the profile document query and updates the document title', async () => {
