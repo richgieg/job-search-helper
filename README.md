@@ -5,6 +5,7 @@ A browser-based web app for organizing job opportunities and generating tailored
 ## Documentation
 
 - MVP plan: [docs/mvp-plan.md](docs/mvp-plan.md)
+- IndexedDB migration plan: [docs/indexeddb-migration-plan.md](docs/indexeddb-migration-plan.md)
 - State shape: [docs/state-shape.md](docs/state-shape.md)
 - State actions: [docs/state-actions.md](docs/state-actions.md)
 
