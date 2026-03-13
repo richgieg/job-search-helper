@@ -121,7 +121,7 @@ export const ImportExportPage = () => {
           </button>
         </div>
 
-        <p className="mt-4 text-xs text-app-warning">Import replaces the current local database.</p>
+        <p className="mt-4 text-xs text-app-warning">Import JSON replaces the current local database.</p>
         <p className="mt-2 text-xs text-app-danger">Clear Local Data resets the app to an empty state. Export first if you want a backup.</p>
         {error ? <p className="mt-3 text-sm text-app-danger">Action failed: {error}</p> : null}
       </section>
