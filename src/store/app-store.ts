@@ -54,11 +54,9 @@ import type {
   ThemePreference,
 } from '../types/state'
 
-type AppStoreHydrationStatus = 'idle' | 'loading' | 'ready' | 'error'
 type AppStoreSavingStatus = 'idle' | 'saving' | 'error'
 
 interface AppStoreStatus {
-  hydration: AppStoreHydrationStatus
   saving: AppStoreSavingStatus
   errorMessage: string | null
 }
@@ -68,7 +66,6 @@ interface AppStoreState {
   ui: AppUiState
   status: AppStoreStatus
   actions: {
-    hydrate: () => Promise<void>
     mergeDataSnapshot: (snapshot: Partial<AppDataState>) => void
     createBaseProfile: (name: string) => Promise<Id | null>
     updateProfile: (input: UpdateProfileInput) => Promise<void>
@@ -169,7 +166,6 @@ interface AppStoreState {
 }
 
 const createInitialStoreStatus = (): AppStoreStatus => ({
-  hydration: 'idle',
   saving: 'idle',
   errorMessage: null,
 })
@@ -316,45 +312,6 @@ const mergeDataSnapshot = (current: AppDataState, snapshot: Partial<AppDataState
         ...state,
         data: mergeDataSnapshot(state.data, snapshot),
       })),
-    hydrate: async () => {
-      if (get().status.hydration === 'loading') {
-        return
-      }
-
-      set((state) => ({
-        ...state,
-        status: {
-          ...state.status,
-          hydration: 'loading',
-          errorMessage: null,
-        },
-      }))
-
-      try {
-        const data = await getAppApiClient().getAppData()
-
-        set((state) => ({
-          ...state,
-          data,
-          status: {
-            ...state.status,
-            hydration: 'ready',
-            errorMessage: null,
-          },
-        }))
-      } catch (caughtError) {
-        const errorMessage = caughtError instanceof Error ? caughtError.message : 'Unknown hydration error.'
-
-        set((state) => ({
-          ...state,
-          status: {
-            ...state.status,
-            hydration: 'error',
-            errorMessage,
-          },
-        }))
-      }
-    },
     createBaseProfile: async (name) => {
       const result = await runPersistedProfileMutation(
         () => getAppApiClient().createBaseProfile(name),

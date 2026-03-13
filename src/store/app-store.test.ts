@@ -16,7 +16,6 @@ const resetStore = () => {
     data: createEmptyDataState(),
     ui: createDefaultUiState('system'),
     status: {
-      hydration: 'idle',
       saving: 'idle',
       errorMessage: null,
     },
@@ -36,42 +35,9 @@ const expectDefined = <T>(value: T | null | undefined, message: string): T => {
 
 const waitForNextTick = () => new Promise((resolve) => setTimeout(resolve, 2))
 
-describe('app store hydration and persistence boundary', () => {
+describe('app store persistence boundary', () => {
   beforeEach(() => {
     resetStore()
-  })
-
-  it('hydrates store data from the app api client', async () => {
-    const seededData = createEmptyDataState()
-    seededData.profiles.profile_1 = {
-      id: 'profile_1',
-      name: 'Hydrated Profile',
-      summary: '',
-      coverLetter: '',
-      resumeSettings: createDefaultResumeSettings(),
-      personalDetails: {
-        fullName: '',
-        email: '',
-        phone: '',
-        addressLine1: '',
-        addressLine2: '',
-        addressLine3: '',
-        city: '',
-        state: '',
-        postalCode: '',
-      },
-      jobId: null,
-      clonedFromProfileId: null,
-      createdAt: '2026-03-12T12:00:00.000Z',
-      updatedAt: '2026-03-12T12:00:00.000Z',
-    }
-
-    setAppApiClient(createAppApiClient({ initialData: seededData }))
-
-    await useAppStore.getState().actions.hydrate()
-
-    expect(useAppStore.getState().status.hydration).toBe('ready')
-    expect(useAppStore.getState().data.profiles.profile_1?.name).toBe('Hydrated Profile')
   })
 
   it('imports and exports through the app api client asynchronously', async () => {
