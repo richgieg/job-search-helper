@@ -3,17 +3,32 @@
 import '@testing-library/jest-dom/vitest'
 
 import { cleanup, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createAppApiClient, resetAppApiClient, setAppApiClient } from '../api'
 import { JobPage } from './JobPage'
 import { JobsPage } from './JobsPage'
+import { ProfilePage } from './ProfilePage'
+import { queryClient } from '../queries/query-client'
 import { ResumePage } from './ResumePage'
 import { createDefaultResumeSettings, createDefaultUiState, createEmptyDataState } from '../store/create-initial-state'
 import { useAppStore } from '../store/app-store'
 import { renderRoute } from '../test/render-route'
 
+class MockIntersectionObserver implements IntersectionObserver {
+  readonly root = null
+  readonly rootMargin = ''
+  readonly thresholds = [0]
+
+  disconnect = vi.fn()
+  observe = vi.fn()
+  takeRecords = vi.fn<() => IntersectionObserverEntry[]>(() => [])
+  unobserve = vi.fn()
+}
+
 const resetStore = () => {
+  queryClient.clear()
   resetAppApiClient()
   useAppStore.setState((state) => ({
     ...state,
@@ -182,6 +197,15 @@ const createSeedData = () => {
 describe('query-backed routes', () => {
   beforeEach(() => {
     resetStore()
+    queryClient.setDefaultOptions({
+      queries: {
+        retry: false,
+        staleTime: 0,
+        gcTime: 0,
+        refetchOnWindowFocus: false,
+      },
+    })
+    globalThis.IntersectionObserver = MockIntersectionObserver as typeof IntersectionObserver
     window.scrollTo = vi.fn()
     Element.prototype.scrollIntoView = vi.fn()
     setAppApiClient(createAppApiClient({ initialData: createSeedData() }))
@@ -204,6 +228,25 @@ describe('query-backed routes', () => {
     expect(screen.getByText('Interview')).toBeInTheDocument()
   })
 
+  it('refreshes the jobs list after creating a job through a store mutation', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <JobsPage />,
+      path: '/jobs',
+      route: '/jobs',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Job title'), 'Staff Platform Engineer')
+    await user.type(screen.getByLabelText('Company name'), 'Northwind Labs')
+    await user.click(screen.getByRole('button', { name: 'Add job' }))
+
+    expect(await screen.findByText('Staff Platform Engineer')).toBeInTheDocument()
+    expect(screen.getByText('Northwind Labs')).toBeInTheDocument()
+  })
+
   it('renders the job detail route and bridges child editor data into the store', async () => {
     renderRoute({
       element: <JobPage />,
@@ -220,6 +263,21 @@ describe('query-backed routes', () => {
     expect(screen.getByText('Applied')).toBeInTheDocument()
   })
 
+  it('renders the profile detail route and bridges profile editor data into the store', async () => {
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+    expect(screen.getByText('Job profile for Senior Engineer at Example Co')).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(useAppStore.getState().data.experienceEntries.experience_1?.company).toBe('Example Co')
+    })
+  })
+
   it('renders the resume route from the profile document query and updates the document title', async () => {
     renderRoute({
       element: <ResumePage />,
@@ -233,6 +291,33 @@ describe('query-backed routes', () => {
       expect(document.title).toBe('Ada_Example_Resume')
     })
 
+    expect(screen.getByText('TypeScript')).toBeInTheDocument()
+  })
+
+  it('shows cached resume data when document refresh fails', async () => {
+    const seededData = createSeedData()
+    const apiClient = createAppApiClient({ initialData: seededData })
+
+    useAppStore.setState((state) => ({
+      ...state,
+      data: seededData,
+    }))
+
+    setAppApiClient({
+      ...apiClient,
+      getProfileDocument: vi.fn(async () => {
+        throw new Error('refresh failed')
+      }),
+    })
+
+    renderRoute({
+      element: <ResumePage />,
+      path: '/profiles/:profileId/resume',
+      route: '/profiles/profile_1/resume',
+    })
+
+    expect(await screen.findByText('Ada Example')).toBeInTheDocument()
+    expect(await screen.findByText(/Unable to refresh this document right now/i)).toBeInTheDocument()
     expect(screen.getByText('TypeScript')).toBeInTheDocument()
   })
 })
