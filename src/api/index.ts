@@ -26,7 +26,7 @@ const parseDelayMs = (value: string | undefined, fallback: number): number => {
 }
 
 const getBackendMode = (): 'memory' | 'indexeddb' =>
-  import.meta.env.VITE_APP_DATA_BACKEND === 'indexeddb' ? 'indexeddb' : 'memory'
+  import.meta.env.VITE_APP_DATA_BACKEND === 'memory' ? 'memory' : 'indexeddb'
 
 const createAppDataService = (options: CreateAppApiClientOptions): AppDataService => {
   const backend: AppDataService =

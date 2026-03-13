@@ -1,5 +1,6 @@
 import { ChangeEvent, useMemo, useState } from 'react'
 
+import { createEmptyAppDataState } from '../domain/app-data-state'
 import { useAppDataTransfer } from '../features/import-export/use-app-data-transfer'
 import { useDashboardSummaryQuery } from '../queries/use-dashboard-summary-query'
 import type { AppExportFile } from '../types/state'
@@ -17,7 +18,7 @@ const downloadJson = (payload: AppExportFile) => {
 }
 
 export const ImportExportPage = () => {
-  const { exportAppData, importAppData } = useAppDataTransfer()
+  const { exportAppData, importAppData, isSaving } = useAppDataTransfer()
   const { data } = useDashboardSummaryQuery()
   const [error, setError] = useState<string | null>(null)
   const profileCount = data?.profileCount ?? 0
@@ -26,8 +27,14 @@ export const ImportExportPage = () => {
   const summary = useMemo(() => `${profileCount} profiles · ${jobCount} jobs`, [jobCount, profileCount])
 
   const handleExport = async () => {
-    const file = await exportAppData()
-    downloadJson(file)
+    try {
+      const file = await exportAppData()
+      downloadJson(file)
+      setError(null)
+    } catch (caughtError) {
+      const message = caughtError instanceof Error ? caughtError.message : 'Unknown export error.'
+      setError(message)
+    }
   }
 
   const handleImport = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -54,6 +61,28 @@ export const ImportExportPage = () => {
     }
   }
 
+  const handleClearData = async () => {
+    const confirmed = window.confirm('Clear all saved data? This cannot be undone unless you have an exported backup.')
+
+    if (!confirmed) {
+      return
+    }
+
+    const emptyExport: AppExportFile = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      data: createEmptyAppDataState(),
+    }
+
+    try {
+      await importAppData(emptyExport)
+      setError(null)
+    } catch (caughtError) {
+      const message = caughtError instanceof Error ? caughtError.message : 'Unknown clear-data error.'
+      setError(message)
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -66,17 +95,35 @@ export const ImportExportPage = () => {
         <p className="mt-2 text-lg font-semibold text-app-text">{summary}</p>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <button className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" onClick={handleExport} type="button">
+          <button
+            className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isSaving}
+            onClick={handleExport}
+            type="button"
+          >
             Export JSON
           </button>
-          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted">
+          <label
+            className={`inline-flex items-center justify-center rounded-xl border border-app-warning px-3 py-2 text-sm font-medium text-app-warning hover:bg-app-warning/10 ${
+              isSaving ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+            }`}
+          >
             Import JSON
-            <input accept="application/json" className="hidden" onChange={handleImport} type="file" />
+            <input accept="application/json" className="hidden" disabled={isSaving} onChange={handleImport} type="file" />
           </label>
+          <button
+            className="rounded-xl border border-app-danger px-3 py-2 text-sm font-medium text-app-danger hover:bg-app-danger/10 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isSaving}
+            onClick={handleClearData}
+            type="button"
+          >
+            Clear Local Data
+          </button>
         </div>
 
-        <p className="mt-4 text-xs text-app-warning">Import replaces the current in-memory state. Merge behavior is intentionally not supported in the MVP.</p>
-        {error ? <p className="mt-3 text-sm text-app-danger">Import failed: {error}</p> : null}
+        <p className="mt-4 text-xs text-app-warning">Import replaces the current local database.</p>
+        <p className="mt-2 text-xs text-app-danger">Clear Local Data resets the app to an empty state. Export first if you want a backup.</p>
+        {error ? <p className="mt-3 text-sm text-app-danger">Action failed: {error}</p> : null}
       </section>
     </div>
   )

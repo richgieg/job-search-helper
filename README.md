@@ -20,7 +20,8 @@ A browser-based web app for organizing job opportunities and generating tailored
 
 ## Development flags
 
-- `VITE_APP_DATA_BACKEND=indexeddb` switches the local persistence backend from the in-memory mock backend to the IndexedDB-backed compatibility backend.
+- IndexedDB is now the default local persistence backend.
+- `VITE_APP_DATA_BACKEND=memory` switches the app back to the in-memory mock backend for debugging or comparison.
 - `VITE_SIMULATE_API_DELAY=true` enables simulated backend latency in the Vite dev server.
 - `VITE_SIMULATE_API_DELAY_MIN_MS=150` optionally overrides the default minimum delay in milliseconds.
 - `VITE_SIMULATE_API_DELAY_MAX_MS=900` optionally overrides the default maximum delay in milliseconds.
