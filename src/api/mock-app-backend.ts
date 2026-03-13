@@ -1,5 +1,6 @@
 import { createEmptyDataState } from '../store/create-initial-state'
 import { getJobComputedStatus } from '../features/jobs/job-status'
+import { selectProfileDocumentData } from '../features/documents/document-data'
 import type { AppDataState, AppExportFile, IsoTimestamp } from '../types/state'
 import {
   addInterviewContactMutation,
@@ -141,6 +142,7 @@ import type {
   JobsListDto,
   JobsListItemDto,
   ProfileDetailDto,
+  ProfileDocumentDto,
   ProfilesListDto,
   ProfilesListItemDto,
 } from './read-models'
@@ -424,6 +426,10 @@ export class MockAppBackend implements AppDataService {
       references,
       cacheData,
     }
+  }
+
+  async getProfileDocument(profileId: string): Promise<ProfileDocumentDto | null> {
+    return selectProfileDocumentData(this.data, profileId)
   }
 
   async getProfilesList(kind: 'base' | 'job' | 'all' = 'all'): Promise<ProfilesListDto> {

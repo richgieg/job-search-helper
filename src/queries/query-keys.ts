@@ -7,4 +7,6 @@ export const queryKeys = {
   profilesList: (kind: 'base' | 'job' | 'all') => ['profiles', 'list', { kind }] as const,
   profilesDetailRoot: () => ['profiles', 'detail'] as const,
   profilesDetail: (profileId: string) => ['profiles', 'detail', profileId] as const,
+  profilesDocumentRoot: () => ['profiles', 'document'] as const,
+  profilesDocument: (profileId: string) => ['profiles', 'document', profileId] as const,
 }

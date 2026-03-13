@@ -23,6 +23,7 @@ import type {
   Skill,
   SkillCategory,
 } from '../types/state'
+import type { ProfileDocumentData } from '../features/documents/document-data'
 
 export interface DashboardSummaryDto {
   profileCount: number
@@ -134,3 +135,5 @@ export interface ProfileDetailDto {
   references: Reference[]
   cacheData: Partial<AppDataState>
 }
+
+export type ProfileDocumentDto = ProfileDocumentData

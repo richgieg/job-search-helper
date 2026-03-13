@@ -378,6 +378,11 @@ Update the first converted page to read from a query hook instead of `status.hyd
 
 For each converted query, optionally merge the returned DTO into `state.data` so existing child components can continue using current selectors.
 
+The current implementation uses two variants of this:
+
+1. Job detail and profile detail return a `cacheData` partial snapshot and merge it into Zustand because those routes still host large selector-based editor trees.
+2. Document routes read directly from `useProfileDocumentQuery()` and only fall back to the existing normalized cache if that data is already available locally.
+
 ### Phase 6
 
 Once the last route no longer depends on global preload, delete the bootstrap hydrate from [src/app/App.tsx](../src/app/App.tsx) and remove `status.hydration` from the store.
