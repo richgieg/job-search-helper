@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createAppApiClient, setAppApiClient } from '../../api'
+import type { JobDetailDto } from '../../api/read-models'
 import { JobPage } from './JobPage'
 import {
   createSeedData,
@@ -33,6 +34,36 @@ describe('JobPage', () => {
 
     expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
     expect(screen.getByText('Applied')).toBeInTheDocument()
+  })
+
+  it('does not fall through to the not-found state while a delayed detail response is settling', async () => {
+    const apiClient = createAppApiClient({ initialData: createSeedData() })
+    const jobDetail = await apiClient.getJobDetail('job_1')
+    let resolveJobDetail: ((value: JobDetailDto | null) => void) | undefined
+
+    setAppApiClient({
+      ...apiClient,
+      getJobDetail: vi.fn(
+        () =>
+          new Promise<JobDetailDto | null>((resolve) => {
+            resolveJobDetail = resolve
+          }),
+      ),
+    })
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(screen.getByText('Loading job...')).toBeInTheDocument()
+    expect(screen.queryByText('Job not found')).not.toBeInTheDocument()
+
+    resolveJobDetail?.(jobDetail)
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+    expect(screen.queryByText('Job not found')).not.toBeInTheDocument()
   })
 
   it('updates the job detail route through page-level mutations', async () => {

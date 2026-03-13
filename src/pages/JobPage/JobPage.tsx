@@ -164,7 +164,7 @@ export const JobPage = () => {
     )
   }
 
-  if (!job || !draft) {
+  if (!job) {
     return (
       <div className="rounded-2xl border border-app-border-muted bg-app-surface p-8 shadow-sm">
         <h1 className="text-2xl font-semibold text-app-heading">Job not found</h1>
@@ -176,17 +176,20 @@ export const JobPage = () => {
     )
   }
 
+  const activeDraft: JobDraftState = draft ?? createJobDraft(job)
+
   const commitRequiredField = (field: 'companyName' | 'jobTitle', value: string) => {
+    const nextDraft = activeDraft
     const trimmed = value.trim()
 
     if (!trimmed) {
-      setDraft((current) => (current ? { ...current, [field]: job[field] } : current))
+      setDraft({ ...nextDraft, [field]: job[field] })
       return
     }
 
     if (trimmed === job[field]) {
       if (value !== trimmed) {
-        setDraft((current) => (current ? { ...current, [field]: trimmed } : current))
+        setDraft({ ...nextDraft, [field]: trimmed })
       }
       return
     }
@@ -199,7 +202,7 @@ export const JobPage = () => {
     })
 
     if (value !== trimmed) {
-      setDraft((current) => (current ? { ...current, [field]: trimmed } : current))
+      setDraft({ ...nextDraft, [field]: trimmed })
     }
   }
 
@@ -309,22 +312,22 @@ export const JobPage = () => {
 
       <CollapsiblePanel description="Capture the core job details used across the app." title="Job details">
         <div className="grid gap-4 xl:grid-cols-2">
-          <TextField label="Job title" value={draft.jobTitle} onBlur={() => commitRequiredField('jobTitle', draft.jobTitle)} onChange={(value) => setDraft({ ...draft, jobTitle: value })} />
-          <TextField label="Company name" value={draft.companyName} onBlur={() => commitRequiredField('companyName', draft.companyName)} onChange={(value) => setDraft({ ...draft, companyName: value })} />
-          <TextField label="Location" value={draft.location} onBlur={() => commitTextField('location', draft.location)} onChange={(value) => setDraft({ ...draft, location: value })} />
-          <TextField label="Date posted" type="date" value={draft.datePosted} onBlur={() => commitDatePosted(draft.datePosted)} onChange={(value) => setDraft({ ...draft, datePosted: value })} />
-          <SelectField label="Work arrangement" options={workArrangementOptions} value={draft.workArrangement} onBlur={() => commitSelectField('workArrangement', draft.workArrangement)} onChange={(value) => setDraft({ ...draft, workArrangement: value })} />
-          <SelectField label="Employment type" options={employmentTypeOptions} value={draft.employmentType} onBlur={() => commitSelectField('employmentType', draft.employmentType)} onChange={(value) => setDraft({ ...draft, employmentType: value })} />
-          <TextField label="Posted compensation" value={draft.postedCompensation} onBlur={() => commitTextField('postedCompensation', draft.postedCompensation)} onChange={(value) => setDraft({ ...draft, postedCompensation: value })} />
-          <TextField label="Desired compensation" value={draft.desiredCompensation} onBlur={() => commitTextField('desiredCompensation', draft.desiredCompensation)} onChange={(value) => setDraft({ ...draft, desiredCompensation: value })} />
+          <TextField label="Job title" value={activeDraft.jobTitle} onBlur={() => commitRequiredField('jobTitle', activeDraft.jobTitle)} onChange={(value) => setDraft({ ...activeDraft, jobTitle: value })} />
+          <TextField label="Company name" value={activeDraft.companyName} onBlur={() => commitRequiredField('companyName', activeDraft.companyName)} onChange={(value) => setDraft({ ...activeDraft, companyName: value })} />
+          <TextField label="Location" value={activeDraft.location} onBlur={() => commitTextField('location', activeDraft.location)} onChange={(value) => setDraft({ ...activeDraft, location: value })} />
+          <TextField label="Date posted" type="date" value={activeDraft.datePosted} onBlur={() => commitDatePosted(activeDraft.datePosted)} onChange={(value) => setDraft({ ...activeDraft, datePosted: value })} />
+          <SelectField label="Work arrangement" options={workArrangementOptions} value={activeDraft.workArrangement} onBlur={() => commitSelectField('workArrangement', activeDraft.workArrangement)} onChange={(value) => setDraft({ ...activeDraft, workArrangement: value })} />
+          <SelectField label="Employment type" options={employmentTypeOptions} value={activeDraft.employmentType} onBlur={() => commitSelectField('employmentType', activeDraft.employmentType)} onChange={(value) => setDraft({ ...activeDraft, employmentType: value })} />
+          <TextField label="Posted compensation" value={activeDraft.postedCompensation} onBlur={() => commitTextField('postedCompensation', activeDraft.postedCompensation)} onChange={(value) => setDraft({ ...activeDraft, postedCompensation: value })} />
+          <TextField label="Desired compensation" value={activeDraft.desiredCompensation} onBlur={() => commitTextField('desiredCompensation', activeDraft.desiredCompensation)} onChange={(value) => setDraft({ ...activeDraft, desiredCompensation: value })} />
           <div className="xl:col-span-2">
-            <TextAreaField label="Compensation notes" value={draft.compensationNotes} onBlur={() => commitTextField('compensationNotes', draft.compensationNotes)} onChange={(value) => setDraft({ ...draft, compensationNotes: value })} />
+            <TextAreaField label="Compensation notes" value={activeDraft.compensationNotes} onBlur={() => commitTextField('compensationNotes', activeDraft.compensationNotes)} onChange={(value) => setDraft({ ...activeDraft, compensationNotes: value })} />
           </div>
           <div className="xl:col-span-2">
-            <TextAreaField label="Description" value={draft.description} onBlur={() => commitTextField('description', draft.description)} onChange={(value) => setDraft({ ...draft, description: value })} />
+            <TextAreaField label="Description" value={activeDraft.description} onBlur={() => commitTextField('description', activeDraft.description)} onChange={(value) => setDraft({ ...activeDraft, description: value })} />
           </div>
           <div className="xl:col-span-2">
-            <TextAreaField label="Notes" value={draft.notes} onBlur={() => commitTextField('notes', draft.notes)} onChange={(value) => setDraft({ ...draft, notes: value })} />
+            <TextAreaField label="Notes" value={activeDraft.notes} onBlur={() => commitTextField('notes', activeDraft.notes)} onChange={(value) => setDraft({ ...activeDraft, notes: value })} />
           </div>
         </div>
       </CollapsiblePanel>

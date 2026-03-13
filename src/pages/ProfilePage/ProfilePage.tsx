@@ -26,18 +26,6 @@ const createPersonalDetailsDraft = (personalDetails: PersonalDetails): PersonalD
   ...personalDetails,
 })
 
-const emptyPersonalDetails: PersonalDetails = {
-  fullName: '',
-  email: '',
-  phone: '',
-  addressLine1: '',
-  addressLine2: '',
-  addressLine3: '',
-  city: '',
-  state: '',
-  postalCode: '',
-}
-
 const Field = ({
   label,
   value,
@@ -80,11 +68,11 @@ export const ProfilePage = () => {
   const { data: documentData } = useProfileDocumentQuery(profileId)
   const editorModel = useProfileEditorModel(profileDetail)
   const profile = profileDetail?.profile
-  const [name, setName] = useState(profile?.name ?? '')
-  const [summary, setSummary] = useState(profile?.summary ?? '')
-  const [coverLetter, setCoverLetter] = useState(profile?.coverLetter ?? '')
-  const [resumeSectionLabels, setResumeSectionLabels] = useState<Record<ResumeSectionKey, string>>(buildResumeSectionLabels(profile))
-  const [personalDetails, setPersonalDetails] = useState(profile ? createPersonalDetailsDraft(profile.personalDetails) : emptyPersonalDetails)
+  const [name, setName] = useState<string | null>(null)
+  const [summary, setSummary] = useState<string | null>(null)
+  const [coverLetter, setCoverLetter] = useState<string | null>(null)
+  const [resumeSectionLabels, setResumeSectionLabels] = useState<Record<ResumeSectionKey, string> | null>(null)
+  const [personalDetails, setPersonalDetails] = useState<PersonalDetails | null>(null)
 
   useEffect(() => {
     if (!profile) {
@@ -126,6 +114,12 @@ export const ProfilePage = () => {
     )
   }
 
+  const activeName = name ?? profile.name
+  const activeSummary = summary ?? profile.summary
+  const activeCoverLetter = coverLetter ?? profile.coverLetter
+  const activeResumeSectionLabels = resumeSectionLabels ?? buildResumeSectionLabels(profile)
+  const activePersonalDetails = personalDetails ?? createPersonalDetailsDraft(profile.personalDetails)
+
   const attachedJob = profileDetail?.attachedJob ?? null
   const orderedResumeSections = Object.entries(profile.resumeSettings.sections)
     .map(([section, settings]) => ({
@@ -139,14 +133,14 @@ export const ProfilePage = () => {
   const rightColumnResumeSections = orderedResumeSections.slice(splitResumeSectionIndex)
 
   const commitProfileName = () => {
-    const trimmed = name.trim()
+    const trimmed = activeName.trim()
     if (!trimmed) {
       setName(profile.name)
       return
     }
 
     if (trimmed === profile.name) {
-      if (name !== trimmed) {
+      if (activeName !== trimmed) {
         setName(trimmed)
       }
       return
@@ -158,7 +152,7 @@ export const ProfilePage = () => {
         name: trimmed,
       },
     })
-    if (name !== trimmed) {
+    if (activeName !== trimmed) {
       setName(trimmed)
     }
   }
@@ -191,11 +185,11 @@ export const ProfilePage = () => {
   }
 
   const commitResumeSectionLabel = (section: ResumeSectionKey) => {
-    const nextLabel = normalizeResumeSectionLabel(section, resumeSectionLabels[section])
+    const nextLabel = normalizeResumeSectionLabel(section, activeResumeSectionLabels[section])
 
-    if (nextLabel !== resumeSectionLabels[section]) {
+    if (nextLabel !== activeResumeSectionLabels[section]) {
       setResumeSectionLabels((current) => ({
-        ...current,
+        ...(current ?? activeResumeSectionLabels),
         [section]: nextLabel,
       }))
     }
@@ -252,29 +246,29 @@ export const ProfilePage = () => {
         title="Profile details"
       >
         <div className="grid gap-4 xl:grid-cols-2">
-          <Field label="Profile name" onBlur={commitProfileName} value={name} onChange={setName} />
+          <Field label="Profile name" onBlur={commitProfileName} value={activeName} onChange={setName} />
 
           <div className="xl:col-span-2">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <Field label="Full name" value={personalDetails.fullName} onBlur={() => commitPersonalDetail('fullName', personalDetails.fullName)} onChange={(value) => setPersonalDetails({ ...personalDetails, fullName: value })} />
-              <Field label="Email" type="email" value={personalDetails.email} onBlur={() => commitPersonalDetail('email', personalDetails.email)} onChange={(value) => setPersonalDetails({ ...personalDetails, email: value })} />
-              <Field label="Phone" type="tel" value={personalDetails.phone} onBlur={() => commitPersonalDetail('phone', personalDetails.phone)} onChange={(value) => setPersonalDetails({ ...personalDetails, phone: value })} />
+              <Field label="Full name" value={activePersonalDetails.fullName} onBlur={() => commitPersonalDetail('fullName', activePersonalDetails.fullName)} onChange={(value) => setPersonalDetails({ ...activePersonalDetails, fullName: value })} />
+              <Field label="Email" type="email" value={activePersonalDetails.email} onBlur={() => commitPersonalDetail('email', activePersonalDetails.email)} onChange={(value) => setPersonalDetails({ ...activePersonalDetails, email: value })} />
+              <Field label="Phone" type="tel" value={activePersonalDetails.phone} onBlur={() => commitPersonalDetail('phone', activePersonalDetails.phone)} onChange={(value) => setPersonalDetails({ ...activePersonalDetails, phone: value })} />
             </div>
           </div>
 
           <div className="xl:col-span-2">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <Field label="Address line 1" value={personalDetails.addressLine1} onBlur={() => commitPersonalDetail('addressLine1', personalDetails.addressLine1)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine1: value })} />
-              <Field label="Address line 2" value={personalDetails.addressLine2} onBlur={() => commitPersonalDetail('addressLine2', personalDetails.addressLine2)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine2: value })} />
-              <Field label="Address line 3" value={personalDetails.addressLine3} onBlur={() => commitPersonalDetail('addressLine3', personalDetails.addressLine3)} onChange={(value) => setPersonalDetails({ ...personalDetails, addressLine3: value })} />
+              <Field label="Address line 1" value={activePersonalDetails.addressLine1} onBlur={() => commitPersonalDetail('addressLine1', activePersonalDetails.addressLine1)} onChange={(value) => setPersonalDetails({ ...activePersonalDetails, addressLine1: value })} />
+              <Field label="Address line 2" value={activePersonalDetails.addressLine2} onBlur={() => commitPersonalDetail('addressLine2', activePersonalDetails.addressLine2)} onChange={(value) => setPersonalDetails({ ...activePersonalDetails, addressLine2: value })} />
+              <Field label="Address line 3" value={activePersonalDetails.addressLine3} onBlur={() => commitPersonalDetail('addressLine3', activePersonalDetails.addressLine3)} onChange={(value) => setPersonalDetails({ ...activePersonalDetails, addressLine3: value })} />
             </div>
           </div>
 
           <div className="xl:col-span-2">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <Field label="City" value={personalDetails.city} onBlur={() => commitPersonalDetail('city', personalDetails.city)} onChange={(value) => setPersonalDetails({ ...personalDetails, city: value })} />
-              <Field label="State" value={personalDetails.state} onBlur={() => commitPersonalDetail('state', personalDetails.state)} onChange={(value) => setPersonalDetails({ ...personalDetails, state: value })} />
-              <Field label="Postal code" value={personalDetails.postalCode} onBlur={() => commitPersonalDetail('postalCode', personalDetails.postalCode)} onChange={(value) => setPersonalDetails({ ...personalDetails, postalCode: value })} />
+              <Field label="City" value={activePersonalDetails.city} onBlur={() => commitPersonalDetail('city', activePersonalDetails.city)} onChange={(value) => setPersonalDetails({ ...activePersonalDetails, city: value })} />
+              <Field label="State" value={activePersonalDetails.state} onBlur={() => commitPersonalDetail('state', activePersonalDetails.state)} onChange={(value) => setPersonalDetails({ ...activePersonalDetails, state: value })} />
+              <Field label="Postal code" value={activePersonalDetails.postalCode} onBlur={() => commitPersonalDetail('postalCode', activePersonalDetails.postalCode)} onChange={(value) => setPersonalDetails({ ...activePersonalDetails, postalCode: value })} />
             </div>
           </div>
 
@@ -283,8 +277,8 @@ export const ProfilePage = () => {
               <span className="font-medium">Professional summary</span>
               <textarea
                 className="min-h-28 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-                value={summary}
-                onBlur={() => commitProfileTextField('summary', summary)}
+                value={activeSummary}
+                onBlur={() => commitProfileTextField('summary', activeSummary)}
                 onChange={(event) => setSummary(event.target.value)}
               />
             </label>
@@ -295,8 +289,8 @@ export const ProfilePage = () => {
               <span className="font-medium">Cover letter content</span>
               <textarea
                 className="min-h-40 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-                value={coverLetter}
-                onBlur={() => commitProfileTextField('coverLetter', coverLetter)}
+                value={activeCoverLetter}
+                onBlur={() => commitProfileTextField('coverLetter', activeCoverLetter)}
                 onChange={(event) => setCoverLetter(event.target.value)}
               />
             </label>
@@ -377,11 +371,11 @@ export const ProfilePage = () => {
                         <span className="sr-only">Resume section label</span>
                         <input
                           className="w-full rounded-lg border border-app-border px-3 py-2 text-sm font-medium text-app-text outline-none transition focus:border-app-focus-ring"
-                          value={resumeSectionLabels[resumeSection.section]}
+                          value={activeResumeSectionLabels[resumeSection.section]}
                           onBlur={() => commitResumeSectionLabel(resumeSection.section)}
                           onChange={(event) =>
                             setResumeSectionLabels((current) => ({
-                              ...current,
+                              ...(current ?? activeResumeSectionLabels),
                               [resumeSection.section]: event.target.value,
                             }))
                           }

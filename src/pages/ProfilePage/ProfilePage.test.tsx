@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createAppApiClient, setAppApiClient } from '../../api'
+import type { ProfileDetailDto } from '../../api/read-models'
 import { ProfilePage } from './ProfilePage'
 import { createSeedData, renderRoute, resetRouteTestState, setupRouteTestEnvironment } from '../../test/route-test-helpers'
 
@@ -28,6 +29,37 @@ describe('ProfilePage', () => {
 
     expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
     expect(screen.getByText('Job profile for Senior Engineer at Example Co')).toBeInTheDocument()
+  })
+
+  it('populates the profile form immediately once a delayed detail response resolves', async () => {
+    const apiClient = createAppApiClient({ initialData: createSeedData() })
+    const profileDetail = await apiClient.getProfileDetail('profile_1')
+    let resolveProfileDetail: ((value: ProfileDetailDto | null) => void) | undefined
+
+    setAppApiClient({
+      ...apiClient,
+      getProfileDetail: vi.fn(
+        () =>
+          new Promise<ProfileDetailDto | null>((resolve) => {
+            resolveProfileDetail = resolve
+          }),
+      ),
+    })
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(screen.getByText('Loading profile...')).toBeInTheDocument()
+    expect(screen.queryByText('Profile not found')).not.toBeInTheDocument()
+
+    resolveProfileDetail?.(profileDetail)
+
+    expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('button', { name: /Profile details/i }))
+    expect(screen.getByLabelText('Profile name')).toHaveValue('Tailored Profile')
   })
 
   it('updates the profile detail route through page-level mutations', async () => {
