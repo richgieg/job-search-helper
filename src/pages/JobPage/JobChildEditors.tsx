@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { AddIconButton, DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
 import { ReorderButtons } from '../../components/ReorderButtons'
+import type { JobEditorProfilesModel } from '../../features/jobs/use-job-editor-model'
 import { useAppStore } from '../../store/app-store'
-import type { ContactRelationshipType } from '../../types/state'
+import type { ContactRelationshipType, Profile } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
 
@@ -182,27 +183,22 @@ const formatInterviewSummary = (startAt: string | null) => {
 }
 
 const AttachedProfileCard = ({
-  profileId,
+  profile,
   onDuplicateComplete,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
-  profileId: string
+  profile: Profile
   onDuplicateComplete?: (createdProfileId: string) => void
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
 }) => {
-  const profile = useAppStore((state) => state.data.profiles[profileId])
   const duplicateProfile = useAppStore((state) => state.actions.duplicateProfile)
   const deleteProfile = useAppStore((state) => state.actions.deleteProfile)
   const { scrollTargetRef: rowRef, scrollTargetStyle: rowScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
   })
-
-  if (!profile) {
-    return null
-  }
 
   const handleDelete = () => {
     const confirmed = window.confirm(`Delete profile \"${profile.name}\"? This cannot be undone.`)
@@ -737,8 +733,13 @@ const ApplicationQuestionCard = ({
   )
 }
 
-export const JobChildEditors = ({ jobId }: { jobId: string }) => {
-  const profilesById = useAppStore((state) => state.data.profiles)
+export const JobChildEditors = ({
+  jobId,
+  profilesModel,
+}: {
+  jobId: string
+  profilesModel: JobEditorProfilesModel
+}) => {
   const jobLinksById = useAppStore((state) => state.data.jobLinks)
   const jobContactsById = useAppStore((state) => state.data.jobContacts)
   const interviewsById = useAppStore((state) => state.data.interviews)
@@ -755,15 +756,7 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
   const [newInterviewId, setNewInterviewId] = useState<string | null>(null)
   const [newApplicationQuestionId, setNewApplicationQuestionId] = useState<string | null>(null)
 
-  const profiles = useMemo(() => Object.values(profilesById), [profilesById])
-  const baseProfiles = useMemo(() => profiles.filter((profile) => profile.jobId === null), [profiles])
-  const attachedProfiles = useMemo(
-    () =>
-      profiles
-        .filter((profile) => profile.jobId === jobId)
-        .sort((left, right) => left.createdAt.localeCompare(right.createdAt)),
-    [jobId, profiles],
-  )
+  const { attachedProfiles, baseProfiles } = profilesModel
 
   const jobLinkIds = useMemo(
     () =>
@@ -880,7 +873,7 @@ export const JobChildEditors = ({ jobId }: { jobId: string }) => {
               <AttachedProfileCard
                 key={profile.id}
                 onDuplicateComplete={setNewAttachedProfileId}
-                profileId={profile.id}
+                profile={profile}
                 scrollIntoViewOnMount={profile.id === newAttachedProfileId}
                 {...(profile.id === newAttachedProfileId
                   ? { onScrollIntoViewComplete: () => setNewAttachedProfileId(null) }

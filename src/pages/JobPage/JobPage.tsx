@@ -5,6 +5,7 @@ import { ActionToggle } from '../../components/CompactActionControls'
 import { FinalOutcomeStrip, type FinalOutcomeDraftStatus } from './FinalOutcomeStrip'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { JobChildEditors } from './JobChildEditors'
+import { useJobEditorModel } from '../../features/jobs/use-job-editor-model'
 import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadgeClassName } from '../../features/jobs/job-status'
 import { useJobDetailQuery } from '../../queries/use-job-detail-query'
 import { useAppStore } from '../../store/app-store'
@@ -130,6 +131,7 @@ export const JobPage = () => {
   const clearJobFinalOutcome = useAppStore((state) => state.actions.clearJobFinalOutcome)
   const updateJob = useAppStore((state) => state.actions.updateJob)
   const { data: jobDetail, error, isLoading } = useJobDetailQuery(jobId)
+  const editorModel = useJobEditorModel(jobDetail)
   const [draft, setDraft] = useState<JobDraftState | null>(null)
   const job = jobDetail?.job ?? cachedJob
   const interviewCount = useMemo(
@@ -343,7 +345,7 @@ export const JobPage = () => {
         </div>
       </CollapsiblePanel>
 
-      <JobChildEditors jobId={job.id} />
+      <JobChildEditors jobId={job.id} profilesModel={editorModel.profiles} />
     </div>
   )
 }

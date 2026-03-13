@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 
 import { applyResolvedTheme, persistThemePreference, resolveThemePreference } from '../theme'
-import { useAppStore } from '../../store/app-store'
+import { useSetThemePreference, useThemePreference } from '../../store/app-ui-store'
 import type { ThemePreference } from '../../types/state'
 
 const navigationItems = [
@@ -73,8 +73,8 @@ const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   ].join(' ')
 
 export const AppShell = ({ children }: { children: ReactNode }) => {
-  const themePreference = useAppStore((state) => state.ui.themePreference)
-  const setThemePreference = useAppStore((state) => state.actions.setThemePreference)
+  const themePreference = useThemePreference()
+  const setThemePreference = useSetThemePreference()
   const nextThemePreference = getNextThemePreference(themePreference)
 
   useEffect(() => {
