@@ -135,7 +135,15 @@ import {
   type UpdateSkillInput,
 } from '../domain/profile-data'
 import type { AppDataService } from './app-data-service'
-import type { DashboardSummaryDto, JobDetailDto, JobsListDto, JobsListItemDto, ProfilesListDto, ProfilesListItemDto } from './read-models'
+import type {
+  DashboardSummaryDto,
+  JobDetailDto,
+  JobsListDto,
+  JobsListItemDto,
+  ProfileDetailDto,
+  ProfilesListDto,
+  ProfilesListItemDto,
+} from './read-models'
 
 interface MockAppBackendOptions {
   initialData?: AppDataState
@@ -294,6 +302,126 @@ export class MockAppBackend implements AppDataService {
       jobContacts,
       interviews,
       applicationQuestions,
+      cacheData,
+    }
+  }
+
+  async getProfileDetail(profileId: string): Promise<ProfileDetailDto | null> {
+    const profile = this.data.profiles[profileId]
+
+    if (!profile) {
+      return null
+    }
+
+    const attachedJob = profile.jobId ? this.data.jobs[profile.jobId] ?? null : null
+
+    const profileLinks = Object.values(this.data.profileLinks)
+      .filter((link) => link.profileId === profileId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+
+    const skillCategories = Object.values(this.data.skillCategories)
+      .filter((category) => category.profileId === profileId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .map((category) => ({
+        category,
+        skills: Object.values(this.data.skills)
+          .filter((skill) => skill.skillCategoryId === category.id)
+          .sort((left, right) => left.sortOrder - right.sortOrder),
+      }))
+
+    const achievements = Object.values(this.data.achievements)
+      .filter((achievement) => achievement.profileId === profileId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+
+    const experienceEntries = Object.values(this.data.experienceEntries)
+      .filter((entry) => entry.profileId === profileId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .map((entry) => ({
+        entry,
+        bullets: Object.values(this.data.experienceBullets)
+          .filter((bullet) => bullet.experienceEntryId === entry.id)
+          .sort((left, right) => left.sortOrder - right.sortOrder),
+      }))
+
+    const educationEntries = Object.values(this.data.educationEntries)
+      .filter((entry) => entry.profileId === profileId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .map((entry) => ({
+        entry,
+        bullets: Object.values(this.data.educationBullets)
+          .filter((bullet) => bullet.educationEntryId === entry.id)
+          .sort((left, right) => left.sortOrder - right.sortOrder),
+      }))
+
+    const projectEntries = Object.values(this.data.projects)
+      .filter((entry) => entry.profileId === profileId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .map((entry) => ({
+        entry,
+        bullets: Object.values(this.data.projectBullets)
+          .filter((bullet) => bullet.projectId === entry.id)
+          .sort((left, right) => left.sortOrder - right.sortOrder),
+      }))
+
+    const additionalExperienceEntries = Object.values(this.data.additionalExperienceEntries)
+      .filter((entry) => entry.profileId === profileId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .map((entry) => ({
+        entry,
+        bullets: Object.values(this.data.additionalExperienceBullets)
+          .filter((bullet) => bullet.additionalExperienceEntryId === entry.id)
+          .sort((left, right) => left.sortOrder - right.sortOrder),
+      }))
+
+    const certifications = Object.values(this.data.certifications)
+      .filter((certification) => certification.profileId === profileId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+
+    const references = Object.values(this.data.references)
+      .filter((reference) => reference.profileId === profileId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+
+    const cacheData: Partial<AppDataState> = {
+      profiles: {
+        [profile.id]: profile,
+      },
+      ...(attachedJob
+        ? {
+            jobs: {
+              [attachedJob.id]: attachedJob,
+            },
+          }
+        : {}),
+      profileLinks: Object.fromEntries(profileLinks.map((link) => [link.id, link])),
+      skillCategories: Object.fromEntries(skillCategories.map(({ category }) => [category.id, category])),
+      skills: Object.fromEntries(skillCategories.flatMap(({ skills }) => skills.map((skill) => [skill.id, skill] as const))),
+      achievements: Object.fromEntries(achievements.map((achievement) => [achievement.id, achievement])),
+      experienceEntries: Object.fromEntries(experienceEntries.map(({ entry }) => [entry.id, entry])),
+      experienceBullets: Object.fromEntries(experienceEntries.flatMap(({ bullets }) => bullets.map((bullet) => [bullet.id, bullet] as const))),
+      educationEntries: Object.fromEntries(educationEntries.map(({ entry }) => [entry.id, entry])),
+      educationBullets: Object.fromEntries(educationEntries.flatMap(({ bullets }) => bullets.map((bullet) => [bullet.id, bullet] as const))),
+      projects: Object.fromEntries(projectEntries.map(({ entry }) => [entry.id, entry])),
+      projectBullets: Object.fromEntries(projectEntries.flatMap(({ bullets }) => bullets.map((bullet) => [bullet.id, bullet] as const))),
+      additionalExperienceEntries: Object.fromEntries(additionalExperienceEntries.map(({ entry }) => [entry.id, entry])),
+      additionalExperienceBullets: Object.fromEntries(
+        additionalExperienceEntries.flatMap(({ bullets }) => bullets.map((bullet) => [bullet.id, bullet] as const)),
+      ),
+      certifications: Object.fromEntries(certifications.map((certification) => [certification.id, certification])),
+      references: Object.fromEntries(references.map((reference) => [reference.id, reference])),
+    }
+
+    return {
+      profile,
+      attachedJob,
+      profileLinks,
+      skillCategories,
+      achievements,
+      experienceEntries,
+      educationEntries,
+      projectEntries,
+      additionalExperienceEntries,
+      certifications,
+      references,
       cacheData,
     }
   }

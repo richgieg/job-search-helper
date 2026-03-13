@@ -230,6 +230,7 @@ const mergeDataSnapshot = (current: AppDataState, snapshot: Partial<AppDataState
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.profilesListRoot() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.profilesDetailRoot() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.jobsDetailRoot() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() }),
       ])
@@ -282,6 +283,7 @@ const mergeDataSnapshot = (current: AppDataState, snapshot: Partial<AppDataState
         queryClient.invalidateQueries({ queryKey: queryKeys.jobsList() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.jobsDetailRoot() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.profilesListRoot() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.profilesDetailRoot() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() }),
       ])
 

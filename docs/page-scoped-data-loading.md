@@ -196,6 +196,7 @@ interface ProfileDetailDto {
   }>
   certifications: import('../src/types/state').Certification[]
   references: import('../src/types/state').Reference[]
+  cacheData: Partial<import('../src/types/state').AppDataState>
 }
 ```
 
@@ -274,7 +275,7 @@ Rules:
 
 This keeps `state.data.jobs[jobId]` and similar selectors working even while the source of truth is gradually moving to query hooks.
 
-The current job-detail implementation uses this bridge directly: the query returns a `cacheData` partial snapshot, and the route merges that snapshot into Zustand so existing child editors can keep reading normalized entities while the page itself is driven by TanStack Query.
+The current job-detail and profile-detail implementations use this bridge directly: each query returns a `cacheData` partial snapshot, and the route merges that snapshot into Zustand so existing child editors and document selectors can keep reading normalized entities while the page itself is driven by TanStack Query.
 
 ## Query Hook Shape
 

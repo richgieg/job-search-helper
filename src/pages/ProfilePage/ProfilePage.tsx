@@ -6,6 +6,7 @@ import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
 import { DocumentProfileHeader } from '../../features/documents/DocumentProfileHeader'
 import { selectProfileDocumentData } from '../../features/documents/document-data'
+import { useProfileDetailQuery } from '../../queries/use-profile-detail-query'
 import { ProfileChildEditors } from './ProfileChildEditors'
 import { useAppStore } from '../../store/app-store'
 import type { DocumentHeaderTemplate, PersonalDetails, ResumeSectionKey } from '../../types/state'
@@ -74,19 +75,28 @@ const OrderBadge = ({ value }: { value: number }) => (
 export const ProfilePage = () => {
   const { profileId = '' } = useParams()
   const data = useAppStore((state) => state.data)
-  const profile = useAppStore((state) => state.data.profiles[profileId])
+  const cachedProfile = useAppStore((state) => state.data.profiles[profileId])
   const documentData = useMemo(() => selectProfileDocumentData(data, profileId), [data, profileId])
   const jobsById = useAppStore((state) => state.data.jobs)
+  const mergeDataSnapshot = useAppStore((state) => state.actions.mergeDataSnapshot)
   const updateProfile = useAppStore((state) => state.actions.updateProfile)
   const setDocumentHeaderTemplate = useAppStore((state) => state.actions.setDocumentHeaderTemplate)
   const setResumeSectionEnabled = useAppStore((state) => state.actions.setResumeSectionEnabled)
   const setResumeSectionLabel = useAppStore((state) => state.actions.setResumeSectionLabel)
   const reorderResumeSections = useAppStore((state) => state.actions.reorderResumeSections)
+  const { data: profileDetail, error, isLoading } = useProfileDetailQuery(profileId)
+  const profile = profileDetail?.profile ?? cachedProfile
   const [name, setName] = useState(profile?.name ?? '')
   const [summary, setSummary] = useState(profile?.summary ?? '')
   const [coverLetter, setCoverLetter] = useState(profile?.coverLetter ?? '')
   const [resumeSectionLabels, setResumeSectionLabels] = useState<Record<ResumeSectionKey, string>>(buildResumeSectionLabels(profile))
   const [personalDetails, setPersonalDetails] = useState(profile ? createPersonalDetailsDraft(profile.personalDetails) : emptyPersonalDetails)
+
+  useEffect(() => {
+    if (profileDetail?.cacheData) {
+      mergeDataSnapshot(profileDetail.cacheData)
+    }
+  }, [profileDetail?.cacheData, mergeDataSnapshot])
 
   useEffect(() => {
     if (!profile) {
@@ -100,6 +110,22 @@ export const ProfilePage = () => {
     setPersonalDetails(createPersonalDetailsDraft(profile.personalDetails))
   }, [profile])
 
+  if (isLoading && !profile) {
+    return <p className="text-sm text-app-text-subtle">Loading profile...</p>
+  }
+
+  if (error && !profileDetail && !profile) {
+    return (
+      <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft p-8 shadow-sm">
+        <h1 className="text-2xl font-semibold text-app-heading">Unable to load profile</h1>
+        <p className="mt-3 text-sm text-app-status-rejected">The profile details could not be refreshed right now.</p>
+        <Link className="mt-5 inline-flex rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to="/profiles">
+          Back to profiles
+        </Link>
+      </div>
+    )
+  }
+
   if (!profile) {
     return (
       <div className="rounded-2xl border border-app-border-muted bg-app-surface p-8 shadow-sm">
@@ -112,7 +138,7 @@ export const ProfilePage = () => {
     )
   }
 
-  const attachedJob = profile.jobId ? jobsById[profile.jobId] : null
+  const attachedJob = profileDetail?.attachedJob ?? (profile.jobId ? jobsById[profile.jobId] : null)
   const orderedResumeSections = Object.entries(profile.resumeSettings.sections)
     .map(([section, settings]) => ({
       section: section as ResumeSectionKey,
@@ -226,6 +252,12 @@ export const ProfilePage = () => {
           </Link>
         </div>
       </div>
+
+      {error ? (
+        <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft px-4 py-3 text-sm text-app-status-rejected">
+          Unable to refresh this profile right now. Showing the most recently cached result if available.
+        </div>
+      ) : null}
 
       <CollapsiblePanel
         description="Edit the core profile content used across previews and applications."

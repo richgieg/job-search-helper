@@ -1,6 +1,14 @@
 import type {
+  Achievement,
+  AdditionalExperienceBullet,
+  AdditionalExperienceEntry,
   AppDataState,
   ApplicationQuestion,
+  Certification,
+  EducationBullet,
+  EducationEntry,
+  ExperienceBullet,
+  ExperienceEntry,
   Interview,
   InterviewContact,
   Job,
@@ -8,6 +16,12 @@ import type {
   JobContact,
   JobLink,
   Profile,
+  ProfileLink,
+  Project,
+  ProjectBullet,
+  Reference,
+  Skill,
+  SkillCategory,
 } from '../types/state'
 
 export interface DashboardSummaryDto {
@@ -79,4 +93,44 @@ export interface ProfilesListItemDto {
 export interface ProfilesListDto {
   items: ProfilesListItemDto[]
   updatedAt: string
+}
+
+export interface ProfileDetailSkillCategoryDto {
+  category: SkillCategory
+  skills: Skill[]
+}
+
+export interface ProfileDetailExperienceEntryDto {
+  entry: ExperienceEntry
+  bullets: ExperienceBullet[]
+}
+
+export interface ProfileDetailEducationEntryDto {
+  entry: EducationEntry
+  bullets: EducationBullet[]
+}
+
+export interface ProfileDetailProjectEntryDto {
+  entry: Project
+  bullets: ProjectBullet[]
+}
+
+export interface ProfileDetailAdditionalExperienceEntryDto {
+  entry: AdditionalExperienceEntry
+  bullets: AdditionalExperienceBullet[]
+}
+
+export interface ProfileDetailDto {
+  profile: Profile
+  attachedJob: Job | null
+  profileLinks: ProfileLink[]
+  skillCategories: ProfileDetailSkillCategoryDto[]
+  achievements: Achievement[]
+  experienceEntries: ProfileDetailExperienceEntryDto[]
+  educationEntries: ProfileDetailEducationEntryDto[]
+  projectEntries: ProfileDetailProjectEntryDto[]
+  additionalExperienceEntries: ProfileDetailAdditionalExperienceEntryDto[]
+  certifications: Certification[]
+  references: Reference[]
+  cacheData: Partial<AppDataState>
 }
