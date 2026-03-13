@@ -79,4 +79,30 @@ describe('useAppDataTransfer', () => {
     expect(exported.data.jobs.job_1?.companyName).toBe('Example Co')
     expect(exported.data.jobs.job_1?.jobTitle).toBe('Engineer')
   })
+
+  it('clears inactive cached queries after import so later navigation does not render stale data first', async () => {
+    const imported: AppExportFile = {
+      version: 1 as const,
+      exportedAt: '2026-03-12T09:00:00.000Z',
+      data: createEmptyAppDataState(),
+    }
+
+    queryClient.setQueryData(queryKeys.dashboardSummary(), { profileCount: 99, jobCount: 99 })
+    queryClient.setQueryData(queryKeys.jobsList(), { items: [{ id: 'stale-job' }], updatedAt: 'stale' })
+    queryClient.setQueryData(queryKeys.jobsDetail('job_stale'), { job: { id: 'job_stale' } })
+    queryClient.setQueryData(queryKeys.profilesList('base'), { items: [{ id: 'stale-profile' }], updatedAt: 'stale' })
+    queryClient.setQueryData(queryKeys.profilesDetail('profile_stale'), { profile: { id: 'profile_stale' } })
+    queryClient.setQueryData(queryKeys.profilesDocument('profile_stale'), { profile: { id: 'profile_stale' } })
+
+    const { result } = renderHook(() => useAppDataTransfer(), { wrapper })
+
+    await result.current.importAppData(imported)
+
+    expect(queryClient.getQueryData(queryKeys.dashboardSummary())).toBeUndefined()
+    expect(queryClient.getQueryData(queryKeys.jobsList())).toBeUndefined()
+    expect(queryClient.getQueryData(queryKeys.jobsDetail('job_stale'))).toBeUndefined()
+    expect(queryClient.getQueryData(queryKeys.profilesList('base'))).toBeUndefined()
+    expect(queryClient.getQueryData(queryKeys.profilesDetail('profile_stale'))).toBeUndefined()
+    expect(queryClient.getQueryData(queryKeys.profilesDocument('profile_stale'))).toBeUndefined()
+  })
 })

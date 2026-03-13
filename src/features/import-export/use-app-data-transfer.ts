@@ -11,15 +11,25 @@ export const useAppDataTransfer = () => {
   const queryClient = useQueryClient()
   const resetUiState = useResetUiState()
 
+  const importedDataQueryKeys = [
+    queryKeys.dashboardSummary(),
+    queryKeys.jobsList(),
+    queryKeys.jobsDetailRoot(),
+    queryKeys.profilesListRoot(),
+    queryKeys.profilesDetailRoot(),
+    queryKeys.profilesDocumentRoot(),
+  ] as const
+
   const invalidateDataQueries = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.jobsList() }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.jobsDetailRoot() }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.profilesListRoot() }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.profilesDetailRoot() }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.profilesDocumentRoot() }),
-    ])
+    await Promise.all(
+      importedDataQueryKeys.map((queryKey) => queryClient.invalidateQueries({ queryKey, refetchType: 'active' })),
+    )
+  }
+
+  const clearInactiveImportedDataQueries = () => {
+    importedDataQueryKeys.forEach((queryKey) => {
+      queryClient.removeQueries({ queryKey, type: 'inactive' })
+    })
   }
 
   const importAppDataMutation = useMutation({
@@ -27,6 +37,7 @@ export const useAppDataTransfer = () => {
     onSuccess: async () => {
       resetUiState()
       await invalidateDataQueries()
+      clearInactiveImportedDataQueries()
     },
   })
 
