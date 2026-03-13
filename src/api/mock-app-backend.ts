@@ -1,4 +1,4 @@
-import { createEmptyDataState } from '../store/create-initial-state'
+import { createEmptyAppDataState } from '../domain/app-data-state'
 import { getJobComputedStatus } from '../features/jobs/job-status'
 import { selectProfileDocumentData } from '../features/documents/document-data'
 import type { AppDataState, AppExportFile, IsoTimestamp } from '../types/state'
@@ -163,7 +163,7 @@ export class MockAppBackend implements AppDataService {
   private readonly now: () => IsoTimestamp
 
   constructor(options: MockAppBackendOptions = {}) {
-    this.data = cloneAppData(options.initialData ?? createEmptyDataState())
+    this.data = cloneAppData(options.initialData ?? createEmptyAppDataState())
     this.now = options.now ?? (() => new Date().toISOString())
   }
 

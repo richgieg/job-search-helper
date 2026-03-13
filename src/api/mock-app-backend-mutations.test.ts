@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import { getOrderedResumeSections, selectProfileDocumentData } from '../features/documents/document-data'
 import type { AppExportFile } from '../types/state'
-import { createDefaultResumeSettings, createEmptyDataState } from '../store/create-initial-state'
+import { createEmptyAppDataState } from '../domain/app-data-state'
+import { createDefaultResumeSettings } from '../domain/profile-defaults'
 import { defaultBulletLevel } from '../utils/bullet-levels'
 import { defaultDocumentHeaderTemplate } from '../utils/document-header-templates'
 import { MockAppBackend } from './mock-app-backend'
@@ -33,7 +34,7 @@ describe('mock app backend mutation behaviors', () => {
   })
 
   it('does not overwrite backend-seeded data before the first mutation', async () => {
-    const seededData = createEmptyDataState()
+    const seededData = createEmptyAppDataState()
     seededData.profiles.profile_seeded = {
       id: 'profile_seeded',
       name: 'Seeded Profile',
@@ -930,7 +931,7 @@ describe('mock app backend mutation behaviors', () => {
       version: 1 as const,
       exportedAt: '2026-03-12T09:00:00.000Z',
       data: {
-        ...createEmptyDataState(),
+        ...createEmptyAppDataState(),
         jobs: {
           job_1: {
             id: 'job_1',

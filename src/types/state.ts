@@ -376,11 +376,6 @@ export interface AppUiState {
   dialogs: DialogUiState
 }
 
-export interface AppState {
-  data: AppDataState
-  ui: AppUiState
-}
-
 export interface AppExportFile {
   version: 1
   exportedAt: IsoTimestamp

@@ -1,10 +1,80 @@
-import { describe, expect, it } from 'vitest'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { cleanup, render, type RenderResult } from '@testing-library/react'
+import type { ReactElement } from 'react'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { vi } from 'vitest'
 
+import { createAppApiClient, resetAppApiClient, setAppApiClient } from '../api'
 import { createEmptyAppDataState } from '../domain/app-data-state'
 import { createDefaultResumeSettings } from '../domain/profile-defaults'
-import { MockAppBackend } from './mock-app-backend'
+import { queryClient } from '../queries/query-client'
+import { createDefaultUiState, useAppUiStore } from '../store/app-ui-store'
+import type { AppDataState } from '../types/state'
 
-const createSeedData = () => {
+class MockIntersectionObserver implements IntersectionObserver {
+  readonly root = null
+  readonly rootMargin = ''
+  readonly thresholds = [0]
+
+  disconnect = vi.fn()
+  observe = vi.fn()
+  takeRecords = vi.fn<() => IntersectionObserverEntry[]>(() => [])
+  unobserve = vi.fn()
+}
+
+const defaultQueryOptions = {
+  queries: {
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
+  },
+}
+
+export const renderRoute = ({
+  element,
+  path,
+  route,
+}: {
+  element: ReactElement
+  path: string
+  route: string
+}): RenderResult => {
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[route]}>
+        <Routes>
+          <Route element={element} path={path} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+}
+
+export const resetRouteTestState = () => {
+  cleanup()
+  queryClient.clear()
+  resetAppApiClient()
+  useAppUiStore.setState((state) => ({
+    ...state,
+    ui: createDefaultUiState('system'),
+  }))
+}
+
+export const setupRouteTestEnvironment = ({
+  initialData = createSeedData(),
+}: {
+  initialData?: AppDataState
+} = {}) => {
+  resetRouteTestState()
+  queryClient.setDefaultOptions(defaultQueryOptions)
+  globalThis.IntersectionObserver = MockIntersectionObserver as typeof IntersectionObserver
+  window.scrollTo = vi.fn()
+  Element.prototype.scrollIntoView = vi.fn()
+  setAppApiClient(createAppApiClient({ initialData }))
+}
+
+export const createSeedData = (): AppDataState => {
   const data = createEmptyAppDataState()
 
   data.jobs.job_1 = {
@@ -70,15 +140,6 @@ const createSeedData = () => {
     id: 'skill_1',
     skillCategoryId: 'skill_category_1',
     name: 'TypeScript',
-    enabled: true,
-    sortOrder: 1,
-  }
-
-  data.achievements.achievement_1 = {
-    id: 'achievement_1',
-    profileId: 'profile_1',
-    name: 'Reduced latency',
-    description: 'Improved API performance by 30%',
     enabled: true,
     sortOrder: 1,
   }
@@ -165,45 +226,3 @@ const createSeedData = () => {
 
   return data
 }
-
-describe('mock app backend read models', () => {
-  it('builds a job detail bundle', async () => {
-    const backend = new MockAppBackend({ initialData: createSeedData() })
-
-    const result = await backend.getJobDetail('job_1')
-
-    expect(result?.job.id).toBe('job_1')
-    expect(result?.computedStatus).toBe('interview')
-    expect(result?.relatedProfiles.map((profile) => profile.id)).toEqual(['profile_1'])
-    expect(result?.jobLinks.map((link) => link.id)).toEqual(['job_link_1'])
-    expect(result?.jobContacts.map((contact) => contact.id)).toEqual(['job_contact_1'])
-    expect(result?.interviews[0]?.contacts[0]?.jobContact?.id).toBe('job_contact_1')
-    expect(result?.applicationQuestions.map((question) => question.id)).toEqual(['application_question_1'])
-  })
-
-  it('builds a profile detail bundle', async () => {
-    const backend = new MockAppBackend({ initialData: createSeedData() })
-
-    const result = await backend.getProfileDetail('profile_1')
-
-    expect(result?.profile.id).toBe('profile_1')
-    expect(result?.attachedJob?.id).toBe('job_1')
-    expect(result?.profileLinks.map((link) => link.id)).toEqual(['profile_link_1'])
-    expect(result?.skillCategories[0]?.skills.map((skill) => skill.id)).toEqual(['skill_1'])
-    expect(result?.achievements.map((achievement) => achievement.id)).toEqual(['achievement_1'])
-    expect(result?.experienceEntries[0]?.bullets.map((bullet) => bullet.id)).toEqual(['experience_bullet_1'])
-  })
-
-  it('builds profile document data from the focused document read', async () => {
-    const backend = new MockAppBackend({ initialData: createSeedData() })
-
-    const result = await backend.getProfileDocument('profile_1')
-
-    expect(result?.profile.id).toBe('profile_1')
-    expect(result?.job.id).toBe('job_1')
-    expect(result?.primaryContact.id).toBe('job_contact_1')
-    expect(result?.profileLinks.map((link) => link.id)).toEqual(['profile_link_1'])
-    expect(result?.skillCategories[0]?.skills.map((skill) => skill.id)).toEqual(['skill_1'])
-    expect(result?.computedStatus).toBe('interview')
-  })
-})

@@ -1,0 +1,26 @@
+import type { AppDataState } from '../types/state'
+
+export const createEmptyAppDataState = (): AppDataState => ({
+  version: 1,
+  profiles: {},
+  profileLinks: {},
+  skillCategories: {},
+  skills: {},
+  achievements: {},
+  experienceEntries: {},
+  experienceBullets: {},
+  educationEntries: {},
+  educationBullets: {},
+  projects: {},
+  projectBullets: {},
+  additionalExperienceEntries: {},
+  additionalExperienceBullets: {},
+  certifications: {},
+  references: {},
+  jobs: {},
+  jobLinks: {},
+  jobContacts: {},
+  interviews: {},
+  interviewContacts: {},
+  applicationQuestions: {},
+})

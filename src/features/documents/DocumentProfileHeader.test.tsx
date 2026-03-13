@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
-import { createDefaultResumeSettings } from '../../store/create-initial-state'
+import { createDefaultResumeSettings } from '../../domain/profile-defaults'
 import type { DocumentHeaderTemplate } from '../../types/state'
 import type { ProfileDocumentData } from './document-data'
 import { DocumentProfileHeader } from './DocumentProfileHeader'

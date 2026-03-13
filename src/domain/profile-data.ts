@@ -1,4 +1,4 @@
-import { createDefaultResumeSettings, emptyProfileDefaults } from '../store/create-initial-state'
+import { createDefaultResumeSettings, emptyProfileDefaults } from './profile-defaults'
 import { isBulletLevel } from '../utils/bullet-levels'
 import { normalizeDocumentHeaderTemplate } from '../utils/document-header-templates'
 import { defaultResumeSectionOrder } from '../utils/resume-section-labels'
@@ -8,7 +8,7 @@ import type {
   AdditionalExperienceBullet,
   AdditionalExperienceEntry,
   AppDataState,
-    Certification,
+  Certification,
   DocumentHeaderTemplate,
   EducationBullet,
   EducationEntry,
