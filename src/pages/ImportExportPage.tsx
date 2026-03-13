@@ -1,7 +1,7 @@
 import { ChangeEvent, useMemo, useState } from 'react'
 
+import { useAppDataTransfer } from '../features/import-export/use-app-data-transfer'
 import { useDashboardSummaryQuery } from '../queries/use-dashboard-summary-query'
-import { useAppStore } from '../store/app-store'
 import type { AppExportFile } from '../types/state'
 
 const downloadJson = (payload: AppExportFile) => {
@@ -17,8 +17,7 @@ const downloadJson = (payload: AppExportFile) => {
 }
 
 export const ImportExportPage = () => {
-  const exportAppData = useAppStore((state) => state.actions.exportAppData)
-  const importAppData = useAppStore((state) => state.actions.importAppData)
+  const { exportAppData, importAppData } = useAppDataTransfer()
   const { data } = useDashboardSummaryQuery()
   const [error, setError] = useState<string | null>(null)
   const profileCount = data?.profileCount ?? 0

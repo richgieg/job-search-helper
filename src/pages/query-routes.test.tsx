@@ -34,12 +34,7 @@ const resetStore = () => {
   resetAppApiClient()
   useAppStore.setState((state) => ({
     ...state,
-    data: createEmptyDataState(),
     ui: createDefaultUiState('system'),
-    status: {
-      saving: 'idle',
-      errorMessage: null,
-    },
   }))
 }
 
@@ -257,7 +252,6 @@ describe('query-backed routes', () => {
     })
 
     expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
-    expect(useAppStore.getState().data.profiles.profile_1).toBeUndefined()
     expect(screen.getByText('Applied')).toBeInTheDocument()
   })
 
@@ -389,7 +383,6 @@ describe('query-backed routes', () => {
 
     expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
     expect(screen.getByText('Job profile for Senior Engineer at Example Co')).toBeInTheDocument()
-    expect(useAppStore.getState().data.experienceEntries.experience_1).toBeUndefined()
   })
 
   it('updates the profile detail route through page-level mutations', async () => {
