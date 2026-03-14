@@ -695,8 +695,8 @@
         "createdAt": "2026-02-18T16:00:00.000Z",
         "updatedAt": "2026-03-06T18:00:00.000Z"
       },
-      "job-meridian-labs": {
-        "id": "job-meridian-labs",
+      "job-brightpath-technical-search": {
+        "id": "job-brightpath-technical-search",
         "companyName": "",
         "staffingAgencyName": "BrightPath Technical Search",
         "jobTitle": "Backend Software Engineer",
@@ -714,8 +714,8 @@
         "createdAt": "2026-02-27T15:00:00.000Z",
         "updatedAt": "2026-03-01T13:15:00.000Z"
       },
-      "job-pinecrest-data": {
-        "id": "job-pinecrest-data",
+      "job-cobalt-recruiting-group": {
+        "id": "job-cobalt-recruiting-group",
         "companyName": "",
         "staffingAgencyName": "Cobalt Recruiting Group",
         "jobTitle": "Platform Software Engineer",
@@ -815,8 +815,8 @@
         "createdAt": "2026-02-18T13:30:00.000Z",
         "updatedAt": "2026-03-05T19:00:00.000Z"
       },
-      "job-bluepeak-security": {
-        "id": "job-bluepeak-security",
+      "job-cloud-infrastructure-engineer": {
+        "id": "job-cloud-infrastructure-engineer",
         "companyName": "",
         "staffingAgencyName": "",
         "jobTitle": "Cloud Infrastructure Engineer",
@@ -856,8 +856,8 @@
         "createdAt": "2026-01-18T10:05:00.000Z",
         "updatedAt": "2026-03-08T15:00:00.000Z"
       },
-      "job-lantern-metrics": {
-        "id": "job-lantern-metrics",
+      "job-software-engineer-ii": {
+        "id": "job-software-engineer-ii",
         "companyName": "",
         "staffingAgencyName": "",
         "jobTitle": "Software Engineer II",
@@ -878,8 +878,8 @@
         "createdAt": "2026-02-06T11:00:00.000Z",
         "updatedAt": "2026-02-19T14:30:00.000Z"
       },
-      "job-driftline-health": {
-        "id": "job-driftline-health",
+      "job-northstar-bio-recruiting": {
+        "id": "job-northstar-bio-recruiting",
         "companyName": "",
         "staffingAgencyName": "Northstar Bio Recruiting",
         "jobTitle": "AWS Cloud Engineer",
@@ -935,8 +935,8 @@
         "createdAt": "2026-02-23T12:25:00.000Z",
         "updatedAt": "2026-03-06T13:20:00.000Z"
       },
-      "job-quarry-fintech": {
-        "id": "job-quarry-fintech",
+      "job-infrastructure-engineer": {
+        "id": "job-infrastructure-engineer",
         "companyName": "",
         "staffingAgencyName": "",
         "jobTitle": "Infrastructure Engineer",
@@ -995,8 +995,8 @@
         "createdAt": "2026-03-09T11:20:00.000Z",
         "updatedAt": "2026-03-09T11:20:00.000Z"
       },
-      "job-mistral-ops": {
-        "id": "job-mistral-ops",
+      "job-summit-bridge-recruiting": {
+        "id": "job-summit-bridge-recruiting",
         "companyName": "",
         "staffingAgencyName": "Summit Bridge Recruiting",
         "jobTitle": "Senior Site Reliability Engineer",
@@ -1017,22 +1017,22 @@
     },
     "jobLinks": {
       "joblink-atlas": { "id": "joblink-atlas", "jobId": "job-atlas-health", "url": "https://jobs.atlashealth.example/senior-software-engineer", "sortOrder": 1, "createdAt": "2026-02-18T16:00:00.000Z" },
-      "joblink-meridian": { "id": "joblink-meridian", "jobId": "job-meridian-labs", "url": "https://careers.meridianlabs.example/backend-software-engineer", "sortOrder": 1, "createdAt": "2026-02-27T15:00:00.000Z" },
-      "joblink-pinecrest": { "id": "joblink-pinecrest", "jobId": "job-pinecrest-data", "url": "https://jobs.pinecrestdata.example/platform-software-engineer", "sortOrder": 1, "createdAt": "2026-03-07T10:30:00.000Z" },
+      "joblink-brightpath-technical-search": { "id": "joblink-brightpath-technical-search", "jobId": "job-brightpath-technical-search", "url": "https://careers.meridianlabs.example/backend-software-engineer", "sortOrder": 1, "createdAt": "2026-02-27T15:00:00.000Z" },
+      "joblink-cobalt-recruiting-group": { "id": "joblink-cobalt-recruiting-group", "jobId": "job-cobalt-recruiting-group", "url": "https://jobs.pinecrestdata.example/platform-software-engineer", "sortOrder": 1, "createdAt": "2026-03-07T10:30:00.000Z" },
       "joblink-cedarstack": { "id": "joblink-cedarstack", "jobId": "job-cedarstack", "url": "https://careers.cedarstack.example/devops-engineer", "sortOrder": 1, "createdAt": "2026-02-10T14:10:00.000Z" },
       "joblink-nimbus": { "id": "joblink-nimbus", "jobId": "job-nimbus-harbor", "url": "https://jobs.nimbusharbor.example/senior-devops-engineer", "sortOrder": 1, "createdAt": "2026-01-24T16:20:00.000Z" },
       "joblink-rivet": { "id": "joblink-rivet", "jobId": "job-rivet-commerce", "url": "https://careers.rivetcommerce.example/site-reliability-engineer", "sortOrder": 1, "createdAt": "2026-02-01T11:10:00.000Z" },
       "joblink-summit": { "id": "joblink-summit", "jobId": "job-summit-grid", "url": "https://jobs.summitgrid.example/cloud-engineer", "sortOrder": 1, "createdAt": "2026-02-18T13:30:00.000Z" },
-      "joblink-bluepeak": { "id": "joblink-bluepeak", "jobId": "job-bluepeak-security", "url": "https://careers.bluepeaksecurity.example/cloud-infrastructure-engineer", "sortOrder": 1, "createdAt": "2026-03-01T12:10:00.000Z" },
+      "joblink-cloud-infrastructure-engineer": { "id": "joblink-cloud-infrastructure-engineer", "jobId": "job-cloud-infrastructure-engineer", "url": "https://careers.bluepeaksecurity.example/cloud-infrastructure-engineer", "sortOrder": 1, "createdAt": "2026-03-01T12:10:00.000Z" },
       "joblink-orchard": { "id": "joblink-orchard", "jobId": "job-orchard-systems", "url": "https://jobs.orchardsystems.example/platform-engineer", "sortOrder": 1, "createdAt": "2026-01-18T10:05:00.000Z" },
-      "joblink-lantern": { "id": "joblink-lantern", "jobId": "job-lantern-metrics", "url": "https://careers.lanternmetrics.example/software-engineer-ii", "sortOrder": 1, "createdAt": "2026-02-06T11:00:00.000Z" },
-      "joblink-driftline": { "id": "joblink-driftline", "jobId": "job-driftline-health", "url": "https://jobs.driftlinehealth.example/aws-cloud-engineer", "sortOrder": 1, "createdAt": "2026-03-08T09:45:00.000Z" },
+      "joblink-software-engineer-ii": { "id": "joblink-software-engineer-ii", "jobId": "job-software-engineer-ii", "url": "https://careers.lanternmetrics.example/software-engineer-ii", "sortOrder": 1, "createdAt": "2026-02-06T11:00:00.000Z" },
+      "joblink-northstar-bio-recruiting": { "id": "joblink-northstar-bio-recruiting", "jobId": "job-northstar-bio-recruiting", "url": "https://jobs.driftlinehealth.example/aws-cloud-engineer", "sortOrder": 1, "createdAt": "2026-03-08T09:45:00.000Z" },
       "joblink-harborline": { "id": "joblink-harborline", "jobId": "job-harborline-retail", "url": "https://careers.harborlineretail.example/release-engineer", "sortOrder": 1, "createdAt": "2026-03-02T13:00:00.000Z" },
       "joblink-skylane": { "id": "joblink-skylane", "jobId": "job-skylane-bio", "url": "https://jobs.skylanebio.example/platform-reliability-engineer", "sortOrder": 1, "createdAt": "2026-02-23T12:25:00.000Z" },
-      "joblink-quarry": { "id": "joblink-quarry", "jobId": "job-quarry-fintech", "url": "https://careers.quarryfintech.example/infrastructure-engineer", "sortOrder": 1, "createdAt": "2026-01-27T14:50:00.000Z" },
+      "joblink-infrastructure-engineer": { "id": "joblink-infrastructure-engineer", "jobId": "job-infrastructure-engineer", "url": "https://careers.quarryfintech.example/infrastructure-engineer", "sortOrder": 1, "createdAt": "2026-01-27T14:50:00.000Z" },
       "joblink-northfield": { "id": "joblink-northfield", "jobId": "job-northfield-energy", "url": "https://jobs.northfieldenergy.example/senior-backend-engineer", "sortOrder": 1, "createdAt": "2026-03-03T10:40:00.000Z" },
       "joblink-ember": { "id": "joblink-ember", "jobId": "job-ember-analytics", "url": "https://jobs.emberanalytics.example/staff-platform-engineer", "sortOrder": 1, "createdAt": "2026-03-09T11:20:00.000Z" },
-      "joblink-mistral": { "id": "joblink-mistral", "jobId": "job-mistral-ops", "url": "https://summitbridgerecruiting.example/openings/senior-site-reliability-engineer", "sortOrder": 1, "createdAt": "2026-03-11T09:15:00.000Z" }
+      "joblink-summit-bridge-recruiting": { "id": "joblink-summit-bridge-recruiting", "jobId": "job-summit-bridge-recruiting", "url": "https://summitbridgerecruiting.example/openings/senior-site-reliability-engineer", "sortOrder": 1, "createdAt": "2026-03-11T09:15:00.000Z" }
     },
     "jobContacts": {
       "contact-atlas-recruiter": { "id": "contact-atlas-recruiter", "jobId": "job-atlas-health", "name": "Talia Wren", "title": "Technical Recruiter", "company": "Northline Talent Partners", "organizationKind": "staffing_agency", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "talia.wren@northlinetalent.example", "phone": "(555) 014-5010", "linkedinUrl": "https://www.linkedin.com/in/talia-wren-example", "notes": "External recruiter coordinating the process with Atlas Health.", "sortOrder": 1 },
@@ -1048,7 +1048,7 @@
       "contact-skylane-interviewer": { "id": "contact-skylane-interviewer", "jobId": "job-skylane-bio", "name": "Vesper Quinn", "title": "Platform Reliability Manager", "company": "Skylane Bio", "organizationKind": "company", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "vesper.quinn@skylanebio.example", "phone": "(555) 014-5061", "linkedinUrl": "https://www.linkedin.com/in/vesper-quinn-example", "notes": "Expected to lead the next platform architecture discussion.", "sortOrder": 2 },
       "contact-ember-recruiter": { "id": "contact-ember-recruiter", "jobId": "job-ember-analytics", "name": "Noa Bennett", "title": "Principal Recruiter", "company": "Keystone Talent Collective", "organizationKind": "staffing_agency", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "noa.bennett@keystonetalent.example", "phone": "(555) 014-5070", "linkedinUrl": "https://www.linkedin.com/in/noa-bennett-example", "notes": "Agency recruiter managing the search and coordinating interview logistics with Ember Analytics.", "sortOrder": 1 },
       "contact-ember-director": { "id": "contact-ember-director", "jobId": "job-ember-analytics", "name": "Iris Calder", "title": "Director of Platform Engineering", "company": "Ember Analytics", "organizationKind": "company", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "iris.calder@emberanalytics.example", "phone": "(555) 014-5071", "linkedinUrl": "https://www.linkedin.com/in/iris-calder-example", "notes": "Likely final-loop hiring manager and a good named cover-letter recipient example.", "sortOrder": 2 },
-      "contact-mistral-recruiter": { "id": "contact-mistral-recruiter", "jobId": "job-mistral-ops", "name": "Parker Hale", "title": "Senior Recruiting Consultant", "company": "Summit Bridge Recruiting", "organizationKind": "staffing_agency", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "parker.hale@summitbridge.example", "phone": "(555) 014-5080", "linkedinUrl": "https://www.linkedin.com/in/parker-hale-example", "notes": "Primary staffing contact for an undisclosed client engagement.", "sortOrder": 1 }
+      "contact-summit-bridge-recruiter": { "id": "contact-summit-bridge-recruiter", "jobId": "job-summit-bridge-recruiting", "name": "Parker Hale", "title": "Senior Recruiting Consultant", "company": "Summit Bridge Recruiting", "organizationKind": "staffing_agency", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "parker.hale@summitbridge.example", "phone": "(555) 014-5080", "linkedinUrl": "https://www.linkedin.com/in/parker-hale-example", "notes": "Primary staffing contact for an undisclosed client engagement.", "sortOrder": 1 }
     },
     "interviews": {
       "interview-atlas-screen": { "id": "interview-atlas-screen", "jobId": "job-atlas-health", "createdAt": "2026-02-20T10:00:00.000Z", "startAt": "2026-02-25T15:00:00.000Z", "notes": "Recruiter screen focused on healthcare domain familiarity and backend API experience." },
@@ -1078,7 +1078,7 @@
     "applicationQuestions": {
       "question-atlas-1": { "id": "question-atlas-1", "jobId": "job-atlas-health", "question": "Describe a backend system you improved for reliability.", "answer": "I described how I improved an internal workflow service by tightening integration contracts, expanding automated tests, and documenting failure handling so the team could resolve issues faster.", "sortOrder": 1 },
       "question-cedarstack-1": { "id": "question-cedarstack-1", "jobId": "job-cedarstack", "question": "How have you reduced deployment risk in production environments?", "answer": "I highlighted pipeline guardrails such as progressive rollout checks, environment validation, and clearer rollback paths in GitHub Actions and Kubernetes deployment workflows.", "sortOrder": 1 },
-      "question-bluepeak-1": { "id": "question-bluepeak-1", "jobId": "job-bluepeak-security", "question": "Describe your experience with AWS networking and identity management.", "answer": "I explained my experience working with VPC design, security groups, IAM roles and policies, and Terraform-based infrastructure patterns that help teams use cloud resources safely.", "sortOrder": 1 },
+      "question-cloud-infrastructure-engineer-1": { "id": "question-cloud-infrastructure-engineer-1", "jobId": "job-cloud-infrastructure-engineer", "question": "Describe your experience with AWS networking and identity management.", "answer": "I explained my experience working with VPC design, security groups, IAM roles and policies, and Terraform-based infrastructure patterns that help teams use cloud resources safely.", "sortOrder": 1 },
       "question-harborline-1": { "id": "question-harborline-1", "jobId": "job-harborline-retail", "question": "What metrics do you use to evaluate CI/CD health?", "answer": "I usually focus on lead time, change failure rate, deployment frequency, pipeline success trends, and the time it takes teams to recover from failed releases.", "sortOrder": 1 },
       "question-northfield-1": { "id": "question-northfield-1", "jobId": "job-northfield-energy", "question": "Tell us about a time you simplified a complex integration.", "answer": "I wrote about consolidating multiple fragile integration steps into a smaller, better-tested service boundary with clearer retries, observability, and ownership.", "sortOrder": 1 }
     }
