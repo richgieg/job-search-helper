@@ -30,12 +30,12 @@ export const ResumeSectionSettingsSchema = z.object({
   enabled: z.boolean(),
   sortOrder: z.number(),
   label: z.string(),
-})
+}).strict()
 
 export const ResumeSettingsSchema = z.object({
   headerTemplate: DocumentHeaderTemplateSchema,
   sections: z.record(ResumeSectionKeySchema, ResumeSectionSettingsSchema),
-})
+}).strict()
 
 export const PersonalDetailsSchema = z.object({
   fullName: z.string(),
@@ -47,7 +47,7 @@ export const PersonalDetailsSchema = z.object({
   city: z.string(),
   state: z.string(),
   postalCode: z.string(),
-})
+}).strict()
 
 export const ProfileSchema = z.object({
   id: IdSchema,
@@ -61,7 +61,7 @@ export const ProfileSchema = z.object({
   clonedFromProfileId: IdSchema.nullable(),
   createdAt: IsoTimestampSchema,
   updatedAt: IsoTimestampSchema,
-})
+}).strict()
 
 export const ProfileLinkSchema = z.object({
   id: IdSchema,
@@ -70,7 +70,7 @@ export const ProfileLinkSchema = z.object({
   url: z.string(),
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const SkillCategorySchema = z.object({
   id: IdSchema,
@@ -78,7 +78,7 @@ export const SkillCategorySchema = z.object({
   name: z.string(),
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const SkillSchema = z.object({
   id: IdSchema,
@@ -86,7 +86,7 @@ export const SkillSchema = z.object({
   name: z.string(),
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const AchievementSchema = z.object({
   id: IdSchema,
@@ -95,14 +95,14 @@ export const AchievementSchema = z.object({
   description: z.string(),
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const ExperienceSupervisorSchema = z.object({
   name: z.string(),
   title: z.string(),
   phone: z.string(),
   email: z.string(),
-})
+}).strict()
 
 export const ExperienceEntrySchema = z.object({
   id: IdSchema,
@@ -120,7 +120,7 @@ export const ExperienceEntrySchema = z.object({
   supervisor: ExperienceSupervisorSchema,
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const ExperienceBulletSchema = z.object({
   id: IdSchema,
@@ -129,7 +129,7 @@ export const ExperienceBulletSchema = z.object({
   level: BulletLevelSchema,
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const EducationEntrySchema = z.object({
   id: IdSchema,
@@ -141,7 +141,7 @@ export const EducationEntrySchema = z.object({
   status: EducationStatusSchema,
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const EducationBulletSchema = z.object({
   id: IdSchema,
@@ -150,7 +150,7 @@ export const EducationBulletSchema = z.object({
   level: BulletLevelSchema,
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const ProjectSchema = z.object({
   id: IdSchema,
@@ -161,7 +161,7 @@ export const ProjectSchema = z.object({
   endDate: IsoDateSchema.nullable(),
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const ProjectBulletSchema = z.object({
   id: IdSchema,
@@ -170,7 +170,7 @@ export const ProjectBulletSchema = z.object({
   level: BulletLevelSchema,
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const AdditionalExperienceEntrySchema = z.object({
   id: IdSchema,
@@ -182,7 +182,7 @@ export const AdditionalExperienceEntrySchema = z.object({
   endDate: IsoDateSchema.nullable(),
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const AdditionalExperienceBulletSchema = z.object({
   id: IdSchema,
@@ -191,7 +191,7 @@ export const AdditionalExperienceBulletSchema = z.object({
   level: BulletLevelSchema,
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const CertificationSchema = z.object({
   id: IdSchema,
@@ -204,7 +204,7 @@ export const CertificationSchema = z.object({
   credentialUrl: z.string(),
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const ReferenceSchema = z.object({
   id: IdSchema,
@@ -219,12 +219,12 @@ export const ReferenceSchema = z.object({
   notes: z.string(),
   enabled: z.boolean(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const FinalOutcomeSchema = z.object({
   status: FinalOutcomeStatusSchema,
   setAt: IsoTimestampSchema,
-})
+}).strict()
 
 export const JobSchema = z.object({
   id: IdSchema,
@@ -244,7 +244,7 @@ export const JobSchema = z.object({
   notes: z.string(),
   createdAt: IsoTimestampSchema,
   updatedAt: IsoTimestampSchema,
-})
+}).strict()
 
 export const JobLinkSchema = z.object({
   id: IdSchema,
@@ -252,7 +252,7 @@ export const JobLinkSchema = z.object({
   url: z.string(),
   sortOrder: z.number(),
   createdAt: IsoTimestampSchema,
-})
+}).strict()
 
 export const JobContactSchema = z.object({
   id: IdSchema,
@@ -270,7 +270,7 @@ export const JobContactSchema = z.object({
   linkedinUrl: z.string(),
   notes: z.string(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const DocumentContactSchema = z.object({
   id: IdSchema,
@@ -288,7 +288,7 @@ export const DocumentContactSchema = z.object({
   notes: z.string(),
   sortOrder: z.number(),
   isVirtual: z.boolean(),
-})
+}).strict()
 
 export const ApplicationQuestionSchema = z.object({
   id: IdSchema,
@@ -296,7 +296,7 @@ export const ApplicationQuestionSchema = z.object({
   question: z.string(),
   answer: z.string(),
   sortOrder: z.number(),
-})
+}).strict()
 
 export const InterviewSchema = z.object({
   id: IdSchema,
@@ -304,14 +304,14 @@ export const InterviewSchema = z.object({
   createdAt: IsoTimestampSchema,
   startAt: IsoTimestampSchema.nullable(),
   notes: z.string(),
-})
+}).strict()
 
 export const InterviewContactSchema = z.object({
   id: IdSchema,
   interviewId: IdSchema,
   jobContactId: IdSchema,
   sortOrder: z.number(),
-})
+}).strict()
 
 export const AppDataStateSchema = z.object({
   version: z.literal(1),
@@ -337,7 +337,7 @@ export const AppDataStateSchema = z.object({
   interviews: z.record(IdSchema, InterviewSchema),
   interviewContacts: z.record(IdSchema, InterviewContactSchema),
   applicationQuestions: z.record(IdSchema, ApplicationQuestionSchema),
-})
+}).strict()
 
 export const AppDataExportPayloadSchema = AppDataStateSchema.omit({ version: true, exportedAt: true })
 
@@ -345,4 +345,4 @@ export const AppExportFileSchema = z.object({
   version: z.literal(1),
   exportedAt: IsoTimestampSchema,
   data: AppDataExportPayloadSchema,
-})
+}).strict()
