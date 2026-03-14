@@ -189,6 +189,7 @@ describe('JobPage', () => {
     expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /Profiles/i }))
+    expect(screen.getByRole('link', { name: 'Tailored Profile' })).toHaveAttribute('href', '/profiles/profile_1')
     await user.click(screen.getByRole('button', { name: 'Duplicate profile Tailored Profile' }))
 
     expect(await screen.findByText('Tailored Profile Copy')).toBeInTheDocument()

@@ -242,7 +242,9 @@ const AttachedProfileCard = ({
       style={rowScrollStyle}
     >
       <div>
-        <p className="font-medium text-app-text">{profile.name}</p>
+        <Link className="font-medium text-app-text" to={`/profiles/${profile.id}`}>
+          {profile.name}
+        </Link>
         <p className="mt-1 text-sm text-app-text-subtle">Updated {new Date(profile.updatedAt).toLocaleString()}</p>
       </div>
       <div className="flex flex-wrap gap-2">
