@@ -42,10 +42,29 @@ describe('JobsPage', () => {
     expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Job title'), 'Staff Platform Engineer')
-    await user.type(screen.getByLabelText('Company name'), 'Northwind Labs')
+    await user.type(screen.getByLabelText('Company name (optional)'), 'Northwind Labs')
     await user.click(screen.getByRole('button', { name: 'Add job' }))
 
     expect(await screen.findByText('Staff Platform Engineer')).toBeInTheDocument()
     expect(screen.getByText('Northwind Labs')).toBeInTheDocument()
+  })
+
+  it('creates a job with only a staffing agency name from quick add', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <JobsPage />,
+      path: '/jobs',
+      route: '/jobs',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Job title'), 'Contract Platform Engineer')
+    await user.type(screen.getByLabelText('Staffing agency name (optional)'), 'North Ridge Talent')
+    await user.click(screen.getByRole('button', { name: 'Add job' }))
+
+    expect(await screen.findByText('Contract Platform Engineer')).toBeInTheDocument()
+    expect(screen.getByText('North Ridge Talent')).toBeInTheDocument()
   })
 })

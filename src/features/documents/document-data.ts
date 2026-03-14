@@ -5,6 +5,7 @@ import type {
   AdditionalExperienceEntry,
   AppDataState,
   Certification,
+  DocumentContact,
   EducationBullet,
   EducationEntry,
   ExperienceBullet,
@@ -52,8 +53,8 @@ export interface ProfileDocumentData {
   profile: Profile
   profileLinks: ProfileLink[]
   job: Job
-  primaryContact: JobContact
-  contacts: JobContact[]
+  primaryContact: DocumentContact
+  contacts: DocumentContact[]
   jobLinks: JobLink[]
   skillCategories: DocumentSkillCategory[]
   achievements: Achievement[]
@@ -91,9 +92,13 @@ const replaceTemplateToken = (value: string, token: string, replacement: string)
 
 const endSentence = (value: string) => (/[.!?]$/.test(value) ? value : `${value}.`)
 
+export const companyHiringManagerContactId = 'companyHiringManager'
+export const staffingAgencyRecruitingTeamContactId = 'staffingAgencyRecruitingTeam'
+
 const buildFallbackJob = (profile: Profile): Job => ({
   id: `document-job-${profile.id}`,
   companyName: 'Example Company',
+  staffingAgencyName: 'Example Staffing Agency',
   jobTitle: 'Example Role',
   description: '',
   location: '',
@@ -110,36 +115,98 @@ const buildFallbackJob = (profile: Profile): Job => ({
   updatedAt: profile.updatedAt,
 })
 
-const buildFallbackContact = (job: Job): JobContact => ({
-  id: `document-contact-${job.id}`,
-  jobId: job.id,
+const buildCompanyHiringManagerContact = (job: Job): DocumentContact => ({
+  id: companyHiringManagerContactId,
   name: 'Hiring Manager',
   title: '',
-  company: job.companyName || 'Example Company',
-  addressLine1: '123 Example Street',
+  company: job.companyName,
+  organizationKind: 'company',
+  addressLine1: '',
   addressLine2: '',
   addressLine3: '',
-  addressLine4: 'Example City, EX 12345',
+  addressLine4: '',
   email: '',
   phone: '',
   linkedinUrl: '',
-  relationshipType: 'hiring_manager',
   notes: '',
   sortOrder: 0,
+  isVirtual: true,
 })
+
+const buildStaffingAgencyRecruitingTeamContact = (job: Job): DocumentContact => ({
+  id: staffingAgencyRecruitingTeamContactId,
+  name: 'Recruiting Team',
+  title: '',
+  company: job.staffingAgencyName,
+  organizationKind: 'staffing_agency',
+  addressLine1: '',
+  addressLine2: '',
+  addressLine3: '',
+  addressLine4: '',
+  email: '',
+  phone: '',
+  linkedinUrl: '',
+  notes: '',
+  sortOrder: 0,
+  isVirtual: true,
+})
+
+const toDocumentContact = (contact: JobContact): DocumentContact => ({
+  id: contact.id,
+  name: contact.name,
+  title: contact.title,
+  company: contact.company,
+  organizationKind: contact.organizationKind,
+  addressLine1: contact.addressLine1,
+  addressLine2: contact.addressLine2,
+  addressLine3: contact.addressLine3,
+  addressLine4: contact.addressLine4,
+  email: contact.email,
+  phone: contact.phone,
+  linkedinUrl: contact.linkedinUrl,
+  notes: contact.notes,
+  sortOrder: contact.sortOrder,
+  isVirtual: false,
+})
+
+export const createDocumentContacts = (job: Job, contacts: JobContact[]): DocumentContact[] => [
+  ...contacts.sort(compareSortOrder).map(toDocumentContact),
+  buildCompanyHiringManagerContact(job),
+  buildStaffingAgencyRecruitingTeamContact(job),
+]
+
+export const getInsideAddressCompany = (job: Job, contact: DocumentContact) => {
+  if (contact.isVirtual) {
+    return contact.organizationKind === 'staffing_agency' ? job.staffingAgencyName.trim() : job.companyName.trim()
+  }
+
+  return contact.company.trim()
+}
+
+const getCompanyTokenReplacement = (job: Job, contact: DocumentContact) => {
+  if (contact.organizationKind === 'staffing_agency') {
+    return "your client's organization"
+  }
+
+  return job.companyName.trim() || 'your company'
+}
 
 export const selectPrimaryContact = ({
   contacts,
   preferredContactId,
   job,
 }: {
-  contacts: JobContact[]
+  contacts: DocumentContact[]
   preferredContactId: Id | null | undefined
   job: Job
 }) => {
   const preferredContact = preferredContactId ? contacts.find((contact) => contact.id === preferredContactId) ?? null : null
 
-  return preferredContact ?? contacts[0] ?? buildFallbackContact(job)
+  const firstRealContact = contacts.find((contact) => !contact.isVirtual) ?? null
+  const companyDefaultContact = contacts.find((contact) => contact.id === companyHiringManagerContactId) ?? null
+  const staffingDefaultContact = contacts.find((contact) => contact.id === staffingAgencyRecruitingTeamContactId) ?? null
+
+  return preferredContact ?? companyDefaultContact ?? staffingDefaultContact ?? firstRealContact ?? buildCompanyHiringManagerContact(job)
 }
 
 export const formatAddressLines = (values: Array<string | null | undefined>) => compact(values)
@@ -209,9 +276,10 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
     .filter((link) => link.profileId === profileId && link.enabled)
     .sort(compareSortOrder)
 
-  const contacts = Object.values(data.jobContacts)
-    .filter((contact) => contact.jobId === profile.jobId)
-    .sort(compareSortOrder)
+  const availableContacts = createDocumentContacts(
+    job,
+    Object.values(data.jobContacts).filter((contact) => contact.jobId === profile.jobId),
+  )
 
   const jobLinks = Object.values(data.jobLinks)
     .filter((link) => link.jobId === profile.jobId)
@@ -297,11 +365,11 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
     profileLinks,
     job,
     primaryContact: selectPrimaryContact({
-      contacts,
+      contacts: availableContacts,
       preferredContactId: profile.coverLetterContactId,
       job,
     }),
-    contacts,
+    contacts: availableContacts,
     jobLinks,
     skillCategories,
     achievements,
@@ -321,7 +389,7 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
 
 export const buildCoverLetterParagraphs = (documentData: ProfileDocumentData) => {
   const role = documentData.job.jobTitle || 'Example Role'
-  const company = documentData.job.companyName || 'Example Company'
+  const company = getCompanyTokenReplacement(documentData.job, documentData.primaryContact)
   const replaceJobTokens = (value: string) =>
     replaceTemplateToken(replaceTemplateToken(value, '{{JOB.TITLE}}', role), '{{JOB.COMPANY}}', company)
 

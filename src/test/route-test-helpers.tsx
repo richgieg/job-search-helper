@@ -82,6 +82,7 @@ export const createSeedData = (): AppDataState => {
   data.jobs.job_1 = {
     id: 'job_1',
     companyName: 'Example Co',
+    staffingAgencyName: '',
     jobTitle: 'Senior Engineer',
     description: 'Build systems',
     location: 'Remote',
@@ -193,6 +194,7 @@ export const createSeedData = (): AppDataState => {
     name: 'Hiring Manager',
     title: 'Director',
     company: 'Example Co',
+    organizationKind: 'company',
     addressLine1: '',
     addressLine2: '',
     addressLine3: '',
@@ -200,7 +202,6 @@ export const createSeedData = (): AppDataState => {
     email: 'manager@example.com',
     phone: '555-0101',
     linkedinUrl: '',
-    relationshipType: 'hiring_manager',
     notes: '',
     sortOrder: 1,
   }
@@ -211,6 +212,7 @@ export const createSeedData = (): AppDataState => {
     name: 'Taylor Recruiter',
     title: 'Senior Recruiter',
     company: 'Example Co',
+    organizationKind: 'staffing_agency',
     addressLine1: '',
     addressLine2: '',
     addressLine3: '',
@@ -218,7 +220,6 @@ export const createSeedData = (): AppDataState => {
     email: 'taylor@example.com',
     phone: '555-0102',
     linkedinUrl: '',
-    relationshipType: 'recruiter',
     notes: '',
     sortOrder: 2,
   }

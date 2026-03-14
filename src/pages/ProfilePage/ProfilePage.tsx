@@ -10,6 +10,7 @@ import { useProfileEditorModel } from '../../features/profiles/use-profile-edito
 import { useProfileDetailQuery } from '../../queries/use-profile-detail-query'
 import { useProfileDocumentQuery } from '../../queries/use-profile-document-query'
 import { useProfilePagePanelState } from '../../store/app-ui-store'
+import { companyHiringManagerContactId, staffingAgencyRecruitingTeamContactId } from '../../features/documents/document-data'
 import { ProfileChildEditors } from './ProfileChildEditors'
 import type { DocumentHeaderTemplate, PersonalDetails, ResumeSectionKey } from '../../types/state'
 import { documentHeaderTemplateLabels, documentHeaderTemplates } from '../../utils/document-header-templates'
@@ -26,6 +27,18 @@ const buildResumeSectionLabels = (profile?: { resumeSettings: { sections: Record
 const createPersonalDetailsDraft = (personalDetails: PersonalDetails): PersonalDetails => ({
   ...personalDetails,
 })
+
+const getCoverLetterRecipientOptionLabel = (contact: { id: string; name: string; title: string; company: string }) => {
+  if (contact.id === companyHiringManagerContactId) {
+    return 'Company'
+  }
+
+  if (contact.id === staffingAgencyRecruitingTeamContactId) {
+    return 'Staffing Agency'
+  }
+
+  return `${contact.name || 'Unnamed contact'}${contact.title ? ` - ${contact.title}` : ''}${contact.company ? ` (${contact.company})` : ''}`
+}
 
 const Field = ({
   label,
@@ -124,11 +137,11 @@ export const ProfilePage = () => {
   const activePersonalDetails = personalDetails ?? createPersonalDetailsDraft(profile.personalDetails)
 
   const attachedJob = profileDetail?.attachedJob ?? null
+  const attachedJobOrganizationName = attachedJob?.companyName || attachedJob?.staffingAgencyName || 'Unknown organization'
   const availableCoverLetterContacts = documentData?.contacts ?? []
   const hasSelectedCoverLetterContact =
     profile.coverLetterContactId !== null && availableCoverLetterContacts.some((contact) => contact.id === profile.coverLetterContactId)
-  const coverLetterRecipientValue = hasSelectedCoverLetterContact ? profile.coverLetterContactId ?? '' : ''
-  const automaticRecipientLabel = documentData?.primaryContact.name.trim() || 'Hiring Manager'
+  const coverLetterRecipientValue = hasSelectedCoverLetterContact ? profile.coverLetterContactId ?? companyHiringManagerContactId : companyHiringManagerContactId
   const orderedResumeSections = Object.entries(profile.resumeSettings.sections)
     .map(([section, settings]) => ({
       section: section as ResumeSectionKey,
@@ -220,7 +233,7 @@ export const ProfilePage = () => {
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-app-primary">Profile editor</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-app-heading">{profile.name || 'Unnamed profile'}</h1>
           <p className="mt-2 text-sm text-app-text-subtle">
-            {attachedJob ? `Job profile for ${attachedJob.jobTitle || 'Untitled role'} at ${attachedJob.companyName || 'Unknown company'}` : 'Base profile'}
+            {attachedJob ? `Job profile for ${attachedJob.jobTitle || 'Untitled role'} at ${attachedJobOrganizationName}` : 'Base profile'}
           </p>
         </div>
 
@@ -230,13 +243,12 @@ export const ProfilePage = () => {
               <span className="font-medium text-app-heading">Cover letter recipient</span>
               <select
                 aria-label="Cover letter recipient"
-                className="min-w-60 rounded-xl border border-app-border bg-app-surface px-3 py-2 text-sm text-app-text outline-none transition focus:border-app-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={availableCoverLetterContacts.length === 0}
+                className="min-w-60 rounded-xl border border-app-border bg-app-surface px-3 py-2 text-sm text-app-text outline-none transition focus:border-app-focus-ring"
                 value={coverLetterRecipientValue}
                 onChange={(event) => {
-                  const nextContactId = event.target.value || null
+                  const nextContactId = event.target.value
 
-                  if (nextContactId === profile.coverLetterContactId) {
+                  if (nextContactId === coverLetterRecipientValue) {
                     return
                   }
 
@@ -248,11 +260,9 @@ export const ProfilePage = () => {
                   })
                 }}
               >
-                <option value="">Automatic ({automaticRecipientLabel})</option>
                 {availableCoverLetterContacts.map((contact) => (
                   <option key={contact.id} value={contact.id}>
-                    {contact.name || 'Unnamed contact'}
-                    {contact.title ? ` - ${contact.title}` : ''}
+                    {getCoverLetterRecipientOptionLabel(contact)}
                   </option>
                 ))}
               </select>

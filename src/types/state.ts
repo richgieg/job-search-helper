@@ -11,12 +11,7 @@ export type EmploymentType =
   | 'temporary'
   | 'other'
 
-export type ContactRelationshipType =
-  | 'recruiter'
-  | 'hiring_manager'
-  | 'referral'
-  | 'interviewer'
-  | 'other'
+export type ContactOrganizationKind = 'company' | 'staffing_agency'
 
 export type ReferenceType = 'professional' | 'personal'
 
@@ -253,6 +248,7 @@ export interface Reference {
 export interface Job {
   id: Id
   companyName: string
+  staffingAgencyName: string
   jobTitle: string
   description: string
   location: string
@@ -288,6 +284,7 @@ export interface JobContact {
   name: string
   title: string
   company: string
+  organizationKind: ContactOrganizationKind
   addressLine1: string
   addressLine2: string
   addressLine3: string
@@ -295,9 +292,26 @@ export interface JobContact {
   email: string
   phone: string
   linkedinUrl: string
-  relationshipType: ContactRelationshipType
   notes: string
   sortOrder: number
+}
+
+export interface DocumentContact {
+  id: Id
+  name: string
+  title: string
+  company: string
+  organizationKind: ContactOrganizationKind
+  addressLine1: string
+  addressLine2: string
+  addressLine3: string
+  addressLine4: string
+  email: string
+  phone: string
+  linkedinUrl: string
+  notes: string
+  sortOrder: number
+  isVirtual: boolean
 }
 
 export interface ApplicationQuestion {

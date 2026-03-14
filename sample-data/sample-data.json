@@ -679,6 +679,7 @@
       "job-atlas-health": {
         "id": "job-atlas-health",
         "companyName": "Atlas Health",
+        "staffingAgencyName": "",
         "jobTitle": "Senior Software Engineer",
         "description": "Backend engineering role focused on patient data services, API integrations, and observability in AWS.",
         "location": "Remote",
@@ -697,6 +698,7 @@
       "job-meridian-labs": {
         "id": "job-meridian-labs",
         "companyName": "Meridian Labs",
+        "staffingAgencyName": "",
         "jobTitle": "Backend Software Engineer",
         "description": "Product engineering role centered on API development, data pipelines, and service performance.",
         "location": "Durham, NC",
@@ -715,6 +717,7 @@
       "job-pinecrest-data": {
         "id": "job-pinecrest-data",
         "companyName": "Pinecrest Data",
+        "staffingAgencyName": "",
         "jobTitle": "Platform Software Engineer",
         "description": "Role blending internal platform tooling with backend service development for analytics products.",
         "location": "Remote",
@@ -733,6 +736,7 @@
       "job-cedarstack": {
         "id": "job-cedarstack",
         "companyName": "CedarStack",
+        "staffingAgencyName": "",
         "jobTitle": "DevOps Engineer",
         "description": "Delivery automation and platform operations role with Terraform, Kubernetes, and AWS ownership.",
         "location": "Remote",
@@ -751,6 +755,7 @@
       "job-nimbus-harbor": {
         "id": "job-nimbus-harbor",
         "companyName": "Nimbus Harbor",
+        "staffingAgencyName": "",
         "jobTitle": "Senior DevOps Engineer",
         "description": "Senior DevOps role supporting multi-service deployments, platform tooling, and production readiness.",
         "location": "Remote",
@@ -772,6 +777,7 @@
       "job-rivet-commerce": {
         "id": "job-rivet-commerce",
         "companyName": "Rivet Commerce",
+        "staffingAgencyName": "",
         "jobTitle": "Site Reliability Engineer",
         "description": "Reliability engineering role with on-call expectations, observability ownership, and deployment safeguards.",
         "location": "Charlotte, NC",
@@ -793,6 +799,7 @@
       "job-summit-grid": {
         "id": "job-summit-grid",
         "companyName": "Summit Grid",
+        "staffingAgencyName": "",
         "jobTitle": "Cloud Engineer",
         "description": "AWS-heavy cloud engineering role focused on networking, IAM, Terraform, and platform resiliency.",
         "location": "Remote",
@@ -811,6 +818,7 @@
       "job-bluepeak-security": {
         "id": "job-bluepeak-security",
         "companyName": "BluePeak Security",
+        "staffingAgencyName": "",
         "jobTitle": "Cloud Infrastructure Engineer",
         "description": "Cloud infrastructure role emphasizing AWS networking, IAM, compliance-minded automation, and operational hygiene.",
         "location": "Raleigh, NC",
@@ -829,6 +837,7 @@
       "job-orchard-systems": {
         "id": "job-orchard-systems",
         "companyName": "Orchard Systems",
+        "staffingAgencyName": "",
         "jobTitle": "Platform Engineer",
         "description": "Platform engineering role spanning internal tooling, AWS infrastructure, and developer experience improvements.",
         "location": "Remote",
@@ -850,6 +859,7 @@
       "job-lantern-metrics": {
         "id": "job-lantern-metrics",
         "companyName": "Lantern Metrics",
+        "staffingAgencyName": "",
         "jobTitle": "Software Engineer II",
         "description": "Application engineering role with product delivery focus and less platform scope than expected.",
         "location": "Remote",
@@ -871,6 +881,7 @@
       "job-driftline-health": {
         "id": "job-driftline-health",
         "companyName": "Driftline Health",
+        "staffingAgencyName": "",
         "jobTitle": "AWS Cloud Engineer",
         "description": "Cloud engineering role for a regulated healthcare environment with emphasis on IAM, networking, and infrastructure standards.",
         "location": "Remote",
@@ -889,6 +900,7 @@
       "job-harborline-retail": {
         "id": "job-harborline-retail",
         "companyName": "Harborline Retail",
+        "staffingAgencyName": "",
         "jobTitle": "Release Engineer",
         "description": "Release and deployment engineering role with CI/CD ownership, release metrics, and environment governance.",
         "location": "Charlotte, NC",
@@ -907,6 +919,7 @@
       "job-skylane-bio": {
         "id": "job-skylane-bio",
         "companyName": "Skylane Bio",
+        "staffingAgencyName": "",
         "jobTitle": "Platform Reliability Engineer",
         "description": "Hybrid platform reliability role covering cloud operations, observability, and developer platform tooling.",
         "location": "Raleigh, NC",
@@ -925,6 +938,7 @@
       "job-quarry-fintech": {
         "id": "job-quarry-fintech",
         "companyName": "Quarry Fintech",
+        "staffingAgencyName": "",
         "jobTitle": "Infrastructure Engineer",
         "description": "Infrastructure engineering role in a regulated fintech environment with strong operational controls.",
         "location": "Remote",
@@ -946,6 +960,7 @@
       "job-northfield-energy": {
         "id": "job-northfield-energy",
         "companyName": "Northfield Energy",
+        "staffingAgencyName": "",
         "jobTitle": "Senior Backend Engineer",
         "description": "Backend role focused on service integrations, data movement, and operationally reliable application design.",
         "location": "Remote",
@@ -980,17 +995,17 @@
       "joblink-northfield": { "id": "joblink-northfield", "jobId": "job-northfield-energy", "url": "https://jobs.northfieldenergy.example/senior-backend-engineer", "sortOrder": 1, "createdAt": "2026-03-03T10:40:00.000Z" }
     },
     "jobContacts": {
-      "contact-atlas-recruiter": { "id": "contact-atlas-recruiter", "jobId": "job-atlas-health", "name": "Talia Wren", "title": "Technical Recruiter", "company": "Atlas Health", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "talia.wren@atlashealth.example", "phone": "(555) 014-5010", "linkedinUrl": "https://www.linkedin.com/in/talia-wren-example", "relationshipType": "recruiter", "notes": "Initial recruiter contact and process coordinator.", "sortOrder": 1 },
-      "contact-atlas-manager": { "id": "contact-atlas-manager", "jobId": "job-atlas-health", "name": "Hollis Vane", "title": "Engineering Manager", "company": "Atlas Health", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "hollis.vane@atlashealth.example", "phone": "(555) 014-5011", "linkedinUrl": "https://www.linkedin.com/in/hollis-vane-example", "relationshipType": "hiring_manager", "notes": "Likely direct manager for the team.", "sortOrder": 2 },
-      "contact-cedarstack-recruiter": { "id": "contact-cedarstack-recruiter", "jobId": "job-cedarstack", "name": "Nico Arden", "title": "Talent Partner", "company": "CedarStack", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "nico.arden@cedarstack.example", "phone": "(555) 014-5020", "linkedinUrl": "https://www.linkedin.com/in/nico-arden-example", "relationshipType": "recruiter", "notes": "Responsive recruiter with clear interview process details.", "sortOrder": 1 },
-      "contact-cedarstack-lead": { "id": "contact-cedarstack-lead", "jobId": "job-cedarstack", "name": "Keiran Vale", "title": "Platform Lead", "company": "CedarStack", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "keiran.vale@cedarstack.example", "phone": "(555) 014-5021", "linkedinUrl": "https://www.linkedin.com/in/keiran-vale-example", "relationshipType": "interviewer", "notes": "Led the hiring manager discussion on delivery automation and incident response.", "sortOrder": 2 },
-      "contact-nimbus-recruiter": { "id": "contact-nimbus-recruiter", "jobId": "job-nimbus-harbor", "name": "Liora Fen", "title": "Senior Recruiter", "company": "Nimbus Harbor", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "liora.fen@nimbusharbor.example", "phone": "(555) 014-5030", "linkedinUrl": "https://www.linkedin.com/in/liora-fen-example", "relationshipType": "recruiter", "notes": "Coordinated the full interview loop and compensation discussion.", "sortOrder": 1 },
-      "contact-nimbus-director": { "id": "contact-nimbus-director", "jobId": "job-nimbus-harbor", "name": "Soren Mercer", "title": "Director of Infrastructure", "company": "Nimbus Harbor", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "soren.mercer@nimbusharbor.example", "phone": "(555) 014-5031", "linkedinUrl": "https://www.linkedin.com/in/soren-mercer-example", "relationshipType": "hiring_manager", "notes": "Key stakeholder in the final technical round.", "sortOrder": 2 },
-      "contact-summit-recruiter": { "id": "contact-summit-recruiter", "jobId": "job-summit-grid", "name": "Mira Calder", "title": "Recruiter", "company": "Summit Grid", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "mira.calder@summitgrid.example", "phone": "(555) 014-5040", "linkedinUrl": "https://www.linkedin.com/in/mira-calder-example", "relationshipType": "recruiter", "notes": "Shared prep details for the cloud architecture round.", "sortOrder": 1 },
-      "contact-summit-engineer": { "id": "contact-summit-engineer", "jobId": "job-summit-grid", "name": "Orin Slate", "title": "Principal Cloud Engineer", "company": "Summit Grid", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "orin.slate@summitgrid.example", "phone": "(555) 014-5041", "linkedinUrl": "https://www.linkedin.com/in/orin-slate-example", "relationshipType": "interviewer", "notes": "Led the technical discussion on AWS networking and IAM.", "sortOrder": 2 },
-      "contact-orchard-recruiter": { "id": "contact-orchard-recruiter", "jobId": "job-orchard-systems", "name": "Elowen Hart", "title": "Talent Partner", "company": "Orchard Systems", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "elowen.hart@orchardsystems.example", "phone": "(555) 014-5050", "linkedinUrl": "https://www.linkedin.com/in/elowen-hart-example", "relationshipType": "recruiter", "notes": "Managed the process from screening through offer acceptance.", "sortOrder": 1 },
-      "contact-skylane-recruiter": { "id": "contact-skylane-recruiter", "jobId": "job-skylane-bio", "name": "Caelan Frost", "title": "Recruiter", "company": "Skylane Bio", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "caelan.frost@skylanebio.example", "phone": "(555) 014-5060", "linkedinUrl": "https://www.linkedin.com/in/caelan-frost-example", "relationshipType": "recruiter", "notes": "Positive recruiter screen and upcoming technical loop.", "sortOrder": 1 },
-      "contact-skylane-interviewer": { "id": "contact-skylane-interviewer", "jobId": "job-skylane-bio", "name": "Vesper Quinn", "title": "Platform Reliability Manager", "company": "Skylane Bio", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "vesper.quinn@skylanebio.example", "phone": "(555) 014-5061", "linkedinUrl": "https://www.linkedin.com/in/vesper-quinn-example", "relationshipType": "interviewer", "notes": "Expected to lead the next platform architecture discussion.", "sortOrder": 2 }
+      "contact-atlas-recruiter": { "id": "contact-atlas-recruiter", "jobId": "job-atlas-health", "name": "Talia Wren", "title": "Technical Recruiter", "company": "Atlas Health", "organizationKind": "staffing_agency", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "talia.wren@atlashealth.example", "phone": "(555) 014-5010", "linkedinUrl": "https://www.linkedin.com/in/talia-wren-example", "notes": "Initial recruiter contact and process coordinator.", "sortOrder": 1 },
+      "contact-atlas-manager": { "id": "contact-atlas-manager", "jobId": "job-atlas-health", "name": "Hollis Vane", "title": "Engineering Manager", "company": "Atlas Health", "organizationKind": "company", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "hollis.vane@atlashealth.example", "phone": "(555) 014-5011", "linkedinUrl": "https://www.linkedin.com/in/hollis-vane-example", "notes": "Likely direct manager for the team.", "sortOrder": 2 },
+      "contact-cedarstack-recruiter": { "id": "contact-cedarstack-recruiter", "jobId": "job-cedarstack", "name": "Nico Arden", "title": "Talent Partner", "company": "CedarStack", "organizationKind": "staffing_agency", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "nico.arden@cedarstack.example", "phone": "(555) 014-5020", "linkedinUrl": "https://www.linkedin.com/in/nico-arden-example", "notes": "Responsive recruiter with clear interview process details.", "sortOrder": 1 },
+      "contact-cedarstack-lead": { "id": "contact-cedarstack-lead", "jobId": "job-cedarstack", "name": "Keiran Vale", "title": "Platform Lead", "company": "CedarStack", "organizationKind": "company", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "keiran.vale@cedarstack.example", "phone": "(555) 014-5021", "linkedinUrl": "https://www.linkedin.com/in/keiran-vale-example", "notes": "Led the hiring manager discussion on delivery automation and incident response.", "sortOrder": 2 },
+      "contact-nimbus-recruiter": { "id": "contact-nimbus-recruiter", "jobId": "job-nimbus-harbor", "name": "Liora Fen", "title": "Senior Recruiter", "company": "Nimbus Harbor", "organizationKind": "staffing_agency", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "liora.fen@nimbusharbor.example", "phone": "(555) 014-5030", "linkedinUrl": "https://www.linkedin.com/in/liora-fen-example", "notes": "Coordinated the full interview loop and compensation discussion.", "sortOrder": 1 },
+      "contact-nimbus-director": { "id": "contact-nimbus-director", "jobId": "job-nimbus-harbor", "name": "Soren Mercer", "title": "Director of Infrastructure", "company": "Nimbus Harbor", "organizationKind": "company", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "soren.mercer@nimbusharbor.example", "phone": "(555) 014-5031", "linkedinUrl": "https://www.linkedin.com/in/soren-mercer-example", "notes": "Key stakeholder in the final technical round.", "sortOrder": 2 },
+      "contact-summit-recruiter": { "id": "contact-summit-recruiter", "jobId": "job-summit-grid", "name": "Mira Calder", "title": "Recruiter", "company": "Summit Grid", "organizationKind": "staffing_agency", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "mira.calder@summitgrid.example", "phone": "(555) 014-5040", "linkedinUrl": "https://www.linkedin.com/in/mira-calder-example", "notes": "Shared prep details for the cloud architecture round.", "sortOrder": 1 },
+      "contact-summit-engineer": { "id": "contact-summit-engineer", "jobId": "job-summit-grid", "name": "Orin Slate", "title": "Principal Cloud Engineer", "company": "Summit Grid", "organizationKind": "company", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "orin.slate@summitgrid.example", "phone": "(555) 014-5041", "linkedinUrl": "https://www.linkedin.com/in/orin-slate-example", "notes": "Led the technical discussion on AWS networking and IAM.", "sortOrder": 2 },
+      "contact-orchard-recruiter": { "id": "contact-orchard-recruiter", "jobId": "job-orchard-systems", "name": "Elowen Hart", "title": "Talent Partner", "company": "Orchard Systems", "organizationKind": "staffing_agency", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "elowen.hart@orchardsystems.example", "phone": "(555) 014-5050", "linkedinUrl": "https://www.linkedin.com/in/elowen-hart-example", "notes": "Managed the process from screening through offer acceptance.", "sortOrder": 1 },
+      "contact-skylane-recruiter": { "id": "contact-skylane-recruiter", "jobId": "job-skylane-bio", "name": "Caelan Frost", "title": "Recruiter", "company": "Skylane Bio", "organizationKind": "staffing_agency", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "caelan.frost@skylanebio.example", "phone": "(555) 014-5060", "linkedinUrl": "https://www.linkedin.com/in/caelan-frost-example", "notes": "Positive recruiter screen and upcoming technical loop.", "sortOrder": 1 },
+      "contact-skylane-interviewer": { "id": "contact-skylane-interviewer", "jobId": "job-skylane-bio", "name": "Vesper Quinn", "title": "Platform Reliability Manager", "company": "Skylane Bio", "organizationKind": "company", "addressLine1": "", "addressLine2": "", "addressLine3": "", "addressLine4": "", "email": "vesper.quinn@skylanebio.example", "phone": "(555) 014-5061", "linkedinUrl": "https://www.linkedin.com/in/vesper-quinn-example", "notes": "Expected to lead the next platform architecture discussion.", "sortOrder": 2 }
     },
     "interviews": {
       "interview-atlas-screen": { "id": "interview-atlas-screen", "jobId": "job-atlas-health", "createdAt": "2026-02-20T10:00:00.000Z", "startAt": "2026-02-25T15:00:00.000Z", "notes": "Recruiter screen focused on healthcare domain familiarity and backend API experience." },

@@ -95,6 +95,7 @@ const SelectField = <T extends string>({
 
 interface JobDraftState {
   companyName: string
+  staffingAgencyName: string
   jobTitle: string
   description: string
   location: string
@@ -109,6 +110,7 @@ interface JobDraftState {
 
 const createJobDraft = (job: Job): JobDraftState => ({
   companyName: job.companyName,
+  staffingAgencyName: job.staffingAgencyName,
   jobTitle: job.jobTitle,
   description: job.description,
   location: job.location,
@@ -179,8 +181,9 @@ export const JobPage = () => {
   }
 
   const activeDraft: JobDraftState = draft ?? createJobDraft(job)
+  const organizationName = job.companyName || job.staffingAgencyName || 'Unknown organization'
 
-  const commitRequiredField = (field: 'companyName' | 'jobTitle', value: string) => {
+  const commitRequiredField = (field: 'jobTitle', value: string) => {
     const nextDraft = activeDraft
     const trimmed = value.trim()
 
@@ -205,6 +208,28 @@ export const JobPage = () => {
 
     if (value !== trimmed) {
       setDraft({ ...nextDraft, [field]: trimmed })
+    }
+  }
+
+  const commitOptionalTextField = (field: 'companyName' | 'staffingAgencyName', value: string) => {
+    const trimmed = value.trim()
+
+    if (trimmed === job[field]) {
+      if (value !== trimmed) {
+        setDraft({ ...activeDraft, [field]: trimmed })
+      }
+      return
+    }
+
+    void updateJob({
+      jobId: job.id,
+      changes: {
+        [field]: trimmed,
+      },
+    })
+
+    if (value !== trimmed) {
+      setDraft({ ...activeDraft, [field]: trimmed })
     }
   }
 
@@ -284,7 +309,7 @@ export const JobPage = () => {
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-app-primary">Job editor</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-app-heading">{job.jobTitle || 'Untitled role'}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-app-text-subtle">
-            <span>{job.companyName || 'Unknown company'}</span>
+            <span>{organizationName}</span>
             <span className={['rounded-full px-3 py-1 text-xs font-medium', getJobComputedStatusBadgeClassName(computedStatus)].join(' ')}>{formatJobComputedStatus(computedStatus)}</span>
           </div>
         </div>
@@ -320,7 +345,8 @@ export const JobPage = () => {
       >
         <div className="grid gap-4 xl:grid-cols-2">
           <TextField label="Job title" value={activeDraft.jobTitle} onBlur={() => commitRequiredField('jobTitle', activeDraft.jobTitle)} onChange={(value) => setDraft({ ...activeDraft, jobTitle: value })} />
-          <TextField label="Company name" value={activeDraft.companyName} onBlur={() => commitRequiredField('companyName', activeDraft.companyName)} onChange={(value) => setDraft({ ...activeDraft, companyName: value })} />
+          <TextField label="Company name" value={activeDraft.companyName} onBlur={() => commitOptionalTextField('companyName', activeDraft.companyName)} onChange={(value) => setDraft({ ...activeDraft, companyName: value })} />
+          <TextField label="Staffing agency name" value={activeDraft.staffingAgencyName} onBlur={() => commitOptionalTextField('staffingAgencyName', activeDraft.staffingAgencyName)} onChange={(value) => setDraft({ ...activeDraft, staffingAgencyName: value })} />
           <TextField label="Location" value={activeDraft.location} onBlur={() => commitTextField('location', activeDraft.location)} onChange={(value) => setDraft({ ...activeDraft, location: value })} />
           <TextField label="Date posted" type="date" value={activeDraft.datePosted} onBlur={() => commitDatePosted(activeDraft.datePosted)} onChange={(value) => setDraft({ ...activeDraft, datePosted: value })} />
           <SelectField label="Work arrangement" options={workArrangementOptions} value={activeDraft.workArrangement} onBlur={() => commitSelectField('workArrangement', activeDraft.workArrangement)} onChange={(value) => setDraft({ ...activeDraft, workArrangement: value })} />
@@ -341,11 +367,13 @@ export const JobPage = () => {
 
       <JobChildEditors
         applicationQuestionsModel={editorModel.applicationQuestions}
+        companyName={job.companyName}
         contactsModel={editorModel.contacts}
         interviewsModel={editorModel.interviews}
         jobId={job.id}
         linksModel={editorModel.links}
         profilesModel={editorModel.profiles}
+        staffingAgencyName={job.staffingAgencyName}
       />
     </div>
   )

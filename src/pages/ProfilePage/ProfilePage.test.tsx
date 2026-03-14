@@ -93,7 +93,68 @@ describe('ProfilePage', () => {
     expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
 
     const recipientSelect = await screen.findByLabelText('Cover letter recipient')
-    expect(recipientSelect).toHaveValue('')
+    expect(recipientSelect).toHaveValue('companyHiringManager')
+
+    await user.selectOptions(recipientSelect, 'job_contact_2')
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Cover letter recipient')).toHaveValue('job_contact_2')
+    })
+  })
+
+  it('shows simplified labels for the virtual cover letter recipient options', async () => {
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    const recipientSelect = await screen.findByLabelText('Cover letter recipient')
+    const optionTexts = Array.from(recipientSelect.querySelectorAll('option')).map((option) => option.textContent)
+
+    expect(optionTexts).toContain('Company')
+    expect(optionTexts).toContain('Staffing Agency')
+    expect(optionTexts.some((text) => text?.startsWith('Automatic'))).toBe(false)
+  })
+
+  it('defaults the cover letter recipient to company even when the job only has a staffing agency name', async () => {
+    const user = userEvent.setup()
+    const initialData = createSeedData()
+
+    initialData.jobs.job_1!.companyName = ''
+    initialData.jobs.job_1!.staffingAgencyName = 'North Ridge Talent'
+
+    setupRouteTestEnvironment({ initialData })
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    const recipientSelect = await screen.findByLabelText('Cover letter recipient')
+
+    expect(recipientSelect).toHaveValue('companyHiringManager')
+
+    await user.selectOptions(recipientSelect, 'staffingAgencyRecruitingTeam')
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Cover letter recipient')).toHaveValue('staffingAgencyRecruitingTeam')
+    })
+  })
+
+  it('defaults the cover letter recipient to company even when a real contact exists', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    const recipientSelect = await screen.findByLabelText('Cover letter recipient')
+
+    expect(recipientSelect).toHaveValue('companyHiringManager')
 
     await user.selectOptions(recipientSelect, 'job_contact_2')
 

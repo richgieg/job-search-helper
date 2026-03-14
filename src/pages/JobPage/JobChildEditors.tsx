@@ -15,7 +15,7 @@ import type {
 import { useJobMutations } from '../../features/jobs/use-job-mutations'
 import { useProfileMutations } from '../../features/profiles/use-profile-mutations'
 import { useJobPagePanelState } from '../../store/app-ui-store'
-import type { ApplicationQuestion, ContactRelationshipType, JobContact, JobLink, Profile } from '../../types/state'
+import type { ApplicationQuestion, ContactOrganizationKind, JobContact, JobLink, Profile } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
 
@@ -45,20 +45,21 @@ const truncatePanelText = (value: string, maxLength: number) => {
   return `${normalized.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`
 }
 
-const formatRelationshipType = (relationshipType: ContactRelationshipType) => {
-  switch (relationshipType) {
-    case 'hiring_manager':
-      return 'Hiring manager'
-    case 'recruiter':
-      return 'Recruiter'
-    case 'referral':
-      return 'Referral'
-    case 'interviewer':
-      return 'Interviewer'
-    default:
-      return 'Other'
-  }
-}
+const formatOrganizationKind = (organizationKind: ContactOrganizationKind) =>
+  organizationKind === 'staffing_agency' ? 'Staffing agency' : 'Company'
+
+const getSuggestedContactCompany = ({
+  companyName,
+  staffingAgencyName,
+  organizationKind,
+}: {
+  companyName: string
+  staffingAgencyName: string
+  organizationKind: ContactOrganizationKind
+}) => (organizationKind === 'staffing_agency' ? staffingAgencyName : companyName)
+
+const getContactOrganizationSummary = (contact: Pick<JobContact, 'company' | 'organizationKind'>) =>
+  contact.company.trim() || formatOrganizationKind(contact.organizationKind)
 
 const TextField = ({
   label,
@@ -352,14 +353,18 @@ const JobLinkCard = ({
 }
 
 const JobContactCard = ({
+  companyName,
   jobContact,
   orderedJobContactIds,
+  staffingAgencyName,
   defaultExpanded = false,
   scrollIntoViewOnMount = false,
   onScrollIntoViewComplete,
 }: {
+  companyName: string
   jobContact: JobContact
   orderedJobContactIds: string[]
+  staffingAgencyName: string
   defaultExpanded?: boolean
   scrollIntoViewOnMount?: boolean
   onScrollIntoViewComplete?: () => void
@@ -385,11 +390,43 @@ const JobContactCard = ({
     })
   }
 
-  const summary = summarizeParts([
-    formatRelationshipType(draft.relationshipType),
-    draft.title || null,
-    draft.company || null,
-  ])
+  const handleOrganizationKindChange = (nextOrganizationKind: ContactOrganizationKind) => {
+    const previousSuggestedCompany = getSuggestedContactCompany({
+      companyName,
+      staffingAgencyName,
+      organizationKind: draft.organizationKind,
+    })
+    const nextSuggestedCompany = getSuggestedContactCompany({
+      companyName,
+      staffingAgencyName,
+      organizationKind: nextOrganizationKind,
+    })
+    const shouldSyncCompany = draft.company === '' || draft.company === previousSuggestedCompany
+
+    setDraft({
+      ...draft,
+      company: shouldSyncCompany ? nextSuggestedCompany : draft.company,
+      organizationKind: nextOrganizationKind,
+    })
+  }
+
+  const handleOrganizationKindBlur = () => {
+    const changes: Partial<JobContact> = {}
+
+    if (draft.organizationKind !== jobContact.organizationKind) {
+      changes.organizationKind = draft.organizationKind
+    }
+
+    if (draft.company !== jobContact.company) {
+      changes.company = draft.company
+    }
+
+    if (Object.keys(changes).length > 0) {
+      commitContactChanges(changes)
+    }
+  }
+
+  const summary = summarizeParts([draft.title || null, getContactOrganizationSummary(draft)])
 
   return (
     <div ref={cardRef} style={cardScrollStyle}>
@@ -422,22 +459,19 @@ const JobContactCard = ({
         title={draft.name || jobContact.name || 'Contact'}
       >
         <div className="grid gap-4 xl:grid-cols-3">
+          <SelectField
+            label="Associated with"
+            options={[
+              { value: 'company', label: 'Company' },
+              { value: 'staffing_agency', label: 'Staffing agency' },
+            ]}
+            value={draft.organizationKind}
+            onBlur={handleOrganizationKindBlur}
+            onChange={(value) => handleOrganizationKindChange(value as ContactOrganizationKind)}
+          />
           <TextField label="Name" value={draft.name} onBlur={() => draft.name !== jobContact.name && commitContactChanges({ name: draft.name })} onChange={(value) => setDraft({ ...draft, name: value })} />
           <TextField label="Title" value={draft.title} onBlur={() => draft.title !== jobContact.title && commitContactChanges({ title: draft.title })} onChange={(value) => setDraft({ ...draft, title: value })} />
           <TextField label="Company" value={draft.company} onBlur={() => draft.company !== jobContact.company && commitContactChanges({ company: draft.company })} onChange={(value) => setDraft({ ...draft, company: value })} />
-          <SelectField
-            label="Relationship type"
-            options={[
-              { value: 'recruiter', label: 'Recruiter' },
-              { value: 'hiring_manager', label: 'Hiring manager' },
-              { value: 'referral', label: 'Referral' },
-              { value: 'interviewer', label: 'Interviewer' },
-              { value: 'other', label: 'Other' },
-            ]}
-            value={draft.relationshipType}
-            onBlur={() => draft.relationshipType !== jobContact.relationshipType && commitContactChanges({ relationshipType: draft.relationshipType })}
-            onChange={(value) => setDraft({ ...draft, relationshipType: value as ContactRelationshipType })}
-          />
           <TextField label="Email" type="email" value={draft.email} onBlur={() => draft.email !== jobContact.email && commitContactChanges({ email: draft.email })} onChange={(value) => setDraft({ ...draft, email: value })} />
           <TextField label="Phone" type="tel" value={draft.phone} onBlur={() => draft.phone !== jobContact.phone && commitContactChanges({ phone: draft.phone })} onChange={(value) => setDraft({ ...draft, phone: value })} />
           <TextField label="LinkedIn URL" type="url" value={draft.linkedinUrl} onBlur={() => draft.linkedinUrl !== jobContact.linkedinUrl && commitContactChanges({ linkedinUrl: draft.linkedinUrl })} onChange={(value) => setDraft({ ...draft, linkedinUrl: value })} />
@@ -575,7 +609,7 @@ const InterviewCard = ({
                 <div key={association.id} className="flex items-center justify-between gap-3 rounded-xl border border-app-border-muted px-3 py-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-app-text">{contact.name || 'Unnamed contact'}</p>
-                    <p className="truncate text-xs text-app-text-subtle">{summarizeParts([formatRelationshipType(contact.relationshipType), contact.title, contact.company]) || 'No details yet'}</p>
+                    <p className="truncate text-xs text-app-text-subtle">{summarizeParts([formatOrganizationKind(contact.organizationKind), contact.title, contact.company]) || 'No details yet'}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <ReorderButtons
@@ -691,18 +725,22 @@ const ApplicationQuestionCard = ({
 
 export const JobChildEditors = ({
   applicationQuestionsModel,
+  companyName,
   contactsModel,
   interviewsModel,
   jobId,
   linksModel,
   profilesModel,
+  staffingAgencyName,
 }: {
   applicationQuestionsModel: JobEditorApplicationQuestionsModel
+  companyName: string
   contactsModel: JobEditorContactsModel
   interviewsModel: JobEditorInterviewsModel
   jobId: string
   linksModel: JobEditorLinksModel
   profilesModel: JobEditorProfilesModel
+  staffingAgencyName: string
 }) => {
   const { duplicateProfile } = useProfileMutations()
   const { createApplicationQuestion, createInterview, createJobContact, createJobLink } = useJobMutations()
@@ -897,11 +935,13 @@ export const JobChildEditors = ({
           <div className="space-y-4">
             {jobContacts.map((jobContact) => (
               <JobContactCard
+                companyName={companyName}
                 defaultExpanded={jobContact.id === newJobContactId}
                 jobContact={jobContact}
                 key={jobContact.id}
                 orderedJobContactIds={jobContactIds}
                 scrollIntoViewOnMount={jobContact.id === newJobContactId}
+                staffingAgencyName={staffingAgencyName}
                 {...(jobContact.id === newJobContactId
                   ? { onScrollIntoViewComplete: () => setNewJobContactId(null) }
                   : {})}

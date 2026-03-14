@@ -7,11 +7,15 @@ import { formatJobComputedStatus, getJobComputedStatusBadgeClassName } from '../
 import { useJobMutations } from '../features/jobs/use-job-mutations'
 import { useJobsListQuery } from '../queries/use-jobs-list-query'
 
+const getJobOrganizationName = (job: { companyName: string; staffingAgencyName?: string }) =>
+  job.companyName || job.staffingAgencyName || 'Unknown organization'
+
 const JobListItem = ({ job }: { job: JobsListItemDto }) => {
   const { deleteJob } = useJobMutations()
+  const organizationName = getJobOrganizationName(job)
 
   const handleDelete = async () => {
-    const confirmed = window.confirm(`Delete job "${job.jobTitle}" at "${job.companyName}"? This removes attached job profiles too.`)
+    const confirmed = window.confirm(`Delete job "${job.jobTitle}" at "${organizationName}"? This removes attached job profiles too.`)
     if (!confirmed) {
       return
     }
@@ -27,7 +31,7 @@ const JobListItem = ({ job }: { job: JobsListItemDto }) => {
         </Link>
       </td>
       <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
-        <span className="text-sm text-app-text-subtle">{job.companyName}</span>
+        <span className="text-sm text-app-text-subtle">{organizationName}</span>
       </td>
       <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
         <span className={['rounded-full px-3 py-1 text-xs font-medium', getJobComputedStatusBadgeClassName(job.computedStatus)].join(' ')}>{formatJobComputedStatus(job.computedStatus)}</span>
@@ -53,13 +57,13 @@ const JobListItem = ({ job }: { job: JobsListItemDto }) => {
       </td>
       <td className="px-4 py-3 align-middle">
         <div className="flex flex-nowrap justify-end gap-2 whitespace-nowrap">
-          <Link aria-label={`Open job ${job.jobTitle} at ${job.companyName}`} className={getActionIconButtonClassName()} to={`/jobs/${job.id}`}>
+          <Link aria-label={`Open job ${job.jobTitle} at ${organizationName}`} className={getActionIconButtonClassName()} to={`/jobs/${job.id}`}>
             <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
               <path d="M7 17 17 7" />
               <path d="M9 7h8v8" />
             </svg>
           </Link>
-          <DeleteIconButton label={`Delete job ${job.jobTitle} at ${job.companyName}`} onDelete={handleDelete} />
+          <DeleteIconButton label={`Delete job ${job.jobTitle} at ${organizationName}`} onDelete={handleDelete} />
         </div>
       </td>
     </tr>
@@ -104,6 +108,7 @@ export const JobsPage = () => {
   const { createJob } = useJobMutations()
   const { data, error, isLoading } = useJobsListQuery()
   const [companyName, setCompanyName] = useState('')
+  const [staffingAgencyName, setStaffingAgencyName] = useState('')
   const [jobTitle, setJobTitle] = useState('')
   const [initialLinkUrl, setInitialLinkUrl] = useState('')
   const jobTitleInputRef = useRef<HTMLInputElement | null>(null)
@@ -112,19 +117,22 @@ export const JobsPage = () => {
     event.preventDefault()
 
     const trimmedCompany = companyName.trim()
+    const trimmedStaffingAgencyName = staffingAgencyName.trim()
     const trimmedTitle = jobTitle.trim()
     const trimmedInitialLinkUrl = initialLinkUrl.trim()
 
-    if (!trimmedCompany || !trimmedTitle) {
+    if (!trimmedTitle) {
       return
     }
 
     await createJob({
       companyName: trimmedCompany,
+      staffingAgencyName: trimmedStaffingAgencyName,
       jobTitle: trimmedTitle,
       ...(trimmedInitialLinkUrl ? { initialLinkUrl: trimmedInitialLinkUrl } : {}),
     })
     setCompanyName('')
+    setStaffingAgencyName('')
     setJobTitle('')
     setInitialLinkUrl('')
     jobTitleInputRef.current?.focus()
@@ -139,7 +147,7 @@ export const JobsPage = () => {
 
       <section className="max-w-4xl rounded-2xl border border-app-border-muted bg-app-surface p-6 shadow-sm">
         <form className="space-y-3" onSubmit={handleSubmit}>
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-3">
             <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
               <span className="font-medium">Job title</span>
               <input
@@ -150,11 +158,19 @@ export const JobsPage = () => {
               />
             </label>
             <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
-              <span className="font-medium">Company name</span>
+              <span className="font-medium">Company name (optional)</span>
               <input
                 className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
                 value={companyName}
                 onChange={(event) => setCompanyName(event.target.value)}
+              />
+            </label>
+            <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
+              <span className="font-medium">Staffing agency name (optional)</span>
+              <input
+                className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
+                value={staffingAgencyName}
+                onChange={(event) => setStaffingAgencyName(event.target.value)}
               />
             </label>
           </div>

@@ -43,6 +43,7 @@ describe('useAppDataTransfer', () => {
           job_1: {
             id: 'job_1',
             companyName: 'Example Co',
+            staffingAgencyName: '',
             jobTitle: 'Engineer',
             description: '',
             location: '',
@@ -119,6 +120,7 @@ describe('useAppDataTransfer', () => {
           job_1: {
             id: 'job_1',
             companyName: 'Example Co',
+            staffingAgencyName: '',
             jobTitle: 'Engineer',
             description: '',
             location: '',

@@ -68,4 +68,60 @@ describe('CoverLetterPage', () => {
 
     expect(await screen.findByText('Dear Taylor Recruiter,')).toBeInTheDocument()
   })
+
+  it('uses the staffing default recipient and replaces JOB.COMPANY with a client reference', async () => {
+    const initialData = createSeedData()
+    initialData.jobs.job_1!.companyName = ''
+    initialData.jobs.job_1!.staffingAgencyName = 'North Ridge Talent'
+    initialData.profiles.profile_1!.coverLetterContactId = 'staffingAgencyRecruitingTeam'
+    initialData.profiles.profile_1!.coverLetter = 'I am excited about the opportunity to support {{JOB.COMPANY}}.'
+
+    setupRouteTestEnvironment({ initialData })
+
+    renderRoute({
+      element: <CoverLetterPage />,
+      path: '/profiles/:profileId/cover-letter',
+      route: '/profiles/profile_1/cover-letter',
+    })
+
+    expect(await screen.findByText('Dear Recruiting Team,')).toBeInTheDocument()
+    expect(screen.getByText('North Ridge Talent')).toBeInTheDocument()
+    expect(screen.getByText("I am excited about the opportunity to support your client's organization.")).toBeInTheDocument()
+  })
+
+  it('does not show the company line for the staffing virtual recipient when staffingAgencyName is blank', async () => {
+    const initialData = createSeedData()
+    initialData.jobs.job_1!.companyName = 'Example Co'
+    initialData.jobs.job_1!.staffingAgencyName = ''
+    initialData.profiles.profile_1!.coverLetterContactId = 'staffingAgencyRecruitingTeam'
+
+    setupRouteTestEnvironment({ initialData })
+
+    const { container } = renderRoute({
+      element: <CoverLetterPage />,
+      path: '/profiles/:profileId/cover-letter',
+      route: '/profiles/profile_1/cover-letter',
+    })
+
+    expect(await screen.findByText('Dear Recruiting Team,')).toBeInTheDocument()
+    expect(container.querySelector('.cover-letter-inside-address .mt-6')).not.toBeInTheDocument()
+  })
+
+  it('does not show the company line for the company virtual recipient when companyName is blank', async () => {
+    const initialData = createSeedData()
+    initialData.jobs.job_1!.companyName = ''
+    initialData.jobs.job_1!.staffingAgencyName = 'North Ridge Talent'
+    initialData.profiles.profile_1!.coverLetterContactId = 'companyHiringManager'
+
+    setupRouteTestEnvironment({ initialData })
+
+    const { container } = renderRoute({
+      element: <CoverLetterPage />,
+      path: '/profiles/:profileId/cover-letter',
+      route: '/profiles/profile_1/cover-letter',
+    })
+
+    expect(await screen.findByText('Dear Hiring Manager,')).toBeInTheDocument()
+    expect(container.querySelector('.cover-letter-inside-address .mt-6')).not.toBeInTheDocument()
+  })
 })

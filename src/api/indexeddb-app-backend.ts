@@ -25,7 +25,7 @@ import type {
   SkillCategory,
 } from '../types/state'
 import { getJobComputedStatus } from '../features/jobs/job-status'
-import { selectPrimaryContact } from '../features/documents/document-data'
+import { createDocumentContacts, selectPrimaryContact } from '../features/documents/document-data'
 import { compareInterviewsBySchedule } from '../utils/interview-sort'
 import {
   AddInterviewContactInput,
@@ -192,6 +192,7 @@ const compareSortOrder = <T extends { sortOrder: number }>(left: T, right: T) =>
 const buildFallbackJob = (profile: Profile): Job => ({
   id: `document-job-${profile.id}`,
   companyName: 'Example Company',
+  staffingAgencyName: 'Example Staffing Agency',
   jobTitle: 'Example Role',
   description: '',
   location: '',
@@ -1714,6 +1715,7 @@ export class IndexedDbAppBackend implements AppDataService {
           return {
             id: job.id,
             companyName: job.companyName,
+            staffingAgencyName: job.staffingAgencyName,
             jobTitle: job.jobTitle,
             computedStatus: getJobComputedStatus({
               appliedAt: job.appliedAt,
@@ -2053,9 +2055,10 @@ export class IndexedDbAppBackend implements AppDataService {
         .filter((link) => link.profileId === profileId && link.enabled)
         .sort(compareSortOrder)
 
-      const sortedContacts = jobContacts
-        .filter((contact) => contact.jobId === profile.jobId)
-        .sort(compareSortOrder)
+      const sortedContacts = createDocumentContacts(
+        job,
+        jobContacts.filter((contact) => contact.jobId === profile.jobId),
+      )
 
       const sortedJobLinks = jobLinks
         .filter((link) => link.jobId === profile.jobId)
@@ -2212,6 +2215,7 @@ export class IndexedDbAppBackend implements AppDataService {
               ? {
                   id: attachedJob.id,
                   companyName: attachedJob.companyName,
+                    staffingAgencyName: attachedJob.staffingAgencyName,
                   jobTitle: attachedJob.jobTitle,
                 }
               : null,

@@ -276,7 +276,7 @@ export const ApplicationPage = () => {
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-app-primary">Application Content</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-app-heading">{documentData.profile.name || 'Unnamed profile'}</h1>
           <p className="mt-2 text-sm text-app-text-subtle">
-            {attachedJob ? `Job profile for ${attachedJob.jobTitle || 'Untitled role'} at ${attachedJob.companyName || 'Unknown company'}` : 'Base profile'}
+            {attachedJob ? `Job profile for ${attachedJob.jobTitle || 'Untitled role'} at ${attachedJob.companyName || attachedJob.staffingAgencyName || 'Unknown organization'}` : 'Base profile'}
           </p>
         </div>
       </div>

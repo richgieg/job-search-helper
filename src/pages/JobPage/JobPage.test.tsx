@@ -129,12 +129,12 @@ describe('JobPage', () => {
     await user.click(screen.getByRole('button', { name: /^Contacts\b/i }))
     await user.click(screen.getByRole('button', { name: 'Add contact' }))
 
-    expect(await screen.findByLabelText('Relationship type')).toBeInTheDocument()
+    expect(await screen.findByLabelText('Associated with')).toBeInTheDocument()
     expect(screen.getByLabelText('LinkedIn URL')).toBeInTheDocument()
 
     await waitFor(async () => {
       await Promise.resolve()
-      expect(screen.getByLabelText('Relationship type')).toBeInTheDocument()
+      expect(screen.getByLabelText('Associated with')).toBeInTheDocument()
     })
 
     await user.click(screen.getByRole('button', { name: /^Interviews\b/i }))
@@ -159,12 +159,12 @@ describe('JobPage', () => {
     })
 
     expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
-    expect(screen.queryByLabelText('Relationship type')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Associated with')).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /^Contacts\b/i }))
     await user.click(screen.getByRole('button', { name: /^Hiring Manager\b/i }))
 
-    expect(await screen.findByLabelText('Relationship type')).toBeInTheDocument()
+    expect(await screen.findByLabelText('Associated with')).toBeInTheDocument()
 
     firstRender.unmount()
 
@@ -174,7 +174,7 @@ describe('JobPage', () => {
       route: '/jobs/job_1',
     })
 
-    expect(await screen.findByLabelText('Relationship type')).toBeInTheDocument()
+    expect(await screen.findByLabelText('Associated with')).toBeInTheDocument()
   })
 
   it('duplicates attached profiles through job child editor actions', async () => {
@@ -193,6 +193,132 @@ describe('JobPage', () => {
     await user.click(screen.getByRole('button', { name: 'Duplicate profile Tailored Profile' }))
 
     expect(await screen.findByText('Tailored Profile Copy')).toBeInTheDocument()
+  })
+
+  it('shows the contact company in the collapsed contact summary when present', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Contacts\b/i }))
+
+    expect(screen.getByRole('button', { name: /^Hiring Manager\b/i })).toHaveTextContent('Director • Example Co')
+  })
+
+  it('falls back to the association label in the collapsed contact summary when company is blank', async () => {
+    const user = userEvent.setup()
+    const initialData = createSeedData()
+
+    initialData.jobContacts.job_contact_1!.company = ''
+
+    setupRouteTestEnvironment({ initialData })
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Contacts\b/i }))
+
+    expect(screen.getByRole('button', { name: /^Hiring Manager\b/i })).toHaveTextContent('Director • Company')
+  })
+
+  it('updates a new contact company when the association changes and the company is still the default', async () => {
+    const user = userEvent.setup()
+    const initialData = createSeedData()
+
+    initialData.jobs.job_1!.staffingAgencyName = 'North Ridge Talent'
+
+    setupRouteTestEnvironment({ initialData })
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Contacts\b/i }))
+    await user.click(screen.getByRole('button', { name: 'Add contact' }))
+
+    const associationField = await screen.findByLabelText('Associated with')
+    const companyField = screen.getByLabelText('Company')
+
+    expect(companyField).toHaveValue('Example Co')
+
+    await user.selectOptions(associationField, 'staffing_agency')
+
+    expect(companyField).toHaveValue('North Ridge Talent')
+  })
+
+  it('starts new contacts as company-associated even for staffing-only jobs', async () => {
+    const user = userEvent.setup()
+    const initialData = createSeedData()
+
+    initialData.jobs.job_1!.companyName = ''
+    initialData.jobs.job_1!.staffingAgencyName = 'North Ridge Talent'
+
+    setupRouteTestEnvironment({ initialData })
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Contacts\b/i }))
+    await user.click(screen.getByRole('button', { name: 'Add contact' }))
+
+    const associationField = await screen.findByLabelText('Associated with')
+    const companyField = screen.getByLabelText('Company')
+
+    expect(associationField).toHaveValue('company')
+    expect(companyField).toHaveValue('')
+
+    await user.selectOptions(associationField, 'staffing_agency')
+
+    expect(companyField).toHaveValue('North Ridge Talent')
+  })
+
+  it('preserves a custom contact company when the association changes', async () => {
+    const user = userEvent.setup()
+    const initialData = createSeedData()
+
+    initialData.jobs.job_1!.staffingAgencyName = 'North Ridge Talent'
+
+    setupRouteTestEnvironment({ initialData })
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Contacts\b/i }))
+    await user.click(screen.getByRole('button', { name: 'Add contact' }))
+
+    const associationField = await screen.findByLabelText('Associated with')
+    const companyField = screen.getByLabelText('Company')
+
+    await user.clear(companyField)
+    await user.type(companyField, 'Contoso Recruiting')
+    await user.selectOptions(associationField, 'staffing_agency')
+
+    expect(companyField).toHaveValue('Contoso Recruiting')
   })
 
   it('renders the job not-found state when the requested job does not exist', async () => {

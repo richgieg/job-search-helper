@@ -1,7 +1,7 @@
 import type {
   AppDataState,
   ApplicationQuestion,
-  ContactRelationshipType,
+  ContactOrganizationKind,
   FinalOutcome,
   FinalOutcomeStatus,
   Id,
@@ -13,7 +13,8 @@ import type {
   JobLink,
 } from '../types/state'
 
-export type CreateJobInput = Pick<Job, 'companyName' | 'jobTitle'> & Partial<Job> & { initialLinkUrl?: string }
+export type CreateJobInput = Omit<Partial<Job>, 'id' | 'createdAt' | 'updatedAt' | 'appliedAt' | 'finalOutcome'> &
+  Pick<Job, 'jobTitle'> & { initialLinkUrl?: string }
 
 export interface UpdateJobInput {
   jobId: Id
@@ -297,7 +298,8 @@ export const createJobMutation = (data: AppDataState, input: CreateJobInput, con
   const initialLinkUrl = input.initialLinkUrl?.trim() ?? ''
   const job: Job = {
     id: context.createId(),
-    companyName: input.companyName,
+    companyName: input.companyName ?? '',
+    staffingAgencyName: input.staffingAgencyName ?? '',
     jobTitle: input.jobTitle,
     description: input.description ?? '',
     location: input.location ?? '',
@@ -531,12 +533,16 @@ export const createJobContactMutation = (data: AppDataState, jobId: Id, context:
     return withResult(data, null)
   }
 
+  const organizationKind: ContactOrganizationKind = 'company'
+  const company = job.companyName
+
   const jobContact: JobContact = {
     id: context.createId(),
     jobId,
     name: '',
     title: '',
-    company: job.companyName,
+    company,
+    organizationKind,
     addressLine1: '',
     addressLine2: '',
     addressLine3: '',
@@ -544,7 +550,6 @@ export const createJobContactMutation = (data: AppDataState, jobId: Id, context:
     email: '',
     phone: '',
     linkedinUrl: '',
-    relationshipType: 'recruiter' satisfies ContactRelationshipType,
     notes: '',
     sortOrder: getNextSortOrder(
       Object.values(data.jobContacts)

@@ -18,6 +18,27 @@ const toPersistedAppData = (data: ReturnType<typeof createSeedData>): PersistedA
   return persistedData
 }
 
+const toExpectedDocumentContact = (
+  contact: ReturnType<typeof createSeedData>['jobContacts'][string],
+  isVirtual = false,
+) => ({
+  id: contact.id,
+  name: contact.name,
+  title: contact.title,
+  company: contact.company,
+  organizationKind: contact.organizationKind,
+  addressLine1: contact.addressLine1,
+  addressLine2: contact.addressLine2,
+  addressLine3: contact.addressLine3,
+  addressLine4: contact.addressLine4,
+  email: contact.email,
+  phone: contact.phone,
+  linkedinUrl: contact.linkedinUrl,
+  notes: contact.notes,
+  sortOrder: contact.sortOrder,
+  isVirtual,
+})
+
 const createSeedData = () => {
   const data = createEmptyAppDataState()
 
@@ -96,6 +117,7 @@ const createSeedData = () => {
   data.jobs.job_1 = {
     id: 'job_1',
     companyName: 'Example Co',
+    staffingAgencyName: '',
     jobTitle: 'Senior Engineer',
     description: '',
     location: 'Remote',
@@ -150,6 +172,7 @@ const createSeedData = () => {
     name: 'Hiring Manager',
     title: 'Director',
     company: 'Example Co',
+    organizationKind: 'company',
     addressLine1: '',
     addressLine2: '',
     addressLine3: '',
@@ -157,7 +180,6 @@ const createSeedData = () => {
     email: 'manager@example.com',
     phone: '555-0101',
     linkedinUrl: '',
-    relationshipType: 'hiring_manager',
     notes: '',
     sortOrder: 1,
   }
@@ -168,6 +190,7 @@ const createSeedData = () => {
     name: 'Recruiter',
     title: 'Recruiter',
     company: 'Example Co',
+    organizationKind: 'staffing_agency',
     addressLine1: '',
     addressLine2: '',
     addressLine3: '',
@@ -175,7 +198,6 @@ const createSeedData = () => {
     email: 'recruiter@example.com',
     phone: '555-0102',
     linkedinUrl: '',
-    relationshipType: 'recruiter',
     notes: '',
     sortOrder: 2,
   }
@@ -213,6 +235,7 @@ const createSeedData = () => {
   data.jobs.job_2 = {
     id: 'job_2',
     companyName: 'Another Co',
+    staffingAgencyName: '',
     jobTitle: 'Staff Engineer',
     description: '',
     location: 'Hybrid',
@@ -473,6 +496,7 @@ describe('IndexedDbAppBackend', () => {
 
     const creationResult = await firstBackend.createJob({
       companyName: 'Persisted Co',
+      staffingAgencyName: '',
       jobTitle: 'Platform Engineer',
       location: 'Remote',
     })
@@ -485,6 +509,7 @@ describe('IndexedDbAppBackend', () => {
     expect(jobsList.items).toHaveLength(1)
     expect(jobsList.items[0]).toMatchObject({
       companyName: 'Persisted Co',
+      staffingAgencyName: '',
       jobTitle: 'Platform Engineer',
     })
 
@@ -830,8 +855,10 @@ describe('IndexedDbAppBackend', () => {
           id: creationResult.createdId,
           jobId: 'job_1',
           sortOrder: 1,
+          company: 'Example Co',
           name: '',
           email: '',
+          organizationKind: 'company',
         }),
         expect.objectContaining({
           id: 'job_contact_1',
@@ -843,6 +870,10 @@ describe('IndexedDbAppBackend', () => {
       ]),
     )
     expect(jobContacts.find((jobContact) => jobContact.id === 'job_contact_2')).toBeUndefined()
+    expect(jobContacts.find((jobContact) => jobContact.id === creationResult.createdId)).toMatchObject({
+      company: 'Example Co',
+      organizationKind: 'company',
+    })
     expect(persistedData.interviewContacts.interview_contact_1).toBeUndefined()
     expect(persistedData.interviewContacts.interview_contact_2).toMatchObject({
       id: 'interview_contact_2',
@@ -1669,6 +1700,7 @@ describe('IndexedDbAppBackend', () => {
         {
           id: 'job_2',
           companyName: 'Another Co',
+          staffingAgencyName: '',
           jobTitle: 'Staff Engineer',
           computedStatus: 'applied',
           interviewCount: 0,
@@ -1679,6 +1711,7 @@ describe('IndexedDbAppBackend', () => {
         {
           id: 'job_1',
           companyName: 'Example Co',
+          staffingAgencyName: '',
           jobTitle: 'Senior Engineer',
           computedStatus: 'interview',
           interviewCount: 2,
@@ -1741,6 +1774,7 @@ describe('IndexedDbAppBackend', () => {
           jobSummary: {
             id: 'job_2',
             companyName: 'Another Co',
+            staffingAgencyName: '',
             jobTitle: 'Staff Engineer',
           },
           createdAt: '2026-03-03T12:00:00.000Z',
@@ -1754,6 +1788,7 @@ describe('IndexedDbAppBackend', () => {
           jobSummary: {
             id: 'job_1',
             companyName: 'Example Co',
+            staffingAgencyName: '',
             jobTitle: 'Senior Engineer',
           },
           createdAt: '2026-03-02T18:00:00.000Z',
@@ -1797,6 +1832,7 @@ describe('IndexedDbAppBackend', () => {
           jobSummary: {
             id: 'job_2',
             companyName: 'Another Co',
+            staffingAgencyName: '',
             jobTitle: 'Staff Engineer',
           },
           createdAt: '2026-03-03T12:00:00.000Z',
@@ -1810,6 +1846,7 @@ describe('IndexedDbAppBackend', () => {
           jobSummary: {
             id: 'job_1',
             companyName: 'Example Co',
+            staffingAgencyName: '',
             jobTitle: 'Senior Engineer',
           },
           createdAt: '2026-03-02T18:00:00.000Z',
@@ -1931,8 +1968,45 @@ describe('IndexedDbAppBackend', () => {
       profile: seedData.profiles.profile_3,
       profileLinks: [seedData.profileLinks.profile_link_2, seedData.profileLinks.profile_link_1],
       job: seedData.jobs.job_1,
-      primaryContact: seedData.jobContacts.job_contact_2,
-      contacts: [seedData.jobContacts.job_contact_1, seedData.jobContacts.job_contact_2],
+      primaryContact: toExpectedDocumentContact(seedData.jobContacts.job_contact_2!),
+      contacts: [
+        toExpectedDocumentContact(seedData.jobContacts.job_contact_1!),
+        toExpectedDocumentContact(seedData.jobContacts.job_contact_2!),
+        {
+          id: 'companyHiringManager',
+          name: 'Hiring Manager',
+          title: '',
+          company: 'Example Co',
+          organizationKind: 'company',
+          addressLine1: '',
+          addressLine2: '',
+          addressLine3: '',
+          addressLine4: '',
+          email: '',
+          phone: '',
+          linkedinUrl: '',
+          notes: '',
+          sortOrder: 0,
+          isVirtual: true,
+        },
+        {
+          id: 'staffingAgencyRecruitingTeam',
+          name: 'Recruiting Team',
+          title: '',
+          company: '',
+          organizationKind: 'staffing_agency',
+          addressLine1: '',
+          addressLine2: '',
+          addressLine3: '',
+          addressLine4: '',
+          email: '',
+          phone: '',
+          linkedinUrl: '',
+          notes: '',
+          sortOrder: 0,
+          isVirtual: true,
+        },
+      ],
       jobLinks: [seedData.jobLinks.job_link_2, seedData.jobLinks.job_link_1],
       skillCategories: [
         {
@@ -1980,6 +2054,7 @@ describe('IndexedDbAppBackend', () => {
       job: {
         id: 'document-job-profile_1',
         companyName: 'Example Company',
+        staffingAgencyName: 'Example Staffing Agency',
         jobTitle: 'Example Role',
         description: '',
         location: '',
@@ -1996,23 +2071,58 @@ describe('IndexedDbAppBackend', () => {
         updatedAt: '2026-03-02T12:00:00.000Z',
       },
       primaryContact: {
-        id: 'document-contact-document-job-profile_1',
-        jobId: 'document-job-profile_1',
+        id: 'companyHiringManager',
         name: 'Hiring Manager',
         title: '',
         company: 'Example Company',
-        addressLine1: '123 Example Street',
+        organizationKind: 'company',
+        addressLine1: '',
         addressLine2: '',
         addressLine3: '',
-        addressLine4: 'Example City, EX 12345',
+        addressLine4: '',
         email: '',
         phone: '',
         linkedinUrl: '',
-        relationshipType: 'hiring_manager',
         notes: '',
         sortOrder: 0,
+        isVirtual: true,
       },
-      contacts: [],
+      contacts: [
+        {
+          id: 'companyHiringManager',
+          name: 'Hiring Manager',
+          title: '',
+          company: 'Example Company',
+          organizationKind: 'company',
+          addressLine1: '',
+          addressLine2: '',
+          addressLine3: '',
+          addressLine4: '',
+          email: '',
+          phone: '',
+          linkedinUrl: '',
+          notes: '',
+          sortOrder: 0,
+          isVirtual: true,
+        },
+        {
+          id: 'staffingAgencyRecruitingTeam',
+          name: 'Recruiting Team',
+          title: '',
+          company: 'Example Staffing Agency',
+          organizationKind: 'staffing_agency',
+          addressLine1: '',
+          addressLine2: '',
+          addressLine3: '',
+          addressLine4: '',
+          email: '',
+          phone: '',
+          linkedinUrl: '',
+          notes: '',
+          sortOrder: 0,
+          isVirtual: true,
+        },
+      ],
       jobLinks: [],
       skillCategories: [],
       achievements: [],
@@ -2028,7 +2138,7 @@ describe('IndexedDbAppBackend', () => {
     await expect(backend.getProfileDocument('missing-profile')).resolves.toBeNull()
   })
 
-  it('falls back to the default sorted contact when the selected recipient is missing', async () => {
+  it('falls back to the company recipient when the selected recipient is missing', async () => {
     const backend = new IndexedDbAppBackend({ databaseName })
     const seedData = createSeedData()
     seedData.profiles.profile_3!.coverLetterContactId = 'missing-contact'
@@ -2041,6 +2151,22 @@ describe('IndexedDbAppBackend', () => {
 
     const document = await backend.getProfileDocument('profile_3')
 
-    expect(document?.primaryContact).toEqual(seedData.jobContacts.job_contact_1)
+    expect(document?.primaryContact).toEqual({
+      id: 'companyHiringManager',
+      name: 'Hiring Manager',
+      title: '',
+      company: 'Example Co',
+      organizationKind: 'company',
+      addressLine1: '',
+      addressLine2: '',
+      addressLine3: '',
+      addressLine4: '',
+      email: '',
+      phone: '',
+      linkedinUrl: '',
+      notes: '',
+      sortOrder: 0,
+      isVirtual: true,
+    })
   })
 })

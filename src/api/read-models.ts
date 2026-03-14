@@ -42,6 +42,7 @@ export interface JobsListLinkDto {
 export interface JobsListItemDto {
   id: string
   companyName: string
+  staffingAgencyName: string
   jobTitle: string
   computedStatus: JobComputedStatus
   interviewCount: number
@@ -83,6 +84,7 @@ export interface ProfilesListItemDto {
   jobSummary: null | {
     id: string
     companyName: string
+    staffingAgencyName: string
     jobTitle: string
   }
   createdAt: string

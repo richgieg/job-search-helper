@@ -1,4 +1,4 @@
-import { buildCoverLetterParagraphs, formatAddressLines, type ProfileDocumentData } from './document-data'
+import { buildCoverLetterParagraphs, formatAddressLines, getInsideAddressCompany, type ProfileDocumentData } from './document-data'
 import { DocumentProfileHeader } from './DocumentProfileHeader'
 
 const formatCoverLetterDate = () =>
@@ -13,7 +13,7 @@ export const CoverLetterDocument = ({ documentData }: { documentData: ProfileDoc
   const recipient = {
     name: documentData.primaryContact.name || 'Hiring Team',
     title: documentData.primaryContact.title,
-    company: documentData.primaryContact.company || documentData.job.companyName || 'Example Company',
+    company: getInsideAddressCompany(documentData.job, documentData.primaryContact),
     addressLines: formatAddressLines([
       documentData.primaryContact.addressLine1,
       documentData.primaryContact.addressLine2,
@@ -21,6 +21,7 @@ export const CoverLetterDocument = ({ documentData }: { documentData: ProfileDoc
       documentData.primaryContact.addressLine4,
     ]),
   }
+  const insideAddressLines = [recipient.name, recipient.title, recipient.company, ...recipient.addressLines].filter(Boolean)
   const paragraphs = buildCoverLetterParagraphs(documentData)
 
   return (
@@ -29,14 +30,16 @@ export const CoverLetterDocument = ({ documentData }: { documentData: ProfileDoc
 
       <div className="cover-letter-inside-address mt-5">
         <p>{formatCoverLetterDate()}</p>
-        <div className="mt-6">
-          <p className="text-black">{recipient.name}</p>
-          <p>{recipient.title}</p>
-          <p>{recipient.company}</p>
-          {recipient.addressLines.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
-        </div>
+        {insideAddressLines.length > 1 ? (
+          <div className="mt-6">
+            <p className="text-black">{recipient.name}</p>
+            {recipient.title ? <p>{recipient.title}</p> : null}
+            {recipient.company ? <p>{recipient.company}</p> : null}
+            {recipient.addressLines.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-6 leading-4.5 text-black">

@@ -22,6 +22,7 @@ const createSeedData = () => {
   data.jobs.job_1 = {
     id: 'job_1',
     companyName: 'Example Co',
+    staffingAgencyName: '',
     jobTitle: 'Senior Engineer',
     description: 'Build systems',
     location: 'Remote',
@@ -108,6 +109,7 @@ describe('IndexedDB app data snapshot repository', () => {
     replacement.jobs.job_2 = {
       id: 'job_2',
       companyName: 'Replacement Co',
+      staffingAgencyName: '',
       jobTitle: 'Platform Engineer',
       description: '',
       location: '',
