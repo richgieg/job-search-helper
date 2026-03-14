@@ -124,6 +124,11 @@ export const ProfilePage = () => {
   const activePersonalDetails = personalDetails ?? createPersonalDetailsDraft(profile.personalDetails)
 
   const attachedJob = profileDetail?.attachedJob ?? null
+  const availableCoverLetterContacts = documentData?.contacts ?? []
+  const hasSelectedCoverLetterContact =
+    profile.coverLetterContactId !== null && availableCoverLetterContacts.some((contact) => contact.id === profile.coverLetterContactId)
+  const coverLetterRecipientValue = hasSelectedCoverLetterContact ? profile.coverLetterContactId ?? '' : ''
+  const automaticRecipientLabel = documentData?.primaryContact.name.trim() || 'Hiring Manager'
   const orderedResumeSections = Object.entries(profile.resumeSettings.sections)
     .map(([section, settings]) => ({
       section: section as ResumeSectionKey,
@@ -219,22 +224,58 @@ export const ProfilePage = () => {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/cover-letter`}>
-            Cover letter
-          </Link>
-          <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/resume`}>
-            Resume
-          </Link>
-          <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/references`}>
-            References
-          </Link>
-          <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/combined`}>
-            Cover letter + resume
-          </Link>
-          <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/application`}>
-            Application
-          </Link>
+        <div className="flex flex-col items-start gap-3 lg:items-end">
+          {attachedJob && documentData ? (
+            <label className="flex flex-wrap items-center gap-3 text-sm text-app-text-muted lg:justify-end">
+              <span className="font-medium text-app-heading">Cover letter recipient</span>
+              <select
+                aria-label="Cover letter recipient"
+                className="min-w-60 rounded-xl border border-app-border bg-app-surface px-3 py-2 text-sm text-app-text outline-none transition focus:border-app-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={availableCoverLetterContacts.length === 0}
+                value={coverLetterRecipientValue}
+                onChange={(event) => {
+                  const nextContactId = event.target.value || null
+
+                  if (nextContactId === profile.coverLetterContactId) {
+                    return
+                  }
+
+                  void updateProfile({
+                    profileId: profile.id,
+                    changes: {
+                      coverLetterContactId: nextContactId,
+                    },
+                  })
+                }}
+              >
+                <option value="">Automatic ({automaticRecipientLabel})</option>
+                {availableCoverLetterContacts.map((contact) => (
+                  <option key={contact.id} value={contact.id}>
+                    {contact.name || 'Unnamed contact'}
+                    {contact.title ? ` - ${contact.title}` : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
+          <div className="flex flex-wrap gap-2">
+            <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/cover-letter`}>
+              Cover letter
+            </Link>
+            <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/resume`}>
+              Resume
+            </Link>
+            <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/references`}>
+              References
+            </Link>
+            <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/combined`}>
+              Cover letter + resume
+            </Link>
+            <Link className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted" to={`/profiles/${profile.id}/application`}>
+              Application
+            </Link>
+          </div>
         </div>
       </div>
 

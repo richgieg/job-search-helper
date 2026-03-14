@@ -29,7 +29,7 @@ describe('DashboardPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Profiles').parentElement).toHaveTextContent('1')
       expect(screen.getByText('Jobs').parentElement).toHaveTextContent('1')
-      expect(screen.getByText('Contacts').parentElement).toHaveTextContent('1')
+      expect(screen.getByText('Contacts').parentElement).toHaveTextContent('2')
       expect(screen.getByText('Interviews').parentElement).toHaveTextContent('1')
     })
   })

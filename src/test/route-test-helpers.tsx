@@ -103,6 +103,7 @@ export const createSeedData = (): AppDataState => {
     name: 'Tailored Profile',
     summary: 'Summary',
     coverLetter: 'Cover letter',
+    coverLetterContactId: null,
     resumeSettings: createDefaultResumeSettings(),
     personalDetails: {
       fullName: 'Ada Example',
@@ -202,6 +203,24 @@ export const createSeedData = (): AppDataState => {
     relationshipType: 'hiring_manager',
     notes: '',
     sortOrder: 1,
+  }
+
+  data.jobContacts.job_contact_2 = {
+    id: 'job_contact_2',
+    jobId: 'job_1',
+    name: 'Taylor Recruiter',
+    title: 'Senior Recruiter',
+    company: 'Example Co',
+    addressLine1: '',
+    addressLine2: '',
+    addressLine3: '',
+    addressLine4: '',
+    email: 'taylor@example.com',
+    phone: '555-0102',
+    linkedinUrl: '',
+    relationshipType: 'recruiter',
+    notes: '',
+    sortOrder: 2,
   }
 
   data.interviews.interview_1 = {

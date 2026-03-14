@@ -422,32 +422,32 @@ const JobContactCard = ({
         title={draft.name || jobContact.name || 'Contact'}
       >
         <div className="grid gap-4 xl:grid-cols-3">
-        <TextField label="Name" value={draft.name} onBlur={() => draft.name !== jobContact.name && commitContactChanges({ name: draft.name })} onChange={(value) => setDraft({ ...draft, name: value })} />
-        <TextField label="Title" value={draft.title} onBlur={() => draft.title !== jobContact.title && commitContactChanges({ title: draft.title })} onChange={(value) => setDraft({ ...draft, title: value })} />
-        <TextField label="Company" value={draft.company} onBlur={() => draft.company !== jobContact.company && commitContactChanges({ company: draft.company })} onChange={(value) => setDraft({ ...draft, company: value })} />
-        <SelectField
-          label="Relationship type"
-          options={[
-            { value: 'recruiter', label: 'Recruiter' },
-            { value: 'hiring_manager', label: 'Hiring manager' },
-            { value: 'referral', label: 'Referral' },
-            { value: 'interviewer', label: 'Interviewer' },
-            { value: 'other', label: 'Other' },
-          ]}
-          value={draft.relationshipType}
-          onBlur={() => draft.relationshipType !== jobContact.relationshipType && commitContactChanges({ relationshipType: draft.relationshipType })}
-          onChange={(value) => setDraft({ ...draft, relationshipType: value as ContactRelationshipType })}
-        />
-        <TextField label="Email" type="email" value={draft.email} onBlur={() => draft.email !== jobContact.email && commitContactChanges({ email: draft.email })} onChange={(value) => setDraft({ ...draft, email: value })} />
-        <TextField label="Phone" type="tel" value={draft.phone} onBlur={() => draft.phone !== jobContact.phone && commitContactChanges({ phone: draft.phone })} onChange={(value) => setDraft({ ...draft, phone: value })} />
-        <TextField label="LinkedIn URL" type="url" value={draft.linkedinUrl} onBlur={() => draft.linkedinUrl !== jobContact.linkedinUrl && commitContactChanges({ linkedinUrl: draft.linkedinUrl })} onChange={(value) => setDraft({ ...draft, linkedinUrl: value })} />
-        <TextField label="Address line 1" value={draft.addressLine1} onBlur={() => draft.addressLine1 !== jobContact.addressLine1 && commitContactChanges({ addressLine1: draft.addressLine1 })} onChange={(value) => setDraft({ ...draft, addressLine1: value })} />
-        <TextField label="Address line 2" value={draft.addressLine2} onBlur={() => draft.addressLine2 !== jobContact.addressLine2 && commitContactChanges({ addressLine2: draft.addressLine2 })} onChange={(value) => setDraft({ ...draft, addressLine2: value })} />
-        <TextField label="Address line 3" value={draft.addressLine3} onBlur={() => draft.addressLine3 !== jobContact.addressLine3 && commitContactChanges({ addressLine3: draft.addressLine3 })} onChange={(value) => setDraft({ ...draft, addressLine3: value })} />
-        <TextField label="Address line 4" value={draft.addressLine4} onBlur={() => draft.addressLine4 !== jobContact.addressLine4 && commitContactChanges({ addressLine4: draft.addressLine4 })} onChange={(value) => setDraft({ ...draft, addressLine4: value })} />
-        <div className="xl:col-span-3">
-          <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== jobContact.notes && commitContactChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
-        </div>
+          <TextField label="Name" value={draft.name} onBlur={() => draft.name !== jobContact.name && commitContactChanges({ name: draft.name })} onChange={(value) => setDraft({ ...draft, name: value })} />
+          <TextField label="Title" value={draft.title} onBlur={() => draft.title !== jobContact.title && commitContactChanges({ title: draft.title })} onChange={(value) => setDraft({ ...draft, title: value })} />
+          <TextField label="Company" value={draft.company} onBlur={() => draft.company !== jobContact.company && commitContactChanges({ company: draft.company })} onChange={(value) => setDraft({ ...draft, company: value })} />
+          <SelectField
+            label="Relationship type"
+            options={[
+              { value: 'recruiter', label: 'Recruiter' },
+              { value: 'hiring_manager', label: 'Hiring manager' },
+              { value: 'referral', label: 'Referral' },
+              { value: 'interviewer', label: 'Interviewer' },
+              { value: 'other', label: 'Other' },
+            ]}
+            value={draft.relationshipType}
+            onBlur={() => draft.relationshipType !== jobContact.relationshipType && commitContactChanges({ relationshipType: draft.relationshipType })}
+            onChange={(value) => setDraft({ ...draft, relationshipType: value as ContactRelationshipType })}
+          />
+          <TextField label="Email" type="email" value={draft.email} onBlur={() => draft.email !== jobContact.email && commitContactChanges({ email: draft.email })} onChange={(value) => setDraft({ ...draft, email: value })} />
+          <TextField label="Phone" type="tel" value={draft.phone} onBlur={() => draft.phone !== jobContact.phone && commitContactChanges({ phone: draft.phone })} onChange={(value) => setDraft({ ...draft, phone: value })} />
+          <TextField label="LinkedIn URL" type="url" value={draft.linkedinUrl} onBlur={() => draft.linkedinUrl !== jobContact.linkedinUrl && commitContactChanges({ linkedinUrl: draft.linkedinUrl })} onChange={(value) => setDraft({ ...draft, linkedinUrl: value })} />
+          <TextField label="Address line 1" value={draft.addressLine1} onBlur={() => draft.addressLine1 !== jobContact.addressLine1 && commitContactChanges({ addressLine1: draft.addressLine1 })} onChange={(value) => setDraft({ ...draft, addressLine1: value })} />
+          <TextField label="Address line 2" value={draft.addressLine2} onBlur={() => draft.addressLine2 !== jobContact.addressLine2 && commitContactChanges({ addressLine2: draft.addressLine2 })} onChange={(value) => setDraft({ ...draft, addressLine2: value })} />
+          <TextField label="Address line 3" value={draft.addressLine3} onBlur={() => draft.addressLine3 !== jobContact.addressLine3 && commitContactChanges({ addressLine3: draft.addressLine3 })} onChange={(value) => setDraft({ ...draft, addressLine3: value })} />
+          <TextField label="Address line 4" value={draft.addressLine4} onBlur={() => draft.addressLine4 !== jobContact.addressLine4 && commitContactChanges({ addressLine4: draft.addressLine4 })} onChange={(value) => setDraft({ ...draft, addressLine4: value })} />
+          <div className="xl:col-span-3">
+            <TextAreaField label="Notes" value={draft.notes} onBlur={() => draft.notes !== jobContact.notes && commitContactChanges({ notes: draft.notes })} onChange={(value) => setDraft({ ...draft, notes: value })} />
+          </div>
         </div>
       </CollapsiblePanel>
     </div>
@@ -880,7 +880,7 @@ export const JobChildEditors = ({
         actionLabel="Add contact"
         actionStyle="icon"
         collapsible={hasJobContacts}
-        description="Maintain recruiters, hiring managers, referrals, and interviewers for the job."
+        description="Manage the contacts used for outreach, interviews, and cover letters."
         expanded={contactsPanel.expanded}
         onAction={async () => {
           const createdId = await createJobContact(jobId)

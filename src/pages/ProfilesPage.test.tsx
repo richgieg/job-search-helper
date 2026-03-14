@@ -20,6 +20,7 @@ const createBaseProfilesSeedData = () => {
     name: 'Base Profile',
     summary: 'Reusable summary',
     coverLetter: '',
+    coverLetterContactId: null,
     resumeSettings: createDefaultResumeSettings(),
     personalDetails: {
       fullName: 'Base Candidate',

@@ -128,6 +128,20 @@ const buildFallbackContact = (job: Job): JobContact => ({
   sortOrder: 0,
 })
 
+export const selectPrimaryContact = ({
+  contacts,
+  preferredContactId,
+  job,
+}: {
+  contacts: JobContact[]
+  preferredContactId: Id | null | undefined
+  job: Job
+}) => {
+  const preferredContact = preferredContactId ? contacts.find((contact) => contact.id === preferredContactId) ?? null : null
+
+  return preferredContact ?? contacts[0] ?? buildFallbackContact(job)
+}
+
 export const formatAddressLines = (values: Array<string | null | undefined>) => compact(values)
 
 export const formatLocationLine = (city: string, state: string, postalCode: string) => {
@@ -282,7 +296,11 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
     profile,
     profileLinks,
     job,
-    primaryContact: contacts[0] ?? buildFallbackContact(job),
+    primaryContact: selectPrimaryContact({
+      contacts,
+      preferredContactId: profile.coverLetterContactId,
+      job,
+    }),
     contacts,
     jobLinks,
     skillCategories,

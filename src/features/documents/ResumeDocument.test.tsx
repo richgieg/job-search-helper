@@ -11,6 +11,7 @@ const createDocumentData = (): ProfileDocumentData => ({
     name: 'General Engineer',
     summary: 'Experienced engineer',
     coverLetter: '',
+    coverLetterContactId: null,
     resumeSettings: createDefaultResumeSettings(),
     personalDetails: {
       fullName: 'Jordan Example',

@@ -83,6 +83,7 @@ export interface Profile {
   name: string
   summary: string
   coverLetter: string
+  coverLetterContactId: Id | null
   resumeSettings: ResumeSettings
   personalDetails: PersonalDetails
   jobId: Id | null

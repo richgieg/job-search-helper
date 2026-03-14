@@ -26,6 +26,7 @@ const createSeedData = () => {
     name: 'Base Profile',
     summary: 'Summary',
     coverLetter: 'Cover letter',
+    coverLetterContactId: null,
     resumeSettings: createDefaultResumeSettings(),
     personalDetails: {
       fullName: 'Ada Example',
@@ -49,6 +50,7 @@ const createSeedData = () => {
     name: 'Job Profile',
     summary: 'Tailored summary',
     coverLetter: 'Tailored cover letter',
+    coverLetterContactId: null,
     resumeSettings: createDefaultResumeSettings(),
     personalDetails: {
       fullName: 'Ada Example',
@@ -72,6 +74,7 @@ const createSeedData = () => {
     name: 'Job 1 Profile',
     summary: 'Role-specific summary',
     coverLetter: 'Role-specific cover letter',
+    coverLetterContactId: 'job_contact_2',
     resumeSettings: createDefaultResumeSettings(),
     personalDetails: {
       fullName: 'Ada Example',
@@ -1621,6 +1624,7 @@ describe('IndexedDbAppBackend', () => {
     expect(duplicatedProfile).toMatchObject({
       name: 'Profile 3 Copy',
       jobId: 'job_1',
+      coverLetterContactId: 'job_contact_2',
       clonedFromProfileId: 'profile_3',
       createdAt: '2026-03-13T17:15:00.000Z',
       updatedAt: '2026-03-13T17:15:00.000Z',
@@ -1927,7 +1931,7 @@ describe('IndexedDbAppBackend', () => {
       profile: seedData.profiles.profile_3,
       profileLinks: [seedData.profileLinks.profile_link_2, seedData.profileLinks.profile_link_1],
       job: seedData.jobs.job_1,
-      primaryContact: seedData.jobContacts.job_contact_1,
+      primaryContact: seedData.jobContacts.job_contact_2,
       contacts: [seedData.jobContacts.job_contact_1, seedData.jobContacts.job_contact_2],
       jobLinks: [seedData.jobLinks.job_link_2, seedData.jobLinks.job_link_1],
       skillCategories: [
@@ -2022,5 +2026,21 @@ describe('IndexedDbAppBackend', () => {
     })
 
     await expect(backend.getProfileDocument('missing-profile')).resolves.toBeNull()
+  })
+
+  it('falls back to the default sorted contact when the selected recipient is missing', async () => {
+    const backend = new IndexedDbAppBackend({ databaseName })
+    const seedData = createSeedData()
+    seedData.profiles.profile_3!.coverLetterContactId = 'missing-contact'
+
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
+
+    const document = await backend.getProfileDocument('profile_3')
+
+    expect(document?.primaryContact).toEqual(seedData.jobContacts.job_contact_1)
   })
 })

@@ -25,6 +25,7 @@ import type {
   SkillCategory,
 } from '../types/state'
 import { getJobComputedStatus } from '../features/jobs/job-status'
+import { selectPrimaryContact } from '../features/documents/document-data'
 import { compareInterviewsBySchedule } from '../utils/interview-sort'
 import {
   AddInterviewContactInput,
@@ -205,24 +206,6 @@ const buildFallbackJob = (profile: Profile): Job => ({
   notes: '',
   createdAt: profile.createdAt,
   updatedAt: profile.updatedAt,
-})
-
-const buildFallbackContact = (job: Job): JobContact => ({
-  id: `document-contact-${job.id}`,
-  jobId: job.id,
-  name: 'Hiring Manager',
-  title: '',
-  company: job.companyName || 'Example Company',
-  addressLine1: '123 Example Street',
-  addressLine2: '',
-  addressLine3: '',
-  addressLine4: 'Example City, EX 12345',
-  email: '',
-  phone: '',
-  linkedinUrl: '',
-  relationshipType: 'hiring_manager',
-  notes: '',
-  sortOrder: 0,
 })
 
 const requestToPromise = <T>(request: IDBRequest<T>) =>
@@ -2164,7 +2147,11 @@ export class IndexedDbAppBackend implements AppDataService {
         profile,
         profileLinks: sortedProfileLinks,
         job,
-        primaryContact: sortedContacts[0] ?? buildFallbackContact(job),
+        primaryContact: selectPrimaryContact({
+          contacts: sortedContacts,
+          preferredContactId: profile.coverLetterContactId,
+          job,
+        }),
         contacts: sortedContacts,
         jobLinks: sortedJobLinks,
         skillCategories: sortedSkillCategories,

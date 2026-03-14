@@ -53,4 +53,19 @@ describe('CoverLetterPage', () => {
     expect(await screen.findByText('Dear Hiring Manager,')).toBeInTheDocument()
     expect(await screen.findByText('Unable to refresh this document right now. Showing the most recently cached result if available.')).toBeInTheDocument()
   })
+
+  it('uses the selected cover letter recipient when the profile specifies one', async () => {
+    const initialData = createSeedData()
+    initialData.profiles.profile_1!.coverLetterContactId = 'job_contact_2'
+
+    setupRouteTestEnvironment({ initialData })
+
+    renderRoute({
+      element: <CoverLetterPage />,
+      path: '/profiles/:profileId/cover-letter',
+      route: '/profiles/profile_1/cover-letter',
+    })
+
+    expect(await screen.findByText('Dear Taylor Recruiter,')).toBeInTheDocument()
+  })
 })

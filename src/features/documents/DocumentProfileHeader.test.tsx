@@ -12,6 +12,7 @@ const createDocumentData = (headerTemplate: DocumentHeaderTemplate): ProfileDocu
     name: 'General Engineer',
     summary: '',
     coverLetter: '',
+    coverLetterContactId: null,
     resumeSettings: {
       ...createDefaultResumeSettings(),
       headerTemplate,

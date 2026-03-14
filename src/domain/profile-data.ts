@@ -29,7 +29,7 @@ import type {
 
 export interface UpdateProfileInput {
   profileId: Id
-  changes: Partial<Pick<Profile, 'name' | 'summary' | 'coverLetter'>>
+  changes: Partial<Pick<Profile, 'name' | 'summary' | 'coverLetter' | 'coverLetterContactId'>>
   personalDetails?: Partial<PersonalDetails>
 }
 
@@ -244,6 +244,7 @@ const createProfileRecord = (name: string, context: ProfileMutationContext): Pro
     name,
     summary: emptyProfileDefaults.summary,
     coverLetter: emptyProfileDefaults.coverLetter,
+    coverLetterContactId: emptyProfileDefaults.coverLetterContactId,
     resumeSettings: createDefaultResumeSettings(),
     personalDetails: {
       ...emptyProfileDefaults.personalDetails,
@@ -987,6 +988,7 @@ export const duplicateProfileMutation = (data: AppDataState, input: DuplicatePro
   const timestamp = context.now()
   const trimmedName = input.name?.trim()
   const duplicatedProfileId = context.createId()
+  const duplicatedJobId = input.targetJobId === undefined ? sourceProfile.jobId : input.targetJobId
   const duplicatedProfile: Profile = {
     ...sourceProfile,
     id: duplicatedProfileId,
@@ -995,7 +997,8 @@ export const duplicateProfileMutation = (data: AppDataState, input: DuplicatePro
       : sourceProfile.jobId === null && input.targetJobId !== undefined && input.targetJobId !== null
         ? sourceProfile.name
         : `${sourceProfile.name} Copy`,
-    jobId: input.targetJobId === undefined ? sourceProfile.jobId : input.targetJobId,
+    jobId: duplicatedJobId,
+    coverLetterContactId: duplicatedJobId === sourceProfile.jobId ? sourceProfile.coverLetterContactId : null,
     clonedFromProfileId: sourceProfile.id,
     personalDetails: {
       ...sourceProfile.personalDetails,

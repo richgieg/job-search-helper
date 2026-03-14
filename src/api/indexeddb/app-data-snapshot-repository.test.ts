@@ -51,6 +51,7 @@ const createSeedData = () => {
     name: 'Base Profile',
     summary: 'Summary',
     coverLetter: 'Cover letter',
+    coverLetterContactId: null,
     resumeSettings: createDefaultResumeSettings(),
     personalDetails: {
       fullName: 'Ada Example',

@@ -81,6 +81,52 @@ describe('ProfilePage', () => {
     expect(await screen.findByText('Portfolio Profile')).toBeInTheDocument()
   })
 
+  it('lets the user choose a cover letter recipient for job-attached profiles', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+
+    const recipientSelect = await screen.findByLabelText('Cover letter recipient')
+    expect(recipientSelect).toHaveValue('')
+
+    await user.selectOptions(recipientSelect, 'job_contact_2')
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Cover letter recipient')).toHaveValue('job_contact_2')
+    })
+  })
+
+  it('hides the cover letter recipient selector for base profiles', async () => {
+    const initialData = createSeedData()
+    const sourceProfile = initialData.profiles.profile_1!
+
+    initialData.profiles.profile_base = {
+      ...sourceProfile,
+      id: 'profile_base',
+      name: 'Base Profile',
+      jobId: null,
+      coverLetterContactId: null,
+      clonedFromProfileId: null,
+    }
+
+    setupRouteTestEnvironment({ initialData })
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_base',
+    })
+
+    expect(await screen.findByText('Base Profile')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Cover letter recipient')).not.toBeInTheDocument()
+  })
+
   it('updates profile child editor links through mutation hooks', async () => {
     const user = userEvent.setup()
 

@@ -30,6 +30,7 @@ export const createDefaultResumeSettings = (): ResumeSettings => ({
 export const emptyProfileDefaults = {
   summary: '',
   coverLetter: '',
+  coverLetterContactId: null,
   resumeSettings: createDefaultResumeSettings(),
   personalDetails: createEmptyPersonalDetails(),
 }
