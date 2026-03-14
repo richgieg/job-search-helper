@@ -25,12 +25,13 @@ describe('AppRoutes', () => {
     resetRouteTestState()
   })
 
-  it('redirects the index route to the dashboard page', async () => {
+  it('renders the landing page at the index route', async () => {
     setupRouteTestEnvironment()
 
     renderAppRoutes('/')
 
-    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Track your search in one place.' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Job Search Helper' })).toHaveAttribute('href', '/')
     expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/dashboard')
   })
 

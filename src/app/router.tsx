@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 
 import { AppLayout } from './layout/AppLayout'
 import { ApplicationPage } from '../pages/ApplicationPage'
@@ -8,6 +8,7 @@ import { DashboardPage } from '../pages/DashboardPage'
 import { ImportExportPage } from '../pages/ImportExportPage'
 import { JobPage } from '../pages/JobPage'
 import { JobsPage } from '../pages/JobsPage'
+import { LandingPage } from '../pages/LandingPage'
 import { ProfilePage } from '../pages/ProfilePage'
 import { ProfilesPage } from '../pages/ProfilesPage'
 import { ReferencesPage } from '../pages/ReferencesPage'
@@ -22,7 +23,7 @@ export const AppRoutes = () => {
       <Route path="/profiles/:profileId/resume" element={<ResumePage />} />
 
       <Route element={<AppLayout />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index element={<LandingPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profiles" element={<ProfilesPage />} />
         <Route path="/profiles/:profileId" element={<ProfilePage />} />
