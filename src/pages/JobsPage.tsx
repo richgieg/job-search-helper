@@ -7,12 +7,17 @@ import { formatJobComputedStatus, getJobComputedStatusBadgeClassName } from '../
 import { useJobMutations } from '../features/jobs/use-job-mutations'
 import { useJobsListQuery } from '../queries/use-jobs-list-query'
 
-const getJobOrganizationName = (job: { companyName: string; staffingAgencyName?: string }) =>
-  job.companyName || job.staffingAgencyName || 'Unknown organization'
+const getJobOrganizationName = (job: { companyName: string; staffingAgencyName?: string }) => job.companyName || job.staffingAgencyName || 'Unknown organization'
+
+const getJobCompanyDisplayName = (job: { companyName: string }) => job.companyName || '—'
+
+const getJobAgencyDisplayName = (job: { staffingAgencyName?: string }) => job.staffingAgencyName || '—'
 
 const JobListItem = ({ job }: { job: JobsListItemDto }) => {
   const { deleteJob } = useJobMutations()
   const organizationName = getJobOrganizationName(job)
+  const companyDisplayName = getJobCompanyDisplayName(job)
+  const agencyDisplayName = getJobAgencyDisplayName(job)
 
   const handleDelete = async () => {
     const confirmed = window.confirm(`Delete job "${job.jobTitle}" at "${organizationName}"? This removes attached job profiles too.`)
@@ -31,7 +36,10 @@ const JobListItem = ({ job }: { job: JobsListItemDto }) => {
         </Link>
       </td>
       <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
-        <span className="text-sm text-app-text-subtle">{organizationName}</span>
+        <span className="text-sm text-app-text-subtle">{companyDisplayName}</span>
+      </td>
+      <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
+        <span className="text-sm text-app-text-subtle">{agencyDisplayName}</span>
       </td>
       <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
         <span className={['rounded-full px-3 py-1 text-xs font-medium', getJobComputedStatusBadgeClassName(job.computedStatus)].join(' ')}>{formatJobComputedStatus(job.computedStatus)}</span>
@@ -79,16 +87,18 @@ const JobsTable = ({ jobs }: { jobs: JobsListItemDto[] }) => {
     <div className="overflow-x-auto">
       <table className="min-w-full border-collapse table-fixed text-sm">
         <colgroup>
-          <col className="w-[31%]" />
-          <col className="w-[23%]" />
-          <col className="w-[12%]" />
+          <col className="w-[24%]" />
           <col className="w-[18%]" />
+          <col className="w-[18%]" />
+          <col className="w-[12%]" />
           <col className="w-[16%]" />
+          <col className="w-[12%]" />
         </colgroup>
         <thead>
           <tr className="border-b border-app-border bg-app-surface-subtle text-left text-xs font-semibold uppercase tracking-[0.18em] text-app-text-subtle">
             <th className="border-r border-app-border px-4 py-3 last:border-r-0">Job title</th>
             <th className="border-r border-app-border px-4 py-3 last:border-r-0">Company</th>
+            <th className="border-r border-app-border px-4 py-3 last:border-r-0">Agency</th>
             <th className="border-r border-app-border px-4 py-3 last:border-r-0">Status</th>
             <th className="border-r border-app-border px-4 py-3 last:border-r-0">Links</th>
             <th className="px-4 py-3 text-right">Actions</th>

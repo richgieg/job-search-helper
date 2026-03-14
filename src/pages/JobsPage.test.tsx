@@ -2,7 +2,7 @@
 
 import '@testing-library/jest-dom/vitest'
 
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
@@ -27,6 +27,7 @@ describe('JobsPage', () => {
 
     expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
     expect(screen.getByText('Example Co')).toBeInTheDocument()
+    expect(screen.getByText('—')).toBeInTheDocument()
     expect(screen.getByText('Interview')).toBeInTheDocument()
   })
 
@@ -64,7 +65,29 @@ describe('JobsPage', () => {
     await user.type(screen.getByLabelText('Staffing agency name (optional)'), 'North Ridge Talent')
     await user.click(screen.getByRole('button', { name: 'Add job' }))
 
-    expect(await screen.findByText('Contract Platform Engineer')).toBeInTheDocument()
-    expect(screen.getByText('North Ridge Talent')).toBeInTheDocument()
+    const row = (await screen.findByText('Contract Platform Engineer')).closest('tr')
+    expect(row).not.toBeNull()
+    expect(within(row as HTMLTableRowElement).getByText('North Ridge Talent')).toBeInTheDocument()
+    expect(within(row as HTMLTableRowElement).getAllByText('—')).toHaveLength(2)
+  })
+
+  it('shows an em dash in the company column when no organization name is available', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <JobsPage />,
+      path: '/jobs',
+      route: '/jobs',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Job title'), 'Unlabeled Opportunity')
+    await user.click(screen.getByRole('button', { name: 'Add job' }))
+
+    const row = (await screen.findByText('Unlabeled Opportunity')).closest('tr')
+    expect(row).not.toBeNull()
+    expect(within(row as HTMLTableRowElement).getAllByText('—')).toHaveLength(3)
+    expect(screen.getByLabelText('Open job Unlabeled Opportunity at Unknown organization')).toBeInTheDocument()
   })
 })
