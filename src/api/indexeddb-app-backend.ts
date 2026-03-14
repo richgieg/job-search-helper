@@ -171,7 +171,6 @@ import type {
   ProfilesListDto,
   ProfilesListItemDto,
 } from './read-models'
-import { createIndexedDbAppDataSnapshotRepository, openAppDatabase, type PersistedAppData } from './indexeddb'
 import { createIndexedDbAppDataSnapshotRepository, deleteAppDatabase, openAppDatabase, type PersistedAppData } from './indexeddb'
 import type { AppDatabaseOptions } from './indexeddb'
 

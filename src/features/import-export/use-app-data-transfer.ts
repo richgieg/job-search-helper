@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { getAppApiClient } from '../../api'
 import { getAppApiClient, resetAppApiClient } from '../../api'
 import { queryKeys } from '../../queries/query-keys'
 import { useResetUiState } from '../../store/app-ui-store'
