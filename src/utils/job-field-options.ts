@@ -13,6 +13,7 @@ export const workArrangementLabels: Record<WorkArrangement, string> = {
 }
 
 export const employmentTypeLabels: Record<EmploymentType, string> = {
+  unknown: 'Unknown',
   full_time: 'Full-Time',
   part_time: 'Part-Time',
   contract: 'Contract',
@@ -29,6 +30,7 @@ export const workArrangementOptions: SelectOption<WorkArrangement>[] = [
 ]
 
 export const employmentTypeOptions: SelectOption<EmploymentType>[] = [
+  { value: 'unknown', label: employmentTypeLabels.unknown },
   { value: 'full_time', label: employmentTypeLabels.full_time },
   { value: 'part_time', label: employmentTypeLabels.part_time },
   { value: 'contract', label: employmentTypeLabels.contract },

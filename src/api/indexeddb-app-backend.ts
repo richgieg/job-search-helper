@@ -200,7 +200,7 @@ const buildFallbackJob = (profile: Profile): Job => ({
   desiredCompensation: '',
   compensationNotes: '',
   workArrangement: 'unknown',
-  employmentType: 'other',
+  employmentType: 'unknown',
   datePosted: null,
   appliedAt: null,
   finalOutcome: null,

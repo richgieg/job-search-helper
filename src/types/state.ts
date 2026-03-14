@@ -4,6 +4,7 @@ export type IsoDate = string
 
 export type WorkArrangement = 'onsite' | 'hybrid' | 'remote' | 'unknown'
 export type EmploymentType =
+  | 'unknown'
   | 'full_time'
   | 'part_time'
   | 'contract'

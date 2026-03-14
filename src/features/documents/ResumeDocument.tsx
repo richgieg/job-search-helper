@@ -12,7 +12,7 @@ const formatExperienceMeta = (input: {
   employmentType: string
 }) => {
   const workArrangement = input.workArrangement !== 'unknown' ? formatWorkArrangement(input.workArrangement as Parameters<typeof formatWorkArrangement>[0]) : ''
-  const employmentType = input.employmentType !== 'other' ? formatEmploymentType(input.employmentType as Parameters<typeof formatEmploymentType>[0]) : ''
+  const employmentType = input.employmentType !== 'unknown' ? formatEmploymentType(input.employmentType as Parameters<typeof formatEmploymentType>[0]) : ''
 
   return [input.company, input.location, workArrangement, employmentType].filter(Boolean).join(' · ')
 }

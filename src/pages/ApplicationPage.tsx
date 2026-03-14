@@ -327,7 +327,7 @@ export const ApplicationPage = () => {
                   },
                   {
                     label: 'Employment type',
-                    values: entry.employmentType !== 'other' ? buildSingleValue(toTitleCase(entry.employmentType)) : [],
+                    values: entry.employmentType !== 'unknown' ? buildSingleValue(toTitleCase(entry.employmentType)) : [],
                   },
                   buildDateRow('Start date', entry.startDate),
                   buildDateRow('End date', entry.endDate),

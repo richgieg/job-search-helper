@@ -307,7 +307,7 @@ export const createJobMutation = (data: AppDataState, input: CreateJobInput, con
     desiredCompensation: input.desiredCompensation ?? '',
     compensationNotes: input.compensationNotes ?? '',
     workArrangement: input.workArrangement ?? 'unknown',
-    employmentType: input.employmentType ?? 'other',
+    employmentType: input.employmentType ?? 'unknown',
     datePosted: input.datePosted ?? null,
     appliedAt: null,
     finalOutcome: null,

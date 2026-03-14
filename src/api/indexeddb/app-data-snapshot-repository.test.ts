@@ -117,7 +117,7 @@ describe('IndexedDB app data snapshot repository', () => {
       desiredCompensation: '',
       compensationNotes: '',
       workArrangement: 'unknown',
-      employmentType: 'other',
+      employmentType: 'unknown',
       datePosted: null,
       appliedAt: null,
       finalOutcome: null,

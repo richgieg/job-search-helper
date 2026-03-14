@@ -2062,7 +2062,7 @@ describe('IndexedDbAppBackend', () => {
         desiredCompensation: '',
         compensationNotes: '',
         workArrangement: 'unknown',
-        employmentType: 'other',
+        employmentType: 'unknown',
         datePosted: null,
         appliedAt: null,
         finalOutcome: null,
