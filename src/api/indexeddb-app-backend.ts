@@ -193,7 +193,7 @@ const buildFallbackJob = (profile: Profile): Job => ({
   id: `document-job-${profile.id}`,
   companyName: 'Example Company',
   staffingAgencyName: 'Example Staffing Agency',
-  jobTitle: 'Example Role',
+  jobTitle: 'Example Job',
   description: '',
   location: '',
   postedCompensation: '',

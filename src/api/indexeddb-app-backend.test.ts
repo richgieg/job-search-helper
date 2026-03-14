@@ -2055,7 +2055,7 @@ describe('IndexedDbAppBackend', () => {
         id: 'document-job-profile_1',
         companyName: 'Example Company',
         staffingAgencyName: 'Example Staffing Agency',
-        jobTitle: 'Example Role',
+        jobTitle: 'Example Job',
         description: '',
         location: '',
         postedCompensation: '',

@@ -99,7 +99,7 @@ const buildFallbackJob = (profile: Profile): Job => ({
   id: `document-job-${profile.id}`,
   companyName: 'Example Company',
   staffingAgencyName: 'Example Staffing Agency',
-  jobTitle: 'Example Role',
+  jobTitle: 'Example Job',
   description: '',
   location: '',
   postedCompensation: '',
@@ -388,7 +388,7 @@ export const selectProfileDocumentData = (data: AppDataState, profileId: Id): Pr
 }
 
 export const buildCoverLetterParagraphs = (documentData: ProfileDocumentData) => {
-  const role = documentData.job.jobTitle || 'Example Role'
+  const role = documentData.job.jobTitle || 'Example Job'
   const company = getCompanyTokenReplacement(documentData.job, documentData.primaryContact)
   const replaceJobTokens = (value: string) =>
     replaceTemplateToken(replaceTemplateToken(value, '{{JOB.TITLE}}', role), '{{JOB.COMPANY}}', company)
