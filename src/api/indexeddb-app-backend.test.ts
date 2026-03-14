@@ -490,6 +490,30 @@ describe('IndexedDbAppBackend', () => {
     expect(Object.keys(persistedData.jobs)).toHaveLength(1)
   })
 
+  it('deletes the database and recreates it seamlessly on the next operation', async () => {
+    const backend = new IndexedDbAppBackend({ databaseName })
+
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T09:00:00.000Z',
+      data: toPersistedAppData(createSeedData()),
+    })
+
+    await backend.resetLocalData()
+
+    await expect(backend.getDashboardSummary()).resolves.toMatchObject({
+      jobCount: 0,
+      profileCount: 0,
+    })
+
+    await backend.createBaseProfile('Fresh Profile')
+
+    await expect(backend.getDashboardSummary()).resolves.toMatchObject({
+      jobCount: 0,
+      profileCount: 1,
+    })
+  })
+
   it('creates base profiles with a direct IndexedDB write', async () => {
     const backend = new IndexedDbAppBackend({
       databaseName,

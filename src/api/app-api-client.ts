@@ -52,6 +52,7 @@ export interface AppApiClient {
   getProfileDetail(profileId: string): Promise<ProfileDetailDto | null>
   getProfileDocument(profileId: string): Promise<ProfileDocumentDto | null>
   getProfilesList(kind?: 'base' | 'job' | 'all'): Promise<ProfilesListDto>
+  resetLocalData(): Promise<void>
   importAppData(file: AppExportFile): Promise<AppDataState>
   exportAppData(): Promise<AppExportFile>
   createBaseProfile(name: string): Promise<ProfileMutationResult>
@@ -174,6 +175,10 @@ export class LocalAppApiClient implements AppApiClient {
 
   getProfilesList(kind: 'base' | 'job' | 'all' = 'all'): Promise<ProfilesListDto> {
     return this.service.getProfilesList(kind)
+  }
+
+  resetLocalData(): Promise<void> {
+    return this.service.resetLocalData()
   }
 
   importAppData(file: AppExportFile): Promise<AppDataState> {

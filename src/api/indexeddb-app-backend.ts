@@ -172,6 +172,7 @@ import type {
   ProfilesListItemDto,
 } from './read-models'
 import { createIndexedDbAppDataSnapshotRepository, openAppDatabase, type PersistedAppData } from './indexeddb'
+import { createIndexedDbAppDataSnapshotRepository, deleteAppDatabase, openAppDatabase, type PersistedAppData } from './indexeddb'
 import type { AppDatabaseOptions } from './indexeddb'
 
 export interface IndexedDbAppBackendOptions extends AppDatabaseOptions {
@@ -2244,6 +2245,11 @@ export class IndexedDbAppBackend implements AppDataService {
   async importAppData(file: AppExportFile): Promise<AppDataState> {
     await this.ensureInitialized()
     return this.snapshotRepository.replaceAppData(structuredClone(file.data))
+  }
+
+  async resetLocalData(): Promise<void> {
+    await deleteAppDatabase(this.databaseOptions)
+    this.initialDataApplied = true
   }
 
   async exportAppData(): Promise<AppExportFile> {

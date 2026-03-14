@@ -1,9 +1,30 @@
 import { ChangeEvent, useMemo, useState } from 'react'
 
-import { createEmptyAppDataState } from '../domain/app-data-state'
+import { useBrowserStorageEstimate } from '../features/import-export/use-browser-storage-estimate'
 import { useAppDataTransfer } from '../features/import-export/use-app-data-transfer'
 import { useDashboardSummaryQuery } from '../queries/use-dashboard-summary-query'
 import type { AppExportFile } from '../types/state'
+
+const byteUnits = ['B', 'KB', 'MB', 'GB', 'TB'] as const
+
+const formatBytes = (bytes: number) => {
+  if (!Number.isFinite(bytes) || bytes < 0) {
+    return 'Unknown'
+  }
+
+  if (bytes < 1024) {
+    return `${bytes} B`
+  }
+
+  const unitIndex = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), byteUnits.length - 1)
+  const value = bytes / 1024 ** unitIndex
+  const formattedValue = new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: value >= 10 ? 0 : 1,
+    minimumFractionDigits: value >= 10 ? 0 : 1,
+  }).format(value)
+
+  return `${formattedValue} ${byteUnits[unitIndex]}`
+}
 
 const downloadJson = (payload: AppExportFile) => {
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
@@ -18,7 +39,9 @@ const downloadJson = (payload: AppExportFile) => {
 }
 
 export const ImportExportPage = () => {
-  const { exportAppData, importAppData, isSaving } = useAppDataTransfer()
+  const { exportAppData, importAppData, isSaving, resetLocalData } = useAppDataTransfer()
+  const { available, isLoading: isLoadingStorageEstimate, quotaBytes, refresh: refreshStorageEstimate, usageBytes } =
+    useBrowserStorageEstimate()
   const { data } = useDashboardSummaryQuery()
   const [error, setError] = useState<string | null>(null)
   const profileCount = data?.profileCount ?? 0
@@ -52,6 +75,7 @@ export const ImportExportPage = () => {
       }
 
       await importAppData(parsed)
+      await refreshStorageEstimate()
       setError(null)
     } catch (caughtError) {
       const message = caughtError instanceof Error ? caughtError.message : 'Unknown import error.'
@@ -68,14 +92,9 @@ export const ImportExportPage = () => {
       return
     }
 
-    const emptyExport: AppExportFile = {
-      version: 1,
-      exportedAt: new Date().toISOString(),
-      data: createEmptyAppDataState(),
-    }
-
     try {
-      await importAppData(emptyExport)
+      await resetLocalData()
+      await refreshStorageEstimate()
       setError(null)
     } catch (caughtError) {
       const message = caughtError instanceof Error ? caughtError.message : 'Unknown clear-data error.'
@@ -87,12 +106,19 @@ export const ImportExportPage = () => {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-app-heading">Import / Export</h1>
-        <p className="mt-2 text-sm text-app-text-subtle">Before you step away, export your progress; when you return, import it to restore your workspace.</p>
+        <p className="mt-2 text-sm text-app-text-subtle">Export a JSON backup of your local data, or import one to replace what is currently saved in this browser.</p>
       </div>
 
       <section className="rounded-2xl border border-app-border-muted bg-app-surface p-6 shadow-sm">
         <p className="text-sm text-app-text-subtle">Current state</p>
         <p className="mt-2 text-lg font-semibold text-app-text">{summary}</p>
+        {isLoadingStorageEstimate ? <p className="mt-3 text-sm text-app-text-subtle">Checking browser storage...</p> : null}
+        {!isLoadingStorageEstimate && available && usageBytes !== null && quotaBytes !== null ? (
+          <div className="mt-3 space-y-1 text-sm text-app-text-subtle">
+            <p>{`Estimated browser storage: ${formatBytes(usageBytes)} used of ${formatBytes(quotaBytes)}`}</p>
+          </div>
+        ) : null}
+        {!isLoadingStorageEstimate && !available ? <p className="mt-3 text-sm text-app-text-subtle">Browser storage details are not available.</p> : null}
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <button
@@ -121,8 +147,6 @@ export const ImportExportPage = () => {
           </button>
         </div>
 
-        <p className="mt-4 text-xs text-app-warning">Import JSON replaces the current local database.</p>
-        <p className="mt-2 text-xs text-app-danger">Clear Local Data resets the app to an empty state. Export first if you want a backup.</p>
         {error ? <p className="mt-3 text-sm text-app-danger">Action failed: {error}</p> : null}
       </section>
     </div>

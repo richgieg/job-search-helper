@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { getAppApiClient } from '../../api'
+import { getAppApiClient, resetAppApiClient } from '../../api'
 import { queryKeys } from '../../queries/query-keys'
 import { useResetUiState } from '../../store/app-ui-store'
 import type { AppExportFile } from '../../types/state'
@@ -41,11 +42,21 @@ export const useAppDataTransfer = () => {
     },
   })
 
+  const resetLocalDataMutation = useMutation({
+    mutationFn: () => getAppApiClient().resetLocalData(),
+    onSuccess: async () => {
+      resetUiState()
+      resetAppApiClient()
+      await invalidateDataQueries()
+      clearInactiveImportedDataQueries()
+    },
+  })
+
   const exportAppDataMutation = useMutation({
     mutationFn: () => getAppApiClient().exportAppData(),
   })
 
-  const mutations = [importAppDataMutation, exportAppDataMutation] as const
+  const mutations = [importAppDataMutation, resetLocalDataMutation, exportAppDataMutation] as const
 
   return {
     errorMessage: mutations
@@ -55,6 +66,9 @@ export const useAppDataTransfer = () => {
     isSaving: mutations.some((mutation) => mutation.isPending),
     importAppData: async (file: AppExportFile) => {
       await importAppDataMutation.mutateAsync(file)
+    },
+    resetLocalData: async () => {
+      await resetLocalDataMutation.mutateAsync()
     },
     exportAppData: async () => exportAppDataMutation.mutateAsync(),
   }

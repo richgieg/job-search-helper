@@ -51,6 +51,7 @@ export interface AppDataService {
   getProfileDetail(profileId: string): Promise<ProfileDetailDto | null>
   getProfileDocument(profileId: string): Promise<ProfileDocumentDto | null>
   getProfilesList(kind?: 'base' | 'job' | 'all'): Promise<ProfilesListDto>
+  resetLocalData(): Promise<void>
   importAppData(file: AppExportFile): Promise<AppDataState>
   exportAppData(): Promise<AppExportFile>
   createBaseProfile(name: string): Promise<ProfileMutationResult>

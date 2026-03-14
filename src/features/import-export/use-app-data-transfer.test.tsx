@@ -8,7 +8,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import type { PropsWithChildren } from 'react'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { createAppApiClient, resetAppApiClient, setAppApiClient } from '../../api'
+import { createAppApiClient, getAppApiClient, resetAppApiClient, setAppApiClient } from '../../api'
 import { createEmptyAppDataState } from '../../domain/app-data-state'
 import { queryKeys } from '../../queries/query-keys'
 import { queryClient } from '../../queries/query-client'
@@ -107,5 +107,50 @@ describe('useAppDataTransfer', () => {
     expect(queryClient.getQueryData(queryKeys.profilesList('base'))).toBeUndefined()
     expect(queryClient.getQueryData(queryKeys.profilesDetail('profile_stale'))).toBeUndefined()
     expect(queryClient.getQueryData(queryKeys.profilesDocument('profile_stale'))).toBeUndefined()
+  })
+
+  it('resets local data, swaps in a fresh client, and leaves the app ready for new writes', async () => {
+    const imported: AppExportFile = {
+      version: 1 as const,
+      exportedAt: '2026-03-12T09:00:00.000Z',
+      data: {
+        ...createEmptyAppDataState(),
+        jobs: {
+          job_1: {
+            id: 'job_1',
+            companyName: 'Example Co',
+            jobTitle: 'Engineer',
+            description: '',
+            location: '',
+            postedCompensation: '',
+            desiredCompensation: '',
+            compensationNotes: '',
+            workArrangement: 'unknown',
+            employmentType: 'other',
+            datePosted: null,
+            notes: '',
+            createdAt: '2026-03-12T09:00:00.000Z',
+            updatedAt: '2026-03-12T09:00:00.000Z',
+            appliedAt: null,
+            finalOutcome: null,
+          },
+        },
+      },
+    }
+
+    const { result } = renderHook(() => useAppDataTransfer(), { wrapper })
+
+    await result.current.importAppData(imported)
+    await result.current.resetLocalData()
+
+    const appData = await result.current.exportAppData()
+    const profileMutation = await getAppApiClient().createBaseProfile('Fresh Profile')
+    const dashboard = await getAppApiClient().getDashboardSummary()
+    const createdProfile = profileMutation.createdId ? profileMutation.data.profiles[profileMutation.createdId] : null
+
+    expect(Object.keys(appData.data.jobs)).toHaveLength(0)
+    expect(Object.keys(appData.data.profiles)).toHaveLength(0)
+    expect(createdProfile?.name).toBe('Fresh Profile')
+    expect(dashboard).toMatchObject({ profileCount: 1, jobCount: 0 })
   })
 })
