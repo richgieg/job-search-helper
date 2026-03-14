@@ -30,7 +30,7 @@ describe('AppRoutes', () => {
 
     renderAppRoutes('/')
 
-    expect(await screen.findByRole('heading', { name: 'Track your search in one place.' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Everything for your search in one place.' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Job Search Helper' })).toHaveAttribute('href', '/')
     expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/dashboard')
   })
