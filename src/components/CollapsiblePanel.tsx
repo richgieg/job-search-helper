@@ -12,6 +12,8 @@ interface CollapsiblePanelProps {
   children: ReactNode
   collapsible?: boolean
   defaultExpanded?: boolean
+  expanded?: boolean
+  onExpandedChange?: (expanded: boolean) => void
   actionLabel?: string
   onAction?: () => void
   expandOnAction?: boolean
@@ -29,6 +31,8 @@ export const CollapsiblePanel = ({
   children,
   collapsible = true,
   defaultExpanded = false,
+  expanded,
+  onExpandedChange,
   actionLabel,
   onAction,
   expandOnAction = true,
@@ -38,28 +42,33 @@ export const CollapsiblePanel = ({
   contentClassName,
   showBottomActionWhenHeaderHidden = false,
 }: CollapsiblePanelProps) => {
-  const [expanded, setExpanded] = useState(defaultExpanded)
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded)
   const [isHeaderActionVisible, setIsHeaderActionVisible] = useState(true)
   const headerActionRef = useRef<HTMLDivElement | null>(null)
   const previousCollapsibleRef = useRef(collapsible)
-  const isExpanded = collapsible ? expanded : true
+  const isControlled = expanded !== undefined
+  const isExpanded = collapsible ? (isControlled ? expanded : internalExpanded) : true
   const hasContent = Children.count(children) > 0
   const shouldRenderTopAction = (!collapsible || isExpanded) && Boolean(actionLabel && onAction)
   const shouldShowBottomAction = showBottomActionWhenHeaderHidden && shouldRenderTopAction && hasContent && !isHeaderActionVisible
 
   useLayoutEffect(() => {
-    if (defaultExpanded) {
-      setExpanded(true)
+    if (defaultExpanded && !isControlled) {
+      setInternalExpanded(true)
     }
-  }, [defaultExpanded])
+  }, [defaultExpanded, isControlled])
 
   useLayoutEffect(() => {
     if (!previousCollapsibleRef.current && collapsible) {
-      setExpanded(true)
+      if (isControlled) {
+        onExpandedChange?.(true)
+      } else {
+        setInternalExpanded(true)
+      }
     }
 
     previousCollapsibleRef.current = collapsible
-  }, [collapsible])
+  }, [collapsible, isControlled, onExpandedChange])
 
   useEffect(() => {
     if (!showBottomActionWhenHeaderHidden || !shouldRenderTopAction || !headerActionRef.current) {
@@ -84,12 +93,23 @@ export const CollapsiblePanel = ({
       return
     }
 
-    setExpanded((current) => !current)
+    const nextExpanded = !isExpanded
+
+    if (isControlled) {
+      onExpandedChange?.(nextExpanded)
+      return
+    }
+
+    setInternalExpanded(nextExpanded)
   }
 
   const handleAction = () => {
     if (expandOnAction) {
-      setExpanded(true)
+      if (isControlled) {
+        onExpandedChange?.(true)
+      } else {
+        setInternalExpanded(true)
+      }
     }
 
     onAction?.()

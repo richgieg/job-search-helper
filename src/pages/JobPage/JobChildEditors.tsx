@@ -14,9 +14,20 @@ import type {
 } from '../../features/jobs/use-job-editor-model'
 import { useJobMutations } from '../../features/jobs/use-job-mutations'
 import { useProfileMutations } from '../../features/profiles/use-profile-mutations'
+import { useJobPagePanelState } from '../../store/app-ui-store'
 import type { ApplicationQuestion, ContactRelationshipType, JobContact, JobLink, Profile } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
+
+const jobPageSectionPanelKeys = {
+  applicationQuestions: 'application-questions',
+  contacts: 'contacts',
+  interviews: 'interviews',
+  links: 'links',
+  profiles: 'profiles',
+} as const
+
+const getJobPageItemPanelKey = (kind: string, id: string) => `${kind}:${id}`
 
 const summarizeParts = (parts: Array<string | null | undefined>) => parts.filter(Boolean).join(' • ')
 
@@ -353,6 +364,7 @@ const JobContactCard = ({
 }) => {
   const { deleteJobContact, reorderJobContacts, updateJobContact } = useJobMutations()
   const [draft, setDraft] = useState(jobContact)
+  const jobContactPanel = useJobPagePanelState(jobContact.jobId, getJobPageItemPanelKey('contact', jobContact.id), defaultExpanded)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
@@ -381,6 +393,7 @@ const JobContactCard = ({
     <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
+        expanded={jobContactPanel.expanded}
         headerActions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
@@ -402,6 +415,7 @@ const JobContactCard = ({
             <DeleteIconButton label="Delete contact" onDelete={() => void deleteJobContact(jobContact.id)} />
           </div>
         }
+        onExpandedChange={jobContactPanel.onExpandedChange}
         summary={summary}
         title={draft.name || jobContact.name || 'Contact'}
       >
@@ -454,6 +468,7 @@ const InterviewCard = ({
   const { addInterviewContact, deleteInterview, removeInterviewContact, reorderInterviewContacts, updateInterview } = useJobMutations()
   const [draft, setDraft] = useState(interviewEntry.interview)
   const [selectedContactId, setSelectedContactId] = useState('')
+  const interviewPanel = useJobPagePanelState(interviewEntry.interview.jobId, getJobPageItemPanelKey('interview', interviewEntry.interview.id), defaultExpanded)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
@@ -503,6 +518,8 @@ const InterviewCard = ({
     <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
+        expanded={interviewPanel.expanded}
+        onExpandedChange={interviewPanel.onExpandedChange}
         summary={formatInterviewSummary(draft.startAt)}
         title={formatInterviewTitle(draft.startAt)}
         headerActions={<DeleteIconButton label="Delete interview" onDelete={() => void deleteInterview(interview.id)} />}
@@ -605,6 +622,11 @@ const ApplicationQuestionCard = ({
 }) => {
   const { deleteApplicationQuestion, reorderApplicationQuestions, updateApplicationQuestion } = useJobMutations()
   const [draft, setDraft] = useState(applicationQuestion)
+  const applicationQuestionPanel = useJobPagePanelState(
+    applicationQuestion.jobId,
+    getJobPageItemPanelKey('application-question', applicationQuestion.id),
+    defaultExpanded,
+  )
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
@@ -630,6 +652,7 @@ const ApplicationQuestionCard = ({
     <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
+        expanded={applicationQuestionPanel.expanded}
         headerActions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ReorderButtons
@@ -651,6 +674,7 @@ const ApplicationQuestionCard = ({
             <DeleteIconButton label="Delete application question" onDelete={() => void deleteApplicationQuestion(applicationQuestion.id)} />
           </div>
         }
+        onExpandedChange={applicationQuestionPanel.onExpandedChange}
         summary={summary}
         title={title}
       >
@@ -703,6 +727,11 @@ export const JobChildEditors = ({
   const hasInterviews = interviewIds.length > 0
   const hasApplicationQuestions = applicationQuestionIds.length > 0
   const hasAttachedProfiles = attachedProfiles.length > 0
+  const profilesPanel = useJobPagePanelState(jobId, jobPageSectionPanelKeys.profiles)
+  const linksPanel = useJobPagePanelState(jobId, jobPageSectionPanelKeys.links)
+  const applicationQuestionsPanel = useJobPagePanelState(jobId, jobPageSectionPanelKeys.applicationQuestions)
+  const contactsPanel = useJobPagePanelState(jobId, jobPageSectionPanelKeys.contacts)
+  const interviewsPanel = useJobPagePanelState(jobId, jobPageSectionPanelKeys.interviews)
 
   useEffect(() => {
     setSelectedBaseProfileId((current) => {
@@ -734,6 +763,7 @@ export const JobChildEditors = ({
       <CollapsiblePanel
         collapsible={hasAttachedProfiles}
         description="Create job-specific profiles from base profiles and manage the profiles already attached to this job."
+        expanded={profilesPanel.expanded}
         headerActionContent={({ triggerAction }) =>
           baseProfiles.length === 0 ? (
             <p className="text-sm text-app-text-subtle">Create a base profile first.</p>
@@ -755,6 +785,7 @@ export const JobChildEditors = ({
           )
         }
         onAction={handleAddJobProfile}
+        onExpandedChange={profilesPanel.onExpandedChange}
         title="Profiles"
       >
         {hasAttachedProfiles ? (
@@ -779,6 +810,7 @@ export const JobChildEditors = ({
         actionStyle="icon"
         collapsible={hasJobLinks}
         description="Track the relevant job URLs for this role."
+        expanded={linksPanel.expanded}
         onAction={async () => {
           const createdId = await createJobLink(jobId)
 
@@ -786,6 +818,7 @@ export const JobChildEditors = ({
             setNewJobLinkId(createdId)
           }
         }}
+        onExpandedChange={linksPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="Links"
       >
@@ -811,6 +844,7 @@ export const JobChildEditors = ({
         actionStyle="icon"
         collapsible={hasApplicationQuestions}
         description="Track custom questions asked during the application flow and the answers you submitted."
+        expanded={applicationQuestionsPanel.expanded}
         onAction={async () => {
           const createdId = await createApplicationQuestion(jobId)
 
@@ -818,6 +852,7 @@ export const JobChildEditors = ({
             setNewApplicationQuestionId(createdId)
           }
         }}
+        onExpandedChange={applicationQuestionsPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="Application questions"
       >
@@ -844,6 +879,7 @@ export const JobChildEditors = ({
         actionStyle="icon"
         collapsible={hasJobContacts}
         description="Maintain recruiters, hiring managers, referrals, and interviewers for the job."
+        expanded={contactsPanel.expanded}
         onAction={async () => {
           const createdId = await createJobContact(jobId)
 
@@ -851,6 +887,7 @@ export const JobChildEditors = ({
             setNewJobContactId(createdId)
           }
         }}
+        onExpandedChange={contactsPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="Contacts"
       >
@@ -877,6 +914,7 @@ export const JobChildEditors = ({
         actionStyle="icon"
         collapsible={hasInterviews}
         description="Track interviews in chronological order."
+        expanded={interviewsPanel.expanded}
         onAction={async () => {
           const createdId = await createInterview(jobId)
 
@@ -884,6 +922,7 @@ export const JobChildEditors = ({
             setNewInterviewId(createdId)
           }
         }}
+        onExpandedChange={interviewsPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="Interviews"
       >

@@ -121,17 +121,60 @@ describe('JobPage', () => {
     expect(await screen.findByLabelText('Question')).toBeInTheDocument()
     expect(screen.getByLabelText('Answer')).toBeInTheDocument()
 
+    await waitFor(async () => {
+      await Promise.resolve()
+      expect(screen.getByLabelText('Question')).toBeInTheDocument()
+    })
+
     await user.click(screen.getByRole('button', { name: /^Contacts\b/i }))
     await user.click(screen.getByRole('button', { name: 'Add contact' }))
 
     expect(await screen.findByLabelText('Relationship type')).toBeInTheDocument()
     expect(screen.getByLabelText('LinkedIn URL')).toBeInTheDocument()
 
+    await waitFor(async () => {
+      await Promise.resolve()
+      expect(screen.getByLabelText('Relationship type')).toBeInTheDocument()
+    })
+
     await user.click(screen.getByRole('button', { name: /^Interviews\b/i }))
     await user.click(screen.getByRole('button', { name: 'Add interview' }))
 
     expect(await screen.findByLabelText('Start at')).toBeInTheDocument()
     expect(screen.getByText('No contacts associated with this interview yet.')).toBeInTheDocument()
+
+    await waitFor(async () => {
+      await Promise.resolve()
+      expect(screen.getByLabelText('Start at')).toBeInTheDocument()
+    })
+  })
+
+  it('restores expanded panels after the job route remounts', async () => {
+    const user = userEvent.setup()
+
+    const firstRender = renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Relationship type')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Contacts\b/i }))
+    await user.click(screen.getByRole('button', { name: /^Hiring Manager\b/i }))
+
+    expect(await screen.findByLabelText('Relationship type')).toBeInTheDocument()
+
+    firstRender.unmount()
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByLabelText('Relationship type')).toBeInTheDocument()
   })
 
   it('duplicates attached profiles through job child editor actions', async () => {

@@ -9,6 +9,7 @@ import { useProfileMutations } from '../../features/profiles/use-profile-mutatio
 import { useProfileEditorModel } from '../../features/profiles/use-profile-editor-model'
 import { useProfileDetailQuery } from '../../queries/use-profile-detail-query'
 import { useProfileDocumentQuery } from '../../queries/use-profile-document-query'
+import { useProfilePagePanelState } from '../../store/app-ui-store'
 import { ProfileChildEditors } from './ProfileChildEditors'
 import type { DocumentHeaderTemplate, PersonalDetails, ResumeSectionKey } from '../../types/state'
 import { documentHeaderTemplateLabels, documentHeaderTemplates } from '../../utils/document-header-templates'
@@ -66,6 +67,8 @@ export const ProfilePage = () => {
   const { reorderResumeSections, setDocumentHeaderTemplate, setResumeSectionEnabled, setResumeSectionLabel, updateProfile } = useProfileMutations()
   const { data: profileDetail, error, isLoading } = useProfileDetailQuery(profileId)
   const { data: documentData } = useProfileDocumentQuery(profileId)
+  const profileDetailsPanel = useProfilePagePanelState(profileId, 'profile-details')
+  const documentSettingsPanel = useProfilePagePanelState(profileId, 'document-settings')
   const editorModel = useProfileEditorModel(profileDetail)
   const profile = profileDetail?.profile
   const [name, setName] = useState<string | null>(null)
@@ -243,6 +246,8 @@ export const ProfilePage = () => {
 
       <CollapsiblePanel
         description="Edit the core profile content used across previews and applications."
+        expanded={profileDetailsPanel.expanded}
+        onExpandedChange={profileDetailsPanel.onExpandedChange}
         title="Profile details"
       >
         <div className="grid gap-4 xl:grid-cols-2">
@@ -311,7 +316,12 @@ export const ProfilePage = () => {
         skillsModel={editorModel.skills}
       />
 
-      <CollapsiblePanel description="Control document header styling plus which sections appear on the resume and the order in which they are shown." title="Document settings">
+      <CollapsiblePanel
+        description="Control document header styling plus which sections appear on the resume and the order in which they are shown."
+        expanded={documentSettingsPanel.expanded}
+        onExpandedChange={documentSettingsPanel.onExpandedChange}
+        title="Document settings"
+      >
         <div className="space-y-6">
           <div className="space-y-4">
             <div>

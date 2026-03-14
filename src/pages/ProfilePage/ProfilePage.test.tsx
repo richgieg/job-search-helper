@@ -2,7 +2,7 @@
 
 import '@testing-library/jest-dom/vitest'
 
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -116,6 +116,39 @@ describe('ProfilePage', () => {
 
     expect(await screen.findByLabelText('Category name')).toBeInTheDocument()
     expect(screen.getByText('No skills yet.')).toBeInTheDocument()
+
+    await waitFor(async () => {
+      await Promise.resolve()
+      expect(screen.getByLabelText('Category name')).toBeInTheDocument()
+    })
+  })
+
+  it('restores expanded panels after the profile route remounts', async () => {
+    const user = userEvent.setup()
+
+    const firstRender = renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Category name')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Skills\b/i }))
+    await user.click(screen.getByRole('button', { name: /^Languages\b/i }))
+
+    expect(await screen.findByLabelText('Category name')).toBeInTheDocument()
+
+    firstRender.unmount()
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByLabelText('Category name')).toBeInTheDocument()
   })
 
   it('renders the profile not-found state when the requested profile does not exist', async () => {

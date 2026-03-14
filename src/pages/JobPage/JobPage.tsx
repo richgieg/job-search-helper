@@ -9,6 +9,7 @@ import { useJobEditorModel } from '../../features/jobs/use-job-editor-model'
 import { useJobMutations } from '../../features/jobs/use-job-mutations'
 import { formatJobComputedStatus, getJobComputedStatus, getJobComputedStatusBadgeClassName } from '../../features/jobs/job-status'
 import { useJobDetailQuery } from '../../queries/use-job-detail-query'
+import { useJobPagePanelState } from '../../store/app-ui-store'
 import type { EmploymentType, Job, WorkArrangement } from '../../types/state'
 import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 
@@ -124,6 +125,7 @@ export const JobPage = () => {
   const { jobId = '' } = useParams()
   const { clearJobAppliedAt, clearJobFinalOutcome, setJobAppliedAt, setJobFinalOutcome, updateJob } = useJobMutations()
   const { data: jobDetail, error, isLoading } = useJobDetailQuery(jobId)
+  const jobDetailsPanel = useJobPagePanelState(jobId, 'job-details')
   const editorModel = useJobEditorModel(jobDetail)
   const [draft, setDraft] = useState<JobDraftState | null>(null)
   const job = jobDetail?.job
@@ -310,7 +312,12 @@ export const JobPage = () => {
         </div>
       </section>
 
-      <CollapsiblePanel description="Capture the core job details used across the app." title="Job details">
+      <CollapsiblePanel
+        description="Capture the core job details used across the app."
+        expanded={jobDetailsPanel.expanded}
+        onExpandedChange={jobDetailsPanel.onExpandedChange}
+        title="Job details"
+      >
         <div className="grid gap-4 xl:grid-cols-2">
           <TextField label="Job title" value={activeDraft.jobTitle} onBlur={() => commitRequiredField('jobTitle', activeDraft.jobTitle)} onChange={(value) => setDraft({ ...activeDraft, jobTitle: value })} />
           <TextField label="Company name" value={activeDraft.companyName} onBlur={() => commitRequiredField('companyName', activeDraft.companyName)} onChange={(value) => setDraft({ ...activeDraft, companyName: value })} />

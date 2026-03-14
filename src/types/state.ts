@@ -368,6 +368,14 @@ export interface DialogUiState {
   createJobProfileOpen: boolean
 }
 
+export interface ProfilePagePanelsUiState {
+  [profileId: Id]: Record<string, boolean>
+}
+
+export interface JobPagePanelsUiState {
+  [jobId: Id]: Record<string, boolean>
+}
+
 export interface AppUiState {
   selectedJobId: Id | null
   selectedProfileId: Id | null
@@ -375,6 +383,8 @@ export interface AppUiState {
   jobsList: JobsListUiState
   profilesList: ProfilesListUiState
   dialogs: DialogUiState
+  jobPagePanels: JobPagePanelsUiState
+  profilePagePanels: ProfilePagePanelsUiState
 }
 
 export interface AppExportFile {

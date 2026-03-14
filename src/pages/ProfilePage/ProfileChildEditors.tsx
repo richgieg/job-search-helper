@@ -40,9 +40,24 @@ import type {
   ReferenceType,
   Skill,
 } from '../../types/state'
+import { useProfilePagePanelState } from '../../store/app-ui-store'
 import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 import { moveOrderedItem } from '../../utils/reorder'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
+
+const profilePageSectionPanelKeys = {
+  achievements: 'achievements',
+  additionalExperience: 'additional-experience',
+  certifications: 'certifications',
+  education: 'education',
+  experience: 'experience',
+  links: 'links',
+  projects: 'projects',
+  references: 'references',
+  skills: 'skills',
+} as const
+
+const getProfilePageItemPanelKey = (kind: string, id: string) => `${kind}:${id}`
 
 const TextField = ({
   label,
@@ -750,6 +765,11 @@ const SkillCategoryCard = ({
   }, [category])
 
   const summary = summarizeParts([countLabel(skillIds.length, 'skill')])
+  const skillCategoryPanel = useProfilePagePanelState(
+    category.profileId,
+    getProfilePageItemPanelKey('skill-category', category.id),
+    defaultExpanded,
+  )
 
   const commitName = () => {
     if (name === category.name) {
@@ -763,6 +783,7 @@ const SkillCategoryCard = ({
     <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
+        expanded={skillCategoryPanel.expanded}
         headerActions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={enabled} label="Enable skill category" onChange={(value) => {
@@ -788,6 +809,7 @@ const SkillCategoryCard = ({
             <DeleteIconButton label="Delete skill category" onDelete={() => void deleteSkillCategory(category.id)} />
           </div>
         }
+        onExpandedChange={skillCategoryPanel.onExpandedChange}
         summary={summary}
         title={name || 'Skill category'}
       >
@@ -856,11 +878,17 @@ const AchievementCard = ({
   const summary = summarizeParts([
     draft.description.trim() ? draft.description.trim() : 'No description',
   ])
+  const achievementPanel = useProfilePagePanelState(
+    achievement.profileId,
+    getProfilePageItemPanelKey('achievement', achievement.id),
+    defaultExpanded,
+  )
 
   return (
     <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
+        expanded={achievementPanel.expanded}
         headerActions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable achievement" onChange={(value) => {
@@ -886,6 +914,7 @@ const AchievementCard = ({
             <DeleteIconButton label="Delete achievement" onDelete={() => void deleteAchievement(achievement.id)} />
           </div>
         }
+        onExpandedChange={achievementPanel.onExpandedChange}
         summary={summary}
         title={draft.name || achievement.name || 'Achievement'}
       >
@@ -943,6 +972,11 @@ const ExperienceCard = ({
     formatDateRange(draft?.startDate ?? null, draft?.endDate ?? null, draft?.isCurrent),
     countLabel(bulletIds.length, 'bullet'),
   ])
+  const experiencePanel = useProfilePagePanelState(
+    entry.profileId,
+    getProfilePageItemPanelKey('experience', entry.id),
+    defaultExpanded,
+  )
 
   if (!draft) {
     return null
@@ -956,6 +990,7 @@ const ExperienceCard = ({
     <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
+        expanded={experiencePanel.expanded}
         headerActions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable experience entry" onChange={(value) => {
@@ -981,6 +1016,7 @@ const ExperienceCard = ({
             <DeleteIconButton label="Delete experience entry" onDelete={() => void deleteExperienceEntry(entry.id)} />
           </div>
         }
+        onExpandedChange={experiencePanel.onExpandedChange}
         summary={summary}
         title={draft.title || entry.title || 'Experience entry'}
       >
@@ -1138,6 +1174,11 @@ const EducationCard = ({
     formatEducationSummaryDate(draft) || null,
     countLabel(bulletIds.length, 'bullet'),
   ])
+  const educationPanel = useProfilePagePanelState(
+    entry.profileId,
+    getProfilePageItemPanelKey('education', entry.id),
+    defaultExpanded,
+  )
 
   if (!draft) {
     return null
@@ -1151,6 +1192,7 @@ const EducationCard = ({
     <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
+        expanded={educationPanel.expanded}
         headerActions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable education entry" onChange={(value) => {
@@ -1176,6 +1218,7 @@ const EducationCard = ({
             <DeleteIconButton label="Delete education entry" onDelete={() => void deleteEducationEntry(entry.id)} />
           </div>
         }
+        onExpandedChange={educationPanel.onExpandedChange}
         summary={summary}
         title={draft.degree || entry.degree || 'Education entry'}
       >
@@ -1256,6 +1299,11 @@ const ProjectCard = ({
     formatProjectSummaryDate(draft) || null,
     countLabel(bulletIds.length, 'bullet'),
   ])
+  const projectPanel = useProfilePagePanelState(
+    project.profileId,
+    getProfilePageItemPanelKey('project', project.id),
+    defaultExpanded,
+  )
 
   if (!draft) {
     return null
@@ -1269,6 +1317,7 @@ const ProjectCard = ({
     <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
+        expanded={projectPanel.expanded}
         headerActions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable project" onChange={(value) => {
@@ -1294,6 +1343,7 @@ const ProjectCard = ({
             <DeleteIconButton label="Delete project" onDelete={() => void deleteProject(project.id)} />
           </div>
         }
+        onExpandedChange={projectPanel.onExpandedChange}
         summary={summary}
         title={draft.name || project.name || 'Project'}
       >
@@ -1363,6 +1413,11 @@ const AdditionalExperienceCard = ({
     formatAdditionalExperienceSummaryDate(draft) || null,
     countLabel(bulletIds.length, 'bullet'),
   ])
+  const additionalExperiencePanel = useProfilePagePanelState(
+    entry.profileId,
+    getProfilePageItemPanelKey('additional-experience', entry.id),
+    defaultExpanded,
+  )
 
   if (!draft) {
     return null
@@ -1376,6 +1431,7 @@ const AdditionalExperienceCard = ({
     <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
+        expanded={additionalExperiencePanel.expanded}
         headerActions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable additional experience entry" onChange={(value) => {
@@ -1401,6 +1457,7 @@ const AdditionalExperienceCard = ({
             <DeleteIconButton label="Delete additional experience entry" onDelete={() => void deleteAdditionalExperienceEntry(entry.id)} />
           </div>
         }
+        onExpandedChange={additionalExperiencePanel.onExpandedChange}
         summary={summary}
         title={draft.title || entry.title || 'Additional experience entry'}
       >
@@ -1467,6 +1524,11 @@ const CertificationCard = ({
     formatMonthYear(draft?.issueDate ?? null) || null,
     draft?.expiryDate ? `Expires ${formatMonthYear(draft.expiryDate)}` : null,
   ])
+  const certificationPanel = useProfilePagePanelState(
+    certification.profileId,
+    getProfilePageItemPanelKey('certification', certification.id),
+    defaultExpanded,
+  )
 
   if (!draft) {
     return null
@@ -1476,6 +1538,7 @@ const CertificationCard = ({
     <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
+        expanded={certificationPanel.expanded}
         headerActions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable certification" onChange={(value) => {
@@ -1501,6 +1564,7 @@ const CertificationCard = ({
             <DeleteIconButton label="Delete certification" onDelete={() => void deleteCertification(certification.id)} />
           </div>
         }
+        onExpandedChange={certificationPanel.onExpandedChange}
         summary={summary}
         title={draft.name || certification.name || 'Certification'}
       >
@@ -1547,6 +1611,11 @@ const ReferenceCard = ({
     draft?.type === 'professional' ? 'Professional' : 'Personal',
     draft?.company || draft?.relationship || null,
   ])
+  const referencePanel = useProfilePagePanelState(
+    reference.profileId,
+    getProfilePageItemPanelKey('reference', reference.id),
+    defaultExpanded,
+  )
 
   if (!draft) {
     return null
@@ -1556,6 +1625,7 @@ const ReferenceCard = ({
     <div ref={cardRef} style={cardScrollStyle}>
       <CollapsiblePanel
         defaultExpanded={defaultExpanded}
+        expanded={referencePanel.expanded}
         headerActions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <ActionToggle checked={draft.enabled} label="Enable reference" onChange={(value) => {
@@ -1581,6 +1651,7 @@ const ReferenceCard = ({
             <DeleteIconButton label="Delete reference" onDelete={() => void deleteReference(reference.id)} />
           </div>
         }
+        onExpandedChange={referencePanel.onExpandedChange}
         summary={summary}
         title={draft.name || reference.name || 'Reference'}
       >
@@ -1692,6 +1763,15 @@ export const ProfileChildEditors = ({
   const hasAdditionalExperienceEntries = additionalExperienceEntryIds.length > 0
   const hasCertifications = certificationIds.length > 0
   const hasReferences = referenceIds.length > 0
+  const linksPanel = useProfilePagePanelState(profileId, profilePageSectionPanelKeys.links)
+  const skillsPanel = useProfilePagePanelState(profileId, profilePageSectionPanelKeys.skills)
+  const achievementsPanel = useProfilePagePanelState(profileId, profilePageSectionPanelKeys.achievements)
+  const experienceSectionPanel = useProfilePagePanelState(profileId, profilePageSectionPanelKeys.experience)
+  const educationPanel = useProfilePagePanelState(profileId, profilePageSectionPanelKeys.education)
+  const projectsPanel = useProfilePagePanelState(profileId, profilePageSectionPanelKeys.projects)
+  const additionalExperienceSectionPanel = useProfilePagePanelState(profileId, profilePageSectionPanelKeys.additionalExperience)
+  const certificationsPanel = useProfilePagePanelState(profileId, profilePageSectionPanelKeys.certifications)
+  const referencesPanel = useProfilePagePanelState(profileId, profilePageSectionPanelKeys.references)
 
   return (
     <>
@@ -1700,6 +1780,7 @@ export const ProfileChildEditors = ({
         actionStyle="icon"
         collapsible={hasProfileLinks}
         description="Store the public URLs that should travel with this profile."
+        expanded={linksPanel.expanded}
         onAction={async () => {
           const createdId = await createProfileLink(profileId)
 
@@ -1707,6 +1788,7 @@ export const ProfileChildEditors = ({
             setNewProfileLinkId(createdId)
           }
         }}
+        onExpandedChange={linksPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="Links"
       >
@@ -1732,6 +1814,7 @@ export const ProfileChildEditors = ({
         actionStyle="icon"
         collapsible={hasSkillCategories}
         description="Organize skills into enabled or disabled categories."
+        expanded={skillsPanel.expanded}
         onAction={async () => {
           const createdId = await createSkillCategory(profileId)
 
@@ -1739,6 +1822,7 @@ export const ProfileChildEditors = ({
             setNewSkillCategoryId(createdId)
           }
         }}
+        onExpandedChange={skillsPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="Skills"
       >
@@ -1765,6 +1849,7 @@ export const ProfileChildEditors = ({
         actionStyle="icon"
         collapsible={hasAchievements}
         description="Capture notable accomplishments that should appear as a standalone resume section."
+        expanded={achievementsPanel.expanded}
         onAction={async () => {
           const createdId = await createAchievement(profileId)
 
@@ -1772,6 +1857,7 @@ export const ProfileChildEditors = ({
             setNewAchievementId(createdId)
           }
         }}
+        onExpandedChange={achievementsPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="Achievements"
       >
@@ -1796,6 +1882,7 @@ export const ProfileChildEditors = ({
       <CollapsiblePanel
         actionLabel="Add experience"
         actionStyle="icon"
+        expanded={experienceSectionPanel.expanded}
         onAction={async () => {
           const createdId = await createExperienceEntry(profileId)
 
@@ -1805,6 +1892,7 @@ export const ProfileChildEditors = ({
         }}
         collapsible={hasExperienceEntries}
         description="Capture work history entries used in resumes and applications."
+        onExpandedChange={experienceSectionPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="Experience"
       >
@@ -1829,6 +1917,7 @@ export const ProfileChildEditors = ({
       <CollapsiblePanel
         actionLabel="Add education"
         actionStyle="icon"
+        expanded={educationPanel.expanded}
         onAction={async () => {
           const createdId = await createEducationEntry(profileId)
 
@@ -1838,6 +1927,7 @@ export const ProfileChildEditors = ({
         }}
         collapsible={hasEducationEntries}
         description="Store education entries that can be enabled or disabled per profile."
+        onExpandedChange={educationPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="Education"
       >
@@ -1862,6 +1952,7 @@ export const ProfileChildEditors = ({
       <CollapsiblePanel
         actionLabel="Add project"
         actionStyle="icon"
+        expanded={projectsPanel.expanded}
         onAction={async () => {
           const createdId = await createProject(profileId)
 
@@ -1871,6 +1962,7 @@ export const ProfileChildEditors = ({
         }}
         collapsible={hasProjects}
         description="Store projects with optional organization context, dates, and bullets."
+        onExpandedChange={projectsPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="Projects"
       >
@@ -1895,6 +1987,7 @@ export const ProfileChildEditors = ({
       <CollapsiblePanel
         actionLabel="Add additional experience"
         actionStyle="icon"
+        expanded={additionalExperienceSectionPanel.expanded}
         onAction={async () => {
           const createdId = await createAdditionalExperienceEntry(profileId)
 
@@ -1904,6 +1997,7 @@ export const ProfileChildEditors = ({
         }}
         collapsible={hasAdditionalExperienceEntries}
         description="Store volunteer service or other non-standard experience with optional organization, location, dates, and bullets."
+        onExpandedChange={additionalExperienceSectionPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="Additional Experience"
       >
@@ -1928,6 +2022,7 @@ export const ProfileChildEditors = ({
       <CollapsiblePanel
         actionLabel="Add certification"
         actionStyle="icon"
+        expanded={certificationsPanel.expanded}
         onAction={async () => {
           const createdId = await createCertification(profileId)
 
@@ -1937,6 +2032,7 @@ export const ProfileChildEditors = ({
         }}
         collapsible={hasCertifications}
         description="Track certifications and their optional credential metadata."
+        onExpandedChange={certificationsPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="Certifications"
       >
@@ -1963,6 +2059,7 @@ export const ProfileChildEditors = ({
         actionStyle="icon"
         collapsible={hasReferences}
         description="Maintain both professional and personal references."
+        expanded={referencesPanel.expanded}
         onAction={async () => {
           const createdId = await createReference(profileId)
 
@@ -1970,6 +2067,7 @@ export const ProfileChildEditors = ({
             setNewReferenceId(createdId)
           }
         }}
+        onExpandedChange={referencesPanel.onExpandedChange}
         showBottomActionWhenHeaderHidden
         title="References"
       >
