@@ -6,6 +6,7 @@ import { DeleteIconButton, getActionIconButtonClassName } from '../components/Co
 import { formatJobComputedStatus, getJobComputedStatusBadgeClassName } from '../features/jobs/job-status'
 import { useJobMutations } from '../features/jobs/use-job-mutations'
 import { useJobsListQuery } from '../queries/use-jobs-list-query'
+import type { CreateJobInput } from '../domain/job-data'
 
 const getJobOrganizationName = (job: { companyName: string; staffingAgencyName?: string }) => job.companyName || job.staffingAgencyName || 'Unknown organization'
 
@@ -13,8 +14,7 @@ const getJobCompanyDisplayName = (job: { companyName: string }) => job.companyNa
 
 const getJobAgencyDisplayName = (job: { staffingAgencyName?: string }) => job.staffingAgencyName || '—'
 
-const JobListItem = ({ job }: { job: JobsListItemDto }) => {
-  const { deleteJob } = useJobMutations()
+const JobListItem = ({ job, onDeleteJob }: { job: JobsListItemDto; onDeleteJob: (jobId: string) => Promise<void> }) => {
   const organizationName = getJobOrganizationName(job)
   const companyDisplayName = getJobCompanyDisplayName(job)
   const agencyDisplayName = getJobAgencyDisplayName(job)
@@ -25,7 +25,7 @@ const JobListItem = ({ job }: { job: JobsListItemDto }) => {
       return
     }
 
-    await deleteJob(job.id)
+    await onDeleteJob(job.id)
   }
 
   return (
@@ -78,7 +78,7 @@ const JobListItem = ({ job }: { job: JobsListItemDto }) => {
   )
 }
 
-const JobsTable = ({ jobs }: { jobs: JobsListItemDto[] }) => {
+const JobsTable = ({ jobs, onDeleteJob }: { jobs: JobsListItemDto[]; onDeleteJob: (jobId: string) => Promise<void> }) => {
   if (jobs.length === 0) {
     return <p className="p-6 text-sm text-app-text-subtle">No jobs yet.</p>
   }
@@ -106,7 +106,7 @@ const JobsTable = ({ jobs }: { jobs: JobsListItemDto[] }) => {
         </thead>
         <tbody>
           {jobs.map((job) => (
-            <JobListItem key={job.id} job={job} />
+            <JobListItem key={job.id} job={job} onDeleteJob={onDeleteJob} />
           ))}
         </tbody>
       </table>
@@ -114,9 +114,7 @@ const JobsTable = ({ jobs }: { jobs: JobsListItemDto[] }) => {
   )
 }
 
-export const JobsPage = () => {
-  const { createJob } = useJobMutations()
-  const { data, error, isLoading } = useJobsListQuery()
+const JobsQuickAddForm = ({ onCreateJob }: { onCreateJob: (input: CreateJobInput) => Promise<string | null> }) => {
   const [companyName, setCompanyName] = useState('')
   const [staffingAgencyName, setStaffingAgencyName] = useState('')
   const [jobTitle, setJobTitle] = useState('')
@@ -135,7 +133,7 @@ export const JobsPage = () => {
       return
     }
 
-    await createJob({
+    await onCreateJob({
       companyName: trimmedCompany,
       staffingAgencyName: trimmedStaffingAgencyName,
       jobTitle: trimmedTitle,
@@ -149,60 +147,69 @@ export const JobsPage = () => {
   }
 
   return (
+    <section className="max-w-4xl rounded-2xl border border-app-border-muted bg-app-surface p-6 shadow-sm">
+      <form className="space-y-3" onSubmit={handleSubmit}>
+        <div className="grid gap-3 md:grid-cols-3">
+          <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
+            <span className="font-medium">Job title</span>
+            <input
+              className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
+              ref={jobTitleInputRef}
+              value={jobTitle}
+              onChange={(event) => setJobTitle(event.target.value)}
+            />
+          </label>
+          <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
+            <span className="font-medium">Company name (optional)</span>
+            <input
+              className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
+              value={companyName}
+              onChange={(event) => setCompanyName(event.target.value)}
+            />
+          </label>
+          <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
+            <span className="font-medium">Staffing agency name (optional)</span>
+            <input
+              className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
+              value={staffingAgencyName}
+              onChange={(event) => setStaffingAgencyName(event.target.value)}
+            />
+          </label>
+        </div>
+
+        <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
+          <span className="font-medium">URL (optional)</span>
+          <input
+            className="w-full rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
+            spellCheck={false}
+            type="url"
+            value={initialLinkUrl}
+            onChange={(event) => setInitialLinkUrl(event.target.value)}
+          />
+        </label>
+
+        <div className="flex justify-end">
+          <button className="rounded-xl bg-app-primary px-3 py-2 text-sm font-medium text-app-primary-contrast hover:bg-app-primary-hover" type="submit">
+            Add job
+          </button>
+        </div>
+      </form>
+    </section>
+  )
+}
+
+export const JobsPage = () => {
+  const { createJob, deleteJob } = useJobMutations()
+  const { data, error, isLoading } = useJobsListQuery()
+
+  return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-app-heading">Jobs</h1>
         <p className="mt-2 text-sm text-app-text-subtle">Keep track of the roles you're pursuing and everything connected to each one.</p>
       </div>
 
-      <section className="max-w-4xl rounded-2xl border border-app-border-muted bg-app-surface p-6 shadow-sm">
-        <form className="space-y-3" onSubmit={handleSubmit}>
-          <div className="grid gap-3 md:grid-cols-3">
-            <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
-              <span className="font-medium">Job title</span>
-              <input
-                className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-                ref={jobTitleInputRef}
-                value={jobTitle}
-                onChange={(event) => setJobTitle(event.target.value)}
-              />
-            </label>
-            <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
-              <span className="font-medium">Company name (optional)</span>
-              <input
-                className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-                value={companyName}
-                onChange={(event) => setCompanyName(event.target.value)}
-              />
-            </label>
-            <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
-              <span className="font-medium">Staffing agency name (optional)</span>
-              <input
-                className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-                value={staffingAgencyName}
-                onChange={(event) => setStaffingAgencyName(event.target.value)}
-              />
-            </label>
-          </div>
-
-          <label className="flex min-w-0 flex-col gap-2 text-sm text-app-text-muted">
-            <span className="font-medium">URL (optional)</span>
-            <input
-              className="w-full rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-              spellCheck={false}
-              type="url"
-              value={initialLinkUrl}
-              onChange={(event) => setInitialLinkUrl(event.target.value)}
-            />
-          </label>
-
-          <div className="flex justify-end">
-            <button className="rounded-xl bg-app-primary px-3 py-2 text-sm font-medium text-app-primary-contrast hover:bg-app-primary-hover" type="submit">
-              Add job
-            </button>
-          </div>
-        </form>
-      </section>
+      <JobsQuickAddForm onCreateJob={createJob} />
 
       {error ? (
         <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft px-4 py-3 text-sm text-app-status-rejected">
@@ -211,7 +218,7 @@ export const JobsPage = () => {
       ) : null}
 
       <section className="overflow-hidden rounded-2xl border border-app-border bg-app-surface shadow-sm">
-        {isLoading && !data ? <p className="p-6 text-sm text-app-text-subtle">Loading jobs...</p> : <JobsTable jobs={data?.items ?? []} />}
+        {isLoading && !data ? <p className="p-6 text-sm text-app-text-subtle">Loading jobs...</p> : <JobsTable jobs={data?.items ?? []} onDeleteJob={deleteJob} />}
       </section>
     </div>
   )

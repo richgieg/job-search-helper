@@ -6,11 +6,17 @@ import { DeleteIconButton, IconActionButton, getActionIconButtonClassName } from
 import { useProfileMutations } from '../features/profiles/use-profile-mutations'
 import { useProfilesListQuery } from '../queries/use-profiles-list-query'
 
-const ProfileListItem = ({ profile }: { profile: ProfilesListItemDto }) => {
-  const { deleteProfile, duplicateProfile } = useProfileMutations()
-
+const ProfileListItem = ({
+  profile,
+  onDeleteProfile,
+  onDuplicateProfile,
+}: {
+  profile: ProfilesListItemDto
+  onDeleteProfile: (profileId: string) => Promise<void>
+  onDuplicateProfile: (profileId: string) => Promise<void>
+}) => {
   const handleDuplicate = () => {
-    void duplicateProfile({ sourceProfileId: profile.id })
+    void onDuplicateProfile(profile.id)
   }
 
   const handleDelete = () => {
@@ -19,7 +25,7 @@ const ProfileListItem = ({ profile }: { profile: ProfilesListItemDto }) => {
       return
     }
 
-    void deleteProfile(profile.id)
+    void onDeleteProfile(profile.id)
   }
 
   return (
@@ -53,9 +59,7 @@ const ProfileListItem = ({ profile }: { profile: ProfilesListItemDto }) => {
   )
 }
 
-export const ProfilesPage = () => {
-  const { createBaseProfile } = useProfileMutations()
-  const { data, error, isLoading } = useProfilesListQuery('base')
+const ProfilesQuickAddForm = ({ onCreateProfile }: { onCreateProfile: (name: string) => Promise<string | null> }) => {
   const [name, setName] = useState('')
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
@@ -66,9 +70,35 @@ export const ProfilesPage = () => {
       return
     }
 
-    await createBaseProfile(trimmed)
+    await onCreateProfile(trimmed)
     setName('')
   }
+
+  return (
+    <section className="max-w-xl rounded-2xl border border-app-border-muted bg-app-surface p-6 shadow-sm">
+      <form className="space-y-3" onSubmit={handleSubmit}>
+        <label className="flex min-w-0 flex-1 flex-col gap-2 text-sm text-app-text-muted">
+          <span className="font-medium">Profile name</span>
+          <input
+            className="min-w-0 flex-1 rounded-xl border border-app-border px-3 py-2 text-sm outline-none ring-0 transition focus:border-app-focus-ring"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+          />
+        </label>
+
+        <div className="flex justify-end">
+          <button className="rounded-xl bg-app-primary px-3 py-2 text-sm font-medium text-app-primary-contrast hover:bg-app-primary-hover" type="submit">
+            Add profile
+          </button>
+        </div>
+      </form>
+    </section>
+  )
+}
+
+export const ProfilesPage = () => {
+  const { createBaseProfile, deleteProfile, duplicateProfile } = useProfileMutations()
+  const { data, error, isLoading } = useProfilesListQuery('base')
 
   return (
     <div className="space-y-8">
@@ -77,24 +107,7 @@ export const ProfilesPage = () => {
         <p className="mt-2 text-sm text-app-text-subtle">Create and manage the base profiles you can tailor for each opportunity.</p>
       </div>
 
-      <section className="max-w-xl rounded-2xl border border-app-border-muted bg-app-surface p-6 shadow-sm">
-        <form className="space-y-3" onSubmit={handleSubmit}>
-          <label className="flex min-w-0 flex-1 flex-col gap-2 text-sm text-app-text-muted">
-            <span className="font-medium">Profile name</span>
-            <input
-              className="min-w-0 flex-1 rounded-xl border border-app-border px-3 py-2 text-sm outline-none ring-0 transition focus:border-app-focus-ring"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-            />
-          </label>
-
-          <div className="flex justify-end">
-            <button className="rounded-xl bg-app-primary px-3 py-2 text-sm font-medium text-app-primary-contrast hover:bg-app-primary-hover" type="submit">
-              Add profile
-            </button>
-          </div>
-        </form>
-      </section>
+      <ProfilesQuickAddForm onCreateProfile={createBaseProfile} />
 
       {error ? (
         <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft px-4 py-3 text-sm text-app-status-rejected">
@@ -124,7 +137,12 @@ export const ProfilesPage = () => {
               </thead>
               <tbody>
                 {(data?.items ?? []).map((profile) => (
-                  <ProfileListItem key={profile.id} profile={profile} />
+                  <ProfileListItem
+                    key={profile.id}
+                    profile={profile}
+                    onDeleteProfile={deleteProfile}
+                    onDuplicateProfile={(profileId) => duplicateProfile({ sourceProfileId: profileId }).then(() => undefined)}
+                  />
                 ))}
               </tbody>
             </table>
