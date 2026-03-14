@@ -1,410 +1,175 @@
-export type Id = string
-export type IsoTimestamp = string
-export type IsoDate = string
+import type { z } from 'zod'
 
-export type WorkArrangement = 'onsite' | 'hybrid' | 'remote' | 'unknown'
-export type EmploymentType =
-  | 'unknown'
-  | 'full_time'
-  | 'part_time'
-  | 'contract'
-  | 'internship'
-  | 'temporary'
-  | 'other'
+import {
+  AdditionalExperienceBulletSchema,
+  AdditionalExperienceEntrySchema,
+  AppDataStateSchema,
+  AppExportFileSchema,
+  ApplicationQuestionSchema,
+  AchievementSchema,
+  BulletLevelSchema,
+  CertificationSchema,
+  ContactOrganizationKindSchema,
+  DocumentContactSchema,
+  DocumentHeaderTemplateSchema,
+  EducationBulletSchema,
+  EducationEntrySchema,
+  EducationStatusSchema,
+  EmploymentTypeSchema,
+  ExperienceBulletSchema,
+  ExperienceEntrySchema,
+  ExperienceSupervisorSchema,
+  FinalOutcomeSchema,
+  FinalOutcomeStatusSchema,
+  IdSchema,
+  InterviewContactSchema,
+  InterviewSchema,
+  IsoDateSchema,
+  IsoTimestampSchema,
+  JobComputedStatusSchema,
+  JobContactSchema,
+  JobLinkSchema,
+  JobSchema,
+  JobStatusFilterSchema,
+  PersonalDetailsSchema,
+  ProfileLinkSchema,
+  ProfileSchema,
+  ProjectBulletSchema,
+  ProjectSchema,
+  ReferenceSchema,
+  ReferenceTypeSchema,
+  ResumeSectionKeySchema,
+  ResumeSectionSettingsSchema,
+  ResumeSettingsSchema,
+  SkillCategorySchema,
+  SkillSchema,
+  WorkArrangementSchema,
+} from './state-schema'
 
-export type ContactOrganizationKind = 'company' | 'staffing_agency'
+export type Id = z.infer<typeof IdSchema>
+export type IsoTimestamp = z.infer<typeof IsoTimestampSchema>
+export type IsoDate = z.infer<typeof IsoDateSchema>
 
-export type ReferenceType = 'professional' | 'personal'
+export type WorkArrangement = z.infer<typeof WorkArrangementSchema>
+export type EmploymentType = z.infer<typeof EmploymentTypeSchema>
 
-export type EducationStatus = 'graduated' | 'attended' | 'in_progress'
+export type ContactOrganizationKind = z.infer<typeof ContactOrganizationKindSchema>
 
-export type FinalOutcomeStatus =
-  | 'withdrew'
-  | 'rejected'
-  | 'offer_received'
-  | 'offer_accepted'
+export type ReferenceType = z.infer<typeof ReferenceTypeSchema>
 
-export type JobComputedStatus =
-  | 'interested'
-  | 'applied'
-  | 'interview'
-  | 'offer_received'
-  | 'offer_accepted'
-  | 'rejected'
-  | 'withdrew'
+export type EducationStatus = z.infer<typeof EducationStatusSchema>
 
-export type JobStatusFilter = JobComputedStatus | 'all'
+export type FinalOutcomeStatus = z.infer<typeof FinalOutcomeStatusSchema>
 
-export type ThemePreference = 'light' | 'dark' | 'system'
+export type JobComputedStatus = z.infer<typeof JobComputedStatusSchema>
 
-export type DocumentHeaderTemplate = 'classic' | 'stacked'
-export type BulletLevel = 1 | 2 | 3
+export type JobStatusFilter = z.infer<typeof JobStatusFilterSchema>
 
-export type ResumeSectionKey =
-  | 'summary'
-  | 'skills'
-  | 'achievements'
-  | 'experience'
-  | 'education'
-  | 'projects'
-  | 'additional_experience'
-  | 'certifications'
-  | 'references'
+export type DocumentHeaderTemplate = z.infer<typeof DocumentHeaderTemplateSchema>
+export type BulletLevel = z.infer<typeof BulletLevelSchema>
 
-export interface ResumeSectionSettings {
-  enabled: boolean
-  sortOrder: number
-  label: string
-}
+export type ResumeSectionKey = z.infer<typeof ResumeSectionKeySchema>
 
-export interface ResumeSettings {
-  headerTemplate: DocumentHeaderTemplate
-  sections: Record<ResumeSectionKey, ResumeSectionSettings>
-}
+export type ResumeSectionSettings = z.infer<typeof ResumeSectionSettingsSchema>
 
-export interface PersonalDetails {
-  fullName: string
-  email: string
-  phone: string
-  addressLine1: string
-  addressLine2: string
-  addressLine3: string
-  city: string
-  state: string
-  postalCode: string
-}
+export type ResumeSettings = z.infer<typeof ResumeSettingsSchema>
 
-export interface Profile {
-  id: Id
-  name: string
-  summary: string
-  coverLetter: string
-  coverLetterContactId: Id | null
-  resumeSettings: ResumeSettings
-  personalDetails: PersonalDetails
-  jobId: Id | null
-  clonedFromProfileId: Id | null
-  createdAt: IsoTimestamp
-  updatedAt: IsoTimestamp
-}
+export type PersonalDetails = z.infer<typeof PersonalDetailsSchema>
 
-export interface ProfileLink {
-  id: Id
-  profileId: Id
-  name: string
-  url: string
-  enabled: boolean
-  sortOrder: number
-}
+export type Profile = z.infer<typeof ProfileSchema>
 
-export interface SkillCategory {
-  id: Id
-  profileId: Id
-  name: string
-  enabled: boolean
-  sortOrder: number
-}
+export type ProfileLink = z.infer<typeof ProfileLinkSchema>
 
-export interface Skill {
-  id: Id
-  skillCategoryId: Id
-  name: string
-  enabled: boolean
-  sortOrder: number
-}
+export type SkillCategory = z.infer<typeof SkillCategorySchema>
 
-export interface Achievement {
-  id: Id
-  profileId: Id
-  name: string
-  description: string
-  enabled: boolean
-  sortOrder: number
-}
+export type Skill = z.infer<typeof SkillSchema>
 
-export interface ExperienceSupervisor {
-  name: string
-  title: string
-  phone: string
-  email: string
-}
+export type Achievement = z.infer<typeof AchievementSchema>
 
-export interface ExperienceEntry {
-  id: Id
-  profileId: Id
-  company: string
-  title: string
-  location: string
-  workArrangement: WorkArrangement
-  employmentType: EmploymentType
-  startDate: IsoDate | null
-  endDate: IsoDate | null
-  isCurrent: boolean
-  reasonForLeavingShort: string
-  reasonForLeavingDetails: string
-  supervisor: ExperienceSupervisor
-  enabled: boolean
-  sortOrder: number
-}
+export type ExperienceSupervisor = z.infer<typeof ExperienceSupervisorSchema>
 
-export interface ExperienceBullet {
-  id: Id
-  experienceEntryId: Id
-  content: string
-  level: BulletLevel
-  enabled: boolean
-  sortOrder: number
-}
+export type ExperienceEntry = z.infer<typeof ExperienceEntrySchema>
 
-export interface EducationEntry {
-  id: Id
-  profileId: Id
-  school: string
-  degree: string
-  startDate: IsoDate | null
-  endDate: IsoDate | null
-  status: EducationStatus
-  enabled: boolean
-  sortOrder: number
-}
+export type ExperienceBullet = z.infer<typeof ExperienceBulletSchema>
 
-export interface EducationBullet {
-  id: Id
-  educationEntryId: Id
-  content: string
-  level: BulletLevel
-  enabled: boolean
-  sortOrder: number
-}
+export type EducationEntry = z.infer<typeof EducationEntrySchema>
 
-export interface Project {
-  id: Id
-  profileId: Id
-  name: string
-  organization: string
-  startDate: IsoDate | null
-  endDate: IsoDate | null
-  enabled: boolean
-  sortOrder: number
-}
+export type EducationBullet = z.infer<typeof EducationBulletSchema>
 
-export interface ProjectBullet {
-  id: Id
-  projectId: Id
-  content: string
-  level: BulletLevel
-  enabled: boolean
-  sortOrder: number
-}
+export type Project = z.infer<typeof ProjectSchema>
 
-export interface AdditionalExperienceEntry {
-  id: Id
-  profileId: Id
-  title: string
-  organization: string
-  location: string
-  startDate: IsoDate | null
-  endDate: IsoDate | null
-  enabled: boolean
-  sortOrder: number
-}
+export type ProjectBullet = z.infer<typeof ProjectBulletSchema>
 
-export interface AdditionalExperienceBullet {
-  id: Id
-  additionalExperienceEntryId: Id
-  content: string
-  level: BulletLevel
-  enabled: boolean
-  sortOrder: number
-}
+export type AdditionalExperienceEntry = z.infer<typeof AdditionalExperienceEntrySchema>
 
-export interface Certification {
-  id: Id
-  profileId: Id
-  name: string
-  issuer: string
-  issueDate: IsoDate | null
-  expiryDate: IsoDate | null
-  credentialId: string
-  credentialUrl: string
-  enabled: boolean
-  sortOrder: number
-}
+export type AdditionalExperienceBullet = z.infer<typeof AdditionalExperienceBulletSchema>
 
-export interface Reference {
-  id: Id
-  profileId: Id
-  type: ReferenceType
-  name: string
-  relationship: string
-  company: string
-  title: string
-  email: string
-  phone: string
-  notes: string
-  enabled: boolean
-  sortOrder: number
-}
+export type Certification = z.infer<typeof CertificationSchema>
 
-export interface Job {
-  id: Id
-  companyName: string
-  staffingAgencyName: string
-  jobTitle: string
-  description: string
-  location: string
-  postedCompensation: string
-  desiredCompensation: string
-  compensationNotes: string
-  workArrangement: WorkArrangement
-  employmentType: EmploymentType
-  datePosted: IsoDate | null
-  appliedAt: IsoTimestamp | null
-  finalOutcome: FinalOutcome | null
-  notes: string
-  createdAt: IsoTimestamp
-  updatedAt: IsoTimestamp
-}
+export type Reference = z.infer<typeof ReferenceSchema>
 
-export interface FinalOutcome {
-  status: FinalOutcomeStatus
-  setAt: IsoTimestamp
-}
+export type Job = z.infer<typeof JobSchema>
 
-export interface JobLink {
-  id: Id
-  jobId: Id
-  url: string
-  sortOrder: number
-  createdAt: IsoTimestamp
-}
+export type FinalOutcome = z.infer<typeof FinalOutcomeSchema>
 
-export interface JobContact {
-  id: Id
-  jobId: Id
-  name: string
-  title: string
-  company: string
-  organizationKind: ContactOrganizationKind
-  addressLine1: string
-  addressLine2: string
-  addressLine3: string
-  addressLine4: string
-  email: string
-  phone: string
-  linkedinUrl: string
-  notes: string
-  sortOrder: number
-}
+export type JobLink = z.infer<typeof JobLinkSchema>
 
-export interface DocumentContact {
-  id: Id
-  name: string
-  title: string
-  company: string
-  organizationKind: ContactOrganizationKind
-  addressLine1: string
-  addressLine2: string
-  addressLine3: string
-  addressLine4: string
-  email: string
-  phone: string
-  linkedinUrl: string
-  notes: string
-  sortOrder: number
-  isVirtual: boolean
-}
+export type JobContact = z.infer<typeof JobContactSchema>
 
-export interface ApplicationQuestion {
-  id: Id
-  jobId: Id
-  question: string
-  answer: string
-  sortOrder: number
-}
+export type DocumentContact = z.infer<typeof DocumentContactSchema>
 
-export interface Interview {
-  id: Id
-  jobId: Id
-  createdAt: IsoTimestamp
-  startAt: IsoTimestamp | null
-  notes: string
-}
+export type ApplicationQuestion = z.infer<typeof ApplicationQuestionSchema>
 
-export interface InterviewContact {
-  id: Id
-  interviewId: Id
-  jobContactId: Id
-  sortOrder: number
-}
+export type Interview = z.infer<typeof InterviewSchema>
 
-export interface AppDataState {
-  version: 1
-  exportedAt?: IsoTimestamp
-  profiles: Record<Id, Profile>
-  profileLinks: Record<Id, ProfileLink>
-  skillCategories: Record<Id, SkillCategory>
-  skills: Record<Id, Skill>
-  achievements: Record<Id, Achievement>
-  experienceEntries: Record<Id, ExperienceEntry>
-  experienceBullets: Record<Id, ExperienceBullet>
-  educationEntries: Record<Id, EducationEntry>
-  educationBullets: Record<Id, EducationBullet>
-  projects: Record<Id, Project>
-  projectBullets: Record<Id, ProjectBullet>
-  additionalExperienceEntries: Record<Id, AdditionalExperienceEntry>
-  additionalExperienceBullets: Record<Id, AdditionalExperienceBullet>
-  certifications: Record<Id, Certification>
-  references: Record<Id, Reference>
-  jobs: Record<Id, Job>
-  jobLinks: Record<Id, JobLink>
-  jobContacts: Record<Id, JobContact>
-  interviews: Record<Id, Interview>
-  interviewContacts: Record<Id, InterviewContact>
-  applicationQuestions: Record<Id, ApplicationQuestion>
-}
+export type InterviewContact = z.infer<typeof InterviewContactSchema>
 
-export interface JobsListUiState {
-  searchText: string
-  statusFilter: JobStatusFilter | null
-  sortBy: 'updated_at' | 'created_at' | 'company_name' | 'job_title'
-  sortDirection: 'asc' | 'desc'
-}
+export type AppDataState = z.infer<typeof AppDataStateSchema>
 
-export interface ProfilesListUiState {
-  searchText: string
-  kindFilter: 'base' | 'job' | null
-  sortBy: 'updated_at' | 'created_at' | 'name'
-  sortDirection: 'asc' | 'desc'
-}
+export type AppExportFile = z.infer<typeof AppExportFileSchema>
 
-export interface DialogUiState {
-  importExportOpen: boolean
-  duplicateProfileOpen: boolean
-  createJobProfileOpen: boolean
-}
-
-export interface ProfilePagePanelsUiState {
-  [profileId: Id]: Record<string, boolean>
-}
-
-export interface JobPagePanelsUiState {
-  [jobId: Id]: Record<string, boolean>
-}
-
-export interface AppUiState {
-  selectedJobId: Id | null
-  selectedProfileId: Id | null
-  themePreference: ThemePreference
-  jobsList: JobsListUiState
-  profilesList: ProfilesListUiState
-  dialogs: DialogUiState
-  jobPagePanels: JobPagePanelsUiState
-  profilePagePanels: ProfilePagePanelsUiState
-}
-
-export interface AppExportFile {
-  version: 1
-  exportedAt: IsoTimestamp
-  data: Omit<AppDataState, 'version' | 'exportedAt'>
+export {
+  AdditionalExperienceBulletSchema,
+  AdditionalExperienceEntrySchema,
+  AppDataStateSchema,
+  AppExportFileSchema,
+  ApplicationQuestionSchema,
+  AchievementSchema,
+  BulletLevelSchema,
+  CertificationSchema,
+  ContactOrganizationKindSchema,
+  DocumentContactSchema,
+  DocumentHeaderTemplateSchema,
+  EducationBulletSchema,
+  EducationEntrySchema,
+  EducationStatusSchema,
+  EmploymentTypeSchema,
+  ExperienceBulletSchema,
+  ExperienceEntrySchema,
+  ExperienceSupervisorSchema,
+  FinalOutcomeSchema,
+  FinalOutcomeStatusSchema,
+  IdSchema,
+  InterviewContactSchema,
+  InterviewSchema,
+  IsoDateSchema,
+  IsoTimestampSchema,
+  JobComputedStatusSchema,
+  JobContactSchema,
+  JobLinkSchema,
+  JobSchema,
+  JobStatusFilterSchema,
+  PersonalDetailsSchema,
+  ProfileLinkSchema,
+  ProfileSchema,
+  ProjectBulletSchema,
+  ProjectSchema,
+  ReferenceSchema,
+  ReferenceTypeSchema,
+  ResumeSectionKeySchema,
+  ResumeSectionSettingsSchema,
+  ResumeSettingsSchema,
+  SkillCategorySchema,
+  SkillSchema,
+  WorkArrangementSchema,
 }

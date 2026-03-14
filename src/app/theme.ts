@@ -1,4 +1,4 @@
-import type { ThemePreference } from '../types/state'
+import type { ThemePreference } from '../types/ui-state'
 
 export const THEME_PREFERENCE_STORAGE_KEY = 'job-search-helper.theme-preference'
 

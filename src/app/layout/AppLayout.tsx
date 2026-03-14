@@ -3,7 +3,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom'
 
 import { applyResolvedTheme, persistThemePreference, resolveThemePreference } from '../theme'
 import { useSetThemePreference, useThemePreference } from '../../store/app-ui-store'
-import type { ThemePreference } from '../../types/state'
+import type { ThemePreference } from '../../types/ui-state'
 
 const navigationItems = [
   { to: '/dashboard', label: 'Dashboard' },

@@ -3,7 +3,8 @@ import { useLayoutEffect } from 'react'
 import { create } from 'zustand'
 
 import { readStoredThemePreference } from '../app/theme'
-import type { AppUiState, Id, ThemePreference } from '../types/state'
+import type { Id } from '../types/state'
+import type { AppUiState, ThemePreference } from '../types/ui-state'
 
 interface AppUiStoreState {
   ui: AppUiState
