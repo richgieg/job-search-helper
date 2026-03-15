@@ -24,6 +24,7 @@ import type {
   Skill,
   SkillCategory,
 } from '../types/state'
+import { validateAppExportFile } from '../features/import-export/app-export-file'
 import { getJobComputedStatus } from '../features/jobs/job-status'
 import { createDocumentContacts, selectPrimaryContact } from '../features/documents/document-data'
 import { compareInterviewsBySchedule } from '../utils/interview-sort'
@@ -2234,7 +2235,8 @@ export class IndexedDbAppBackend implements AppDataService {
 
   async importAppData(file: AppExportFile): Promise<AppDataState> {
     await this.ensureInitialized()
-    return this.snapshotRepository.replaceAppData(structuredClone(file.data))
+    const validatedFile = validateAppExportFile(file)
+    return this.snapshotRepository.replaceAppData(structuredClone(validatedFile.data))
   }
 
   async resetLocalData(): Promise<void> {

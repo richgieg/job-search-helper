@@ -488,6 +488,24 @@ describe('IndexedDbAppBackend', () => {
     })
   })
 
+  it('rejects import files that fail AppExportFileSchema validation', async () => {
+    const backend = new IndexedDbAppBackend({
+      databaseName,
+      now: () => '2026-03-13T15:00:00.000Z',
+    })
+
+    await expect(
+      backend.importAppData({
+        version: 1,
+        exportedAt: '2026-03-12T10:00:00.000Z',
+        data: {
+          ...toPersistedAppData(createSeedData()),
+          unexpected: true,
+        },
+      } as AppExportFile),
+    ).rejects.toThrow('Import file does not match the expected format.')
+  })
+
   it('persists mutations across backend instances', async () => {
     const firstBackend = new IndexedDbAppBackend({
       databaseName,

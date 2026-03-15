@@ -18,6 +18,11 @@ import { useAppDataTransfer } from './use-app-data-transfer'
 
 const wrapper = ({ children }: PropsWithChildren) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 
+const toExportPayload = (data: ReturnType<typeof createEmptyAppDataState>) => {
+  const { version: _version, exportedAt: _exportedAt, ...payload } = data
+  return payload
+}
+
 const resetUiStore = () => {
   resetAppApiClient()
   queryClient.clear()
@@ -38,7 +43,7 @@ describe('useAppDataTransfer', () => {
       version: 1 as const,
       exportedAt: '2026-03-12T09:00:00.000Z',
       data: {
-        ...createEmptyAppDataState(),
+        ...toExportPayload(createEmptyAppDataState()),
         jobs: {
           job_1: {
             id: 'job_1',
@@ -88,7 +93,7 @@ describe('useAppDataTransfer', () => {
     const imported: AppExportFile = {
       version: 1 as const,
       exportedAt: '2026-03-12T09:00:00.000Z',
-      data: createEmptyAppDataState(),
+      data: toExportPayload(createEmptyAppDataState()),
     }
 
     queryClient.setQueryData(queryKeys.dashboardSummary(), { profileCount: 99, jobCount: 99 })
@@ -115,7 +120,7 @@ describe('useAppDataTransfer', () => {
       version: 1 as const,
       exportedAt: '2026-03-12T09:00:00.000Z',
       data: {
-        ...createEmptyAppDataState(),
+        ...toExportPayload(createEmptyAppDataState()),
         jobs: {
           job_1: {
             id: 'job_1',
@@ -154,5 +159,20 @@ describe('useAppDataTransfer', () => {
     expect(Object.keys(appData.data.profiles)).toHaveLength(0)
     expect(createdProfile?.name).toBe('Fresh Profile')
     expect(dashboard).toMatchObject({ profileCount: 1, jobCount: 0 })
+  })
+
+  it('surfaces backend validation errors for schema-invalid imports', async () => {
+    const { result } = renderHook(() => useAppDataTransfer(), { wrapper })
+
+    await expect(
+      result.current.importAppData({
+        version: 1,
+        exportedAt: '2026-03-12T09:00:00.000Z',
+        data: {
+          ...toExportPayload(createEmptyAppDataState()),
+          unexpected: true,
+        },
+      } as AppExportFile),
+    ).rejects.toThrow('Import file does not match the expected format.')
   })
 })

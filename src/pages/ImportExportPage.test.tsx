@@ -11,6 +11,11 @@ import { createEmptyAppDataState } from '../domain/app-data-state'
 import { ImportExportPage } from './ImportExportPage'
 import { createSeedData, renderRoute, resetRouteTestState, setupRouteTestEnvironment } from '../test/route-test-helpers'
 
+const toExportPayload = (data: ReturnType<typeof createSeedData>) => {
+  const { version: _version, exportedAt: _exportedAt, ...payload } = data
+  return payload
+}
+
 describe('ImportExportPage', () => {
   beforeEach(() => {
     setupRouteTestEnvironment()
@@ -99,7 +104,7 @@ describe('ImportExportPage', () => {
     const imported = {
       version: 1 as const,
       exportedAt: '2026-03-12T12:00:00.000Z',
-      data: createSeedData(),
+      data: toExportPayload(createSeedData()),
     }
 
     const file = new File([JSON.stringify(imported)], 'import.json', { type: 'application/json' })
@@ -159,5 +164,54 @@ describe('ImportExportPage', () => {
     expect(Object.keys(clearedExport.data.jobs)).toHaveLength(0)
     expect(Object.keys(clearedExport.data.profiles)).toHaveLength(0)
     expect(createdProfileRecord?.name).toBe('Fresh Profile')
+  })
+
+  it('shows an error when the selected file is not valid json', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <ImportExportPage />,
+      path: '/import-export',
+      route: '/import-export',
+    })
+
+    expect(await screen.findByText('1 profiles · 1 jobs')).toBeInTheDocument()
+
+    const file = new File(['{"version": 1'], 'broken.json', { type: 'application/json' })
+
+    await user.upload(screen.getByLabelText('Import JSON'), file)
+
+    expect(await screen.findByText('Action failed: Import file is not valid JSON.')).toBeInTheDocument()
+    expect(screen.getByText('1 profiles · 1 jobs')).toBeInTheDocument()
+  })
+
+  it('shows an error when the selected file fails AppExportFileSchema validation', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <ImportExportPage />,
+      path: '/import-export',
+      route: '/import-export',
+    })
+
+    expect(await screen.findByText('1 profiles · 1 jobs')).toBeInTheDocument()
+
+    const invalidImport = {
+      version: 1,
+      exportedAt: '2026-03-12T12:00:00.000Z',
+      data: {
+        ...toExportPayload(createSeedData()),
+        unexpected: true,
+      },
+    }
+
+    const file = new File([JSON.stringify(invalidImport)], 'invalid.json', { type: 'application/json' })
+
+    await user.upload(screen.getByLabelText('Import JSON'), file)
+
+    expect(
+      await screen.findByText('Action failed: Import file does not match the expected format. data: Unrecognized key: "unexpected"'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('1 profiles · 1 jobs')).toBeInTheDocument()
   })
 })

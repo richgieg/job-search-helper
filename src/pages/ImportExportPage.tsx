@@ -1,5 +1,6 @@
 import { ChangeEvent, useMemo, useState } from 'react'
 
+import { parseAppExportFileJson } from '../features/import-export/app-export-file'
 import { useBrowserStorageEstimate } from '../features/import-export/use-browser-storage-estimate'
 import { useAppDataTransfer } from '../features/import-export/use-app-data-transfer'
 import { useDashboardSummaryQuery } from '../queries/use-dashboard-summary-query'
@@ -68,11 +69,7 @@ export const ImportExportPage = () => {
 
     try {
       const text = await selectedFile.text()
-      const parsed = JSON.parse(text) as AppExportFile
-
-      if (parsed.version !== 1 || typeof parsed.exportedAt !== 'string' || typeof parsed.data !== 'object') {
-        throw new Error('Unsupported export file format.')
-      }
+      const parsed = parseAppExportFileJson(text)
 
       await importAppData(parsed)
       await refreshStorageEstimate()
