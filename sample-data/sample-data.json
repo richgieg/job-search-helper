@@ -37,7 +37,7 @@
         "jobId": null,
         "clonedFromProfileId": null,
         "createdAt": "2026-03-01T09:00:00.000Z",
-        "updatedAt": "2026-03-10T12:00:00.000Z"
+        "updatedAt": "2026-03-08T12:00:00.000Z"
       },
       "profile-base-devops-engineer": {
         "id": "profile-base-devops-engineer",
@@ -73,7 +73,7 @@
         "jobId": null,
         "clonedFromProfileId": null,
         "createdAt": "2026-03-01T09:05:00.000Z",
-        "updatedAt": "2026-03-10T12:00:00.000Z"
+        "updatedAt": "2026-03-08T12:00:00.000Z"
       },
       "profile-base-cloud-engineer": {
         "id": "profile-base-cloud-engineer",
@@ -109,7 +109,7 @@
         "jobId": null,
         "clonedFromProfileId": null,
         "createdAt": "2026-03-01T09:10:00.000Z",
-        "updatedAt": "2026-03-10T12:00:00.000Z"
+        "updatedAt": "2026-03-08T12:00:00.000Z"
       }
     },
     "profileLinks": {
