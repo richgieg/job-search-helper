@@ -71,7 +71,7 @@ const DashboardSummarySkeleton = () => (
 const activityChartSeries = [
   { key: 'jobsAddedCount', label: 'Jobs added', color: 'var(--app-primary)' },
   { key: 'applicationsSubmittedCount', label: 'Applications submitted', color: 'var(--app-status-applied)' },
-  { key: 'interviewsBookedCount', label: 'Interviews booked', color: 'var(--app-status-interview-muted)' },
+  { key: 'interviewsBookedCount', label: 'Interviews booked', color: 'var(--app-status-interview)' },
   { key: 'offersReceivedCount', label: 'Offers received', color: 'var(--app-status-offer)' },
 ] as const
 

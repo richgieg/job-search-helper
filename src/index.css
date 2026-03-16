@@ -129,15 +129,15 @@
   --app-status-applied-muted: var(--color-indigo-100);
   --app-status-applied-contrast: var(--color-indigo-800);
 
-  --app-status-interview: var(--color-violet-700);
-  --app-status-interview-soft: var(--color-violet-50);
-  --app-status-interview-muted: var(--color-violet-100);
-  --app-status-interview-contrast: var(--color-violet-800);
+  --app-status-interview: var(--color-orange-700);
+  --app-status-interview-soft: var(--color-orange-50);
+  --app-status-interview-muted: var(--color-orange-100);
+  --app-status-interview-contrast: var(--color-orange-800);
 
-  --app-status-withdrew: var(--color-amber-800);
-  --app-status-withdrew-soft: var(--color-amber-50);
-  --app-status-withdrew-muted: var(--color-amber-100);
-  --app-status-withdrew-contrast: var(--color-amber-900);
+  --app-status-withdrew: var(--color-slate-600);
+  --app-status-withdrew-soft: var(--color-slate-100);
+  --app-status-withdrew-muted: var(--color-slate-200);
+  --app-status-withdrew-contrast: var(--color-slate-700);
 
   --app-status-rejected: var(--color-rose-700);
   --app-status-rejected-soft: var(--color-rose-50);
@@ -216,15 +216,15 @@
   --app-status-applied-muted: var(--color-indigo-900);
   --app-status-applied-contrast: var(--color-indigo-100);
 
-  --app-status-interview: var(--color-violet-300);
-  --app-status-interview-soft: var(--color-violet-950);
-  --app-status-interview-muted: var(--color-violet-900);
-  --app-status-interview-contrast: var(--color-violet-100);
+  --app-status-interview: var(--color-orange-300);
+  --app-status-interview-soft: var(--color-orange-950);
+  --app-status-interview-muted: var(--color-orange-900);
+  --app-status-interview-contrast: var(--color-orange-100);
 
-  --app-status-withdrew: var(--color-amber-300);
-  --app-status-withdrew-soft: var(--color-amber-950);
-  --app-status-withdrew-muted: var(--color-amber-900);
-  --app-status-withdrew-contrast: var(--color-amber-100);
+  --app-status-withdrew: var(--color-slate-200);
+  --app-status-withdrew-soft: var(--color-slate-800);
+  --app-status-withdrew-muted: var(--color-slate-700);
+  --app-status-withdrew-contrast: var(--color-slate-50);
 
   --app-status-rejected: var(--color-rose-300);
   --app-status-rejected-soft: var(--color-rose-950);
