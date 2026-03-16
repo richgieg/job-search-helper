@@ -36,10 +36,10 @@ const JobListItem = ({ job, onDeleteJob }: { job: JobsListItemDto; onDeleteJob: 
         </Link>
       </td>
       <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
-        <span className="text-sm text-app-text-subtle">{companyDisplayName}</span>
+        <span className={`text-sm ${companyDisplayName === '—' ? 'text-app-text-disabled' : 'text-app-text-subtle'}`}>{companyDisplayName}</span>
       </td>
       <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
-        <span className="text-sm text-app-text-subtle">{agencyDisplayName}</span>
+        <span className={`text-sm ${agencyDisplayName === '—' ? 'text-app-text-disabled' : 'text-app-text-subtle'}`}>{agencyDisplayName}</span>
       </td>
       <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
         <span className={['rounded-full px-3 py-1 text-xs font-medium', getJobComputedStatusBadgeClassName(job.computedStatus)].join(' ')}>{formatJobComputedStatus(job.computedStatus)}</span>
@@ -52,12 +52,13 @@ const JobListItem = ({ job, onDeleteJob }: { job: JobsListItemDto; onDeleteJob: 
             {job.jobLinks.map((jobLink, index) => (
               <a
                 key={jobLink.id}
-                className="text-sm font-medium text-app-primary-hover underline-offset-2 hover:text-app-primary-hover hover:underline"
+                aria-label={`Open job link ${index + 1} for ${job.jobTitle} in new tab`}
+                className={getActionIconButtonClassName()}
                 href={jobLink.url}
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                {`link ${index + 1}`}
+                <span className="text-xs font-semibold leading-none">{index + 1}</span>
               </a>
             ))}
           </div>

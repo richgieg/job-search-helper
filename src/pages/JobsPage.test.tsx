@@ -29,6 +29,7 @@ describe('JobsPage', () => {
     expect(screen.getByText('Example Co')).toBeInTheDocument()
     expect(screen.getByText('—')).toBeInTheDocument()
     expect(screen.getByText('Interview')).toBeInTheDocument()
+    expect(screen.getByLabelText('Open job link 1 for Senior Engineer in new tab')).toBeInTheDocument()
   })
 
   it('refreshes the jobs list after creating a job through a page mutation', async () => {
