@@ -818,7 +818,7 @@ export const JobChildEditors = ({
     <>
       <CollapsiblePanel
         collapsible={hasAttachedProfiles}
-        description="Create job-specific profiles from base profiles and manage the profiles already attached to this job."
+        description="Create a job-specific profile from a base profile to generate a tailored resume and cover letter."
         expanded={profilesPanel.expanded}
         headerActionContent={({ triggerAction }) =>
           baseProfiles.length === 0 ? (
