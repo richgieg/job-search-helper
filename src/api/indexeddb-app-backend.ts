@@ -1704,6 +1704,10 @@ export class IndexedDbAppBackend implements AppDataService {
       await transactionToPromise(transaction)
 
       const now = new Date(this.now())
+      const totalJobsAddedCount = jobs.length
+      const totalApplicationsSentCount = jobs.filter((job) => job.appliedAt !== null).length
+      const totalInterviewsBookedCount = interviews.length
+      const totalOffersReceivedCount = jobs.filter((job) => job.finalOutcome && offerStatusesCountedAsReceived.has(job.finalOutcome.status)).length
 
       const upcomingInterviews = interviews
         .filter((interview) => interview.startAt !== null && new Date(interview.startAt).getTime() > now.getTime())
@@ -1747,6 +1751,10 @@ export class IndexedDbAppBackend implements AppDataService {
         jobCount: jobs.length,
         activeInterviewCount: interviews.length,
         contactCount: jobContacts.length,
+        totalJobsAddedCount,
+        totalApplicationsSentCount,
+        totalInterviewsBookedCount,
+        totalOffersReceivedCount,
         addedTodayCount,
         addedLast7DaysCount,
         notAppliedCount,

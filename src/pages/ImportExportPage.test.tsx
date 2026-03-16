@@ -369,7 +369,11 @@ describe('ImportExportPage', () => {
 
     await user.upload(screen.getByLabelText('Import JSON'), file)
 
-    expect(confirmSpy).toHaveBeenCalledOnce()
+    await waitFor(() => {
+      expect(confirmSpy).toHaveBeenCalledWith(
+        'Replace current local data with the selected import file? This cannot be undone unless you have an exported backup.',
+      )
+    })
     expect(screen.getByText('1 profiles · 1 jobs')).toBeInTheDocument()
   })
 })

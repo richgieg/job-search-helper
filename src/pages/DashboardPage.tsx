@@ -5,21 +5,44 @@ import type { DashboardActivityDto, DashboardActivityPeriodDays, DashboardUpcomi
 import { useDashboardActivityQuery } from '../queries/use-dashboard-activity-query'
 import { useDashboardSummaryQuery } from '../queries/use-dashboard-summary-query'
 
-const StatCard = ({ label, value }: { label: string; value: number }) => (
-  <div className="rounded-2xl border border-app-border-muted bg-app-surface p-5 shadow-sm">
-    <p className="text-sm font-medium text-app-text-subtle">{label}</p>
-    <p className="mt-2 text-3xl font-semibold text-app-text">{value}</p>
+const summaryMetricTones = [
+  'bg-app-primary-soft text-app-primary',
+  'bg-app-status-applied-soft text-app-status-applied',
+  'bg-app-status-interview-soft text-app-status-interview',
+  'bg-app-status-offer-soft text-app-status-offer',
+] as const
+
+const SummaryStatCard = ({
+  label,
+  toneClassName,
+  value,
+}: {
+  label: string
+  toneClassName: string
+  value: number
+}) => (
+  <div className="rounded-[1.75rem] border border-app-border bg-app-surface/85 p-5 shadow-sm backdrop-blur-sm">
+    <div className={[toneClassName, 'inline-flex rounded-full px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.2em]'].join(' ')}>
+      {label}
+    </div>
+    <p className="mt-4 text-3xl font-semibold tracking-tight text-app-heading">{value}</p>
   </div>
 )
 
-const MetricSection = ({ title, metrics }: { title: string; metrics: Array<{ label: string; value: number }> }) => (
+const MetricSection = ({
+  title,
+  metrics,
+}: {
+  title: string
+  metrics: Array<{ label: string; toneClassName: string; value: number }>
+}) => (
   <section className="space-y-4">
     <div>
       <h2 className="text-lg font-semibold text-app-heading">{title}</h2>
     </div>
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {metrics.map((metric) => (
-        <StatCard key={metric.label} label={metric.label} value={metric.value} />
+        <SummaryStatCard key={metric.label} label={metric.label} toneClassName={metric.toneClassName} value={metric.value} />
       ))}
     </div>
   </section>
@@ -27,16 +50,16 @@ const MetricSection = ({ title, metrics }: { title: string; metrics: Array<{ lab
 
 const DashboardSummarySkeleton = () => (
   <div aria-hidden="true" className="space-y-8">
-    {['Jobs', 'Applications', 'Interviews', 'Offers'].map((title, sectionIndex) => (
+    {['Today', 'Last 7 days', 'Totals'].map((title) => (
       <section className="space-y-4" key={title}>
         <div>
           <div className="h-6 w-28 rounded bg-app-surface-muted" />
         </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: sectionIndex < 2 ? 3 : 2 }, (_, cardIndex) => (
-            <div className="rounded-2xl border border-app-border-muted bg-app-surface p-5 shadow-sm" key={cardIndex}>
-              <div className="h-4 w-28 rounded bg-app-surface-muted" />
-              <div className="mt-3 h-9 w-14 rounded bg-app-surface-muted" />
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }, (_, cardIndex) => (
+            <div className="rounded-[1.75rem] border border-app-border bg-app-surface/85 p-5 shadow-sm" key={cardIndex}>
+              <div className="h-6 w-20 rounded-full bg-app-surface-muted" />
+              <div className="mt-4 h-9 w-14 rounded bg-app-surface-muted" />
             </div>
           ))}
         </div>
@@ -224,22 +247,59 @@ export const DashboardPage = () => {
     error: activityError,
     isLoading: isActivityLoading,
   } = useDashboardActivityQuery(activityPeriodDays)
-  const newJobMetrics = [
-    { label: 'Added today', value: data?.addedTodayCount ?? 0 },
-    { label: 'Added last 7 days', value: data?.addedLast7DaysCount ?? 0 },
+  const todayMetrics = [
+    { label: 'Jobs Added', toneClassName: summaryMetricTones[0], value: data?.addedTodayCount ?? 0 },
+    { label: 'Applications Sent', toneClassName: summaryMetricTones[1], value: data?.appliedTodayCount ?? 0 },
+    {
+      label: 'Interviews Booked',
+      toneClassName: summaryMetricTones[2],
+      value: data?.interviewsBookedTodayCount ?? 0,
+    },
+    {
+      label: 'Offers Received',
+      toneClassName: summaryMetricTones[3],
+      value: data?.offersReceivedTodayCount ?? 0,
+    },
   ]
-  const applicationMetrics = [
-    { label: 'Applied today', value: data?.appliedTodayCount ?? 0 },
-    { label: 'Applied last 7 days', value: data?.appliedLast7DaysCount ?? 0 },
-    { label: 'Not applied', value: data?.notAppliedCount ?? 0 },
+  const thisWeekMetrics = [
+    { label: 'Jobs Added', toneClassName: summaryMetricTones[0], value: data?.addedLast7DaysCount ?? 0 },
+    {
+      label: 'Applications Sent',
+      toneClassName: summaryMetricTones[1],
+      value: data?.appliedLast7DaysCount ?? 0,
+    },
+    {
+      label: 'Interviews Booked',
+      toneClassName: summaryMetricTones[2],
+      value: data?.interviewsBookedLast7DaysCount ?? 0,
+    },
+    {
+      label: 'Offers Received',
+      toneClassName: summaryMetricTones[3],
+      value: data?.offersReceivedLast7DaysCount ?? 0,
+    },
   ]
-  const interviewMetrics = [
-    { label: 'Interviews booked today', value: data?.interviewsBookedTodayCount ?? 0 },
-    { label: 'Interviews booked last 7 days', value: data?.interviewsBookedLast7DaysCount ?? 0 },
-  ]
-  const offerMetrics = [
-    { label: 'Offers received today', value: data?.offersReceivedTodayCount ?? 0 },
-    { label: 'Offers received last 7 days', value: data?.offersReceivedLast7DaysCount ?? 0 },
+  const totalMetrics = [
+    {
+      label: 'Jobs Added',
+      toneClassName: summaryMetricTones[0],
+      value: data?.totalJobsAddedCount ?? 0,
+    },
+    {
+      label: 'Applications Sent',
+      toneClassName: summaryMetricTones[1],
+      value: data?.totalApplicationsSentCount ?? 0,
+    },
+    {
+      label: 'Interviews Booked',
+      toneClassName: summaryMetricTones[2],
+      value: data?.totalInterviewsBookedCount ?? 0,
+    },
+    {
+      label: 'Offers Received',
+      toneClassName: summaryMetricTones[3],
+      value: data?.totalOffersReceivedCount ?? 0,
+    },
   ]
 
   return (
@@ -328,13 +388,11 @@ export const DashboardPage = () => {
           <DashboardSummarySkeleton />
         ) : (
           <div className="space-y-8">
-            <MetricSection title="Jobs" metrics={newJobMetrics} />
+            <MetricSection title="Today" metrics={todayMetrics} />
 
-            <MetricSection title="Applications" metrics={applicationMetrics} />
+            <MetricSection title="Last 7 days" metrics={thisWeekMetrics} />
 
-            <MetricSection title="Interviews" metrics={interviewMetrics} />
-
-            <MetricSection title="Offers" metrics={offerMetrics} />
+            <MetricSection title="Totals" metrics={totalMetrics} />
           </div>
         )}
       </section>

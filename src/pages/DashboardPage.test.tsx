@@ -2,7 +2,7 @@
 
 import '@testing-library/jest-dom/vitest'
 
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -42,6 +42,10 @@ describe('DashboardPage', () => {
         jobCount: 1,
         activeInterviewCount: 1,
         contactCount: 2,
+        totalJobsAddedCount: 8,
+        totalApplicationsSentCount: 6,
+        totalInterviewsBookedCount: 4,
+        totalOffersReceivedCount: 2,
         addedTodayCount: 1,
         addedLast7DaysCount: 3,
         notAppliedCount: 4,
@@ -77,21 +81,30 @@ describe('DashboardPage', () => {
     expect(screen.getByRole('button', { name: '7 days' })).toHaveAttribute('aria-pressed', 'true')
 
     await waitFor(() => {
-      expect(screen.getByText('Jobs')).toBeInTheDocument()
-      expect(screen.getByText('Applications')).toBeInTheDocument()
-      expect(screen.getByText('Interviews')).toBeInTheDocument()
-      expect(screen.getByText('Offers')).toBeInTheDocument()
+      const todaySection = screen.getByText('Today').closest('section')
+      const last7DaysSection = screen.getByText('Last 7 days').closest('section')
+      const totalsSection = screen.getByText('Totals').closest('section')
+
+      expect(screen.getByText('Today')).toBeInTheDocument()
+      expect(screen.getByText('Last 7 days')).toBeInTheDocument()
+      expect(screen.getByText('Totals')).toBeInTheDocument()
       expect(screen.getByText('Upcoming interviews')).toBeInTheDocument()
       expect(screen.getByRole('img', { name: 'Dashboard activity over the last 7 days' })).toBeInTheDocument()
-      expect(screen.getByText('Added today').parentElement).toHaveTextContent('1')
-      expect(screen.getByText('Added last 7 days').parentElement).toHaveTextContent('3')
-      expect(screen.getByText('Not applied').parentElement).toHaveTextContent('4')
-      expect(screen.getByText('Applied today').parentElement).toHaveTextContent('2')
-      expect(screen.getByText('Applied last 7 days').parentElement).toHaveTextContent('5')
-      expect(screen.getByText('Interviews booked today').parentElement).toHaveTextContent('1')
-      expect(screen.getByText('Interviews booked last 7 days').parentElement).toHaveTextContent('2')
-      expect(screen.getByText('Offers received today').parentElement).toHaveTextContent('1')
-      expect(screen.getByText('Offers received last 7 days').parentElement).toHaveTextContent('2')
+      expect(todaySection).not.toBeNull()
+      expect(last7DaysSection).not.toBeNull()
+      expect(totalsSection).not.toBeNull()
+      expect(within(todaySection!).getByText('Jobs Added').parentElement).toHaveTextContent('1')
+      expect(within(todaySection!).getByText('Applications Sent').parentElement).toHaveTextContent('2')
+      expect(within(todaySection!).getByText('Interviews Booked').parentElement).toHaveTextContent('1')
+      expect(within(todaySection!).getByText('Offers Received').parentElement).toHaveTextContent('1')
+      expect(within(last7DaysSection!).getByText('Jobs Added').parentElement).toHaveTextContent('3')
+      expect(within(last7DaysSection!).getByText('Applications Sent').parentElement).toHaveTextContent('5')
+      expect(within(last7DaysSection!).getByText('Interviews Booked').parentElement).toHaveTextContent('2')
+      expect(within(last7DaysSection!).getByText('Offers Received').parentElement).toHaveTextContent('2')
+      expect(within(totalsSection!).getByText('Jobs Added').parentElement).toHaveTextContent('8')
+      expect(within(totalsSection!).getByText('Applications Sent').parentElement).toHaveTextContent('6')
+      expect(within(totalsSection!).getByText('Interviews Booked').parentElement).toHaveTextContent('4')
+      expect(within(totalsSection!).getByText('Offers Received').parentElement).toHaveTextContent('2')
     })
 
     expect(screen.getByText('1 scheduled')).toBeInTheDocument()
@@ -116,6 +129,10 @@ describe('DashboardPage', () => {
         jobCount: 1,
         activeInterviewCount: 0,
         contactCount: 0,
+        totalJobsAddedCount: 0,
+        totalApplicationsSentCount: 0,
+        totalInterviewsBookedCount: 0,
+        totalOffersReceivedCount: 0,
         addedTodayCount: 0,
         addedLast7DaysCount: 0,
         notAppliedCount: 0,
@@ -166,7 +183,7 @@ describe('DashboardPage', () => {
 
     expect(screen.getByText('Dashboard')).toBeInTheDocument()
     expect(screen.getByText('Activity')).toBeInTheDocument()
-    expect(screen.queryByText('Jobs')).not.toBeInTheDocument()
+    expect(screen.queryByText('Today')).not.toBeInTheDocument()
     expect(screen.queryByRole('img', { name: 'Dashboard activity over the last 7 days' })).not.toBeInTheDocument()
   })
 
@@ -205,6 +222,10 @@ describe('DashboardPage', () => {
         jobCount: 1,
         activeInterviewCount: 1,
         contactCount: 2,
+        totalJobsAddedCount: 1,
+        totalApplicationsSentCount: 0,
+        totalInterviewsBookedCount: 1,
+        totalOffersReceivedCount: 0,
         addedTodayCount: 0,
         addedLast7DaysCount: 0,
         notAppliedCount: 0,

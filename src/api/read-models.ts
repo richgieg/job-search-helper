@@ -31,6 +31,10 @@ export interface DashboardSummaryDto {
   jobCount: number
   activeInterviewCount: number
   contactCount: number
+  totalJobsAddedCount: number
+  totalApplicationsSentCount: number
+  totalInterviewsBookedCount: number
+  totalOffersReceivedCount: number
   addedTodayCount: number
   addedLast7DaysCount: number
   notAppliedCount: number
