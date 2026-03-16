@@ -73,14 +73,14 @@ describe('DashboardPage', () => {
     })
 
     expect(await screen.findByText('Dashboard')).toBeInTheDocument()
-    expect(screen.getByText('Jobs')).toBeInTheDocument()
-    expect(screen.getByText('Applications')).toBeInTheDocument()
-    expect(screen.getByText('Interviews')).toBeInTheDocument()
-    expect(screen.getByText('Offers')).toBeInTheDocument()
     expect(screen.getByText('Activity')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '7 days' })).toHaveAttribute('aria-pressed', 'true')
 
     await waitFor(() => {
+      expect(screen.getByText('Jobs')).toBeInTheDocument()
+      expect(screen.getByText('Applications')).toBeInTheDocument()
+      expect(screen.getByText('Interviews')).toBeInTheDocument()
+      expect(screen.getByText('Offers')).toBeInTheDocument()
       expect(screen.getByText('Upcoming interviews')).toBeInTheDocument()
       expect(screen.getByRole('img', { name: 'Dashboard activity over the last 7 days' })).toBeInTheDocument()
       expect(screen.getByText('Added today').parentElement).toHaveTextContent('1')
@@ -148,7 +148,7 @@ describe('DashboardPage', () => {
     })
   })
 
-  it('shows a loading message while the summary query is pending', () => {
+  it('shows in-place loading skeletons while the summary query is pending', () => {
     const apiClient = createAppApiClient({ initialData: createSeedData() })
 
     setupRouteTestEnvironment()
@@ -164,7 +164,10 @@ describe('DashboardPage', () => {
       route: '/dashboard',
     })
 
-    expect(screen.getByText('Loading dashboard...')).toBeInTheDocument()
+    expect(screen.getByText('Dashboard')).toBeInTheDocument()
+    expect(screen.getByText('Activity')).toBeInTheDocument()
+    expect(screen.queryByText('Jobs')).not.toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: 'Dashboard activity over the last 7 days' })).not.toBeInTheDocument()
   })
 
   it('shows an error banner when the summary query fails without cached data', async () => {

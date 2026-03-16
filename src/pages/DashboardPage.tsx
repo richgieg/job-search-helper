@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 
 import type { DashboardActivityDto, DashboardActivityPeriodDays, DashboardUpcomingInterviewDto } from '../api/read-models'
 import { useDashboardActivityQuery } from '../queries/use-dashboard-activity-query'
@@ -22,6 +22,26 @@ const MetricSection = ({ title, metrics }: { title: string; metrics: Array<{ lab
       ))}
     </div>
   </section>
+)
+
+const DashboardSummarySkeleton = () => (
+  <div aria-hidden="true" className="space-y-8">
+    {['Jobs', 'Applications', 'Interviews', 'Offers'].map((title, sectionIndex) => (
+      <section className="space-y-4" key={title}>
+        <div>
+          <div className="h-6 w-28 rounded bg-app-surface-muted" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: sectionIndex < 2 ? 3 : 2 }, (_, cardIndex) => (
+            <div className="rounded-2xl border border-app-border-muted bg-app-surface p-5 shadow-sm" key={cardIndex}>
+              <div className="h-4 w-28 rounded bg-app-surface-muted" />
+              <div className="mt-3 h-9 w-14 rounded bg-app-surface-muted" />
+            </div>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
 )
 
 const activityChartSeries = [
@@ -70,6 +90,39 @@ const getChartTickValues = (maxValue: number) => {
   return [...new Set([0, midpoint, maxValue])].sort((left, right) => left - right)
 }
 
+const DashboardActivityLegend = () => (
+  <div className="flex flex-wrap gap-3 text-sm text-app-text-muted">
+    {activityChartSeries.map((series) => (
+      <div key={series.key} className="inline-flex items-center gap-2">
+        <span aria-hidden="true" className="h-3 w-3 rounded-sm" style={{ backgroundColor: series.color }} />
+        <span>{series.label}</span>
+      </div>
+    ))}
+  </div>
+)
+
+const DashboardActivityChartFrame = ({ children }: { children: ReactNode }) => <div className="mt-6 min-h-[22rem]">{children}</div>
+
+const DashboardActivityChartSkeleton = () => (
+  <div aria-hidden="true" className="pt-4">
+    <div className="rounded-xl border border-app-border-muted bg-app-surface-subtle p-4">
+      <div className="flex h-72 items-end gap-3">
+        {Array.from({ length: 7 }, (_, index) => (
+          <div className="flex flex-1 items-end gap-1" key={index}>
+            {Array.from({ length: activityChartSeries.length }, (_, seriesIndex) => (
+              <div
+                className="flex-1 bg-app-surface-muted"
+                key={seriesIndex}
+                style={{ height: `${28 + ((index + seriesIndex) % 4) * 16}%` }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)
+
 const DashboardActivityChart = ({ data }: { data: DashboardActivityDto }) => {
   const plotWidth = chartViewBox.width - chartViewBox.paddingLeft - chartViewBox.paddingRight
   const plotHeight = chartViewBox.height - chartViewBox.paddingTop - chartViewBox.paddingBottom
@@ -86,16 +139,7 @@ const DashboardActivityChart = ({ data }: { data: DashboardActivityDto }) => {
   const getY = (value: number) => chartViewBox.paddingTop + plotHeight - (value / maxValue) * plotHeight
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-3 text-sm text-app-text-muted">
-        {activityChartSeries.map((series) => (
-          <div key={series.key} className="inline-flex items-center gap-2">
-            <span aria-hidden="true" className="h-3 w-3 rounded-sm" style={{ backgroundColor: series.color }} />
-            <span>{series.label}</span>
-          </div>
-        ))}
-      </div>
-
+    <div className="pt-4">
       <svg
         aria-label={`Dashboard activity over the last ${data.periodDays} days`}
         className="w-full"
@@ -204,7 +248,6 @@ export const DashboardPage = () => {
         <p className="mt-2 max-w-3xl text-sm text-app-text-subtle">See how your job search is progressing and what needs attention next.</p>
       </section>
 
-      {isLoading && !data ? <p className="text-sm text-app-text-subtle">Loading dashboard...</p> : null}
       {error ? (
         <div className="rounded-2xl border border-app-status-rejected-muted bg-app-status-rejected-soft px-4 py-3 text-sm text-app-status-rejected">
           Unable to refresh dashboard metrics right now. Showing the most recently cached result if available.
@@ -269,21 +312,30 @@ export const DashboardPage = () => {
           </div>
         </div>
 
-        {isActivityLoading && !activityData ? <p className="mt-4 text-sm text-app-text-subtle">Loading activity chart...</p> : null}
-        {activityError && !activityData ? <p className="mt-4 text-sm text-app-status-rejected">Unable to load activity chart right now.</p> : null}
-        {activityData ? <div className="mt-6"><DashboardActivityChart data={activityData} /></div> : null}
+        <DashboardActivityChartFrame>
+          <DashboardActivityLegend />
+          {isActivityLoading && !activityData ? (
+            <DashboardActivityChartSkeleton />
+          ) : null}
+          {activityError && !activityData ? <p className="text-sm text-app-status-rejected">Unable to load activity chart right now.</p> : null}
+          {activityData ? <DashboardActivityChart data={activityData} /> : null}
+        </DashboardActivityChartFrame>
       </section>
 
       <section className="rounded-2xl border border-app-border-muted bg-app-surface p-6 shadow-sm">
-        <div className="space-y-8">
-          <MetricSection title="Jobs" metrics={newJobMetrics} />
+        {isLoading && !data ? (
+          <DashboardSummarySkeleton />
+        ) : (
+          <div className="space-y-8">
+            <MetricSection title="Jobs" metrics={newJobMetrics} />
 
-          <MetricSection title="Applications" metrics={applicationMetrics} />
+            <MetricSection title="Applications" metrics={applicationMetrics} />
 
-          <MetricSection title="Interviews" metrics={interviewMetrics} />
+            <MetricSection title="Interviews" metrics={interviewMetrics} />
 
-          <MetricSection title="Offers" metrics={offerMetrics} />
-        </div>
+            <MetricSection title="Offers" metrics={offerMetrics} />
+          </div>
+        )}
       </section>
     </div>
   )
