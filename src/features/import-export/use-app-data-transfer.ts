@@ -1,17 +1,20 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { getAppApiClient, resetAppApiClient } from '../../api'
+import { generateSampleAppExportFile } from './generate-sample-app-export-file'
 import { queryKeys } from '../../queries/query-keys'
 import { useResetUiState } from '../../store/app-ui-store'
 import type { AppExportFile } from '../../types/state'
 
 const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : 'Unknown import/export error.')
+const sampleDataReplacementWarning = 'Replace current local data with sample data? This cannot be undone unless you have an exported backup.'
 
 export const useAppDataTransfer = () => {
   const queryClient = useQueryClient()
   const resetUiState = useResetUiState()
 
   const importedDataQueryKeys = [
+    queryKeys.appDataEmpty(),
     queryKeys.dashboardSummary(),
     queryKeys.dashboardActivityRoot(),
     queryKeys.jobsList(),
@@ -66,6 +69,16 @@ export const useAppDataTransfer = () => {
     isSaving: mutations.some((mutation) => mutation.isPending),
     importAppData: async (file: AppExportFile) => {
       await importAppDataMutation.mutateAsync(file)
+    },
+    loadSampleData: async () => {
+      const shouldWarnBeforeReplacement = !(await getAppApiClient().isAppDataEmpty())
+
+      if (shouldWarnBeforeReplacement && !window.confirm(sampleDataReplacementWarning)) {
+        return false
+      }
+
+      await importAppDataMutation.mutateAsync(generateSampleAppExportFile())
+      return true
     },
     resetLocalData: async () => {
       await resetLocalDataMutation.mutateAsync()

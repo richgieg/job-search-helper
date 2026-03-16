@@ -1,4 +1,5 @@
 export const queryKeys = {
+  appDataEmpty: () => ['appDataEmpty'] as const,
   dashboardSummary: () => ['dashboardSummary'] as const,
   dashboardActivityRoot: () => ['dashboardActivity'] as const,
   dashboardActivity: (periodDays: 7 | 30) => ['dashboardActivity', { periodDays }] as const,

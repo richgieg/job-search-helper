@@ -1,9 +1,10 @@
 import { ChangeEvent, useMemo, useState } from 'react'
 
+import { getAppApiClient } from '../api'
 import { parseAppExportFileJson } from '../features/import-export/app-export-file'
-import { generateSampleAppExportFile } from '../features/import-export/generate-sample-app-export-file'
 import { useBrowserStorageEstimate } from '../features/import-export/use-browser-storage-estimate'
 import { useAppDataTransfer } from '../features/import-export/use-app-data-transfer'
+import { useAppDataEmptyQuery } from '../queries/use-app-data-empty-query'
 import { useDashboardSummaryQuery } from '../queries/use-dashboard-summary-query'
 import type { AppExportFile } from '../types/state'
 
@@ -41,15 +42,25 @@ const downloadJson = (payload: AppExportFile) => {
 }
 
 export const ImportExportPage = () => {
-  const { exportAppData, importAppData, isSaving, resetLocalData } = useAppDataTransfer()
+  const { exportAppData, importAppData, isSaving, loadSampleData, resetLocalData } = useAppDataTransfer()
   const { available, isLoading: isLoadingStorageEstimate, quotaBytes, refresh: refreshStorageEstimate, usageBytes } =
     useBrowserStorageEstimate()
+  const { data: isAppDataEmpty } = useAppDataEmptyQuery()
   const { data } = useDashboardSummaryQuery()
   const [error, setError] = useState<string | null>(null)
   const profileCount = data?.profileCount ?? 0
   const jobCount = data?.jobCount ?? 0
 
   const summary = useMemo(() => `${profileCount} profiles · ${jobCount} jobs`, [jobCount, profileCount])
+  const confirmReplacementIfNeeded = async (message: string) => {
+    const shouldWarnBeforeReplacement = !(await getAppApiClient().isAppDataEmpty())
+
+    if (!shouldWarnBeforeReplacement) {
+      return true
+    }
+
+    return window.confirm(message)
+  }
 
   const handleExport = async () => {
     try {
@@ -68,7 +79,7 @@ export const ImportExportPage = () => {
       return
     }
 
-    const confirmed = window.confirm(
+    const confirmed = await confirmReplacementIfNeeded(
       'Replace current local data with the selected import file? This cannot be undone unless you have an exported backup.',
     )
 
@@ -110,16 +121,13 @@ export const ImportExportPage = () => {
   }
 
   const handleLoadSampleData = async () => {
-    const confirmed = window.confirm(
-      'Replace current local data with sample data? This cannot be undone unless you have an exported backup.',
-    )
-
-    if (!confirmed) {
-      return
-    }
-
     try {
-      await importAppData(generateSampleAppExportFile())
+      const didLoad = await loadSampleData()
+
+      if (!didLoad) {
+        return
+      }
+
       await refreshStorageEstimate()
       setError(null)
     } catch (caughtError) {
@@ -171,14 +179,16 @@ export const ImportExportPage = () => {
           >
             Load Sample Data
           </button>
-          <button
-            className="rounded-xl border border-app-danger px-3 py-2 text-sm font-medium text-app-danger hover:bg-app-danger/10 disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isSaving}
-            onClick={handleClearData}
-            type="button"
-          >
-            Clear Data
-          </button>
+          {isAppDataEmpty === false ? (
+            <button
+              className="rounded-xl border border-app-danger px-3 py-2 text-sm font-medium text-app-danger hover:bg-app-danger/10 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent"
+              disabled={isSaving}
+              onClick={handleClearData}
+              type="button"
+            >
+              Clear Data
+            </button>
+          ) : null}
         </div>
 
         {error ? <p className="mt-3 text-sm text-app-danger">Action failed: {error}</p> : null}

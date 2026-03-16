@@ -81,6 +81,7 @@ const assignStoreRecords = <TStoreName extends AppStoreName>(
 }
 
 export interface IndexedDbAppDataSnapshotRepository {
+  isAppDataEmpty(): Promise<boolean>
   readAppData(): Promise<AppDataState>
   replaceAppData(data: PersistedAppData): Promise<AppDataState>
   exportAppData(): Promise<AppExportFile>
@@ -148,6 +149,19 @@ export const createIndexedDbAppDataSnapshotRepository = (
     })
 
   return {
+    async isAppDataEmpty(): Promise<boolean> {
+      return withDatabase(async (database) => {
+        const transaction = database.transaction(appStoreNames, 'readonly')
+        const counts = await Promise.all(
+          appStoreNames.map((storeName) => requestToPromise(transaction.objectStore(storeName).count())),
+        )
+
+        await transactionToPromise(transaction)
+
+        return counts.every((count) => count === 0)
+      })
+    },
+
     async readAppData(): Promise<AppDataState> {
       return {
         version: 1,

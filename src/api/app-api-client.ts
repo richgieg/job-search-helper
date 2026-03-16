@@ -55,6 +55,7 @@ import type {
 
 export interface AppApiClient {
   getAppData(): Promise<AppDataState>
+  isAppDataEmpty(): Promise<boolean>
   getDashboardSummary(): Promise<DashboardSummaryDto>
   getDashboardActivity(periodDays: DashboardActivityPeriodDays): Promise<DashboardActivityDto>
   getJobsList(): Promise<JobsListDto>
@@ -161,6 +162,10 @@ export class LocalAppApiClient implements AppApiClient {
 
   getAppData(): Promise<AppDataState> {
     return this.service.getAppData()
+  }
+
+  isAppDataEmpty(): Promise<boolean> {
+    return this.service.isAppDataEmpty()
   }
 
   getDashboardSummary(): Promise<DashboardSummaryDto> {

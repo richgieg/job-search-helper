@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+
+import { useAppDataTransfer } from '../features/import-export/use-app-data-transfer'
 
 type RevealProps = {
   children: ReactNode
@@ -24,7 +26,7 @@ const displayFontStyle: CSSProperties = {
 }
 
 const heroStats = [
-  { label: 'New leads added this week', value: '18', tone: 'bg-app-primary-soft text-app-primary' },
+  { label: 'Jobs added this week', value: '18', tone: 'bg-app-primary-soft text-app-primary' },
   { label: 'Applications sent', value: '6', tone: 'bg-app-status-applied-soft text-app-status-applied' },
   { label: 'Interviews booked', value: '3', tone: 'bg-app-status-interview-soft text-app-status-interview' },
 ] as const
@@ -296,6 +298,26 @@ const VaultIllustration = () => {
 }
 
 export const LandingPage = () => {
+  const navigate = useNavigate()
+  const { isSaving, loadSampleData } = useAppDataTransfer()
+  const [sampleDataError, setSampleDataError] = useState<string | null>(null)
+
+  const handleLoadSampleData = async () => {
+    try {
+      const didLoad = await loadSampleData()
+
+      if (!didLoad) {
+        return
+      }
+
+      setSampleDataError(null)
+      navigate('/dashboard')
+    } catch (caughtError) {
+      const message = caughtError instanceof Error ? caughtError.message : 'Unknown sample-data error.'
+      setSampleDataError(message)
+    }
+  }
+
   return (
     <div className="relative -mx-6 overflow-hidden lg:-mx-10">
       <div className="landing-grid-background absolute inset-0 opacity-55" />
@@ -319,6 +341,17 @@ export const LandingPage = () => {
               <p className="max-w-2xl text-base leading-7 text-app-text-subtle">
                 Keep every lead, document, interview, and decision connected so you always know what moved today and what still needs attention next.
               </p>
+            </div>
+
+            <div className="flex items-start">
+              <button
+                className="inline-flex items-center justify-center rounded-full bg-app-primary px-5 py-3 text-sm font-semibold text-app-primary-contrast transition hover:bg-app-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-focus-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isSaving}
+                onClick={handleLoadSampleData}
+                type="button"
+              >
+                Try with Sample Data
+              </button>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
@@ -471,7 +504,7 @@ export const LandingPage = () => {
             <div className="space-y-4">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-app-primary">Start with momentum</p>
               <h2 className="max-w-3xl text-4xl font-semibold tracking-[-0.04em] text-app-heading sm:text-5xl" style={displayFontStyle}>
-                Load the sample data and see how to easily turn a messy search into a trackable pipeline.
+                Try with sample data and see how a messy search becomes a trackable pipeline.
               </h2>
               <p className="max-w-2xl text-base leading-7 text-app-text-muted">
                 Browse the dashboard, inspect jobs, tailor documents, and see how the full workflow fits together before adding your own data.
@@ -479,14 +512,18 @@ export const LandingPage = () => {
             </div>
 
             <div className="flex items-start lg:justify-end">
-              <Link
-                className="inline-flex items-center justify-center rounded-full bg-app-primary px-5 py-3 text-sm font-semibold text-app-primary-contrast transition hover:bg-app-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-focus-ring focus-visible:ring-offset-2"
-                to="/import-export"
+              <button
+                className="inline-flex items-center justify-center rounded-full bg-app-primary px-5 py-3 text-sm font-semibold text-app-primary-contrast transition hover:bg-app-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-focus-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isSaving}
+                onClick={handleLoadSampleData}
+                type="button"
               >
-                Load Sample Data
-              </Link>
+                Try with Sample Data
+              </button>
             </div>
           </Reveal>
+
+          {sampleDataError ? <p className="relative mt-4 text-sm text-app-danger">Action failed: {sampleDataError}</p> : null}
         </section>
       </div>
     </div>

@@ -560,6 +560,24 @@ describe('IndexedDbAppBackend', () => {
     })
   })
 
+  it('detects whether the persisted app data is empty', async () => {
+    const backend = new IndexedDbAppBackend({ databaseName })
+
+    await expect(backend.isAppDataEmpty()).resolves.toBe(true)
+
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T09:00:00.000Z',
+      data: toPersistedAppData(createSeedData()),
+    })
+
+    await expect(backend.isAppDataEmpty()).resolves.toBe(false)
+
+    await backend.resetLocalData()
+
+    await expect(backend.isAppDataEmpty()).resolves.toBe(true)
+  })
+
   it('creates base profiles with a direct IndexedDB write', async () => {
     const backend = new IndexedDbAppBackend({
       databaseName,

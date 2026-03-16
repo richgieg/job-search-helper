@@ -54,6 +54,7 @@ import type {
 
 export interface AppDataService {
   getAppData(): Promise<AppDataState>
+  isAppDataEmpty(): Promise<boolean>
   getDashboardSummary(): Promise<DashboardSummaryDto>
   getDashboardActivity(periodDays: DashboardActivityPeriodDays): Promise<DashboardActivityDto>
   getJobsList(): Promise<JobsListDto>

@@ -1684,6 +1684,11 @@ export class IndexedDbAppBackend implements AppDataService {
     return this.snapshotRepository.readAppData()
   }
 
+  async isAppDataEmpty(): Promise<boolean> {
+    await this.ensureInitialized()
+    return this.snapshotRepository.isAppDataEmpty()
+  }
+
   async getDashboardSummary(): Promise<DashboardSummaryDto> {
     await this.ensureInitialized()
 

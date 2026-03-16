@@ -2,18 +2,27 @@
 
 import '@testing-library/jest-dom/vitest'
 
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createAppApiClient, getAppApiClient, setAppApiClient } from '../api'
+import { getAppApiClient } from '../api'
 import { createEmptyAppDataState } from '../domain/app-data-state'
+import type { AppDataState } from '../types/state'
 import { ImportExportPage } from './ImportExportPage'
 import { createSeedData, renderRoute, resetRouteTestState, setupRouteTestEnvironment } from '../test/route-test-helpers'
 
-const toExportPayload = (data: ReturnType<typeof createSeedData>) => {
+const toExportPayload = (data: AppDataState) => {
   const { version: _version, exportedAt: _exportedAt, ...payload } = data
   return payload
+}
+
+const replaceCurrentData = async (data: AppDataState) => {
+  await getAppApiClient().importAppData({
+    version: 1,
+    exportedAt: '2026-03-12T12:00:00.000Z',
+    data: toExportPayload(data),
+  })
 }
 
 describe('ImportExportPage', () => {
@@ -91,7 +100,7 @@ describe('ImportExportPage', () => {
       },
     })
 
-    setAppApiClient(createAppApiClient({ initialData: createEmptyAppDataState() }))
+    await replaceCurrentData(createEmptyAppDataState())
 
     renderRoute({
       element: <ImportExportPage />,
@@ -112,12 +121,12 @@ describe('ImportExportPage', () => {
 
     await user.upload(screen.getByLabelText('Import JSON'), file)
 
-    expect(confirmSpy).toHaveBeenCalledOnce()
+    expect(confirmSpy).not.toHaveBeenCalled()
     expect(await screen.findByText('1 profiles · 1 jobs')).toBeInTheDocument()
     expect(await screen.findByText('Estimated browser storage: 2.0 KB used of 10 KB')).toBeInTheDocument()
   })
 
-  it('replaces local data with fresh generated sample data', async () => {
+  it('replaces local data with fresh generated sample data without warning when the database is empty', async () => {
     const user = userEvent.setup()
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
 
@@ -126,7 +135,7 @@ describe('ImportExportPage', () => {
       value: undefined,
     })
 
-    setAppApiClient(createAppApiClient({ initialData: createEmptyAppDataState() }))
+    await replaceCurrentData(createEmptyAppDataState())
 
     renderRoute({
       element: <ImportExportPage />,
@@ -136,9 +145,9 @@ describe('ImportExportPage', () => {
 
     expect(await screen.findByText('0 profiles · 0 jobs')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Load Fresh Sample Data' }))
+  await user.click(screen.getByRole('button', { name: 'Load Sample Data' }))
 
-    expect(confirmSpy).toHaveBeenCalledOnce()
+  expect(confirmSpy).not.toHaveBeenCalled()
     expect(await screen.findByText('3 profiles · 17 jobs')).toBeInTheDocument()
 
     const importedExport = await getAppApiClient().exportAppData()
@@ -175,6 +184,8 @@ describe('ImportExportPage', () => {
 
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
 
+    await replaceCurrentData(createSeedData())
+
     renderRoute({
       element: <ImportExportPage />,
       path: '/import-export',
@@ -182,12 +193,14 @@ describe('ImportExportPage', () => {
     })
 
     expect(await screen.findByText('1 profiles · 1 jobs')).toBeInTheDocument()
+    const clearDataButton = await screen.findByRole('button', { name: 'Clear Data' })
 
-    await user.click(screen.getByRole('button', { name: 'Clear Data' }))
+    await user.click(clearDataButton)
 
     expect(confirmSpy).toHaveBeenCalledOnce()
     expect(await screen.findByText('0 profiles · 0 jobs')).toBeInTheDocument()
     expect(await screen.findByText('Estimated browser storage: 256 B used of 10 KB')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Clear Data' })).not.toBeInTheDocument()
 
     const clearedExport = await getAppApiClient().exportAppData()
     const createdProfile = await getAppApiClient().createBaseProfile('Fresh Profile')
@@ -202,6 +215,8 @@ describe('ImportExportPage', () => {
     const user = userEvent.setup()
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
 
+    await replaceCurrentData(createSeedData())
+
     renderRoute({
       element: <ImportExportPage />,
       path: '/import-export',
@@ -214,7 +229,11 @@ describe('ImportExportPage', () => {
 
     await user.upload(screen.getByLabelText('Import JSON'), file)
 
-    expect(confirmSpy).toHaveBeenCalledOnce()
+    await waitFor(() => {
+      expect(confirmSpy).toHaveBeenCalledWith(
+        'Replace current local data with the selected import file? This cannot be undone unless you have an exported backup.',
+      )
+    })
     expect(await screen.findByText('Action failed: Import file is not valid JSON.')).toBeInTheDocument()
     expect(screen.getByText('1 profiles · 1 jobs')).toBeInTheDocument()
   })
@@ -222,6 +241,8 @@ describe('ImportExportPage', () => {
   it('shows an error when the selected file fails AppExportFileSchema validation', async () => {
     const user = userEvent.setup()
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+
+    await replaceCurrentData(createSeedData())
 
     renderRoute({
       element: <ImportExportPage />,
@@ -244,18 +265,19 @@ describe('ImportExportPage', () => {
 
     await user.upload(screen.getByLabelText('Import JSON'), file)
 
-    expect(confirmSpy).toHaveBeenCalledOnce()
+    await waitFor(() => {
+      expect(confirmSpy).toHaveBeenCalledWith(
+        'Replace current local data with the selected import file? This cannot be undone unless you have an exported backup.',
+      )
+    })
     expect(
       await screen.findByText('Action failed: Import file does not match the expected format. data: Unrecognized key: "unexpected"'),
     ).toBeInTheDocument()
     expect(screen.getByText('1 profiles · 1 jobs')).toBeInTheDocument()
   })
 
-  it('does not import json when the replacement confirmation is cancelled', async () => {
-    const user = userEvent.setup()
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
-
-    setAppApiClient(createAppApiClient({ initialData: createEmptyAppDataState() }))
+  it('hides clear data when the persisted database is already empty', async () => {
+    await replaceCurrentData(createEmptyAppDataState())
 
     renderRoute({
       element: <ImportExportPage />,
@@ -264,6 +286,78 @@ describe('ImportExportPage', () => {
     })
 
     expect(await screen.findByText('0 profiles · 0 jobs')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Clear Data' })).not.toBeInTheDocument()
+  })
+
+  it('shows an import replacement warning when persisted data already exists and the user cancels', async () => {
+    const user = userEvent.setup()
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+
+    await replaceCurrentData(createSeedData())
+
+    renderRoute({
+      element: <ImportExportPage />,
+      path: '/import-export',
+      route: '/import-export',
+    })
+
+    expect(await screen.findByText('1 profiles · 1 jobs')).toBeInTheDocument()
+
+    const imported = {
+      version: 1 as const,
+      exportedAt: '2026-03-12T12:00:00.000Z',
+      data: toExportPayload(createSeedData()),
+    }
+
+    const file = new File([JSON.stringify(imported)], 'import.json', { type: 'application/json' })
+
+    await user.upload(screen.getByLabelText('Import JSON'), file)
+
+    await waitFor(() => {
+      expect(confirmSpy).toHaveBeenCalledWith(
+        'Replace current local data with the selected import file? This cannot be undone unless you have an exported backup.',
+      )
+    })
+    expect(screen.getByText('1 profiles · 1 jobs')).toBeInTheDocument()
+  })
+
+  it('shows a sample-data replacement warning when persisted data already exists', async () => {
+    const user = userEvent.setup()
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+
+    await replaceCurrentData(createSeedData())
+
+    renderRoute({
+      element: <ImportExportPage />,
+      path: '/import-export',
+      route: '/import-export',
+    })
+
+    expect(await screen.findByText('1 profiles · 1 jobs')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Load Sample Data' }))
+
+    await waitFor(() => {
+      expect(confirmSpy).toHaveBeenCalledWith(
+        'Replace current local data with sample data? This cannot be undone unless you have an exported backup.',
+      )
+    })
+    expect(screen.getByText('1 profiles · 1 jobs')).toBeInTheDocument()
+  })
+
+  it('does not import json when the replacement confirmation is cancelled', async () => {
+    const user = userEvent.setup()
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+
+    await replaceCurrentData(createSeedData())
+
+    renderRoute({
+      element: <ImportExportPage />,
+      path: '/import-export',
+      route: '/import-export',
+    })
+
+    expect(await screen.findByText('1 profiles · 1 jobs')).toBeInTheDocument()
 
     const imported = {
       version: 1 as const,
@@ -276,7 +370,6 @@ describe('ImportExportPage', () => {
     await user.upload(screen.getByLabelText('Import JSON'), file)
 
     expect(confirmSpy).toHaveBeenCalledOnce()
-    expect(screen.getByText('0 profiles · 0 jobs')).toBeInTheDocument()
-    expect(screen.queryByText('1 profiles · 1 jobs')).not.toBeInTheDocument()
+    expect(screen.getByText('1 profiles · 1 jobs')).toBeInTheDocument()
   })
 })
