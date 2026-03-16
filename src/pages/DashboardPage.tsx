@@ -56,7 +56,7 @@ export const DashboardPage = () => {
     <div className="space-y-8">
       <section>
         <h1 className="text-3xl font-semibold tracking-tight text-app-heading">Dashboard</h1>
-        <p className="mt-2 max-w-3xl text-sm text-app-text-subtle">See whether your search is building momentum, converting into applications and interviews, and what is coming up next.</p>
+        <p className="mt-2 max-w-3xl text-sm text-app-text-subtle">See how your job search is progressing and what needs attention next.</p>
       </section>
 
       {isLoading && !data ? <p className="text-sm text-app-text-subtle">Loading dashboard...</p> : null}
