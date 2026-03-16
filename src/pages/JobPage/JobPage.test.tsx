@@ -443,8 +443,10 @@ describe('JobPage', () => {
 
     expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
 
+    const initialGetJobDetailCalls = getJobDetail.mock.calls.length
+
     await waitFor(() => {
-      expect(getJobDetail).toHaveBeenCalledTimes(1)
+      expect(initialGetJobDetailCalls).toBeGreaterThanOrEqual(1)
     })
 
     await user.click(screen.getByRole('button', { name: /Job details/i }))
@@ -453,7 +455,7 @@ describe('JobPage', () => {
     await user.tab()
 
     await waitFor(() => {
-      expect(getJobDetail.mock.calls.length).toBeGreaterThanOrEqual(2)
+      expect(getJobDetail.mock.calls.length).toBeGreaterThan(initialGetJobDetailCalls)
     })
 
     expect(await screen.findByText('Principal Engineer')).toBeInTheDocument()

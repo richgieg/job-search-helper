@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { getAppApiClient, resetAppApiClient } from '../../api'
-import { generateSampleAppExportFile } from './generate-sample-app-export-file'
 import { queryKeys } from '../../queries/query-keys'
 import { useResetUiState } from '../../store/app-ui-store'
 import type { AppExportFile } from '../../types/state'
@@ -77,6 +76,7 @@ export const useAppDataTransfer = () => {
         return false
       }
 
+      const { generateSampleAppExportFile } = await import('./generate-sample-app-export-file')
       await importAppDataMutation.mutateAsync(generateSampleAppExportFile())
       return true
     },

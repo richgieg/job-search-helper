@@ -262,6 +262,81 @@ body {
   min-height: 100vh;
 }
 
+.route-loading-screen {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at top, color-mix(in oklab, var(--app-primary-soft) 88%, transparent), transparent 48%),
+    linear-gradient(180deg, var(--app-canvas) 0%, color-mix(in oklab, var(--app-canvas) 88%, var(--app-surface-subtle)) 100%);
+  text-align: center;
+  animation: route-fade-in 240ms ease-out both;
+}
+
+.route-loading-spinner {
+  position: relative;
+  display: grid;
+  height: 5rem;
+  width: 5rem;
+  place-items: center;
+}
+
+.route-loading-spinner-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+}
+
+.route-loading-spinner-ring-base {
+  border: 0.3rem solid color-mix(in oklab, var(--app-border) 60%, transparent);
+}
+
+.route-loading-spinner-ring-accent {
+  border: 0.3rem solid transparent;
+  border-top-color: var(--app-primary);
+  border-right-color: color-mix(in oklab, var(--app-primary) 72%, transparent);
+  animation: route-spinner-rotate 900ms linear infinite;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--app-primary-soft) 24%, transparent);
+}
+
+.route-loading-spinner-core {
+  height: 1rem;
+  width: 1rem;
+  border-radius: 999px;
+  background: var(--app-primary);
+  box-shadow: 0 0 24px color-mix(in oklab, var(--app-primary) 45%, transparent);
+}
+
+.route-loading-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.route-loading-eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--app-text-subtle);
+}
+
+.route-loading-label {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--app-heading);
+}
+
+.route-content-fade-in {
+  animation: route-content-fade-in 220ms ease-out both;
+}
+
 button:not(:disabled) {
   cursor: pointer;
 }
@@ -351,7 +426,48 @@ button:not(:disabled) {
   }
 }
 
+@keyframes route-spinner-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes route-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes route-content-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .route-loading-screen,
+  .route-content-fade-in {
+    animation: none;
+  }
+
+  .route-loading-spinner-ring-accent {
+    animation: none;
+  }
+
   .landing-reveal {
     opacity: 1;
     transform: none;
