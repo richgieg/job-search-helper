@@ -111,7 +111,7 @@ export const ImportExportPage = () => {
 
   const handleLoadSampleData = async () => {
     const confirmed = window.confirm(
-      'Replace current local data with fresh sample data? This cannot be undone unless you have an exported backup.',
+      'Replace current local data with sample data? This cannot be undone unless you have an exported backup.',
     )
 
     if (!confirmed) {
@@ -169,7 +169,7 @@ export const ImportExportPage = () => {
             onClick={handleLoadSampleData}
             type="button"
           >
-            Load Fresh Sample Data
+            Load Sample Data
           </button>
           <button
             className="rounded-xl border border-app-danger px-3 py-2 text-sm font-medium text-app-danger hover:bg-app-danger/10 disabled:cursor-not-allowed disabled:opacity-60"
