@@ -1752,8 +1752,59 @@ describe('IndexedDbAppBackend', () => {
   })
 
   it('builds the dashboard summary directly from IndexedDB', async () => {
-    const backend = new IndexedDbAppBackend({ databaseName })
+    const backend = new IndexedDbAppBackend({
+      databaseName,
+      now: () => '2026-03-16T12:00:00.000Z',
+    })
     const seedData = createSeedData()
+
+    seedData.jobs.job_1!.createdAt = '2026-03-16T09:00:00.000Z'
+    seedData.jobs.job_1!.updatedAt = '2026-03-16T09:00:00.000Z'
+    seedData.jobs.job_2!.createdAt = '2026-03-06T09:00:00.000Z'
+    seedData.jobs.job_2!.appliedAt = '2026-03-16T08:30:00.000Z'
+    seedData.jobs.job_2!.finalOutcome = { status: 'offer_received', setAt: '2026-03-16T11:00:00.000Z' }
+    seedData.jobs.job_3 = {
+      id: 'job_3',
+      companyName: 'New Lead Co',
+      staffingAgencyName: '',
+      jobTitle: 'Platform Engineer',
+      description: '',
+      location: 'Remote',
+      postedCompensation: '',
+      desiredCompensation: '',
+      compensationNotes: '',
+      workArrangement: 'remote',
+      employmentType: 'full_time',
+      datePosted: '2026-03-16',
+      appliedAt: null,
+      finalOutcome: null,
+      notes: '',
+      createdAt: '2026-03-16T09:30:00.000Z',
+      updatedAt: '2026-03-16T09:30:00.000Z',
+    }
+    seedData.jobs.job_4 = {
+      id: 'job_4',
+      companyName: 'Older Lead Co',
+      staffingAgencyName: '',
+      jobTitle: 'Staff Platform Engineer',
+      description: '',
+      location: 'Hybrid',
+      postedCompensation: '',
+      desiredCompensation: '',
+      compensationNotes: '',
+      workArrangement: 'hybrid',
+      employmentType: 'full_time',
+      datePosted: '2026-03-01',
+      appliedAt: null,
+      finalOutcome: null,
+      notes: '',
+      createdAt: '2026-03-01T09:00:00.000Z',
+      updatedAt: '2026-03-01T09:00:00.000Z',
+    }
+    seedData.interviews.interview_1!.createdAt = '2026-03-16T07:00:00.000Z'
+    seedData.interviews.interview_1!.startAt = '2026-03-17T15:00:00.000Z'
+    seedData.interviews.interview_2!.createdAt = '2026-03-12T09:00:00.000Z'
+    seedData.interviews.interview_2!.startAt = '2026-03-18T13:00:00.000Z'
 
     await backend.importAppData({
       version: 1,
@@ -1765,10 +1816,38 @@ describe('IndexedDbAppBackend', () => {
       profileCount: 3,
       baseProfileCount: 1,
       jobProfileCount: 2,
-      jobCount: 2,
+      jobCount: 4,
       activeInterviewCount: 2,
       contactCount: 2,
-      updatedAt: '2026-03-06T12:00:00.000Z',
+      addedTodayCount: 2,
+      addedLast7DaysCount: 2,
+      notAppliedCount: 3,
+      appliedTodayCount: 1,
+      appliedLast7DaysCount: 1,
+      interviewsBookedTodayCount: 1,
+      interviewsBookedLast7DaysCount: 2,
+      offersReceivedTodayCount: 1,
+      offersReceivedLast7DaysCount: 1,
+      upcomingInterviewCount: 2,
+      upcomingInterviews: [
+        {
+          interviewId: 'interview_1',
+          jobId: 'job_1',
+          jobTitle: 'Senior Engineer',
+          companyName: 'Example Co',
+          staffingAgencyName: '',
+          startAt: '2026-03-17T15:00:00.000Z',
+        },
+        {
+          interviewId: 'interview_2',
+          jobId: 'job_1',
+          jobTitle: 'Senior Engineer',
+          companyName: 'Example Co',
+          staffingAgencyName: '',
+          startAt: '2026-03-18T13:00:00.000Z',
+        },
+      ],
+      updatedAt: '2026-03-16T09:30:00.000Z',
     })
   })
 

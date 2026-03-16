@@ -189,6 +189,28 @@ const toPersistedAppData = (data: AppDataState): PersistedAppData => {
 const cloneAppData = (data: AppDataState): AppDataState => structuredClone(data)
 const emptyCollectionUpdatedAt = '1970-01-01T00:00:00.000Z'
 const compareSortOrder = <T extends { sortOrder: number }>(left: T, right: T) => left.sortOrder - right.sortOrder
+const sevenDaysInMilliseconds = 7 * 24 * 60 * 60 * 1000
+
+const getStartOfLocalDay = (value: Date) => {
+  const nextValue = new Date(value)
+  nextValue.setHours(0, 0, 0, 0)
+  return nextValue
+}
+
+const isWithinLocalToday = (timestamp: string, now: Date) => {
+  const value = new Date(timestamp).getTime()
+  const start = getStartOfLocalDay(now).getTime()
+  const end = start + 24 * 60 * 60 * 1000
+  return value >= start && value < end
+}
+
+const isWithinLast7Days = (timestamp: string, now: Date) => {
+  const value = new Date(timestamp).getTime()
+  const nowTime = now.getTime()
+  return value <= nowTime && value >= nowTime - sevenDaysInMilliseconds
+}
+
+const offerStatusesCountedAsReceived = new Set(['offer_received', 'offer_accepted'])
 
 const buildFallbackJob = (profile: Profile): Job => ({
   id: `document-job-${profile.id}`,
@@ -1659,6 +1681,43 @@ export class IndexedDbAppBackend implements AppDataService {
 
       await transactionToPromise(transaction)
 
+      const now = new Date(this.now())
+
+      const upcomingInterviews = interviews
+        .filter((interview) => interview.startAt !== null && new Date(interview.startAt).getTime() > now.getTime())
+        .sort(compareInterviewsBySchedule)
+        .map((interview) => {
+          const job = jobs.find((item) => item.id === interview.jobId)
+
+          return job && interview.startAt
+            ? {
+                interviewId: interview.id,
+                jobId: job.id,
+                jobTitle: job.jobTitle,
+                companyName: job.companyName,
+                staffingAgencyName: job.staffingAgencyName,
+                startAt: interview.startAt,
+              }
+            : null
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null)
+
+      const addedTodayCount = jobs.filter((job) => isWithinLocalToday(job.createdAt, now)).length
+      const addedLast7DaysCount = jobs.filter((job) => isWithinLast7Days(job.createdAt, now)).length
+      const notAppliedCount = jobs.filter((job) => job.appliedAt === null).length
+      const appliedTodayCount = jobs.filter((job) => job.appliedAt && isWithinLocalToday(job.appliedAt, now)).length
+      const appliedLast7DaysCount = jobs.filter((job) => job.appliedAt && isWithinLast7Days(job.appliedAt, now)).length
+      const interviewsBookedTodayCount = interviews.filter((interview) => isWithinLocalToday(interview.createdAt, now)).length
+      const interviewsBookedLast7DaysCount = interviews.filter((interview) => isWithinLast7Days(interview.createdAt, now)).length
+      const offersReceivedTodayCount = jobs.filter(
+        (job) =>
+          job.finalOutcome && offerStatusesCountedAsReceived.has(job.finalOutcome.status) && isWithinLocalToday(job.finalOutcome.setAt, now),
+      ).length
+      const offersReceivedLast7DaysCount = jobs.filter(
+        (job) =>
+          job.finalOutcome && offerStatusesCountedAsReceived.has(job.finalOutcome.status) && isWithinLast7Days(job.finalOutcome.setAt, now),
+      ).length
+
       return {
         profileCount: profiles.length,
         baseProfileCount: profiles.filter((profile) => profile.jobId === null).length,
@@ -1666,6 +1725,17 @@ export class IndexedDbAppBackend implements AppDataService {
         jobCount: jobs.length,
         activeInterviewCount: interviews.length,
         contactCount: jobContacts.length,
+        addedTodayCount,
+        addedLast7DaysCount,
+        notAppliedCount,
+        appliedTodayCount,
+        appliedLast7DaysCount,
+        interviewsBookedTodayCount,
+        interviewsBookedLast7DaysCount,
+        offersReceivedTodayCount,
+        offersReceivedLast7DaysCount,
+        upcomingInterviewCount: upcomingInterviews.length,
+        upcomingInterviews,
         updatedAt:
           [...profiles.map((profile) => profile.updatedAt), ...jobs.map((job) => job.updatedAt)].sort((left, right) =>
             right.localeCompare(left),

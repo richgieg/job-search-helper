@@ -31,7 +31,27 @@ export interface DashboardSummaryDto {
   jobCount: number
   activeInterviewCount: number
   contactCount: number
+  addedTodayCount: number
+  addedLast7DaysCount: number
+  notAppliedCount: number
+  appliedTodayCount: number
+  appliedLast7DaysCount: number
+  interviewsBookedTodayCount: number
+  interviewsBookedLast7DaysCount: number
+  offersReceivedTodayCount: number
+  offersReceivedLast7DaysCount: number
+  upcomingInterviewCount: number
+  upcomingInterviews: DashboardUpcomingInterviewDto[]
   updatedAt: string
+}
+
+export interface DashboardUpcomingInterviewDto {
+  interviewId: string
+  jobId: string
+  jobTitle: string
+  companyName: string
+  staffingAgencyName: string
+  startAt: string
 }
 
 export interface JobsListLinkDto {
