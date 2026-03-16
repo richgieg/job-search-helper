@@ -109,7 +109,7 @@ const Reveal = ({ children, className = '', delayMs = 0 }: RevealProps) => {
 
 const FeatureCard = ({ title, description, accentClassName }: FeatureCardProps) => {
   return (
-    <div className="rounded-4xl border border-app-border-muted bg-app-surface/85 p-6 shadow-[0_18px_50px_-28px_color-mix(in_oklab,var(--app-heading)_30%,transparent)] backdrop-blur-sm">
+    <div className="landing-shadow-soft rounded-4xl border border-app-border-muted bg-app-surface/85 p-6 backdrop-blur-sm">
       <div className={[accentClassName, 'mb-4 h-1.5 w-16 rounded-full'].join(' ')} />
       <h3 className="text-lg font-semibold tracking-tight text-app-heading">{title}</h3>
       <p className="mt-3 text-sm leading-6 text-app-text-muted">{description}</p>
@@ -342,7 +342,7 @@ export const LandingPage = () => {
 
         <section className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-14">
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <Reveal className="rounded-4xl border border-app-border-muted bg-app-surface/80 p-6 shadow-[0_30px_70px_-42px_color-mix(in_oklab,var(--app-heading)_38%,transparent)] backdrop-blur-sm lg:p-8">
+            <Reveal className="landing-shadow-medium rounded-4xl border border-app-border-muted bg-app-surface/80 p-6 backdrop-blur-sm lg:p-8">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-app-text-subtle">From chaos to clarity</p>
               <h2 className="mt-4 text-3xl font-semibold tracking-[-0.03em] text-app-heading sm:text-4xl" style={displayFontStyle}>
                 Turn scattered tabs and saved links into one reliable system.
@@ -369,7 +369,7 @@ export const LandingPage = () => {
           </div>
         </section>
 
-        <section className="grid gap-10 rounded-[2.5rem] border border-app-border-muted bg-app-surface/82 p-8 shadow-[0_30px_80px_-50px_color-mix(in_oklab,var(--app-heading)_45%,transparent)] backdrop-blur-sm lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:p-10">
+        <section className="landing-shadow-strong grid gap-10 rounded-[2.5rem] border border-app-border-muted bg-app-surface/82 p-8 backdrop-blur-sm lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:p-10">
           <Reveal className="space-y-5" delayMs={20}>
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-app-text-subtle">Track the pipeline</p>
             <h2 className="text-3xl font-semibold tracking-[-0.03em] text-app-heading sm:text-4xl" style={displayFontStyle}>
@@ -463,7 +463,7 @@ export const LandingPage = () => {
           </Reveal>
         </section>
 
-        <section className="landing-cta-panel relative overflow-hidden rounded-[2.75rem] border px-8 py-10 shadow-[0_36px_90px_-54px_color-mix(in_oklab,var(--app-heading)_38%,transparent)] sm:px-10 sm:py-12">
+        <section className="landing-cta-panel landing-shadow-strong relative overflow-hidden rounded-[2.75rem] border px-8 py-10 sm:px-10 sm:py-12">
           <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--app-primary)_34%,transparent),transparent_56%)]" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--app-surface)_24%,transparent),transparent)]" />
 
