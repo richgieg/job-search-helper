@@ -10,10 +10,27 @@ const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/
 
 const sampleDataTemplate = validateAppExportFile(sampleDataTemplateJson)
 
-const getUtcDayStart = (value: Date) => Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate())
-
-const shiftIsoTimestamp = (value: string, timestampShiftMilliseconds: number) =>
+const shiftIsoTimestampByMilliseconds = (value: string, timestampShiftMilliseconds: number) =>
   new Date(Date.parse(value) + timestampShiftMilliseconds).toISOString()
+
+const setIsoTimestampToNextMatchingWeekdayPreservingTime = (value: string, now: Date) => {
+  const source = new Date(value)
+  const sourceWeekday = source.getUTCDay()
+  const nowWeekday = now.getUTCDay()
+  const daysUntilNextMatchingWeekday = sourceWeekday > nowWeekday ? sourceWeekday - nowWeekday : sourceWeekday + 7 - nowWeekday
+
+  return new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + daysUntilNextMatchingWeekday,
+      source.getUTCHours(),
+      source.getUTCMinutes(),
+      source.getUTCSeconds(),
+      source.getUTCMilliseconds(),
+    ),
+  ).toISOString()
+}
 
 const shiftIsoDate = (value: string, dateShiftDays: number) => {
   const [yearText, monthText, dayText] = value.split('-')
@@ -32,7 +49,7 @@ const shiftDatesRecursively = (
 ): unknown => {
   if (typeof value === 'string') {
     if (isoTimestampPattern.test(value)) {
-      return shiftIsoTimestamp(value, timestampShiftMilliseconds)
+      return shiftIsoTimestampByMilliseconds(value, timestampShiftMilliseconds)
     }
 
     if (isoDatePattern.test(value)) {
@@ -56,11 +73,21 @@ const shiftDatesRecursively = (
 }
 
 export const generateSampleAppExportFile = (now = new Date()): AppExportFile => {
-  const templateExportedAt = new Date(sampleDataTemplate.exportedAt)
-  const timestampShiftMilliseconds = now.getTime() - templateExportedAt.getTime()
-  const dateShiftDays = Math.round((getUtcDayStart(now) - getUtcDayStart(templateExportedAt)) / dayInMilliseconds)
+  const summitArchitectureInterview = sampleDataTemplate.data.interviews['interview-summit-architecture']
+  const summitArchitectureStartAt = summitArchitectureInterview?.startAt
 
-  return validateAppExportFile(
-    shiftDatesRecursively(sampleDataTemplate, timestampShiftMilliseconds, dateShiftDays),
-  )
+  if (!summitArchitectureStartAt) {
+    throw new Error('Sample data is missing the summit architecture interview start time.')
+  }
+
+  const targetSummitArchitectureStartAt = setIsoTimestampToNextMatchingWeekdayPreservingTime(summitArchitectureStartAt, now)
+  const timestampShiftMilliseconds = Date.parse(targetSummitArchitectureStartAt) - Date.parse(summitArchitectureStartAt)
+  const dateShiftDays = Math.round(timestampShiftMilliseconds / dayInMilliseconds)
+  const generated = shiftDatesRecursively(
+    sampleDataTemplate,
+    timestampShiftMilliseconds,
+    dateShiftDays,
+  ) as AppExportFile
+
+  return validateAppExportFile(generated)
 }

@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 
 import type { DashboardActivityDto, DashboardActivityPeriodDays, DashboardUpcomingInterviewDto } from '../api/read-models'
 import { useDashboardActivityQuery } from '../queries/use-dashboard-activity-query'
@@ -267,7 +268,7 @@ export const DashboardPage = () => {
 
               return (
                 <li key={interview.interviewId} className="rounded-xl border border-app-border-muted px-4 py-3">
-                  <a className="block hover:text-app-primary-hover" href={`/jobs/${interview.jobId}`}>
+                  <Link className="block hover:text-app-primary-hover" to={`/jobs/${interview.jobId}`}>
                     <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
                       <div>
                         <p className="font-medium text-app-text">{interview.jobTitle}</p>
@@ -275,7 +276,7 @@ export const DashboardPage = () => {
                       </div>
                       <p className="text-sm font-medium text-app-text-muted">{formatInterviewDateTime(interview.startAt)}</p>
                     </div>
-                  </a>
+                  </Link>
                 </li>
               )
             })}
