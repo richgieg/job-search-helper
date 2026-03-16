@@ -178,6 +178,51 @@ describe('JobPage', () => {
     })
   })
 
+  it('allows interview associated contacts to wrap when reordering', async () => {
+    const user = userEvent.setup()
+    const initialData = createSeedData()
+
+    initialData.interviewContacts.interview_contact_2 = {
+      id: 'interview_contact_2',
+      interviewId: 'interview_1',
+      jobContactId: 'job_contact_2',
+      sortOrder: 2,
+    }
+
+    setupRouteTestEnvironment({ initialData })
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Interviews\b/i }))
+    await user.click(screen.getByRole('button', { name: /Tuesday, March 10, 2026/i }))
+
+    expect(await screen.findByText('Hiring Manager')).toBeInTheDocument()
+    expect(screen.getByText('Taylor Recruiter')).toBeInTheDocument()
+
+    const initialMoveUpButtons = screen.getAllByRole('button', { name: 'Move up' })
+    const initialMoveDownButtons = screen.getAllByRole('button', { name: 'Move down' })
+
+    expect(initialMoveUpButtons).toHaveLength(2)
+    expect(initialMoveDownButtons).toHaveLength(2)
+    expect(initialMoveUpButtons[0]).toBeEnabled()
+    expect(initialMoveDownButtons[1]).toBeEnabled()
+
+    await user.click(initialMoveUpButtons[0]!)
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/Hiring Manager|Taylor Recruiter/).map((element) => element.textContent)).toEqual([
+        'Taylor Recruiter',
+        'Hiring Manager',
+      ])
+    })
+  })
+
   it('restores expanded panels after the job route remounts', async () => {
     const user = userEvent.setup()
 

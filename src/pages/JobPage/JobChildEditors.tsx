@@ -629,8 +629,8 @@ const InterviewCard = ({
                   </div>
                   <div className="flex items-center gap-2">
                     <ReorderButtons
-                      canMoveDown={associatedContacts.length > 1 && index < associatedContacts.length - 1}
-                      canMoveUp={associatedContacts.length > 1 && index > 0}
+                      canMoveDown={associatedContacts.length > 1}
+                      canMoveUp={associatedContacts.length > 1}
                       onMoveDown={() =>
                         reorderInterviewContacts({
                           interviewId: interview.id,
