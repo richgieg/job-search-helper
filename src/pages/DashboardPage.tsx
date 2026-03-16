@@ -231,12 +231,18 @@ const DashboardActivityChart = ({ data }: { data: DashboardActivityDto }) => {
 const getUpcomingInterviewOrganizationName = (interview: DashboardUpcomingInterviewDto) =>
   interview.companyName || interview.staffingAgencyName || 'Unknown organization'
 
-const formatInterviewDateTime = (value: string) =>
-  new Date(value).toLocaleString(undefined, {
+const formatInterviewDate = (value: string) =>
+  new Date(value).toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric',
+  })
+
+const formatInterviewTime = (value: string) =>
+  new Date(value).toLocaleString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
   })
 
 export const DashboardPage = () => {
@@ -329,12 +335,15 @@ export const DashboardPage = () => {
               return (
                 <li key={interview.interviewId} className="rounded-xl border border-app-border-muted px-4 py-3">
                   <Link className="block hover:text-app-primary-hover" to={`/jobs/${interview.jobId}`}>
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="font-medium text-app-text">{interview.jobTitle}</p>
                         <p className="text-sm text-app-text-subtle">{organizationName}</p>
                       </div>
-                      <p className="text-sm font-medium text-app-text-muted">{formatInterviewDateTime(interview.startAt)}</p>
+                      <div className="text-left sm:text-right">
+                        <p className="text-sm font-medium text-app-text-muted">{formatInterviewDate(interview.startAt)}</p>
+                        <p className="mt-1 text-sm text-app-text-subtle">{formatInterviewTime(interview.startAt)}</p>
+                      </div>
                     </div>
                   </Link>
                 </li>
