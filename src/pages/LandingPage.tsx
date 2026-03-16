@@ -109,7 +109,7 @@ const Reveal = ({ children, className = '', delayMs = 0 }: RevealProps) => {
 
 const FeatureCard = ({ title, description, accentClassName }: FeatureCardProps) => {
   return (
-    <div className="rounded-[2rem] border border-app-border-muted bg-app-surface/85 p-6 shadow-[0_18px_50px_-28px_color-mix(in_oklab,var(--app-heading)_30%,transparent)] backdrop-blur-sm">
+    <div className="rounded-4xl border border-app-border-muted bg-app-surface/85 p-6 shadow-[0_18px_50px_-28px_color-mix(in_oklab,var(--app-heading)_30%,transparent)] backdrop-blur-sm">
       <div className={[accentClassName, 'mb-4 h-1.5 w-16 rounded-full'].join(' ')} />
       <h3 className="text-lg font-semibold tracking-tight text-app-heading">{title}</h3>
       <p className="mt-3 text-sm leading-6 text-app-text-muted">{description}</p>
@@ -299,8 +299,8 @@ export const LandingPage = () => {
   return (
     <div className="relative -mx-6 overflow-hidden lg:-mx-10">
       <div className="landing-grid-background absolute inset-0 opacity-55" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[36rem] bg-[radial-gradient(circle_at_top_left,color-mix(in_oklab,var(--app-primary-soft)_88%,transparent),transparent_58%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-64 h-[42rem] bg-[radial-gradient(circle_at_80%_20%,color-mix(in_oklab,var(--app-status-offer-soft)_90%,transparent),transparent_52%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-144 bg-[radial-gradient(circle_at_top_left,color-mix(in_oklab,var(--app-primary-soft)_88%,transparent),transparent_58%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-64 h-168 bg-[radial-gradient(circle_at_80%_20%,color-mix(in_oklab,var(--app-status-offer-soft)_90%,transparent),transparent_52%)]" />
 
       <div className="relative mx-auto flex max-w-7xl flex-col gap-24 px-6 pb-20 pt-8 lg:px-10 lg:pb-28 lg:pt-12">
         <section className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
@@ -342,7 +342,7 @@ export const LandingPage = () => {
 
         <section className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-14">
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <Reveal className="rounded-[2rem] border border-app-border-muted bg-app-surface/80 p-6 shadow-[0_30px_70px_-42px_color-mix(in_oklab,var(--app-heading)_38%,transparent)] backdrop-blur-sm lg:p-8">
+            <Reveal className="rounded-4xl border border-app-border-muted bg-app-surface/80 p-6 shadow-[0_30px_70px_-42px_color-mix(in_oklab,var(--app-heading)_38%,transparent)] backdrop-blur-sm lg:p-8">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-app-text-subtle">From chaos to clarity</p>
               <h2 className="mt-4 text-3xl font-semibold tracking-[-0.03em] text-app-heading sm:text-4xl" style={displayFontStyle}>
                 Turn scattered tabs and saved links into one reliable system.
@@ -359,7 +359,7 @@ export const LandingPage = () => {
           <div className="space-y-5 lg:pt-16">
             {journeySteps.map((step, index) => (
               <Reveal key={step.label} delayMs={80 + index * 120}>
-                <div className="rounded-[2rem] border border-app-border-muted bg-app-surface/88 p-7 shadow-sm backdrop-blur-sm">
+                <div className="rounded-4xl border border-app-border-muted bg-app-surface/88 p-7 shadow-sm backdrop-blur-sm">
                   <p className="text-xs font-semibold uppercase tracking-[0.26em] text-app-text-subtle">{step.label}</p>
                   <h3 className="mt-3 text-2xl font-semibold tracking-tight text-app-heading">{step.title}</h3>
                   <p className="mt-3 text-base leading-7 text-app-text-muted">{step.description}</p>
@@ -393,7 +393,7 @@ export const LandingPage = () => {
           </Reveal>
 
           <Reveal delayMs={150}>
-            <div className="overflow-hidden rounded-[2rem] border border-app-border bg-app-canvas p-4 sm:p-6">
+            <div className="overflow-hidden rounded-4xl border border-app-border bg-app-canvas p-4 sm:p-6">
               <PipelineIllustration />
             </div>
           </Reveal>
@@ -401,7 +401,7 @@ export const LandingPage = () => {
 
         <section className="grid gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-14">
           <Reveal delayMs={40}>
-            <div className="overflow-hidden rounded-[2rem] border border-app-border-muted bg-app-surface/82 p-4 shadow-sm backdrop-blur-sm sm:p-6">
+            <div className="overflow-hidden rounded-4xl border border-app-border-muted bg-app-surface/82 p-4 shadow-sm backdrop-blur-sm sm:p-6">
               <DocumentsIllustration />
             </div>
           </Reveal>
@@ -431,7 +431,7 @@ export const LandingPage = () => {
 
         <section className="grid gap-6 lg:grid-cols-2">
           <Reveal delayMs={30}>
-            <div className="h-full rounded-[2rem] border border-app-border-muted bg-app-surface/85 p-8 shadow-sm backdrop-blur-sm">
+            <div className="h-full rounded-4xl border border-app-border-muted bg-app-surface/85 p-8 shadow-sm backdrop-blur-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-app-text-subtle">Every detail together</p>
               <h2 className="mt-4 text-3xl font-semibold tracking-[-0.03em] text-app-heading" style={displayFontStyle}>
                 Keep the small details close to the job before they become the missing detail that slows you down.
@@ -448,7 +448,7 @@ export const LandingPage = () => {
           </Reveal>
 
           <Reveal delayMs={120}>
-            <div className="h-full rounded-[2rem] border border-app-border-muted bg-app-surface/85 p-8 shadow-sm backdrop-blur-sm">
+            <div className="h-full rounded-4xl border border-app-border-muted bg-app-surface/85 p-8 shadow-sm backdrop-blur-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-app-text-subtle">Local-first and yours</p>
               <h2 className="mt-4 text-3xl font-semibold tracking-[-0.03em] text-app-heading" style={displayFontStyle}>
                 Keep your data local, exportable, and easy to reset or demo.
