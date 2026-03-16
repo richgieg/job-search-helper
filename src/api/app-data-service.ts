@@ -41,11 +41,21 @@ import type {
   UpdateSkillCategoryInput,
   UpdateSkillInput,
 } from '../domain/profile-data'
-import type { DashboardSummaryDto, JobDetailDto, JobsListDto, ProfileDetailDto, ProfileDocumentDto, ProfilesListDto } from './read-models'
+import type {
+  DashboardActivityDto,
+  DashboardActivityPeriodDays,
+  DashboardSummaryDto,
+  JobDetailDto,
+  JobsListDto,
+  ProfileDetailDto,
+  ProfileDocumentDto,
+  ProfilesListDto,
+} from './read-models'
 
 export interface AppDataService {
   getAppData(): Promise<AppDataState>
   getDashboardSummary(): Promise<DashboardSummaryDto>
+  getDashboardActivity(periodDays: DashboardActivityPeriodDays): Promise<DashboardActivityDto>
   getJobsList(): Promise<JobsListDto>
   getJobDetail(jobId: string): Promise<JobDetailDto | null>
   getProfileDetail(profileId: string): Promise<ProfileDetailDto | null>

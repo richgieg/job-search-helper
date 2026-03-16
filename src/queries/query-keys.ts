@@ -1,5 +1,7 @@
 export const queryKeys = {
   dashboardSummary: () => ['dashboardSummary'] as const,
+  dashboardActivityRoot: () => ['dashboardActivity'] as const,
+  dashboardActivity: (periodDays: 7 | 30) => ['dashboardActivity', { periodDays }] as const,
   jobsList: () => ['jobs', 'list'] as const,
   jobsDetailRoot: () => ['jobs', 'detail'] as const,
   jobsDetail: (jobId: string) => ['jobs', 'detail', jobId] as const,

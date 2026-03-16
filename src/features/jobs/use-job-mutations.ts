@@ -35,6 +35,7 @@ export const useJobMutations = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.profilesDetailRoot() }),
       queryClient.invalidateQueries({ queryKey: queryKeys.profilesDocumentRoot() }),
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboardSummary() }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardActivityRoot() }),
     ])
   }
 

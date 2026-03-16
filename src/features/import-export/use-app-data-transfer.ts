@@ -13,6 +13,7 @@ export const useAppDataTransfer = () => {
 
   const importedDataQueryKeys = [
     queryKeys.dashboardSummary(),
+    queryKeys.dashboardActivityRoot(),
     queryKeys.jobsList(),
     queryKeys.jobsDetailRoot(),
     queryKeys.profilesListRoot(),

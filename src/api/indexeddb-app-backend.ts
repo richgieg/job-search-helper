@@ -164,6 +164,8 @@ import type { ProfileMutationContext } from '../domain/profile-data'
 import { createEmptyAppDataState } from '../domain/app-data-state'
 import type { AppDataService } from './app-data-service'
 import type {
+  DashboardActivityDto,
+  DashboardActivityPeriodDays,
   DashboardSummaryDto,
   JobDetailDto,
   JobsListDto,
@@ -189,6 +191,7 @@ const toPersistedAppData = (data: AppDataState): PersistedAppData => {
 const cloneAppData = (data: AppDataState): AppDataState => structuredClone(data)
 const emptyCollectionUpdatedAt = '1970-01-01T00:00:00.000Z'
 const compareSortOrder = <T extends { sortOrder: number }>(left: T, right: T) => left.sortOrder - right.sortOrder
+const dayInMilliseconds = 24 * 60 * 60 * 1000
 const sevenDaysInMilliseconds = 7 * 24 * 60 * 60 * 1000
 
 const getStartOfLocalDay = (value: Date) => {
@@ -200,7 +203,7 @@ const getStartOfLocalDay = (value: Date) => {
 const isWithinLocalToday = (timestamp: string, now: Date) => {
   const value = new Date(timestamp).getTime()
   const start = getStartOfLocalDay(now).getTime()
-  const end = start + 24 * 60 * 60 * 1000
+  const end = start + dayInMilliseconds
   return value >= start && value < end
 }
 
@@ -211,6 +214,20 @@ const isWithinLast7Days = (timestamp: string, now: Date) => {
 }
 
 const offerStatusesCountedAsReceived = new Set(['offer_received', 'offer_accepted'])
+
+const formatLocalDateKey = (value: Date) => {
+  const year = value.getFullYear()
+  const month = String(value.getMonth() + 1).padStart(2, '0')
+  const day = String(value.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const isWithinDayRange = (timestamp: string, start: Date, end: Date, now: Date) => {
+  const value = new Date(timestamp).getTime()
+  const startTime = start.getTime()
+  const endTime = Math.min(end.getTime(), now.getTime() + 1)
+  return value >= startTime && value < endTime
+}
 
 const buildFallbackJob = (profile: Profile): Job => ({
   id: `document-job-${profile.id}`,
@@ -1740,6 +1757,48 @@ export class IndexedDbAppBackend implements AppDataService {
           [...profiles.map((profile) => profile.updatedAt), ...jobs.map((job) => job.updatedAt)].sort((left, right) =>
             right.localeCompare(left),
           )[0] ?? emptyCollectionUpdatedAt,
+      }
+    })
+  }
+
+  async getDashboardActivity(periodDays: DashboardActivityPeriodDays): Promise<DashboardActivityDto> {
+    await this.ensureInitialized()
+
+    return this.withDatabase(async (database) => {
+      const transaction = database.transaction(['jobs', 'interviews'], 'readonly')
+      const [jobs, interviews] = await Promise.all([
+        requestToPromise(transaction.objectStore('jobs').getAll()) as Promise<Job[]>,
+        requestToPromise(transaction.objectStore('interviews').getAll()) as Promise<Interview[]>,
+      ])
+
+      await transactionToPromise(transaction)
+
+      const now = new Date(this.now())
+      const todayStart = getStartOfLocalDay(now)
+      const points = Array.from({ length: periodDays }, (_, index) => {
+        const start = new Date(todayStart)
+        start.setDate(todayStart.getDate() - (periodDays - 1 - index))
+
+        const end = new Date(start)
+        end.setDate(start.getDate() + 1)
+
+        return {
+          date: formatLocalDateKey(start),
+          jobsAddedCount: jobs.filter((job) => isWithinDayRange(job.createdAt, start, end, now)).length,
+          applicationsSubmittedCount: jobs.filter((job) => job.appliedAt && isWithinDayRange(job.appliedAt, start, end, now)).length,
+          interviewsBookedCount: interviews.filter((interview) => isWithinDayRange(interview.createdAt, start, end, now)).length,
+          offersReceivedCount: jobs.filter(
+            (job) =>
+              job.finalOutcome &&
+              offerStatusesCountedAsReceived.has(job.finalOutcome.status) &&
+              isWithinDayRange(job.finalOutcome.setAt, start, end, now),
+          ).length,
+        }
+      })
+
+      return {
+        periodDays,
+        points,
       }
     })
   }

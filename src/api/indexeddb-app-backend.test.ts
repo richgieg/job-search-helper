@@ -1851,6 +1851,123 @@ describe('IndexedDbAppBackend', () => {
     })
   })
 
+  it('builds daily dashboard activity buckets directly from IndexedDB', async () => {
+    const backend = new IndexedDbAppBackend({
+      databaseName,
+      now: () => '2026-03-16T12:00:00.000Z',
+    })
+    const seedData = createSeedData()
+
+    seedData.jobs.job_1!.createdAt = '2026-03-16T09:00:00.000Z'
+    seedData.jobs.job_1!.updatedAt = '2026-03-16T09:00:00.000Z'
+    seedData.jobs.job_2!.createdAt = '2026-03-06T09:00:00.000Z'
+    seedData.jobs.job_2!.appliedAt = '2026-03-16T08:30:00.000Z'
+    seedData.jobs.job_2!.finalOutcome = { status: 'offer_received', setAt: '2026-03-16T11:00:00.000Z' }
+    seedData.jobs.job_3 = {
+      id: 'job_3',
+      companyName: 'New Lead Co',
+      staffingAgencyName: '',
+      jobTitle: 'Platform Engineer',
+      description: '',
+      location: 'Remote',
+      postedCompensation: '',
+      desiredCompensation: '',
+      compensationNotes: '',
+      workArrangement: 'remote',
+      employmentType: 'full_time',
+      datePosted: '2026-03-16',
+      appliedAt: null,
+      finalOutcome: null,
+      notes: '',
+      createdAt: '2026-03-16T09:30:00.000Z',
+      updatedAt: '2026-03-16T09:30:00.000Z',
+    }
+    seedData.jobs.job_4 = {
+      id: 'job_4',
+      companyName: 'Older Lead Co',
+      staffingAgencyName: '',
+      jobTitle: 'Staff Platform Engineer',
+      description: '',
+      location: 'Hybrid',
+      postedCompensation: '',
+      desiredCompensation: '',
+      compensationNotes: '',
+      workArrangement: 'hybrid',
+      employmentType: 'full_time',
+      datePosted: '2026-03-01',
+      appliedAt: null,
+      finalOutcome: null,
+      notes: '',
+      createdAt: '2026-03-01T09:00:00.000Z',
+      updatedAt: '2026-03-01T09:00:00.000Z',
+    }
+    seedData.interviews.interview_1!.createdAt = '2026-03-16T07:00:00.000Z'
+    seedData.interviews.interview_1!.startAt = '2026-03-17T15:00:00.000Z'
+    seedData.interviews.interview_2!.createdAt = '2026-03-12T09:00:00.000Z'
+    seedData.interviews.interview_2!.startAt = '2026-03-18T13:00:00.000Z'
+
+    await backend.importAppData({
+      version: 1,
+      exportedAt: '2026-03-12T10:00:00.000Z',
+      data: toPersistedAppData(seedData),
+    })
+
+    await expect(backend.getDashboardActivity(7)).resolves.toEqual({
+      periodDays: 7,
+      points: [
+        {
+          date: '2026-03-10',
+          jobsAddedCount: 0,
+          applicationsSubmittedCount: 0,
+          interviewsBookedCount: 0,
+          offersReceivedCount: 0,
+        },
+        {
+          date: '2026-03-11',
+          jobsAddedCount: 0,
+          applicationsSubmittedCount: 0,
+          interviewsBookedCount: 0,
+          offersReceivedCount: 0,
+        },
+        {
+          date: '2026-03-12',
+          jobsAddedCount: 0,
+          applicationsSubmittedCount: 0,
+          interviewsBookedCount: 1,
+          offersReceivedCount: 0,
+        },
+        {
+          date: '2026-03-13',
+          jobsAddedCount: 0,
+          applicationsSubmittedCount: 0,
+          interviewsBookedCount: 0,
+          offersReceivedCount: 0,
+        },
+        {
+          date: '2026-03-14',
+          jobsAddedCount: 0,
+          applicationsSubmittedCount: 0,
+          interviewsBookedCount: 0,
+          offersReceivedCount: 0,
+        },
+        {
+          date: '2026-03-15',
+          jobsAddedCount: 0,
+          applicationsSubmittedCount: 0,
+          interviewsBookedCount: 0,
+          offersReceivedCount: 0,
+        },
+        {
+          date: '2026-03-16',
+          jobsAddedCount: 2,
+          applicationsSubmittedCount: 1,
+          interviewsBookedCount: 1,
+          offersReceivedCount: 1,
+        },
+      ],
+    })
+  })
+
   it('builds the profiles list directly from IndexedDB', async () => {
     const backend = new IndexedDbAppBackend({ databaseName })
     const seedData = createSeedData()

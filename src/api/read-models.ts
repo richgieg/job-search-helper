@@ -45,6 +45,21 @@ export interface DashboardSummaryDto {
   updatedAt: string
 }
 
+export type DashboardActivityPeriodDays = 7 | 30
+
+export interface DashboardActivityPointDto {
+  date: string
+  jobsAddedCount: number
+  applicationsSubmittedCount: number
+  interviewsBookedCount: number
+  offersReceivedCount: number
+}
+
+export interface DashboardActivityDto {
+  periodDays: DashboardActivityPeriodDays
+  points: DashboardActivityPointDto[]
+}
+
 export interface DashboardUpcomingInterviewDto {
   interviewId: string
   jobId: string
