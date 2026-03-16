@@ -101,7 +101,7 @@ const DashboardActivityLegend = () => (
   </div>
 )
 
-const DashboardActivityChartFrame = ({ children }: { children: ReactNode }) => <div className="mt-6 min-h-[22rem]">{children}</div>
+const DashboardActivityChartFrame = ({ children }: { children: ReactNode }) => <div className="mt-6 min-h-88">{children}</div>
 
 const DashboardActivityChartSkeleton = () => (
   <div aria-hidden="true" className="pt-4">
