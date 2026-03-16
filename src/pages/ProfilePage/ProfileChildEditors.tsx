@@ -43,6 +43,7 @@ import type {
 import { useProfilePagePanelState } from '../../store/app-ui-store'
 import { employmentTypeOptions, workArrangementOptions } from '../../utils/job-field-options'
 import { moveOrderedItem } from '../../utils/reorder'
+import { useCommitOnUnmountIfFocused } from '../../utils/use-commit-on-unmount-if-focused'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
 
 const profilePageSectionPanelKeys = {
@@ -77,21 +78,26 @@ const TextField = ({
   type?: 'text' | 'email' | 'tel' | 'url' | 'date'
   hideLabel?: boolean
   disabled?: boolean
-}) => (
-  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
-    <span className={hideLabel ? 'sr-only' : 'font-medium'}>{label}</span>
-    <input
-      className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring disabled:cursor-not-allowed disabled:bg-app-surface-subtle disabled:text-app-text-subtle"
-      disabled={disabled}
-      placeholder={placeholder}
-      spellCheck={type === 'url' ? false : undefined}
-      type={type}
-      value={value}
-      onBlur={onBlur}
-      onChange={(event) => onChange(event.target.value)}
-    />
-  </label>
-)
+}) => {
+  const { handleBlur, handleFocus } = useCommitOnUnmountIfFocused(onBlur)
+
+  return (
+    <label className="flex flex-col gap-2 text-sm text-app-text-muted">
+      <span className={hideLabel ? 'sr-only' : 'font-medium'}>{label}</span>
+      <input
+        className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring disabled:cursor-not-allowed disabled:bg-app-surface-subtle disabled:text-app-text-subtle"
+        disabled={disabled}
+        placeholder={placeholder}
+        spellCheck={type === 'url' ? false : undefined}
+        type={type}
+        value={value}
+        onBlur={handleBlur}
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={handleFocus}
+      />
+    </label>
+  )
+}
 
 const TextAreaField = ({
   label,
@@ -111,20 +117,25 @@ const TextAreaField = ({
   hideLabel?: boolean
   className?: string
   minHeightClass?: string
-}) => (
-  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
-    <span className={hideLabel ? 'sr-only' : 'font-medium'}>{label}</span>
-    <textarea
-      className={[minHeightClass, 'rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring', className]
-        .filter(Boolean)
-        .join(' ')}
-      placeholder={placeholder}
-      value={value}
-      onBlur={onBlur}
-      onChange={(event) => onChange(event.target.value)}
-    />
-  </label>
-)
+}) => {
+  const { handleBlur, handleFocus } = useCommitOnUnmountIfFocused(onBlur)
+
+  return (
+    <label className="flex flex-col gap-2 text-sm text-app-text-muted">
+      <span className={hideLabel ? 'sr-only' : 'font-medium'}>{label}</span>
+      <textarea
+        className={[minHeightClass, 'rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring', className]
+          .filter(Boolean)
+          .join(' ')}
+        placeholder={placeholder}
+        value={value}
+        onBlur={handleBlur}
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={handleFocus}
+      />
+    </label>
+  )
+}
 
 const SelectField = <T extends string>({
   label,
@@ -138,23 +149,28 @@ const SelectField = <T extends string>({
   onChange: (value: T) => void
   onBlur?: () => void
   options: Array<{ value: T; label: string }>
-}) => (
-  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
-    <span className="font-medium">{label}</span>
-    <select
-      className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-      value={value}
-      onBlur={onBlur}
-      onChange={(event) => onChange(event.target.value as T)}
-    >
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  </label>
-)
+}) => {
+  const { handleBlur, handleFocus } = useCommitOnUnmountIfFocused(onBlur)
+
+  return (
+    <label className="flex flex-col gap-2 text-sm text-app-text-muted">
+      <span className="font-medium">{label}</span>
+      <select
+        className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
+        value={value}
+        onBlur={handleBlur}
+        onChange={(event) => onChange(event.target.value as T)}
+        onFocus={handleFocus}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
 
 const getNextBulletLevel = (level: BulletLevel): BulletLevel => {
   if (level === 3) {

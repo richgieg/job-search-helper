@@ -81,6 +81,35 @@ describe('ProfilePage', () => {
     expect(await screen.findByText('Portfolio Profile')).toBeInTheDocument()
   })
 
+  it('saves the focused profile name when the route unmounts before blur fires', async () => {
+    const user = userEvent.setup()
+
+    const firstRender = renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Profile details/i }))
+    const nameInput = screen.getByLabelText('Profile name')
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Portfolio Profile')
+
+    expect(nameInput).toHaveFocus()
+
+    firstRender.unmount()
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Portfolio Profile')).toBeInTheDocument()
+  })
+
   it('lets the user choose a cover letter recipient for job-attached profiles', async () => {
     const user = userEvent.setup()
 
@@ -203,6 +232,35 @@ describe('ProfilePage', () => {
     await user.clear(screen.getByDisplayValue('https://example.com'))
     await user.type(screen.getByLabelText('URL'), 'https://portfolio.example.dev')
     await user.tab()
+
+    expect(await screen.findByDisplayValue('https://portfolio.example.dev')).toBeInTheDocument()
+  })
+
+  it('saves the focused profile link field when the route unmounts before blur fires', async () => {
+    const user = userEvent.setup()
+
+    const firstRender = renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Links/i }))
+    const urlInput = screen.getByLabelText('URL')
+    await user.clear(urlInput)
+    await user.type(urlInput, 'https://portfolio.example.dev')
+
+    expect(urlInput).toHaveFocus()
+
+    firstRender.unmount()
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
 
     expect(await screen.findByDisplayValue('https://portfolio.example.dev')).toBeInTheDocument()
   })

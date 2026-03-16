@@ -85,6 +85,35 @@ describe('JobPage', () => {
     expect(await screen.findByText('Principal Engineer')).toBeInTheDocument()
   })
 
+  it('saves the focused job title when the route unmounts before blur fires', async () => {
+    const user = userEvent.setup()
+
+    const firstRender = renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /Job details/i }))
+    const jobTitleInput = screen.getByLabelText('Job title')
+    await user.clear(jobTitleInput)
+    await user.type(jobTitleInput, 'Principal Engineer')
+
+    expect(jobTitleInput).toHaveFocus()
+
+    firstRender.unmount()
+
+    renderRoute({
+      element: <JobPage />,
+      path: '/jobs/:jobId',
+      route: '/jobs/job_1',
+    })
+
+    expect(await screen.findByText('Principal Engineer')).toBeInTheDocument()
+  })
+
   it('updates job child editor links through mutation hooks', async () => {
     const user = userEvent.setup()
 

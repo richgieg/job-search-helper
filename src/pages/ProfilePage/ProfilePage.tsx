@@ -17,6 +17,7 @@ import { documentHeaderTemplateLabels, documentHeaderTemplates } from '../../uti
 import { defaultResumeSectionOrder } from '../../utils/resume-section-labels'
 import { normalizeResumeSectionLabel } from '../../utils/resume-section-labels'
 import { moveOrderedItem } from '../../utils/reorder'
+import { useCommitOnUnmountIfFocused } from '../../utils/use-commit-on-unmount-if-focused'
 
 const buildResumeSectionLabels = (profile?: { resumeSettings: { sections: Record<ResumeSectionKey, { label: string }> } }) =>
   defaultResumeSectionOrder.reduce<Record<ResumeSectionKey, string>>((labels, section) => {
@@ -54,20 +55,79 @@ const Field = ({
   onBlur?: () => void
   placeholder?: string
   type?: 'text' | 'email' | 'tel' | 'url'
-}) => (
-  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
-    <span className="font-medium">{label}</span>
-    <input
-      className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-      placeholder={placeholder}
-      spellCheck={type === 'url' ? false : undefined}
-      type={type}
-      value={value}
-      onBlur={onBlur}
-      onChange={(event) => onChange(event.target.value)}
-    />
-  </label>
-)
+}) => {
+  const { handleBlur, handleFocus } = useCommitOnUnmountIfFocused(onBlur)
+
+  return (
+    <label className="flex flex-col gap-2 text-sm text-app-text-muted">
+      <span className="font-medium">{label}</span>
+      <input
+        className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
+        placeholder={placeholder}
+        spellCheck={type === 'url' ? false : undefined}
+        type={type}
+        value={value}
+        onBlur={handleBlur}
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={handleFocus}
+      />
+    </label>
+  )
+}
+
+const TextAreaField = ({
+  label,
+  value,
+  onChange,
+  onBlur,
+  minHeightClass,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  onBlur?: () => void
+  minHeightClass: string
+}) => {
+  const { handleBlur, handleFocus } = useCommitOnUnmountIfFocused(onBlur)
+
+  return (
+    <label className="flex flex-col gap-2 text-sm text-app-text-muted">
+      <span className="font-medium">{label}</span>
+      <textarea
+        className={`${minHeightClass} rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring`}
+        value={value}
+        onBlur={handleBlur}
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={handleFocus}
+      />
+    </label>
+  )
+}
+
+const ResumeSectionLabelField = ({
+  value,
+  onChange,
+  onBlur,
+}: {
+  value: string
+  onChange: (value: string) => void
+  onBlur?: () => void
+}) => {
+  const { handleBlur, handleFocus } = useCommitOnUnmountIfFocused(onBlur)
+
+  return (
+    <label className="min-w-0 flex-1">
+      <span className="sr-only">Resume section label</span>
+      <input
+        className="w-full rounded-lg border border-app-border px-3 py-2 text-sm font-medium text-app-text outline-none transition focus:border-app-focus-ring"
+        value={value}
+        onBlur={handleBlur}
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={handleFocus}
+      />
+    </label>
+  )
+}
 
 const OrderBadge = ({ value }: { value: number }) => (
   <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-app-surface-subtle px-2 text-xs font-semibold text-app-text-subtle">
@@ -329,27 +389,11 @@ export const ProfilePage = () => {
           </div>
 
           <div className="xl:col-span-2">
-            <label className="flex flex-col gap-2 text-sm text-app-text-muted">
-              <span className="font-medium">Professional summary</span>
-              <textarea
-                className="min-h-28 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-                value={activeSummary}
-                onBlur={() => commitProfileTextField('summary', activeSummary)}
-                onChange={(event) => setSummary(event.target.value)}
-              />
-            </label>
+            <TextAreaField label="Professional summary" minHeightClass="min-h-28" value={activeSummary} onBlur={() => commitProfileTextField('summary', activeSummary)} onChange={setSummary} />
           </div>
 
           <div className="xl:col-span-2">
-            <label className="flex flex-col gap-2 text-sm text-app-text-muted">
-              <span className="font-medium">Cover letter content</span>
-              <textarea
-                className="min-h-40 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-                value={activeCoverLetter}
-                onBlur={() => commitProfileTextField('coverLetter', activeCoverLetter)}
-                onChange={(event) => setCoverLetter(event.target.value)}
-              />
-            </label>
+            <TextAreaField label="Cover letter content" minHeightClass="min-h-40" value={activeCoverLetter} onBlur={() => commitProfileTextField('coverLetter', activeCoverLetter)} onChange={setCoverLetter} />
           </div>
         </div>
       </CollapsiblePanel>
@@ -428,20 +472,16 @@ export const ProfilePage = () => {
                   <div key={resumeSection.section} className="flex flex-col gap-3 rounded-xl border border-app-border-muted p-4 md:flex-row md:items-center md:justify-between">
                     <div className="flex min-w-0 items-center gap-3 text-sm font-medium text-app-text md:flex-1">
                       <OrderBadge value={index + 1} />
-                      <label className="min-w-0 flex-1">
-                        <span className="sr-only">Resume section label</span>
-                        <input
-                          className="w-full rounded-lg border border-app-border px-3 py-2 text-sm font-medium text-app-text outline-none transition focus:border-app-focus-ring"
-                          value={activeResumeSectionLabels[resumeSection.section]}
-                          onBlur={() => commitResumeSectionLabel(resumeSection.section)}
-                          onChange={(event) =>
-                            setResumeSectionLabels((current) => ({
-                              ...(current ?? activeResumeSectionLabels),
-                              [resumeSection.section]: event.target.value,
-                            }))
-                          }
-                        />
-                      </label>
+                      <ResumeSectionLabelField
+                        value={activeResumeSectionLabels[resumeSection.section]}
+                        onBlur={() => commitResumeSectionLabel(resumeSection.section)}
+                        onChange={(value) =>
+                          setResumeSectionLabels((current) => ({
+                            ...(current ?? activeResumeSectionLabels),
+                            [resumeSection.section]: value,
+                          }))
+                        }
+                      />
                     </div>
 
                     <div className="flex flex-wrap items-center justify-end gap-2">

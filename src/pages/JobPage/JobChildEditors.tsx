@@ -17,6 +17,7 @@ import { useProfileMutations } from '../../features/profiles/use-profile-mutatio
 import { useJobPagePanelState } from '../../store/app-ui-store'
 import type { ApplicationQuestion, ContactOrganizationKind, JobContact, JobLink, Profile } from '../../types/state'
 import { moveOrderedItem } from '../../utils/reorder'
+import { useCommitOnUnmountIfFocused } from '../../utils/use-commit-on-unmount-if-focused'
 import { useScrollIntoViewOnMount } from '../../utils/use-scroll-into-view-on-mount'
 
 const jobPageSectionPanelKeys = {
@@ -75,20 +76,25 @@ const TextField = ({
   onBlur?: () => void
   placeholder?: string
   type?: 'text' | 'email' | 'tel' | 'url' | 'date' | 'datetime-local'
-}) => (
-  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
-    {label ? <span className="font-medium">{label}</span> : null}
-    <input
-      className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-      placeholder={placeholder}
-      spellCheck={type === 'url' ? false : undefined}
-      type={type}
-      value={value}
-      onBlur={onBlur}
-      onChange={(event) => onChange(event.target.value)}
-    />
-  </label>
-)
+}) => {
+  const { handleBlur, handleFocus } = useCommitOnUnmountIfFocused(onBlur)
+
+  return (
+    <label className="flex flex-col gap-2 text-sm text-app-text-muted">
+      {label ? <span className="font-medium">{label}</span> : null}
+      <input
+        className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
+        placeholder={placeholder}
+        spellCheck={type === 'url' ? false : undefined}
+        type={type}
+        value={value}
+        onBlur={handleBlur}
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={handleFocus}
+      />
+    </label>
+  )
+}
 
 const TextAreaField = ({
   label,
@@ -100,17 +106,22 @@ const TextAreaField = ({
   value: string
   onChange: (value: string) => void
   onBlur?: () => void
-}) => (
-  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
-    <span className="font-medium">{label}</span>
-    <textarea
-      className="min-h-24 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-      value={value}
-      onBlur={onBlur}
-      onChange={(event) => onChange(event.target.value)}
-    />
-  </label>
-)
+}) => {
+  const { handleBlur, handleFocus } = useCommitOnUnmountIfFocused(onBlur)
+
+  return (
+    <label className="flex flex-col gap-2 text-sm text-app-text-muted">
+      <span className="font-medium">{label}</span>
+      <textarea
+        className="min-h-24 rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
+        value={value}
+        onBlur={handleBlur}
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={handleFocus}
+      />
+    </label>
+  )
+}
 
 const SelectField = <T extends string>({
   label,
@@ -124,23 +135,28 @@ const SelectField = <T extends string>({
   onChange: (value: T) => void
   onBlur?: () => void
   options: Array<{ value: T; label: string }>
-}) => (
-  <label className="flex flex-col gap-2 text-sm text-app-text-muted">
-    <span className="font-medium">{label}</span>
-    <select
-      className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-      value={value}
-      onBlur={onBlur}
-      onChange={(event) => onChange(event.target.value as T)}
-    >
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  </label>
-)
+}) => {
+  const { handleBlur, handleFocus } = useCommitOnUnmountIfFocused(onBlur)
+
+  return (
+    <label className="flex flex-col gap-2 text-sm text-app-text-muted">
+      <span className="font-medium">{label}</span>
+      <select
+        className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
+        value={value}
+        onBlur={handleBlur}
+        onChange={(event) => onChange(event.target.value as T)}
+        onFocus={handleFocus}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
 
 const toDateTimeLocal = (value: string | null) => {
   if (!value) {
