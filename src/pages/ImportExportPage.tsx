@@ -1,6 +1,7 @@
 import { ChangeEvent, useMemo, useState } from 'react'
 
 import { parseAppExportFileJson } from '../features/import-export/app-export-file'
+import { generateSampleAppExportFile } from '../features/import-export/generate-sample-app-export-file'
 import { useBrowserStorageEstimate } from '../features/import-export/use-browser-storage-estimate'
 import { useAppDataTransfer } from '../features/import-export/use-app-data-transfer'
 import { useDashboardSummaryQuery } from '../queries/use-dashboard-summary-query'
@@ -67,6 +68,15 @@ export const ImportExportPage = () => {
       return
     }
 
+    const confirmed = window.confirm(
+      'Replace current local data with the selected import file? This cannot be undone unless you have an exported backup.',
+    )
+
+    if (!confirmed) {
+      event.target.value = ''
+      return
+    }
+
     try {
       const text = await selectedFile.text()
       const parsed = parseAppExportFileJson(text)
@@ -99,6 +109,25 @@ export const ImportExportPage = () => {
     }
   }
 
+  const handleLoadSampleData = async () => {
+    const confirmed = window.confirm(
+      'Replace current local data with fresh sample data? This cannot be undone unless you have an exported backup.',
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await importAppData(generateSampleAppExportFile())
+      await refreshStorageEstimate()
+      setError(null)
+    } catch (caughtError) {
+      const message = caughtError instanceof Error ? caughtError.message : 'Unknown sample-data error.'
+      setError(message)
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -127,7 +156,7 @@ export const ImportExportPage = () => {
             Export JSON
           </button>
           <label
-            className={`inline-flex items-center justify-center rounded-xl border border-app-warning px-3 py-2 text-sm font-medium text-app-warning hover:bg-app-warning/10 ${
+            className={`inline-flex items-center justify-center rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted ${
               isSaving ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
             }`}
           >
@@ -135,12 +164,20 @@ export const ImportExportPage = () => {
             <input accept="application/json" className="hidden" disabled={isSaving} onChange={handleImport} type="file" />
           </label>
           <button
+            className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isSaving}
+            onClick={handleLoadSampleData}
+            type="button"
+          >
+            Load Fresh Sample Data
+          </button>
+          <button
             className="rounded-xl border border-app-danger px-3 py-2 text-sm font-medium text-app-danger hover:bg-app-danger/10 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isSaving}
             onClick={handleClearData}
             type="button"
           >
-            Clear Local Data
+            Clear Data
           </button>
         </div>
 
