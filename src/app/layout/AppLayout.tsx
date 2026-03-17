@@ -135,8 +135,8 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
 
   return (
     <div className="min-h-screen bg-app-canvas text-app-text">
-      <header className="border-b border-app-border-muted bg-app-surface">
-        <div className="mx-auto max-w-7xl px-6 py-4 lg:px-10">
+      <header className="relative z-20 border-b border-app-border-muted bg-app-surface">
+        <div className="relative mx-auto max-w-7xl px-6 py-4 lg:px-10">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <Link className="text-lg font-semibold uppercase tracking-[0.24em] text-app-primary no-underline sm:text-xl" to="/">
@@ -189,24 +189,30 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
             </div>
           </div>
 
-          {isMobileMenuOpen ? (
-            <nav
-              aria-label="Mobile navigation"
-              className="mt-4 grid gap-2 rounded-2xl border border-app-border-muted bg-app-surface-subtle p-3 lg:hidden"
-              id="mobile-navigation"
-            >
-              {navigationItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  className={navLinkClassName}
-                  to={item.to}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
-          ) : null}
+          <nav
+            aria-hidden={!isMobileMenuOpen}
+            aria-label="Mobile navigation"
+            className={[
+              'absolute left-6 right-6 top-full z-30 mt-3 grid gap-2 rounded-2xl border border-app-border-muted bg-app-surface p-3 shadow-lg ring-1 ring-black/5 lg:hidden',
+              'origin-top transition duration-150 ease-out motion-reduce:transition-none',
+              isMobileMenuOpen
+                ? 'visible translate-y-0 opacity-100'
+                : 'invisible -translate-y-1.5 opacity-0 pointer-events-none',
+            ].join(' ')}
+            id="mobile-navigation"
+          >
+            {navigationItems.map((item) => (
+              <NavLink
+                key={item.to}
+                className={navLinkClassName}
+                to={item.to}
+                tabIndex={isMobileMenuOpen ? 0 : -1}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
       </header>
 
