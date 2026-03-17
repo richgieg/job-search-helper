@@ -523,14 +523,20 @@ a[class*='border-app-danger-muted']:not(:hover):not(:focus-visible):not(:active)
 
 .document-preview-shell {
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
   padding: 2rem;
   background: var(--app-surface-subtle);
+  overflow-x: auto;
+}
+
+.document-preview-content {
+  width: max-content;
+  min-width: max-content;
+  margin-inline: auto;
 }
 
 .document-page {
   box-sizing: border-box;
+  flex-shrink: 0;
   width: 8.5in;
   min-height: 11in;
   padding: 0.5in;
@@ -548,9 +554,9 @@ a[class*='border-app-danger-muted']:not(:hover):not(:focus-visible):not(:active)
 }
 
 .document-preview-stack {
+  display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
 }
 
 .resume-skills-grid {

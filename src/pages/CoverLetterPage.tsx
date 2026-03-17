@@ -52,9 +52,11 @@ export const CoverLetterPage = () => {
         </div>
       ) : null}
       <div className="document-preview-shell">
-        <article className="document-page text-sm leading-4.5 text-black">
-          <CoverLetterDocument documentData={documentData} />
-        </article>
+        <div className="document-preview-content">
+          <article className="document-page text-sm leading-4.5 text-black">
+            <CoverLetterDocument documentData={documentData} />
+          </article>
+        </div>
       </div>
     </>
   )

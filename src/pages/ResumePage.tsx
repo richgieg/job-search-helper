@@ -52,9 +52,11 @@ export const ResumePage = () => {
         </div>
       ) : null}
       <div className="document-preview-shell">
-        <article className="document-page text-black">
-          <ResumeDocument documentData={documentData} />
-        </article>
+        <div className="document-preview-content">
+          <article className="document-page text-black">
+            <ResumeDocument documentData={documentData} />
+          </article>
+        </div>
       </div>
     </>
   )

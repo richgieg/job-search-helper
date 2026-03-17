@@ -52,14 +52,16 @@ export const CoverLetterResumePage = () => {
           Unable to refresh this document right now. Showing the most recently cached result if available.
         </div>
       ) : null}
-      <div className="document-preview-shell document-preview-stack">
-        <article className="document-page text-sm leading-4.5 text-black">
-          <CoverLetterDocument documentData={documentData} />
-        </article>
+      <div className="document-preview-shell">
+        <div className="document-preview-content document-preview-stack">
+          <article className="document-page text-sm leading-4.5 text-black">
+            <CoverLetterDocument documentData={documentData} />
+          </article>
 
-        <article className="document-page document-page-break text-black">
-          <ResumeDocument documentData={documentData} />
-        </article>
+          <article className="document-page document-page-break text-black">
+            <ResumeDocument documentData={documentData} />
+          </article>
+        </div>
       </div>
     </>
   )
