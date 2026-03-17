@@ -41,7 +41,7 @@ const ProfileListItem = ({
       </td>
       <td className="border-r border-app-border-muted px-4 py-3 align-middle text-sm text-app-text-subtle last:border-r-0 whitespace-nowrap">{new Date(profile.updatedAt).toLocaleString()}</td>
       <td className="px-4 py-3 align-middle">
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="flex flex-nowrap justify-end gap-2 whitespace-nowrap">
           <Link aria-label={`Open profile ${profile.name}`} className={getActionIconButtonClassName()} to={`/profiles/${profile.id}`}>
             <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.25" viewBox="0 0 24 24">
               <path d="M7 17 17 7" />
