@@ -12,6 +12,7 @@ const ApplicationPage = lazy(() => import('../pages/ApplicationPage').then((modu
 const JobsPage = lazy(() => import('../pages/JobsPage').then((module) => ({ default: module.JobsPage })))
 const JobPage = lazy(() => import('../pages/JobPage').then((module) => ({ default: module.JobPage })))
 const ImportExportPage = lazy(() => import('../pages/ImportExportPage').then((module) => ({ default: module.ImportExportPage })))
+const AboutPage = lazy(() => import('../pages/AboutPage').then((module) => ({ default: module.AboutPage })))
 const CoverLetterPage = lazy(() => import('../pages/CoverLetterPage').then((module) => ({ default: module.CoverLetterPage })))
 const CoverLetterResumePage = lazy(() => import('../pages/CoverLetterResumePage').then((module) => ({ default: module.CoverLetterResumePage })))
 const ReferencesPage = lazy(() => import('../pages/ReferencesPage').then((module) => ({ default: module.ReferencesPage })))
@@ -53,6 +54,7 @@ export const AppRoutes = () => {
           <Route path="/jobs" element={withRouteReveal(<JobsPage />)} />
           <Route path="/jobs/:jobId" element={withRouteReveal(<JobPage />)} />
           <Route path="/import-export" element={withRouteReveal(<ImportExportPage />)} />
+          <Route path="/about" element={withRouteReveal(<AboutPage />)} />
         </Route>
       </Routes>
     </Suspense>

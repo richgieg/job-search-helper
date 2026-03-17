@@ -11,6 +11,7 @@ const navigationItems = [
   { to: '/profiles', label: 'Profiles' },
   { to: '/jobs', label: 'Jobs' },
   { to: '/import-export', label: 'Import / Export' },
+  { to: '/about', label: 'About' },
 ]
 
 const themePreferenceLabel: Record<ThemePreference, string> = {

@@ -33,6 +33,7 @@ describe('AppRoutes', () => {
     expect(await screen.findByRole('heading', { name: 'Take control of your job search.' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Job Search Helper' })).toHaveAttribute('href', '/')
     expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/dashboard')
+    expect(screen.getByRole('link', { name: 'About' })).toHaveAttribute('href', '/about')
   })
 
   it('renders the jobs route inside the app layout', async () => {
@@ -42,6 +43,23 @@ describe('AppRoutes', () => {
 
     expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Import / Export' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'About' })).toBeInTheDocument()
+  })
+
+  it('renders the about route inside the app layout and keeps about after import export in nav order', async () => {
+    setupRouteTestEnvironment()
+
+    renderAppRoutes('/about')
+
+    expect(await screen.findByRole('heading', { name: 'Why this app exists' })).toBeInTheDocument()
+
+    const navLinks = screen
+      .getAllByRole('link')
+      .map((link) => link.textContent)
+      .filter((label): label is string => Boolean(label))
+
+    expect(navLinks.indexOf('Import / Export')).toBeGreaterThan(-1)
+    expect(navLinks.indexOf('About')).toBe(navLinks.indexOf('Import / Export') + 1)
   })
 
   it('renders document routes outside the app layout shell navigation', async () => {
