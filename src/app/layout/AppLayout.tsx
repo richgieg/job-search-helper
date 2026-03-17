@@ -144,7 +144,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
         </div>
       </header>
 
-      <main className="mx-auto min-w-0 max-w-7xl p-6 lg:p-10">
+      <main className="mx-auto min-w-0 max-w-7xl px-6 pt-6 pb-14 lg:px-10 lg:pt-10 lg:pb-18">
         {children}
       </main>
     </div>
