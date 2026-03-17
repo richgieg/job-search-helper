@@ -23,7 +23,7 @@ The first version should let a user:
 Keep the MVP focused on a single primary user: an individual job seeker, with no multi-user support or authentication in the first release.
 
 Implementation note:
-The MVP can remain fully local while still routing persisted data through a small backend or service boundary. That keeps the product scope unchanged while making a later move to IndexedDB-backed persistence lower risk.
+The MVP remains fully local while routing persisted data through a small backend or service boundary. IndexedDB is the current persisted source of truth behind that boundary, which keeps the product scope unchanged while preserving room for future backend evolution.
 
 ### In scope
 
@@ -122,6 +122,7 @@ Profiles can be either base profiles or job profiles:
 Each job should support:
 
 - Company name
+- Staffing agency name
 - Job title
 - One or more job posting URLs
 - Job description
@@ -176,7 +177,7 @@ Each job can have multiple contacts:
 - Email
 - Phone
 - LinkedIn/URL
-- Relationship type: recruiter, hiring manager, referral, interviewer, other
+- Organization kind: company or staffing agency
 - Notes
 
 Contacts should be reusable across interviews through interview-to-contact associations.
@@ -248,33 +249,31 @@ This allows the user to keep track of custom questions asked during online appli
 - Export the full app state as a JSON file
 - Import a previously exported JSON file to restore the app state
 - Validate imported JSON before applying it
-- Clearly warn the user that import overwrites the current in-memory app state
+- Clearly warn the user that import replaces the current local app data
 
 ## Suggested MVP screens
 
 1. Dashboard
-   - Job pipeline summary
-   - Recently updated jobs
-   - Quick actions
+   - Job-search summary metrics
+   - Activity trends
+   - Upcoming interviews
 
 2. Profiles list
    - lightweight overview of reusable base profiles
-3. Profile editor
+3. Profile page/editor
    - full profile editing and child records
 4. Jobs list
    - lightweight overview of all jobs
-5. Job create/edit
-6. Job editor
+5. Job page/editor
    - full job editing and child records
    - includes interview management
    - includes access to job-specific profiles
-7. Job contacts editor
-8. Job interviews editor
-9. Job profiles list/editor
-10. Resume preview
-11. Cover letter preview
-12. Application page
-13. Import/export page or settings section
+6. Application page
+7. Resume preview
+8. Cover letter preview
+9. References preview
+10. Combined cover letter + resume preview
+11. Import/export page
 
 ## Minimal state model
 
@@ -461,6 +460,7 @@ This section is intentionally general-purpose so the user can relabel it to thin
 ### Job
 - id
 - company_name
+- staffing_agency_name
 - job_title
 - description
 - location
@@ -495,6 +495,7 @@ This section is intentionally general-purpose so the user can relabel it to thin
 - job_id
 - name
 - title
+- company
 - address_line_1
 - address_line_2
 - address_line_3
@@ -502,7 +503,7 @@ This section is intentionally general-purpose so the user can relabel it to thin
 - email
 - phone
 - linkedin_url
-- relationship_type
+- organization_kind
 - notes
 - sort_order
 
