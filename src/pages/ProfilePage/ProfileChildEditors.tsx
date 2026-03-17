@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { ActionToggle, DeleteIconButton, getActionIconButtonClassName } from '../../components/CompactActionControls'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
@@ -57,6 +57,8 @@ const profilePageSectionPanelKeys = {
   references: 'references',
   skills: 'skills',
 } as const
+
+const HEADER_ACTION_VISIBLE_RATIO_THRESHOLD = 0.5
 
 const getProfilePageItemPanelKey = (kind: string, id: string) => `${kind}:${id}`
 
@@ -763,6 +765,8 @@ const SkillCategoryCard = ({
   const skills = skillCategoryEntry.skills
   const [name, setName] = useState(category.name)
   const [enabled, setEnabled] = useState(category.enabled)
+  const [isAddSkillButtonVisible, setIsAddSkillButtonVisible] = useState(true)
+  const addSkillButtonRef = useRef<HTMLButtonElement | null>(null)
   const { scrollTargetRef: cardRef, scrollTargetStyle: cardScrollStyle } = useScrollIntoViewOnMount<HTMLDivElement>({
     enabled: scrollIntoViewOnMount,
     onComplete: onScrollIntoViewComplete,
@@ -774,12 +778,6 @@ const SkillCategoryCard = ({
   const splitSkillIndex = Math.ceil(skillIds.length / 2)
   const leftColumnSkills = skills.slice(0, splitSkillIndex)
   const rightColumnSkills = skills.slice(splitSkillIndex)
-
-  useEffect(() => {
-    setName(category.name)
-    setEnabled(category.enabled)
-  }, [category])
-
   const summary = summarizeParts([countLabel(skillIds.length, 'skill')])
   const skillCategoryPanel = useProfilePagePanelState(
     category.profileId,
@@ -787,12 +785,39 @@ const SkillCategoryCard = ({
     defaultExpanded,
   )
 
+  useEffect(() => {
+    setName(category.name)
+    setEnabled(category.enabled)
+  }, [category])
+
+  useEffect(() => {
+    if (!skillCategoryPanel.expanded || !addSkillButtonRef.current || typeof IntersectionObserver !== 'function') {
+      setIsAddSkillButtonVisible(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsAddSkillButtonVisible(entry?.isIntersecting === true && entry.intersectionRatio >= HEADER_ACTION_VISIBLE_RATIO_THRESHOLD)
+      },
+      { threshold: HEADER_ACTION_VISIBLE_RATIO_THRESHOLD },
+    )
+
+    observer.observe(addSkillButtonRef.current)
+
+    return () => observer.disconnect()
+  }, [skillCategoryPanel.expanded])
+
   const commitName = () => {
     if (name === category.name) {
       return
     }
 
     void updateSkillCategory({ skillCategoryId: category.id, changes: { name } })
+  }
+
+  const handleAddSkill = () => {
+    void createSkill(category.id)
   }
 
   return (
@@ -826,6 +851,21 @@ const SkillCategoryCard = ({
           </div>
         }
         onExpandedChange={skillCategoryPanel.onExpandedChange}
+        footerContent={(
+          <button
+            aria-hidden={isAddSkillButtonVisible}
+            className={[
+              'rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text-muted transition-opacity hover:bg-app-surface-muted',
+              isAddSkillButtonVisible ? 'pointer-events-none opacity-0' : 'opacity-100',
+            ].join(' ')}
+            disabled={isAddSkillButtonVisible}
+            onClick={handleAddSkill}
+            tabIndex={isAddSkillButtonVisible ? -1 : 0}
+            type="button"
+          >
+            Add skill
+          </button>
+        )}
         summary={summary}
         title={name || 'Skill category'}
       >
@@ -837,8 +877,9 @@ const SkillCategoryCard = ({
           <div className="flex items-center justify-between gap-3">
             <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Skills</h4>
             <button
+              ref={addSkillButtonRef}
               className="rounded-xl border border-app-border px-3 py-2 text-sm font-medium text-app-text-muted hover:bg-app-surface-muted"
-              onClick={() => void createSkill(category.id)}
+              onClick={handleAddSkill}
               type="button"
             >
               Add skill

@@ -13,15 +13,81 @@ import { queryClient } from '../queries/query-client'
 import { createDefaultUiState, useAppUiStore } from '../store/app-ui-store'
 import type { AppDataState } from '../types/state'
 
-class MockIntersectionObserver implements IntersectionObserver {
-  readonly root = null
-  readonly rootMargin = ''
-  readonly thresholds = [0]
+const observedElements = new Map<Element, Set<MockIntersectionObserver>>()
 
-  disconnect = vi.fn()
-  observe = vi.fn()
+class MockIntersectionObserver implements IntersectionObserver {
+  readonly root: Element | Document | null
+  readonly rootMargin: string
+  readonly thresholds: ReadonlyArray<number>
+  private readonly callback: IntersectionObserverCallback
+  private readonly observedTargets = new Set<Element>()
+
+  constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+    this.callback = callback
+    this.root = options?.root ?? null
+    this.rootMargin = options?.rootMargin ?? ''
+    this.thresholds = Array.isArray(options?.threshold)
+      ? options.threshold
+      : [options?.threshold ?? 0]
+  }
+
+  disconnect = vi.fn(() => {
+    this.observedTargets.forEach((target) => {
+      observedElements.get(target)?.delete(this)
+
+      if (observedElements.get(target)?.size === 0) {
+        observedElements.delete(target)
+      }
+    })
+    this.observedTargets.clear()
+  })
+
+  observe = vi.fn((target: Element) => {
+    this.observedTargets.add(target)
+
+    const targetObservers = observedElements.get(target) ?? new Set<MockIntersectionObserver>()
+    targetObservers.add(this)
+    observedElements.set(target, targetObservers)
+  })
+
   takeRecords = vi.fn<() => IntersectionObserverEntry[]>(() => [])
-  unobserve = vi.fn()
+
+  unobserve = vi.fn((target: Element) => {
+    this.observedTargets.delete(target)
+    observedElements.get(target)?.delete(this)
+
+    if (observedElements.get(target)?.size === 0) {
+      observedElements.delete(target)
+    }
+  })
+
+  trigger(target: Element, entryInit: Partial<IntersectionObserverEntry>) {
+    const entry = {
+      boundingClientRect: target.getBoundingClientRect(),
+      intersectionRatio: 0,
+      intersectionRect: target.getBoundingClientRect(),
+      isIntersecting: false,
+      rootBounds: null,
+      target,
+      time: 0,
+      ...entryInit,
+    } as IntersectionObserverEntry
+
+    this.callback([entry], this)
+  }
+}
+
+const resetMockIntersectionObservers = () => {
+  observedElements.clear()
+}
+
+export const triggerIntersectionObserver = (
+  target: Element,
+  entryInit: Partial<IntersectionObserverEntry>,
+) => {
+  observedElements.get(target)?.forEach((observer) => {
+    observer.trigger(target, entryInit)
+  })
 }
 
 const defaultQueryOptions = {
@@ -57,6 +123,7 @@ export const resetRouteTestState = () => {
   cleanup()
   queryClient.clear()
   resetAppApiClient()
+  resetMockIntersectionObservers()
   useAppUiStore.setState((state) => ({
     ...state,
     ui: createDefaultUiState('system'),

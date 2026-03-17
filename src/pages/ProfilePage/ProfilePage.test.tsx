@@ -10,7 +10,7 @@ import { createAppApiClient, setAppApiClient } from '../../api'
 import { APP_NAME } from '../../app/page-titles'
 import type { ProfileDetailDto } from '../../api/read-models'
 import { ProfilePage } from './ProfilePage'
-import { createSeedData, renderRoute, resetRouteTestState, setupRouteTestEnvironment } from '../../test/route-test-helpers'
+import { createSeedData, renderRoute, resetRouteTestState, setupRouteTestEnvironment, triggerIntersectionObserver } from '../../test/route-test-helpers'
 
 describe('ProfilePage', () => {
   beforeEach(() => {
@@ -317,6 +317,39 @@ describe('ProfilePage', () => {
     })
 
     expect(await screen.findByLabelText('Category name')).toBeInTheDocument()
+  })
+
+  it('shows a bottom add skill button when the header add skill button scrolls out of view', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Skills\b/i }))
+    await user.click(screen.getByRole('button', { name: /^Languages\b/i }))
+
+    const addSkillButtons = screen.getAllByRole('button', { name: 'Add skill' })
+    expect(addSkillButtons).toHaveLength(1)
+
+    triggerIntersectionObserver(addSkillButtons[0]!, {
+      intersectionRatio: 0,
+      isIntersecting: false,
+    })
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: 'Add skill' })).toHaveLength(2)
+    })
+
+    await user.click(screen.getAllByRole('button', { name: 'Add skill' })[1]!)
+
+    await waitFor(() => {
+      expect(screen.getAllByLabelText('Skill name')).toHaveLength(2)
+    })
   })
 
   it('renders the profile not-found state when the requested profile does not exist', async () => {

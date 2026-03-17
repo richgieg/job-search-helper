@@ -20,6 +20,7 @@ interface CollapsiblePanelProps {
   actionStyle?: 'text' | 'icon'
   headerActions?: ReactNode
   headerActionContent?: ReactNode | ((input: { triggerAction: () => void }) => ReactNode)
+  footerContent?: ReactNode | ((input: { triggerAction: () => void }) => ReactNode)
   contentClassName?: string
   showBottomActionWhenHeaderHidden?: boolean
 }
@@ -39,6 +40,7 @@ export const CollapsiblePanel = ({
   actionStyle = 'text',
   headerActions,
   headerActionContent,
+  footerContent,
   contentClassName,
   showBottomActionWhenHeaderHidden = false,
 }: CollapsiblePanelProps) => {
@@ -118,6 +120,10 @@ export const CollapsiblePanel = ({
   const resolvedHeaderActionContent = typeof headerActionContent === 'function'
     ? headerActionContent({ triggerAction: handleAction })
     : headerActionContent
+  const resolvedFooterContent = typeof footerContent === 'function'
+    ? footerContent({ triggerAction: handleAction })
+    : footerContent
+  const shouldRenderFooter = shouldRenderTopAction || Boolean(resolvedFooterContent)
 
   return (
     <section className="rounded-2xl border border-app-border-muted bg-app-surface p-4 shadow-sm">
@@ -170,23 +176,26 @@ export const CollapsiblePanel = ({
       {isExpanded && hasContent ? (
         <>
           <div className={['mt-4', contentClassName].filter(Boolean).join(' ')}>{children}</div>
-          <div className={['mt-4 flex items-center justify-end', PANEL_FOOTER_MIN_HEIGHT_CLASS].join(' ')}>
-            {shouldRenderTopAction ? (
-              <button
-                aria-hidden={!shouldShowBottomAction}
-                className={[
-                  'rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text-muted transition-opacity hover:bg-app-surface-muted',
-                  shouldShowBottomAction ? 'opacity-100' : 'pointer-events-none opacity-0',
-                ].join(' ')}
-                disabled={!shouldShowBottomAction}
-                onClick={handleAction}
-                tabIndex={shouldShowBottomAction ? 0 : -1}
-                type="button"
-              >
-                {actionLabel}
-              </button>
-            ) : null}
-          </div>
+          {shouldRenderFooter ? (
+            <div className={['mt-4 flex items-center justify-end', PANEL_FOOTER_MIN_HEIGHT_CLASS].join(' ')}>
+              {resolvedFooterContent}
+              {shouldRenderTopAction ? (
+                <button
+                  aria-hidden={!shouldShowBottomAction}
+                  className={[
+                    'rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text-muted transition-opacity hover:bg-app-surface-muted',
+                    shouldShowBottomAction ? 'opacity-100' : 'pointer-events-none opacity-0',
+                  ].join(' ')}
+                  disabled={!shouldShowBottomAction}
+                  onClick={handleAction}
+                  tabIndex={shouldShowBottomAction ? 0 : -1}
+                  type="button"
+                >
+                  {actionLabel}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
         </>
       ) : null}
     </section>

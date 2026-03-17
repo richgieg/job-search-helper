@@ -47,4 +47,19 @@ describe('CollapsiblePanel', () => {
 
     expect(screen.getByText('Panel content')).toBeInTheDocument()
   })
+
+  it('renders custom footer content in the existing footer row', () => {
+    render(
+      <CollapsiblePanel
+        defaultExpanded
+        footerContent={<button type="button">Footer action</button>}
+        title="Test panel"
+      >
+        <div>Panel content</div>
+      </CollapsiblePanel>,
+    )
+
+    expect(screen.getByText('Panel content')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Footer action' })).toBeInTheDocument()
+  })
 })
