@@ -29,6 +29,10 @@ describe('AboutPage', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Richard Gieg' })).toBeInTheDocument()
     expect(screen.getByText(/local-first web app for organizing job opportunities/i)).toBeInTheDocument()
     expect(screen.getByText(/gaining hands-on experience with AI agent coding/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'View on GitHub' })).toHaveAttribute(
+      'href',
+      'https://github.com/richgieg/job-search-helper',
+    )
     expect(screen.getByRole('link', { name: 'Visit my website to see more of my background and projects.' })).toHaveAttribute(
       'href',
       'https://www.richgieg.com/',
