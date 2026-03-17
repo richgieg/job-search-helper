@@ -10,7 +10,7 @@ const SectionCard = ({
   title: string
   children: React.ReactNode
 }) => (
-  <section className="rounded-3xl border border-app-border-muted bg-app-surface p-6 shadow-sm">
+  <section className="rounded-3xl border border-app-border-muted bg-app-surface px-6 py-8 shadow-sm sm:px-8 sm:py-10">
     <p className="text-xs font-semibold uppercase tracking-[0.24em] text-app-text-subtle">{eyebrow}</p>
     <h2 className="mt-3 text-2xl font-semibold tracking-tight text-app-heading">{title}</h2>
     <div className="mt-4 space-y-4 text-sm leading-7 text-app-text-muted sm:text-base">{children}</div>
@@ -22,7 +22,7 @@ export const AboutPage = () => {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-[2rem] border border-app-border-muted bg-app-surface px-6 py-8 shadow-sm sm:px-8 sm:py-10">
+      <section className="rounded-4xl border border-app-border-muted bg-app-surface px-6 py-8 shadow-sm sm:px-8 sm:py-10">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-app-primary">About</p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight text-app-heading sm:text-5xl">Why this app exists</h1>
         <p className="mt-4 max-w-3xl text-base leading-8 text-app-text-muted sm:text-lg">
