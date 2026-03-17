@@ -239,6 +239,85 @@ describe('ProfilePage', () => {
     expect(await screen.findByDisplayValue('https://portfolio.example.dev')).toBeInTheDocument()
   })
 
+  it('renders experience card fields with dates and current role on their own row', async () => {
+    const user = userEvent.setup()
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^Experience\b/i }))
+    await user.click(screen.getByRole('button', { name: /^Engineer\b/i }))
+
+    const orderedFields = [
+      screen.getByLabelText('Title'),
+      screen.getByLabelText('Company'),
+      screen.getByLabelText('Location'),
+      screen.getByLabelText('Work arrangement'),
+      screen.getByLabelText('Employment type'),
+      screen.getByLabelText('Start date'),
+      screen.getByLabelText('End date'),
+      screen.getByLabelText('Current role'),
+      screen.getByLabelText('Reason for leaving (short)'),
+    ]
+
+    for (let index = 1; index < orderedFields.length; index += 1) {
+      expect(orderedFields[index - 1]!.compareDocumentPosition(orderedFields[index]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    }
+  })
+
+  it('renders reference card fields in the requested order', async () => {
+    const user = userEvent.setup()
+    const initialData = createSeedData()
+
+    initialData.references.reference_1 = {
+      id: 'reference_1',
+      profileId: 'profile_1',
+      type: 'professional',
+      name: 'Jordan Example',
+      title: 'Engineering Manager',
+      company: 'Example Co',
+      phone: '555-0111',
+      email: 'jordan@example.com',
+      relationship: 'Former manager',
+      notes: 'Best contacted in the morning.',
+      enabled: true,
+      sortOrder: 1,
+    }
+
+    setupRouteTestEnvironment({ initialData })
+
+    renderRoute({
+      element: <ProfilePage />,
+      path: '/profiles/:profileId',
+      route: '/profiles/profile_1',
+    })
+
+    expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /^References\b/i }))
+    await user.click(screen.getByRole('button', { name: /^Jordan Example\b/i }))
+
+    const orderedFields = [
+      screen.getByLabelText('Type'),
+      screen.getByLabelText('Name'),
+      screen.getByLabelText('Title'),
+      screen.getByLabelText('Company'),
+      screen.getByLabelText('Phone'),
+      screen.getByLabelText('Email'),
+      screen.getByLabelText('Relationship'),
+      screen.getByLabelText('Notes'),
+    ]
+
+    for (let index = 1; index < orderedFields.length; index += 1) {
+      expect(orderedFields[index - 1]!.compareDocumentPosition(orderedFields[index]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    }
+  })
+
   it('saves the focused profile link field when the route unmounts before blur fires', async () => {
     const user = userEvent.setup()
 

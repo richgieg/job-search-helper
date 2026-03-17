@@ -1078,41 +1078,45 @@ const ExperienceCard = ({
         title={draft.title || entry.title || 'Experience entry'}
       >
         <div className="grid gap-4 xl:grid-cols-3">
-        <TextField label="Company" onBlur={() => draft.company !== entry.company && commitEntryChanges({ company: draft.company })} value={draft.company} onChange={(value) => setDraft({ ...draft, company: value })} />
-        <TextField label="Title" onBlur={() => draft.title !== entry.title && commitEntryChanges({ title: draft.title })} value={draft.title} onChange={(value) => setDraft({ ...draft, title: value })} />
-        <TextField label="Location" onBlur={() => draft.location !== entry.location && commitEntryChanges({ location: draft.location })} value={draft.location} onChange={(value) => setDraft({ ...draft, location: value })} />
-        <SelectField label="Work arrangement" onBlur={() => draft.workArrangement !== entry.workArrangement && commitEntryChanges({ workArrangement: draft.workArrangement })} value={draft.workArrangement} onChange={(value) => setDraft({ ...draft, workArrangement: value })} options={workArrangementOptions} />
-        <SelectField label="Employment type" onBlur={() => draft.employmentType !== entry.employmentType && commitEntryChanges({ employmentType: draft.employmentType })} value={draft.employmentType} onChange={(value) => setDraft({ ...draft, employmentType: value })} options={employmentTypeOptions} />
-        <TextField label="Start date" type="date" onBlur={() => draft.startDate !== entry.startDate && commitEntryChanges({ startDate: draft.startDate })} value={draft.startDate ?? ''} onChange={(value) => setDraft({ ...draft, startDate: value || null })} />
-        <TextField
-          disabled={draft.isCurrent}
-          label="End date"
-          type="date"
-          onBlur={() => draft.endDate !== entry.endDate && commitEntryChanges({ endDate: draft.endDate })}
-          value={draft.endDate ?? ''}
-          onChange={(value) => setDraft({ ...draft, endDate: value || null })}
-        />
-        <ToggleField
-          checked={draft.isCurrent}
-          label="Current role"
-          onChange={(value) => {
-            setDraft({
-              ...draft,
-              isCurrent: value,
-              endDate: value ? null : draft.endDate,
-            })
-            void updateExperienceEntry({ experienceEntryId: entry.id, changes: { isCurrent: value } })
-          }}
-        />
-        <div className="xl:col-span-3">
+          <TextField label="Title" onBlur={() => draft.title !== entry.title && commitEntryChanges({ title: draft.title })} value={draft.title} onChange={(value) => setDraft({ ...draft, title: value })} />
+          <TextField label="Company" onBlur={() => draft.company !== entry.company && commitEntryChanges({ company: draft.company })} value={draft.company} onChange={(value) => setDraft({ ...draft, company: value })} />
+          <TextField label="Location" onBlur={() => draft.location !== entry.location && commitEntryChanges({ location: draft.location })} value={draft.location} onChange={(value) => setDraft({ ...draft, location: value })} />
+          <SelectField label="Work arrangement" onBlur={() => draft.workArrangement !== entry.workArrangement && commitEntryChanges({ workArrangement: draft.workArrangement })} value={draft.workArrangement} onChange={(value) => setDraft({ ...draft, workArrangement: value })} options={workArrangementOptions} />
+          <SelectField label="Employment type" onBlur={() => draft.employmentType !== entry.employmentType && commitEntryChanges({ employmentType: draft.employmentType })} value={draft.employmentType} onChange={(value) => setDraft({ ...draft, employmentType: value })} options={employmentTypeOptions} />
+          <div className="xl:col-span-3">
+            <div className="grid gap-4 md:grid-cols-3">
+              <TextField label="Start date" type="date" onBlur={() => draft.startDate !== entry.startDate && commitEntryChanges({ startDate: draft.startDate })} value={draft.startDate ?? ''} onChange={(value) => setDraft({ ...draft, startDate: value || null })} />
+              <TextField
+                disabled={draft.isCurrent}
+                label="End date"
+                type="date"
+                onBlur={() => draft.endDate !== entry.endDate && commitEntryChanges({ endDate: draft.endDate })}
+                value={draft.endDate ?? ''}
+                onChange={(value) => setDraft({ ...draft, endDate: value || null })}
+              />
+              <ToggleField
+                checked={draft.isCurrent}
+                label="Current role"
+                onChange={(value) => {
+                  setDraft({
+                    ...draft,
+                    isCurrent: value,
+                    endDate: value ? null : draft.endDate,
+                  })
+                  void updateExperienceEntry({ experienceEntryId: entry.id, changes: { isCurrent: value } })
+                }}
+              />
+            </div>
+          </div>
+          <div className="xl:col-span-3">
           <TextField
             label="Reason for leaving (short)"
             onBlur={() => draft.reasonForLeavingShort !== entry.reasonForLeavingShort && commitEntryChanges({ reasonForLeavingShort: draft.reasonForLeavingShort })}
             value={draft.reasonForLeavingShort}
             onChange={(value) => setDraft({ ...draft, reasonForLeavingShort: value })}
           />
-        </div>
-        <div className="xl:col-span-3">
+          </div>
+          <div className="xl:col-span-3">
           <TextAreaField
             label="Reason for leaving (details)"
             onBlur={() => draft.reasonForLeavingDetails !== entry.reasonForLeavingDetails && commitEntryChanges({ reasonForLeavingDetails: draft.reasonForLeavingDetails })}
@@ -1120,8 +1124,8 @@ const ExperienceCard = ({
             value={draft.reasonForLeavingDetails}
             onChange={(value) => setDraft({ ...draft, reasonForLeavingDetails: value })}
           />
-        </div>
-        <div className="xl:col-span-3">
+          </div>
+          <div className="xl:col-span-3">
           <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Supervisor</h4>
           <div className="mt-3 grid gap-4 xl:grid-cols-3">
             <TextField
@@ -1171,8 +1175,8 @@ const ExperienceCard = ({
               onChange={(value) => setDraft({ ...draft, supervisor: { ...draft.supervisor, email: value } })}
             />
           </div>
-        </div>
-        <div className="xl:col-span-3">
+          </div>
+          <div className="xl:col-span-3">
           <div className="flex items-center justify-between gap-3">
             <h4 className="text-sm font-semibold uppercase tracking-wide text-app-text-muted">Bullets</h4>
             <button
@@ -1190,7 +1194,7 @@ const ExperienceCard = ({
                 bullets.map((bullet) => <ExperienceBulletRow key={bullet.id} bullet={bullet} orderedBulletIds={bulletIds} />)
             )}
           </div>
-        </div>
+          </div>
         </div>
       </CollapsiblePanel>
     </div>
@@ -1712,28 +1716,28 @@ const ReferenceCard = ({
         summary={summary}
         title={draft.name || reference.name || 'Reference'}
       >
-        <div className="grid gap-4 xl:grid-cols-3">
-        <label className="flex flex-col gap-2 text-sm text-app-text-muted">
-          <span className="font-medium">Type</span>
-          <select
-            className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
-            onBlur={() => draft.type !== reference.type && void updateReference({ referenceId: reference.id, changes: { type: draft.type } })}
-            value={draft.type}
-            onChange={(event) => setDraft({ ...draft, type: event.target.value as ReferenceType })}
-          >
-            <option value="professional">Professional</option>
-            <option value="personal">Personal</option>
-          </select>
-        </label>
-        <TextField label="Name" onBlur={() => draft.name !== reference.name && void updateReference({ referenceId: reference.id, changes: { name: draft.name } })} value={draft.name} onChange={(value) => setDraft({ ...draft, name: value })} />
-        <TextField label="Relationship" onBlur={() => draft.relationship !== reference.relationship && void updateReference({ referenceId: reference.id, changes: { relationship: draft.relationship } })} value={draft.relationship} onChange={(value) => setDraft({ ...draft, relationship: value })} />
-        <TextField label="Company" onBlur={() => draft.company !== reference.company && void updateReference({ referenceId: reference.id, changes: { company: draft.company } })} value={draft.company} onChange={(value) => setDraft({ ...draft, company: value })} />
-        <TextField label="Title" onBlur={() => draft.title !== reference.title && void updateReference({ referenceId: reference.id, changes: { title: draft.title } })} value={draft.title} onChange={(value) => setDraft({ ...draft, title: value })} />
-        <TextField label="Email" type="email" onBlur={() => draft.email !== reference.email && void updateReference({ referenceId: reference.id, changes: { email: draft.email } })} value={draft.email} onChange={(value) => setDraft({ ...draft, email: value })} />
-        <TextField label="Phone" type="tel" onBlur={() => draft.phone !== reference.phone && void updateReference({ referenceId: reference.id, changes: { phone: draft.phone } })} value={draft.phone} onChange={(value) => setDraft({ ...draft, phone: value })} />
-        <div className="xl:col-span-2">
-          <TextAreaField label="Notes" onBlur={() => draft.notes !== reference.notes && void updateReference({ referenceId: reference.id, changes: { notes: draft.notes } })} value={draft.notes} onChange={(value) => setDraft({ ...draft, notes: value })} />
-        </div>
+        <div className="grid gap-4 xl:grid-cols-4">
+          <label className="flex flex-col gap-2 text-sm text-app-text-muted">
+            <span className="font-medium">Type</span>
+            <select
+              className="rounded-xl border border-app-border px-3 py-2 text-sm outline-none transition focus:border-app-focus-ring"
+              onBlur={() => draft.type !== reference.type && void updateReference({ referenceId: reference.id, changes: { type: draft.type } })}
+              value={draft.type}
+              onChange={(event) => setDraft({ ...draft, type: event.target.value as ReferenceType })}
+            >
+              <option value="professional">Professional</option>
+              <option value="personal">Personal</option>
+            </select>
+          </label>
+          <TextField label="Name" onBlur={() => draft.name !== reference.name && void updateReference({ referenceId: reference.id, changes: { name: draft.name } })} value={draft.name} onChange={(value) => setDraft({ ...draft, name: value })} />
+          <TextField label="Title" onBlur={() => draft.title !== reference.title && void updateReference({ referenceId: reference.id, changes: { title: draft.title } })} value={draft.title} onChange={(value) => setDraft({ ...draft, title: value })} />
+          <TextField label="Company" onBlur={() => draft.company !== reference.company && void updateReference({ referenceId: reference.id, changes: { company: draft.company } })} value={draft.company} onChange={(value) => setDraft({ ...draft, company: value })} />
+          <TextField label="Phone" type="tel" onBlur={() => draft.phone !== reference.phone && void updateReference({ referenceId: reference.id, changes: { phone: draft.phone } })} value={draft.phone} onChange={(value) => setDraft({ ...draft, phone: value })} />
+          <TextField label="Email" type="email" onBlur={() => draft.email !== reference.email && void updateReference({ referenceId: reference.id, changes: { email: draft.email } })} value={draft.email} onChange={(value) => setDraft({ ...draft, email: value })} />
+          <TextField label="Relationship" onBlur={() => draft.relationship !== reference.relationship && void updateReference({ referenceId: reference.id, changes: { relationship: draft.relationship } })} value={draft.relationship} onChange={(value) => setDraft({ ...draft, relationship: value })} />
+          <div className="xl:col-span-4">
+            <TextAreaField label="Notes" onBlur={() => draft.notes !== reference.notes && void updateReference({ referenceId: reference.id, changes: { notes: draft.notes } })} value={draft.notes} onChange={(value) => setDraft({ ...draft, notes: value })} />
+          </div>
         </div>
       </CollapsiblePanel>
     </div>
