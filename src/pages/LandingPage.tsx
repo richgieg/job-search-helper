@@ -501,7 +501,6 @@ export const LandingPage = () => {
         </section>
 
         <section className="landing-cta-panel landing-shadow-strong relative overflow-hidden rounded-[2.75rem] border px-8 py-10 sm:px-10 sm:py-12">
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--app-primary)_34%,transparent),transparent_56%)]" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--app-surface)_24%,transparent),transparent)]" />
 
           <Reveal className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end" delayMs={20}>
