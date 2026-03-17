@@ -584,6 +584,32 @@ a[class*='border-app-danger-muted']:not(:hover):not(:focus-visible):not(:active)
 }
 
 @media print {
+  .document-preview-shell {
+    min-height: auto;
+    padding: 0;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .document-preview-content {
+    width: auto;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .document-page {
+    flex-shrink: 1;
+    box-shadow: none;
+  }
+
+  .document-preview-stack {
+    display: block;
+  }
+
+  .document-page-break {
+    margin-top: 0;
+  }
+
   .resume-section-heading {
     break-after: avoid;
     page-break-after: avoid;
