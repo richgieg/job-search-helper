@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { Route, Routes } from 'react-router-dom'
 
+import { APP_NAME } from './page-titles'
 import { AppLayout } from './layout/AppLayout'
 
 const LandingPage = lazy(() => import('../pages/LandingPage').then((module) => ({ default: module.LandingPage })))
@@ -24,7 +25,7 @@ const RouteLoadingScreen = () => (
       <span className="route-loading-spinner-core" />
     </div>
     <div className="route-loading-copy">
-      <p className="route-loading-eyebrow">Job Search Helper</p>
+      <p className="route-loading-eyebrow">{APP_NAME}</p>
       <p className="route-loading-label">Loading workspace</p>
     </div>
   </div>

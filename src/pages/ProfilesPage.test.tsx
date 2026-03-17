@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createAppApiClient, setAppApiClient } from '../api'
+import { APP_NAME } from '../app/page-titles'
 import { createEmptyAppDataState } from '../domain/app-data-state'
 import { createDefaultResumeSettings } from '../domain/profile-defaults'
 import { ProfilesPage } from './ProfilesPage'
@@ -58,6 +59,7 @@ describe('ProfilesPage', () => {
     })
 
     expect(await screen.findByText('Base Profile')).toBeInTheDocument()
+    expect(document.title).toBe(`Profiles | ${APP_NAME}`)
     expect(screen.queryByText('Tailored Profile')).not.toBeInTheDocument()
   })
 

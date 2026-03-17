@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
+import { createStaticPageTitle } from '../app/page-titles'
+import { usePageTitle } from '../app/use-page-title'
 import type { DashboardActivityDto, DashboardActivityPeriodDays, DashboardUpcomingInterviewDto } from '../api/read-models'
 import { useDashboardActivityQuery } from '../queries/use-dashboard-activity-query'
 import { useDashboardSummaryQuery } from '../queries/use-dashboard-summary-query'
@@ -246,6 +248,8 @@ const formatInterviewTime = (value: string) =>
   })
 
 export const DashboardPage = () => {
+  usePageTitle(createStaticPageTitle('Dashboard'))
+
   const [activityPeriodDays, setActivityPeriodDays] = useState<DashboardActivityPeriodDays>(7)
   const { data, error, isLoading } = useDashboardSummaryQuery()
   const {

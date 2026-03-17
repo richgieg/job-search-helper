@@ -1,6 +1,8 @@
 import { SubmitEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { createStaticPageTitle } from '../app/page-titles'
+import { usePageTitle } from '../app/use-page-title'
 import type { ProfilesListItemDto } from '../api/read-models'
 import { DeleteIconButton, IconActionButton, getActionIconButtonClassName } from '../components/CompactActionControls'
 import { useProfileMutations } from '../features/profiles/use-profile-mutations'
@@ -97,6 +99,8 @@ const ProfilesQuickAddForm = ({ onCreateProfile }: { onCreateProfile: (name: str
 }
 
 export const ProfilesPage = () => {
+  usePageTitle(createStaticPageTitle('Profiles'))
+
   const { createBaseProfile, deleteProfile, duplicateProfile } = useProfileMutations()
   const { data, error, isLoading } = useProfilesListQuery('base')
 

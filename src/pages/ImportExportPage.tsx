@@ -1,5 +1,7 @@
 import { ChangeEvent, useMemo, useState } from 'react'
 
+import { createStaticPageTitle } from '../app/page-titles'
+import { usePageTitle } from '../app/use-page-title'
 import { getAppApiClient } from '../api'
 import { parseAppExportFileJson } from '../features/import-export/app-export-file'
 import { useBrowserStorageEstimate } from '../features/import-export/use-browser-storage-estimate'
@@ -42,6 +44,8 @@ const downloadJson = (payload: AppExportFile) => {
 }
 
 export const ImportExportPage = () => {
+  usePageTitle(createStaticPageTitle('Import / Export'))
+
   const { exportAppData, importAppData, isSaving, loadSampleData, resetLocalData } = useAppDataTransfer()
   const { available, isLoading: isLoadingStorageEstimate, quotaBytes, refresh: refreshStorageEstimate, usageBytes } =
     useBrowserStorageEstimate()

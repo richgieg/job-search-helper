@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { createLandingPageTitle } from '../app/page-titles'
+import { usePageTitle } from '../app/use-page-title'
 import { useAppDataTransfer } from '../features/import-export/use-app-data-transfer'
 
 type RevealProps = {
@@ -298,6 +300,8 @@ const VaultIllustration = () => {
 }
 
 export const LandingPage = () => {
+  usePageTitle(createLandingPageTitle())
+
   const navigate = useNavigate()
   const { isSaving, loadSampleData } = useAppDataTransfer()
   const [sampleDataError, setSampleDataError] = useState<string | null>(null)

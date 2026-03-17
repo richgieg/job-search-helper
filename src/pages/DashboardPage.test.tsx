@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createAppApiClient, setAppApiClient } from '../api'
+import { APP_NAME } from '../app/page-titles'
 import type { DashboardActivityDto, DashboardActivityPeriodDays, DashboardSummaryDto } from '../api/read-models'
 import { DashboardPage } from './DashboardPage'
 import { createSeedData, renderRoute, resetRouteTestState, setupRouteTestEnvironment } from '../test/route-test-helpers'
@@ -77,6 +78,7 @@ describe('DashboardPage', () => {
     })
 
     expect(await screen.findByText('Dashboard')).toBeInTheDocument()
+    expect(document.title).toBe(`Dashboard | ${APP_NAME}`)
     expect(screen.getByText('Activity')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '7 days' })).toHaveAttribute('aria-pressed', 'true')
 

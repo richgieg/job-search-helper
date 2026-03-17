@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
+import { createProfilePageTitle } from '../../app/page-titles'
+import { usePageTitle } from '../../app/use-page-title'
 import { ActionToggle } from '../../components/CompactActionControls'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
 import { ReorderButtons } from '../../components/ReorderButtons'
@@ -149,6 +151,12 @@ export const ProfilePage = () => {
   const [coverLetter, setCoverLetter] = useState<string | null>(null)
   const [resumeSectionLabels, setResumeSectionLabels] = useState<Record<ResumeSectionKey, string> | null>(null)
   const [personalDetails, setPersonalDetails] = useState<PersonalDetails | null>(null)
+  usePageTitle(
+    createProfilePageTitle({
+      profileName: profileDetail?.profile.name ?? null,
+      job: profileDetail?.attachedJob ?? null,
+    }),
+  )
 
   useEffect(() => {
     if (!profile) {

@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createAppApiClient, setAppApiClient } from '../api'
+import { APP_NAME } from '../app/page-titles'
 import { ApplicationPage } from './ApplicationPage'
 import { queryClient } from '../queries/query-client'
 import { queryKeys } from '../queries/query-keys'
@@ -28,6 +29,7 @@ describe('ApplicationPage', () => {
     })
 
     expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+    expect(document.title).toBe(`Application | Tailored Profile | Senior Engineer at Example Co | ${APP_NAME}`)
     expect(screen.getByText('Job profile for Senior Engineer at Example Co')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '01/01/2024' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '20240101' })).toBeInTheDocument()
@@ -72,6 +74,31 @@ describe('ApplicationPage', () => {
 
     expect(await screen.findByText('Application unavailable')).toBeInTheDocument()
     expect(screen.getByText('The selected profile could not be found.')).toBeInTheDocument()
+  })
+
+  it('uses the profile-only title fallback for base profiles', async () => {
+    const initialData = createSeedData()
+    const sourceProfile = initialData.profiles.profile_1!
+
+    initialData.profiles.profile_base = {
+      ...sourceProfile,
+      id: 'profile_base',
+      name: 'Base Profile',
+      jobId: null,
+      coverLetterContactId: null,
+      clonedFromProfileId: null,
+    }
+
+    setupRouteTestEnvironment({ initialData })
+
+    renderRoute({
+      element: <ApplicationPage />,
+      path: '/profiles/:profileId/application',
+      route: '/profiles/profile_base/application',
+    })
+
+    expect(await screen.findByText('Base Profile')).toBeInTheDocument()
+    expect(document.title).toBe(`Application | Base Profile | ${APP_NAME}`)
   })
 
   it('shows cached application data when the document refresh fails', async () => {

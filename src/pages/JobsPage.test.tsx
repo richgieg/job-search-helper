@@ -6,6 +6,7 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
+import { APP_NAME } from '../app/page-titles'
 import { JobsPage } from './JobsPage'
 import { renderRoute, resetRouteTestState, setupRouteTestEnvironment } from '../test/route-test-helpers'
 
@@ -26,6 +27,7 @@ describe('JobsPage', () => {
     })
 
     expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+    expect(document.title).toBe(`Jobs | ${APP_NAME}`)
     expect(screen.getByText('Example Co')).toBeInTheDocument()
     expect(screen.getByText('—')).toBeInTheDocument()
     expect(screen.getByText('Interview')).toBeInTheDocument()

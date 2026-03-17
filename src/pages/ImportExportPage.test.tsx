@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getAppApiClient } from '../api'
+import { APP_NAME } from '../app/page-titles'
 import { createEmptyAppDataState } from '../domain/app-data-state'
 import type { AppDataState } from '../types/state'
 import { ImportExportPage } from './ImportExportPage'
@@ -56,6 +57,7 @@ describe('ImportExportPage', () => {
     })
 
     expect(await screen.findByText('Estimated browser storage: 1.0 KB used of 10 KB')).toBeInTheDocument()
+    expect(document.title).toBe(`Import / Export | ${APP_NAME}`)
   })
 
   it('shows a fallback message when browser storage estimates are unavailable', async () => {

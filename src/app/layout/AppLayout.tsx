@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 
+import { APP_NAME } from '../page-titles'
 import { applyResolvedTheme, persistThemePreference, resolveThemePreference } from '../theme'
 import { useSetThemePreference, useThemePreference } from '../../store/app-ui-store'
 import type { ThemePreference } from '../../types/ui-state'
@@ -116,7 +117,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div className="min-w-0">
             <Link className="text-lg font-semibold uppercase tracking-[0.24em] text-app-primary no-underline sm:text-xl" to="/">
-              Job Search Helper
+              {APP_NAME}
             </Link>
           </div>
 

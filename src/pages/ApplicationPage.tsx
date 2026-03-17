@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
+import { createApplicationPageTitle } from '../app/page-titles'
+import { usePageTitle } from '../app/use-page-title'
 import { useProfileDocumentQuery } from '../queries/use-profile-document-query'
 import { formatBulletCopyLine } from '../utils/bullet-levels'
 import { defaultResumeSectionLabels, defaultResumeSectionOrder } from '../utils/resume-section-labels'
@@ -206,6 +208,12 @@ export const ApplicationPage = () => {
   const { profileId = '' } = useParams()
   const { data: documentData, error, isLoading } = useProfileDocumentQuery(profileId)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
+  usePageTitle(
+    createApplicationPageTitle({
+      profileName: documentData?.profile.name ?? null,
+      job: documentData?.profile.jobId ? documentData.job : null,
+    }),
+  )
 
   if (isLoading && !documentData) {
     return <p className="text-sm text-app-text-subtle">Loading application data...</p>

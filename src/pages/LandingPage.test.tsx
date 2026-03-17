@@ -9,6 +9,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { getAppApiClient } from '../api'
+import { APP_NAME } from '../app/page-titles'
 import { AppRoutes } from '../app/router'
 import { createEmptyAppDataState } from '../domain/app-data-state'
 import { queryClient } from '../queries/query-client'
@@ -51,6 +52,7 @@ describe('LandingPage', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Take control of your job search.' })).toBeInTheDocument()
     expect(screen.getByText('Turn scattered tabs and saved links into one reliable system.')).toBeInTheDocument()
+    expect(document.title).toBe(APP_NAME)
     expect(screen.getByText('See the top of funnel, applications, interviews, and offers without inventing busywork.')).toBeInTheDocument()
     expect(screen.getByText('Build tailored application materials without losing track of which version belongs to which role.')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Open the dashboard' })).not.toBeInTheDocument()

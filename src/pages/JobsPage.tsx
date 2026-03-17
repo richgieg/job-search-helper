@@ -1,6 +1,8 @@
 import { SubmitEvent, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { createStaticPageTitle } from '../app/page-titles'
+import { usePageTitle } from '../app/use-page-title'
 import type { JobsListItemDto } from '../api/read-models'
 import { DeleteIconButton, getActionIconButtonClassName } from '../components/CompactActionControls'
 import { formatJobComputedStatus, getJobComputedStatusBadgeClassName } from '../features/jobs/job-status'
@@ -200,6 +202,8 @@ const JobsQuickAddForm = ({ onCreateJob }: { onCreateJob: (input: CreateJobInput
 }
 
 export const JobsPage = () => {
+  usePageTitle(createStaticPageTitle('Jobs'))
+
   const { createJob, deleteJob } = useJobMutations()
   const { data, error, isLoading } = useJobsListQuery()
 

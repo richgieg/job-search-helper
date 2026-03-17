@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createAppApiClient, setAppApiClient } from '../../api'
+import { APP_NAME } from '../../app/page-titles'
 import type { ProfileDetailDto } from '../../api/read-models'
 import { ProfilePage } from './ProfilePage'
 import { createSeedData, renderRoute, resetRouteTestState, setupRouteTestEnvironment } from '../../test/route-test-helpers'
@@ -28,6 +29,7 @@ describe('ProfilePage', () => {
     })
 
     expect(await screen.findByText('Tailored Profile')).toBeInTheDocument()
+    expect(document.title).toBe(`Profile | Tailored Profile | Senior Engineer at Example Co | ${APP_NAME}`)
     expect(screen.getByText('Job profile for Senior Engineer at Example Co')).toBeInTheDocument()
   })
 
@@ -214,6 +216,7 @@ describe('ProfilePage', () => {
     })
 
     expect(await screen.findByText('Base Profile')).toBeInTheDocument()
+    expect(document.title).toBe(`Profile | Base Profile | ${APP_NAME}`)
     expect(screen.queryByLabelText('Cover letter recipient')).not.toBeInTheDocument()
   })
 

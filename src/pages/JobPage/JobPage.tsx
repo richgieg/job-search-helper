@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
+import { createJobPageTitle } from '../../app/page-titles'
+import { usePageTitle } from '../../app/use-page-title'
 import { ActionToggle } from '../../components/CompactActionControls'
 import { FinalOutcomeStrip, type FinalOutcomeDraftStatus } from './FinalOutcomeStrip'
 import { CollapsiblePanel } from '../../components/CollapsiblePanel'
@@ -147,6 +149,7 @@ export const JobPage = () => {
   const editorModel = useJobEditorModel(jobDetail)
   const [draft, setDraft] = useState<JobDraftState | null>(null)
   const job = jobDetail?.job
+  usePageTitle(createJobPageTitle(job))
   const interviewCount = useMemo(() => jobDetail?.interviews.length ?? 0, [jobDetail?.interviews.length])
   const computedStatus = useMemo(
     () =>

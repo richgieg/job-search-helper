@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createAppApiClient, setAppApiClient } from '../../api'
+import { APP_NAME } from '../../app/page-titles'
 import type { JobDetailDto } from '../../api/read-models'
 import { JobPage } from './JobPage'
 import {
@@ -33,6 +34,7 @@ describe('JobPage', () => {
     })
 
     expect(await screen.findByText('Senior Engineer')).toBeInTheDocument()
+    expect(document.title).toBe(`Job | Senior Engineer at Example Co | ${APP_NAME}`)
     expect(screen.getByText('Applied')).toBeInTheDocument()
   })
 
