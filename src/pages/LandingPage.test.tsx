@@ -6,7 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { getAppApiClient } from '../api'
 import { AppRoutes } from '../app/router'
@@ -14,7 +14,7 @@ import { createEmptyAppDataState } from '../domain/app-data-state'
 import { queryClient } from '../queries/query-client'
 import type { AppDataState } from '../types/state'
 import { LandingPage } from './LandingPage'
-import { createSeedData, renderRoute, setupRouteTestEnvironment } from '../test/route-test-helpers'
+import { createSeedData, renderRoute, resetRouteTestState, setupRouteTestEnvironment } from '../test/route-test-helpers'
 
 const replaceCurrentData = async (data: AppDataState) => {
   const { version: _version, exportedAt: _exportedAt, ...payload } = data
@@ -36,6 +36,10 @@ const renderAppRoutes = (route: string) =>
   )
 
 describe('LandingPage', () => {
+  afterEach(() => {
+    resetRouteTestState()
+  })
+
   it('renders the redesigned marketing sections with only the sample-data CTA', () => {
     setupRouteTestEnvironment()
 

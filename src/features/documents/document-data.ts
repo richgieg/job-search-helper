@@ -185,7 +185,7 @@ export const getInsideAddressCompany = (job: Job, contact: DocumentContact) => {
 
 const getCompanyTokenReplacement = (job: Job, contact: DocumentContact) => {
   if (contact.organizationKind === 'staffing_agency') {
-    return "your client's organization"
+    return job.companyName.trim() || "your client's organization"
   }
 
   return job.companyName.trim() || 'your company'

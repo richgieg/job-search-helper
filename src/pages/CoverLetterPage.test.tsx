@@ -69,7 +69,27 @@ describe('CoverLetterPage', () => {
     expect(await screen.findByText('Dear Taylor Recruiter,')).toBeInTheDocument()
   })
 
-  it('uses the staffing default recipient and replaces JOB.COMPANY with a client reference', async () => {
+  it('uses the staffing default recipient and replaces JOB.COMPANY with the real company name when available', async () => {
+    const initialData = createSeedData()
+    initialData.jobs.job_1!.companyName = 'Example Co'
+    initialData.jobs.job_1!.staffingAgencyName = 'North Ridge Talent'
+    initialData.profiles.profile_1!.coverLetterContactId = 'staffingAgencyRecruitingTeam'
+    initialData.profiles.profile_1!.coverLetter = 'I am excited about the opportunity to support {{JOB.COMPANY}}.'
+
+    setupRouteTestEnvironment({ initialData })
+
+    renderRoute({
+      element: <CoverLetterPage />,
+      path: '/profiles/:profileId/cover-letter',
+      route: '/profiles/profile_1/cover-letter',
+    })
+
+    expect(await screen.findByText('Dear Recruiting Team,')).toBeInTheDocument()
+    expect(screen.getByText('North Ridge Talent')).toBeInTheDocument()
+    expect(screen.getByText('I am excited about the opportunity to support Example Co.')).toBeInTheDocument()
+  })
+
+  it('uses the staffing default recipient and replaces JOB.COMPANY with a client reference when company name is unavailable', async () => {
     const initialData = createSeedData()
     initialData.jobs.job_1!.companyName = ''
     initialData.jobs.job_1!.staffingAgencyName = 'North Ridge Talent'
