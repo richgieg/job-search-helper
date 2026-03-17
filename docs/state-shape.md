@@ -26,9 +26,10 @@ At runtime, the app uses a persisted data boundary behind the UI:
 
 - the backend or service owns the canonical `AppDataState`
 - the API client is the asynchronous read/write boundary
-- the client-side store caches the latest returned data snapshot plus transient UI state
+- TanStack Query caches app-data reads and coordinates invalidation/refetch
+- Zustand holds transient UI state
 
-In the current MVP implementation, that persisted layer is a local mock backend. The important architectural rule is that the store is not the persisted source of truth for domain entities.
+In the current MVP implementation, that persisted layer is backed by IndexedDB. The important architectural rule is that neither the query cache nor the UI store is the persisted source of truth for domain entities.
 
 ## Recommended split
 
@@ -84,10 +85,15 @@ interface AppDataState {
 interface AppUiState {
   selectedJobId: Id | null;
   selectedProfileId: Id | null;
+  themePreference: ThemePreference;
   jobsList: JobsListUiState;
   profilesList: ProfilesListUiState;
   dialogs: DialogUiState;
+  jobPagePanels: JobPagePanelsUiState;
+  profilePagePanels: ProfilePagePanelsUiState;
 }
+
+type ThemePreference = 'light' | 'dark' | 'system';
 
 interface JobsListUiState {
   searchText: string;
@@ -107,6 +113,14 @@ interface DialogUiState {
   importExportOpen: boolean;
   duplicateProfileOpen: boolean;
   createJobProfileOpen: boolean;
+}
+
+interface ProfilePagePanelsUiState {
+  [profileId: Id]: Record<string, boolean>;
+}
+
+interface JobPagePanelsUiState {
+  [jobId: Id]: Record<string, boolean>;
 }
 ```
 
@@ -128,7 +142,7 @@ Recommended import behavior:
 2. Validate `version`.
 3. Validate entity shapes and foreign-key relationships.
 4. Replace persisted app data through the API or service boundary.
-5. Refresh the store's `data` snapshot from the returned result.
+5. Invalidate or refetch app-data queries so the UI reads the latest persisted state.
 6. Reset or reinitialize `state.ui`.
 
 ## Enums and unions
@@ -137,6 +151,7 @@ Recommended import behavior:
 type WorkArrangement = 'onsite' | 'hybrid' | 'remote' | 'unknown';
 
 type EmploymentType =
+  | 'unknown'
   | 'full_time'
   | 'part_time'
   | 'contract'
@@ -144,12 +159,7 @@ type EmploymentType =
   | 'temporary'
   | 'other';
 
-type ContactRelationshipType =
-  | 'recruiter'
-  | 'hiring_manager'
-  | 'referral'
-  | 'interviewer'
-  | 'other';
+type ContactOrganizationKind = 'company' | 'staffing_agency';
 
 type ReferenceType = 'professional' | 'personal';
 
@@ -163,7 +173,8 @@ type JobComputedStatus =
   | 'interested'
   | 'applied'
   | 'interview'
-  | 'offer'
+  | 'offer_received'
+  | 'offer_accepted'
   | 'rejected'
   | 'withdrew';
 
@@ -201,6 +212,7 @@ interface Profile {
   name: string;
   summary: string;
   coverLetter: string;
+  coverLetterContactId: Id | null;
   resumeSettings: ResumeSettings;
   personalDetails: PersonalDetails;
   jobId: Id | null;
@@ -448,6 +460,7 @@ interface Reference {
 interface Job {
   id: Id;
   companyName: string;
+  staffingAgencyName: string;
   jobTitle: string;
   description: string;
   location: string;
@@ -491,6 +504,7 @@ interface JobContact {
   name: string;
   title: string;
   company: string;
+  organizationKind: ContactOrganizationKind;
   addressLine1: string;
   addressLine2: string;
   addressLine3: string;
@@ -498,7 +512,6 @@ interface JobContact {
   email: string;
   phone: string;
   linkedinUrl: string;
-  relationshipType: ContactRelationshipType;
   notes: string;
   sortOrder: number;
 }
@@ -510,6 +523,7 @@ interface JobContact {
 interface Interview {
   id: Id;
   jobId: Id;
+  createdAt: IsoTimestamp;
   startAt: IsoTimestamp | null;
   notes: string;
 }
