@@ -126,7 +126,7 @@ const HeroIllustration = () => {
     <div className="relative mx-auto w-full max-w-2xl">
       <div className="landing-float absolute -left-6 top-8 hidden rounded-2xl border border-app-border bg-app-surface-overlay px-4 py-3 shadow-lg backdrop-blur lg:block">
         <p className="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-app-text-subtle">Today</p>
-        <p className="mt-2 text-sm font-semibold text-app-heading">2 applications ready to send</p>
+        <p className="mt-2 text-sm font-semibold text-app-heading">Applied to 7 jobs</p>
       </div>
 
       <div className="landing-float-slow absolute -right-4 bottom-10 hidden rounded-2xl border border-app-border bg-app-surface-overlay px-4 py-3 shadow-lg backdrop-blur lg:block">
@@ -488,10 +488,10 @@ export const LandingPage = () => {
             <div className="h-full rounded-4xl border border-app-border-muted bg-app-surface/85 p-8 shadow-sm backdrop-blur-sm">
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-app-text-subtle">Local-first and yours</p>
               <h2 className="mt-4 text-3xl font-semibold tracking-[-0.03em] text-app-heading" style={displayFontStyle}>
-                Keep your data local, exportable, and easy to reset or demo.
+                Keep your data local and under your control.
               </h2>
               <p className="mt-4 text-base leading-7 text-app-text-muted">
-                The app stores data locally in your browser, supports JSON export and import, and can load fresh sample data on demand so you can explore the full workflow with current-looking dates.
+                Everything is stored in your browser, with JSON import and export for backup or transfer, plus sample data you can load anytime to try the full workflow.
               </p>
               <div className="mt-8 overflow-hidden rounded-[1.75rem] border border-app-border bg-app-canvas p-4">
                 <VaultIllustration />
