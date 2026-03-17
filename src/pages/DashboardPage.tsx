@@ -131,19 +131,21 @@ const DashboardActivityChartFrame = ({ children }: { children: ReactNode }) => <
 
 const DashboardActivityChartSkeleton = () => (
   <div aria-hidden="true" className="pt-4">
-    <div className="rounded-xl border border-app-border-muted bg-app-surface-subtle p-4">
-      <div className="flex h-72 items-end gap-3">
-        {Array.from({ length: 7 }, (_, index) => (
-          <div className="flex flex-1 items-end gap-1" key={index}>
-            {Array.from({ length: activityChartSeries.length }, (_, seriesIndex) => (
-              <div
-                className="flex-1 bg-app-surface-muted"
-                key={seriesIndex}
-                style={{ height: `${28 + ((index + seriesIndex) % 4) * 16}%` }}
-              />
-            ))}
-          </div>
-        ))}
+      <div className="overflow-x-auto">
+        <div className="min-w-220 rounded-xl border border-app-border-muted bg-app-surface-subtle p-4">
+        <div className="flex h-72 items-end gap-3">
+          {Array.from({ length: 7 }, (_, index) => (
+            <div className="flex flex-1 items-end gap-1" key={index}>
+              {Array.from({ length: activityChartSeries.length }, (_, seriesIndex) => (
+                <div
+                  className="flex-1 bg-app-surface-muted"
+                  key={seriesIndex}
+                  style={{ height: `${28 + ((index + seriesIndex) % 4) * 16}%` }}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   </div>
@@ -166,66 +168,70 @@ const DashboardActivityChart = ({ data }: { data: DashboardActivityDto }) => {
 
   return (
     <div className="pt-4">
-      <svg
-        aria-label={`Dashboard activity over the last ${data.periodDays} days`}
-        className="w-full"
-        role="img"
-        viewBox={`0 0 ${chartViewBox.width} ${chartViewBox.height}`}
-      >
-        {yTicks.map((tick) => {
-          const y = getY(tick)
-
-          return (
-            <g key={tick}>
-              <line stroke="var(--app-border-muted)" strokeDasharray="4 4" x1={chartViewBox.paddingLeft} x2={chartViewBox.width - chartViewBox.paddingRight} y1={y} y2={y} />
-              <text fill="var(--app-text-subtle)" fontSize="11" textAnchor="end" x={chartViewBox.paddingLeft - 8} y={y + 4}>
-                {tick}
-              </text>
-            </g>
-          )
-        })}
-
-        {data.points.map((point, index) => {
-          const clusterStartX = getClusterCenterX(index) - clusterInnerWidth / 2
-          const dayLabel = formatActivityA11yDate(point.date)
-
-          return (
-            <g key={point.date}>
-              {activityChartSeries.map((series, seriesIndex) => {
-                const value = point[series.key]
-                const y = getY(value)
-                const height = chartViewBox.paddingTop + plotHeight - y
-                const x = clusterStartX + seriesIndex * (barWidth + gapWidth)
-
-                return (
-                  <rect
-                    aria-label={`${dayLabel} ${series.label.toLowerCase()}: ${value}`}
-                    fill={series.color}
-                    height={height}
-                    key={`${point.date}-${series.key}`}
-                    width={barWidth}
-                    x={x}
-                    y={y}
-                  />
-                )
-              })}
-            </g>
-          )
-        })}
-
-        {labelIndexes.map((index) => (
-          <text
-            fill="var(--app-text-subtle)"
-            fontSize="11"
-            key={data.points[index]!.date}
-            textAnchor="middle"
-            x={getClusterCenterX(index)}
-            y={chartViewBox.height - 12}
+      <div className="overflow-x-auto">
+        <div className="min-w-220">
+          <svg
+            aria-label={`Dashboard activity over the last ${data.periodDays} days`}
+            className="w-full"
+            role="img"
+            viewBox={`0 0 ${chartViewBox.width} ${chartViewBox.height}`}
           >
-            {formatActivityAxisLabel(data.points[index]!.date, data.periodDays)}
-          </text>
-        ))}
-      </svg>
+            {yTicks.map((tick) => {
+              const y = getY(tick)
+
+              return (
+                <g key={tick}>
+                  <line stroke="var(--app-border-muted)" strokeDasharray="4 4" x1={chartViewBox.paddingLeft} x2={chartViewBox.width - chartViewBox.paddingRight} y1={y} y2={y} />
+                  <text fill="var(--app-text-subtle)" fontSize="11" textAnchor="end" x={chartViewBox.paddingLeft - 8} y={y + 4}>
+                    {tick}
+                  </text>
+                </g>
+              )
+            })}
+
+            {data.points.map((point, index) => {
+              const clusterStartX = getClusterCenterX(index) - clusterInnerWidth / 2
+              const dayLabel = formatActivityA11yDate(point.date)
+
+              return (
+                <g key={point.date}>
+                  {activityChartSeries.map((series, seriesIndex) => {
+                    const value = point[series.key]
+                    const y = getY(value)
+                    const height = chartViewBox.paddingTop + plotHeight - y
+                    const x = clusterStartX + seriesIndex * (barWidth + gapWidth)
+
+                    return (
+                      <rect
+                        aria-label={`${dayLabel} ${series.label.toLowerCase()}: ${value}`}
+                        fill={series.color}
+                        height={height}
+                        key={`${point.date}-${series.key}`}
+                        width={barWidth}
+                        x={x}
+                        y={y}
+                      />
+                    )
+                  })}
+                </g>
+              )
+            })}
+
+            {labelIndexes.map((index) => (
+              <text
+                fill="var(--app-text-subtle)"
+                fontSize="11"
+                key={data.points[index]!.date}
+                textAnchor="middle"
+                x={getClusterCenterX(index)}
+                y={chartViewBox.height - 12}
+              >
+                {formatActivityAxisLabel(data.points[index]!.date, data.periodDays)}
+              </text>
+            ))}
+          </svg>
+        </div>
+      </div>
     </div>
   )
 }
