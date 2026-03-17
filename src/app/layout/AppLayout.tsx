@@ -1,5 +1,5 @@
-import { useEffect, type ReactNode } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useState, type ReactNode } from 'react'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 
 import { APP_NAME } from '../page-titles'
 import { applyResolvedTheme, persistThemePreference, resolveThemePreference } from '../theme'
@@ -75,9 +75,15 @@ const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   ].join(' ')
 
 export const AppShell = ({ children }: { children: ReactNode }) => {
+  const location = useLocation()
   const themePreference = useThemePreference()
   const setThemePreference = useSetThemePreference()
   const nextThemePreference = getNextThemePreference(themePreference)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [location.pathname])
 
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') {
@@ -112,35 +118,95 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
     return () => mediaQuery.removeListener(handleChange)
   }, [themePreference])
 
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      return
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isMobileMenuOpen])
+
   return (
     <div className="min-h-screen bg-app-canvas text-app-text">
       <header className="border-b border-app-border-muted bg-app-surface">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-10">
-          <div className="min-w-0">
-            <Link className="text-lg font-semibold uppercase tracking-[0.24em] text-app-primary no-underline sm:text-xl" to="/">
-              {APP_NAME}
-            </Link>
+        <div className="mx-auto max-w-7xl px-6 py-4 lg:px-10">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <Link className="text-lg font-semibold uppercase tracking-[0.24em] text-app-primary no-underline sm:text-xl" to="/">
+                {APP_NAME}
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <nav aria-label="Primary navigation" className="hidden flex-wrap gap-2 lg:flex">
+                {navigationItems.map((item) => (
+                  <NavLink key={item.to} className={navLinkClassName} to={item.to}>
+                    {item.label}
+                  </NavLink>
+                ))}
+              </nav>
+
+              <button
+                aria-controls="mobile-navigation"
+                aria-expanded={isMobileMenuOpen}
+                aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-app-border bg-app-surface text-app-text-subtle transition hover:bg-app-surface-subtle hover:text-app-text focus-visible:ring-2 focus-visible:ring-app-focus-ring focus-visible:ring-offset-2 lg:hidden"
+                type="button"
+                onClick={() => setIsMobileMenuOpen((current) => !current)}
+              >
+                <svg aria-hidden="true" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+                  {isMobileMenuOpen ? (
+                    <>
+                      <path d="M6 6l12 12" />
+                      <path d="M18 6 6 18" />
+                    </>
+                  ) : (
+                    <>
+                      <path d="M4 7h16" />
+                      <path d="M4 12h16" />
+                      <path d="M4 17h16" />
+                    </>
+                  )}
+                </svg>
+              </button>
+
+              <button
+                aria-label={`Theme: ${themePreferenceLabel[themePreference]}. Switch to ${themePreferenceLabel[nextThemePreference]}.`}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-app-border bg-app-surface text-app-text-subtle transition hover:bg-app-surface-subtle hover:text-app-text focus-visible:ring-2 focus-visible:ring-app-focus-ring focus-visible:ring-offset-2"
+                title={`Theme: ${themePreferenceLabel[themePreference]}`}
+                type="button"
+                onClick={() => setThemePreference(nextThemePreference)}
+              >
+                <ThemeIcon themePreference={themePreference} />
+              </button>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-            <nav className="flex flex-wrap gap-2">
+          {isMobileMenuOpen ? (
+            <nav
+              aria-label="Mobile navigation"
+              className="mt-4 grid gap-2 rounded-2xl border border-app-border-muted bg-app-surface-subtle p-3 lg:hidden"
+              id="mobile-navigation"
+            >
               {navigationItems.map((item) => (
-                <NavLink key={item.to} className={navLinkClassName} to={item.to}>
+                <NavLink
+                  key={item.to}
+                  className={navLinkClassName}
+                  to={item.to}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
                   {item.label}
                 </NavLink>
               ))}
             </nav>
-
-            <button
-              aria-label={`Theme: ${themePreferenceLabel[themePreference]}. Switch to ${themePreferenceLabel[nextThemePreference]}.`}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-app-border bg-app-surface text-app-text-subtle transition hover:bg-app-surface-subtle hover:text-app-text focus-visible:ring-2 focus-visible:ring-app-focus-ring focus-visible:ring-offset-2"
-              title={`Theme: ${themePreferenceLabel[themePreference]}`}
-              type="button"
-              onClick={() => setThemePreference(nextThemePreference)}
-            >
-              <ThemeIcon themePreference={themePreference} />
-            </button>
-          </div>
+          ) : null}
         </div>
       </header>
 

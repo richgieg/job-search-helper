@@ -4,6 +4,7 @@ import '@testing-library/jest-dom/vitest'
 
 import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 
@@ -60,6 +61,28 @@ describe('AppRoutes', () => {
 
     expect(navLinks.indexOf('Import / Export')).toBeGreaterThan(-1)
     expect(navLinks.indexOf('About')).toBe(navLinks.indexOf('Import / Export') + 1)
+  })
+
+  it('opens the mobile navigation menu and closes it after navigating', async () => {
+    const user = userEvent.setup()
+
+    setupRouteTestEnvironment()
+
+    renderAppRoutes('/')
+
+    const openMenuButton = screen.getByRole('button', { name: 'Open navigation menu' })
+    expect(screen.queryByRole('navigation', { name: 'Mobile navigation' })).not.toBeInTheDocument()
+
+    await user.click(openMenuButton)
+
+    const mobileNavigation = screen.getByRole('navigation', { name: 'Mobile navigation' })
+    expect(openMenuButton).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('button', { name: 'Close navigation menu' })).toBeInTheDocument()
+
+    await user.click(screen.getAllByRole('link', { name: 'About' }).find((link) => mobileNavigation.contains(link))!)
+
+    expect(await screen.findByRole('heading', { name: 'Why this app exists' })).toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Mobile navigation' })).not.toBeInTheDocument()
   })
 
   it('renders document routes outside the app layout shell navigation', async () => {
