@@ -53,7 +53,7 @@ export const FinalOutcomeStrip = ({
               />
               <span
                 className={[
-                  'flex w-full items-center justify-center border border-app-border px-3 py-2 text-center text-xs font-medium transition sm:text-sm',
+                  'flex w-full items-center justify-center border border-app-border px-2 py-1.5 text-center text-[11px] leading-tight font-medium transition max-[430px]:px-1.5 max-[430px]:py-1 max-[430px]:text-[10px] sm:px-3 sm:py-2 sm:text-sm',
                   'peer-focus-visible:z-10 peer-focus-visible:ring-2 peer-focus-visible:ring-app-focus-ring peer-focus-visible:ring-offset-2',
                   isFirst ? 'rounded-l-xl' : '',
                   isLast ? 'rounded-r-xl' : '',
