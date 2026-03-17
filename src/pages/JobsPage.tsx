@@ -44,7 +44,7 @@ const JobListItem = ({ job, onDeleteJob }: { job: JobsListItemDto; onDeleteJob: 
         <span className={`text-sm ${agencyDisplayName === '—' ? 'text-app-text-disabled' : 'text-app-text-subtle'}`}>{agencyDisplayName}</span>
       </td>
       <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
-        <span className={['rounded-full px-3 py-1 text-xs font-medium', getJobComputedStatusBadgeClassName(job.computedStatus)].join(' ')}>{formatJobComputedStatus(job.computedStatus)}</span>
+        <span className={['rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap', getJobComputedStatusBadgeClassName(job.computedStatus)].join(' ')}>{formatJobComputedStatus(job.computedStatus)}</span>
       </td>
       <td className="border-r border-app-border-muted px-4 py-3 align-middle last:border-r-0">
         {job.jobLinks.length === 0 ? (
