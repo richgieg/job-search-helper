@@ -19,7 +19,6 @@ const createReferencesSeedData = () => {
     profileId: 'profile_1',
     type: 'professional',
     name: 'Grace Hopper',
-    relationship: 'Former manager',
     company: 'Example Co',
     title: 'Director',
     email: 'grace@example.com',

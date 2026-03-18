@@ -1670,7 +1670,7 @@ const ReferenceCard = ({
 
   const summary = summarizeParts([
     draft?.type === 'professional' ? 'Professional' : 'Personal',
-    draft?.company || draft?.relationship || null,
+    draft?.company || null,
   ])
   const referencePanel = useProfilePagePanelState(
     reference.profileId,
@@ -1734,7 +1734,6 @@ const ReferenceCard = ({
           <TextField label="Company" onBlur={() => draft.company !== reference.company && void updateReference({ referenceId: reference.id, changes: { company: draft.company } })} value={draft.company} onChange={(value) => setDraft({ ...draft, company: value })} />
           <TextField label="Phone" type="tel" onBlur={() => draft.phone !== reference.phone && void updateReference({ referenceId: reference.id, changes: { phone: draft.phone } })} value={draft.phone} onChange={(value) => setDraft({ ...draft, phone: value })} />
           <TextField label="Email" type="email" onBlur={() => draft.email !== reference.email && void updateReference({ referenceId: reference.id, changes: { email: draft.email } })} value={draft.email} onChange={(value) => setDraft({ ...draft, email: value })} />
-          <TextField label="Relationship" onBlur={() => draft.relationship !== reference.relationship && void updateReference({ referenceId: reference.id, changes: { relationship: draft.relationship } })} value={draft.relationship} onChange={(value) => setDraft({ ...draft, relationship: value })} />
           <div className="xl:col-span-4">
             <TextAreaField label="Notes" onBlur={() => draft.notes !== reference.notes && void updateReference({ referenceId: reference.id, changes: { notes: draft.notes } })} value={draft.notes} onChange={(value) => setDraft({ ...draft, notes: value })} />
           </div>

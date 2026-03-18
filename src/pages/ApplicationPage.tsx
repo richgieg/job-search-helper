@@ -533,7 +533,6 @@ export const ApplicationPage = () => {
                 rows={[
                   { label: 'Type', values: buildSingleValue(toTitleCase(entry.type)) },
                   { label: 'Name', values: buildSingleValue(entry.name) },
-                  { label: 'Relationship', values: buildSingleValue(entry.relationship) },
                   { label: 'Company', values: buildSingleValue(entry.company) },
                   { label: 'Title', values: buildSingleValue(entry.title) },
                   { label: 'Email', values: buildSingleValue(entry.email) },

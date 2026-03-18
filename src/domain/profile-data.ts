@@ -2479,7 +2479,6 @@ export const createReferenceMutation = (data: AppDataState, profileId: Id, conte
     profileId,
     type: 'professional',
     name: '',
-    relationship: '',
     company: '',
     title: '',
     email: '',

@@ -440,7 +440,6 @@ const createSeedData = () => {
     profileId: 'profile_3',
     type: 'professional',
     name: 'Manager Example',
-    relationship: 'Manager',
     company: 'Example Co',
     title: 'Director',
     email: 'manager@example.com',
@@ -1030,7 +1029,6 @@ describe('IndexedDbAppBackend', () => {
       referenceId: createdReference.createdId!,
       changes: {
         name: 'Direct Reference',
-        relationship: 'Colleague',
         email: 'reference@example.com',
       },
     })
@@ -1071,7 +1069,6 @@ describe('IndexedDbAppBackend', () => {
         profileId: 'profile_3',
         sortOrder: 1,
         name: 'Direct Reference',
-        relationship: 'Colleague',
         email: 'reference@example.com',
       }),
     ])

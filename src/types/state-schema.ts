@@ -211,7 +211,6 @@ export const ReferenceSchema = z.object({
   profileId: IdSchema,
   type: ReferenceTypeSchema,
   name: z.string(),
-  relationship: z.string(),
   company: z.string(),
   title: z.string(),
   email: z.string(),

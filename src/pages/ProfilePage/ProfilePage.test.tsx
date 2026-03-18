@@ -283,7 +283,6 @@ describe('ProfilePage', () => {
       company: 'Example Co',
       phone: '555-0111',
       email: 'jordan@example.com',
-      relationship: 'Former manager',
       notes: 'Best contacted in the morning.',
       enabled: true,
       sortOrder: 1,
@@ -309,7 +308,6 @@ describe('ProfilePage', () => {
       screen.getByLabelText('Company'),
       screen.getByLabelText('Phone'),
       screen.getByLabelText('Email'),
-      screen.getByLabelText('Relationship'),
       screen.getByLabelText('Notes'),
     ]
 
